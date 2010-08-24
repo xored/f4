@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.fantom.pod">
+      <pod
+            location="/f4testing.pod"
+            name="f4testing">
+      </pod>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.fantom.FanExtension:f4testing::FanTestingLaunchConfig"
+            id="com.xored.fanide.testing.launchConfigurationType"
+            modes="run, debug"
+            name="%launchConfigurationType.name"
+            public="true"
+            sourcePathComputerId="com.xored.fanide.jdt.launching.fanJavaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.fantom.FanExtension:f4testing::FanTestingTabGroup"
+            id="com.xored.fanide.testing.launchConfigurationTabGroup"
+            type="com.xored.fanide.testing.launchConfigurationType">
+         <launchMode
+               description="%launchMode.description"
+               mode="run">
+         </launchMode>
+         <launchMode
+               description="%launchMode.description.0"
+               mode="debug"
+               perspective="org.eclipse.debug.ui.DebugPerspective">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="com.xored.fanide.testing.launchConfigurationType"
+            icon="icons/obj16/fan_obj.gif"
+            id="com.xored.fanide.testing.launchConfigurationTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.fantom.FanExtension:f4testing::FanTestingLaunchShortcut"
+            description="%shortcut.description"
+            icon="icons/obj16/fan_obj.gif"
+            id="com.xored.fanide.testing.launchShortcut"
+            label="%shortcut.label"
+            modes="run,debug">
+         <configurationType
+               id="org.eclipse.dltk.testing.test.launchConfigurationType">
+         </configurationType>
+         <contextualLaunch>
+            <contextLabel
+                  label="%contextLabel.label"
+                  mode="run">
+            </contextLabel>
+            <contextLabel
+                  label="%contextLabel.label.0"
+                  mode="debug">
+            </contextLabel>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <test
+                              args="com.xored.fanide.core.nature"
+                              property="org.eclipse.dltk.launching.hasProjectNature">
+                        </test>
+                     </or>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+
+   <extension point="org.eclipse.dltk.testing.engine">
+   <testingEngine
+         class="org.fantom.FanExtension:f4testing::FanTestingEngine"
+         id="com.xored.fanide.testing.fantest.testingEngine"
+         name="Fantom Test"
+         nature="com.xored.fanide.core.nature"
+         priority="10">
+   </testingEngine>
+   </extension>
+
+</plugin>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.fantom.pod">
+      <pod
+            location="/f4launching.pod"
+            name="f4launching">
+      </pod>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.launching.interpreterInstallTypes">
+      <interpreterInstallType
+            class="org.fantom.FanExtension:f4launching::InstallType"
+            id="com.xored.fanide.internal.debug.ui.launcher.GenericFanInstallType">
+      </interpreterInstallType>
+   </extension>
+	<extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+         <launchConfigurationType
+               delegate="org.fantom.FanExtension:f4launching::LaunchConfigDelegate"
+               id="com.xored.fanide.launching.FanLaunchConfigurationType"
+               modes="run,debug"
+               name="Fantom Script"
+               public="true"/>               
+   </extension>
+</plugin>

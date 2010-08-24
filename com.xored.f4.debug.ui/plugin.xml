@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension
+	      point="org.fantom.pod">
+	   <pod
+	         location="/f4debugUi.pod"
+	         name="f4debugUi">
+	   </pod>
+	</extension>
+	
+	<extension point="org.eclipse.core.runtime.preferences">
+	    <initializer class="com.xored.fanide.internal.debug.ui.FanDebugUIPreferenceInitializer" />
+	  </extension>
+
+	
+	<extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+		<sourceContainerPresentation
+		      containerTypeID="com.xored.f4.debug.fanSourceContainerType"
+		      id="com.xored.f4.debug.fanSourceContainerPresentation"
+		      icon="icons/obj16/fan_obj.gif"
+		      browserClass="org.fantom.FanExtension:FanSourceContainerBrowser">
+		</sourceContainerPresentation>
+	</extension>
+	
+   <extension
+	point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+ 		<launchConfigurationTypeImage
+			icon="icons/obj16/fan_obj.gif"
+			configTypeID="com.xored.fanide.launching.FanLaunchConfigurationType"
+			id="com.xored.fanide.debug.ui.launchConfigurationTypeImage.localFanScript" />		
+   </extension>
+   	
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="com.xored.fanide.launching.FanLaunchConfigurationType"
+            class="org.fantom.FanExtension:f4debugUi::FanTabGroup"
+            id="com.xored.fanide.debug.ui.FanTabGroup" />
+   </extension>
+   
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+          class="org.fantom.FanExtension:f4debugUi::LaunchShortcut"
+          icon="icons/obj16/fan_obj.gif"
+          id="com.xored.fanide.debug.ui.launchShortcut"
+          label="Fantom Class"
+          modes="run, debug">
+		<perspective id="com.xored.fanide.ui.FanPerspective"/> 
+        <contextualLaunch>
+           <enablement>
+             <with variable="selection">
+               <count value="1"/>
+               <iterate>
+                <or>
+           	     <test property="org.eclipse.dltk.launching.hasProjectNature" args="com.xored.fanide.core.nature"/>           	  
+               	</or>
+               </iterate>
+               </with>
+           </enablement>
+  		 </contextualLaunch>
+         <perspective
+               id="org.eclipse.debug.ui.DebugPerspective">
+         </perspective>
+	</shortcut>
+	</extension>
+	
+	<extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation
+            targetID="org.eclipse.debug.ui.launchActionSet">
+         <part
+               id="com.xored.fanide.ui.editor.FanEditor">
+         </part>
+      </actionSetPartAssociation>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation
+            targetID="org.eclipse.debug.ui.launchActionSet">
+         <part
+               id="org.eclipse.dltk.ui.ScriptExplorer">
+         </part>
+         <part
+               id="com.xored.fanide.ui.editor.FanEditor">
+         </part>
+         <part
+               id="com.xored.fanide.ui.explorer">
+         </part>
+      </actionSetPartAssociation>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+		    category="com.xored.fanide.ui.preferences"
+            class="org.fantom.FanExtension:f4debugUi::InterpreterPreferencePage"
+            id="com.xored.fanide.ui.preferences.interpreters"
+            name="%Interpreters.PreferencePage"/>
+   </extension>  
+   
+   <extension
+         point="org.eclipse.dltk.ui.buildpathContainerPage">
+      <buildpathContainerPage
+            class="org.fantom.FanExtension:f4debugUi::FanInterpreterContainerWizardPage"
+            id="com.xored.fanide.launching.INTERPRETER_CONTAINER"
+            name="Fantom Interpreter Libraries"
+            nature="com.xored.fanide.core.nature"/>
+   </extension>
+   
+   <extension point="org.eclipse.ui.editorActions">
+		<editorContribution
+			targetID="com.xored.fanide.ui.editor.FanEditor"
+			id="com.xored.fanide.debug.FanEditor.BreakpointRulerActions">
+
+			<action label="Toggle Breakpoint (label not used)"
+				class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+				style="push" actionID="RulerDoubleClick"
+				id="FanEditor.doubleClickBreakpointAction" />
+
+		</editorContribution>
+	</extension>
+	
+	<extension point="org.eclipse.core.runtime.adapters">
+       <factory
+          adaptableType="com.xored.fanide.internal.ui.editor.FanEditor"
+          class="org.fantom.FanExtension:f4debugUi::FanEditorDebugAdapterFactory">
+           <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
+           <adapter type="org.eclipse.debug.ui.actions.IRunToLineTarget"/>
+       </factory>         
+    </extension>
+    
+  <extension
+    point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+      targetID="com.xored.fanide.ui.FanPerspective">
+      <actionSet
+        id="org.eclipse.debug.ui.breakpointActionSet" />
+    </perspectiveExtension>
+  </extension>
+  
+  <extension
+       point="org.eclipse.ui.console.consolePatternMatchListeners">
+    <consolePatternMatchListener
+          class="org.fantom.FanExtension:f4debugUi::FanConsoleTracker"
+          id="com.xored.fanide.debug.ui.FanConsoleTracker"
+          regex="${FanFilenameLinenumber}">
+       <enablement></enablement>
+    </consolePatternMatchListener>
+  </extension>
+  <extension
+       point="org.eclipse.core.variables.dynamicVariables">
+    <variable
+          description="%FanFilenameLinenumber.description"
+          name="FanFilenameLinenumber"
+          resolver="org.fantom.FanExtension:f4debugUi::FanLinkRes">
+    </variable>
+ </extension>
+ 
+   <extension point="org.eclipse.ui.popupMenus">
+    <viewerContribution
+      id="com.xored.fanide.debug.ui.rulerContribution"
+      targetID="#FanRulerContext">
+
+      <action
+        label="%EnableDisableBreakpoint.label"
+        id="com.xored.fanide.ui.actions.RulerEnableDisableBreakpointActionDelegate"
+        class="org.eclipse.debug.ui.actions.RulerEnableDisableBreakpointActionDelegate"
+        menubarPath="debug">
+      </action>
+
+      <action
+        label="%ToggleBreakpoint.label"
+        id="com.xored.fanide.ui.actions.RulerToggleBreakpointActionDelegate"
+        class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+        menubarPath="debug">
+      </action>
+
+      <action
+        class="org.eclipse.jdt.debug.ui.actions.JavaBreakpointPropertiesRulerActionDelegate"
+        id="com.xored.fanide.debug.ui.ScriptBreakpointPropertiesRulerActionDelegate"
+        label="%BreakpointProperties.label"
+        menubarPath="group.properties" />
+    </viewerContribution>
+  </extension>   
+</plugin>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+<extension
+      point="org.fantom.pod">
+   <pod
+         location="/f4core.pod"
+         name="f4core">
+   </pod>
+</extension>
+
+   <extension
+         point="org.eclipse.dltk.core.buildParticipant">
+      <buildParticipant
+            class="org.fantom.FanExtension:FanTodoParserType"
+            id="com.xored.fanide.core.todo"
+            name="Fantom Task Build Participant"
+            nature="com.xored.fanide.core.nature">
+      </buildParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.launching.interpreterContainerExtension">
+      <interpreterContainerExtension
+            class="org.fantom.FanExtension:f4core::InterpreterContainer"
+            nature="com.xored.fanide.core.nature"
+            priority="0">
+      </interpreterContainerExtension>
+   </extension> 
+   <extension
+         point="org.eclipse.dltk.core.sourceParsers">
+      <parserContribution
+            natureId="com.xored.fanide.core.nature">
+         <parser
+               class="org.fantom.FanExtension:f4core::FanSourceParserFactory"
+               description="desc"
+               id="com.xored.fanide.core.source.parser"
+               name="Fantom Source Parser"
+               priority="10">
+         </parser>
+      </parserContribution>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.core.sourceElementParsers">
+      <parser
+            class="org.fantom.FanExtension:f4core::FanSourceElementParser"
+            nature="com.xored.fanide.core.nature"
+            priority="0">
+      </parser>
+   </extension> 
+   <extension
+         point="org.eclipse.dltk.core.selectionEngine">
+      <selectionEngine
+            class="org.fantom.FanExtension:f4core::SelectionEngine"
+            nature="com.xored.fanide.core.nature"
+            priority="0">
+      </selectionEngine>
+   </extension>  
+</plugin>

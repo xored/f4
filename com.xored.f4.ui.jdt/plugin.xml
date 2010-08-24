@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+<extension
+      point="org.fantom.pod">
+   <pod
+         location="f4uiJdt.pod"
+         name="f4uiJdt"
+         activator="Activator">
+   </pod>
+</extension>
+   <extension
+         point="com.xored.fanide.projectconfigurer">
+         <projectconfigurer
+               class="org.fantom.FanExtension:f4uiJdt::JavaProjectConfigurer"
+               type="jdt">
+         </projectconfigurer>
+   </extension>
+
+   <extension
+         point="org.eclipse.dltk.ui.modelCompareProvider">
+      <modelCompareProvider
+            class="org.fantom.FanExtension:f4uiJdt::JdtModelProvider"
+            id="com.xored.f4.ui.jdt.jdtModelCompareProvider"
+            language="com.xored.fanide.core.nature">
+      </modelCompareProvider>
+   </extension>
+
+<extension
+      point="org.eclipse.ui.navigator.navigatorContent">
+   <actionProvider
+         class="org.eclipse.jdt.internal.ui.navigator.JavaNavigatorActionProvider"
+         id="com.xored.fanide.ui.explorer.actions.StandardActions"
+         overrides="org.eclipse.ui.navigator.resources.actions.EditActions">
+      <enablement>
+         <or>
+            <instanceof
+                  value="org.eclipse.dltk.core.IModelElement">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.core.ArchiveEntryFile">
+            </instanceof>
+            <instanceof
+                  value="com.xored.fanide.internal.core.model.PodEntryFile">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.core.ExternalEntryFile">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.ui.scriptview.BuildPathContainer">
+            </instanceof>
+            <adapt
+                  type="java.util.Collection">
+               <count
+                     value="0">
+               </count>
+            </adapt>
+            <instanceof
+                  value="org.eclipse.core.resources.IResource">
+            </instanceof>
+         </or>
+      </enablement>
+   </actionProvider>
+   <actionProvider
+         class="org.eclipse.jdt.internal.ui.navigator.JavaNavigatorActionProvider"
+         id="org.eclipse.jdt.ui.navigator.actions.StandardActions"
+         overrides="org.eclipse.ui.navigator.resources.actions.EditActions">
+      <enablement>
+         <or>
+            <instanceof
+                  value="org.eclipse.dltk.core.IModelElement">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.core.ArchiveEntryFile">
+            </instanceof>
+			<instanceof
+                  value="com.xored.fanide.internal.core.model.PodEntryFile">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.core.ExternalEntryFile">
+            </instanceof>
+            <instanceof
+                  value="org.eclipse.dltk.internal.ui.scriptview.BuildPathContainer">
+            </instanceof>
+            <adapt
+                  type="java.util.Collection">
+               <count
+                     value="0">
+               </count>
+            </adapt>
+            <instanceof
+                  value="org.eclipse.core.resources.IResource">
+            </instanceof>
+         </or>
+      </enablement>
+   </actionProvider>
+</extension>   
+
+</plugin>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension point="org.fantom.pod">
+		<pod name="f4uiText" location="/f4uiText.pod"/>
+   </extension>
+   <extension point="com.xored.fanide.highlighting.semantic">
+      <highlightingExtension class="org.fantom.FanExtension:FanSemanticHighlighter"/>
+   </extension>
+	<extension point="org.eclipse.dltk.ui.folding">
+		<structureProvider
+       		nature="com.xored.fanide.core.nature"
+       		class="org.eclipse.dltk.ui.text.folding.DelegatingFoldingStructureProvider">
+		</structureProvider>
+		<blockProvider
+			nature="com.xored.fanide.core.nature"
+			class="org.fantom.FanExtension:FanCodeFoldingBlockProvider">
+		</blockProvider>
+		<blockProvider
+			nature="com.xored.fanide.core.nature"
+			class="org.fantom.FanExtension:FanCommentFoldingBlockProvider">
+		</blockProvider>
+	</extension>   
+   <extension
+        point="org.eclipse.dltk.core.completionEngine">
+     <completionEngine
+           class="org.fantom.FanExtension:FanCompletionEngine"
+           nature="com.xored.fanide.core.nature"
+           priority="0">
+     </completionEngine>
+  </extension>
+  	<extension point="org.eclipse.dltk.ui.completion">
+	      <proposalLabelProvider
+             class="org.fantom.FanExtension:f4uiText::FanCompletionProposalLabelProvider"
+             nature="com.xored.fanide.core.nature">
+	      </proposalLabelProvider>
+	</extension>
+	<extension
+		point="org.eclipse.dltk.ui.scriptCompletionProposalComputer"
+		id="FanTypeCompletionProposalComputer">
+		<scriptCompletionProposalComputer 
+			class="org.fantom.FanExtension:f4uiText::FanTypeCompletionProposalComputer"
+			categoryId="org.eclipse.dltk.ui.templateProposalCategory"
+			toolkitId="com.xored.fanide.core.nature">
+			<partition type="__dftl_partition_content_type"/>
+		</scriptCompletionProposalComputer>	
+	</extension>
+	<extension
+        point="org.eclipse.dltk.ui.scriptDocumentationProviders">
+     <provider
+           class="org.fantom.FanExtension:f4uiText::FandocProvider"
+           id="com.xored.f4.ui.FandocProvider"
+           nature="com.xored.fanide.core.nature"/>
+  </extension>	
+  <extension
+       point="org.eclipse.search.searchPages">
+    <page
+          canSearchEnclosingProjects="true"
+          class="org.fantom.FanExtension:f4uiText::FanSearchPage"
+          enabled="true"
+          icon="icons/obj16/search_obj.gif"
+          id="com.xored.f4.ui.search.FanSearchPage"
+          label="%FanSearchPage.label"
+          extensions="fan:90"
+          showScopeSection="true">
+    </page>
+ </extension>  
+</plugin>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="com.xored.f4.fanSourceDirector" name="Fantom Source Director" schema="schema/com.xored.f4.fanSourceDirector.exsd"/>
+   <extension
+         point="org.fantom.pod">
+      <pod
+            location="/f4jdtLaunching.pod"
+            name="f4jdtLaunching">
+      </pod>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+            class="org.fantom.FanExtension:f4jdtLaunching::FanJavaContainerInit"
+            id="com.xored.fanide.jdt.launching.FANJAVA_CONTAINER">
+      </classpathContainerInitializer>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+         <launchConfigurationType
+               delegate="org.fantom.FanExtension:f4jdtLaunching::FanJavaLaunchConfig"
+               id="com.xored.fanide.jdt.launching.FanJavaLaunchConfigurationType"
+               modes="run,debug"
+               category="fan"
+               name="%FanJavaLaunchConfigurationType.name"
+               public="false"/>               
+   </extension>
+  <extension
+        point="org.eclipse.debug.core.sourcePathComputers">
+     <sourcePathComputer
+           class="org.fantom.FanExtension:f4jdtLaunching::SourcePathComputer"
+           id="com.xored.f4.jdt.launching.fanJavaSourcePathComputer">
+     </sourcePathComputer>
+  </extension>
+</plugin>

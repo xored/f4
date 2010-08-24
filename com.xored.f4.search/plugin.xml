@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension point="org.fantom.pod">
+		<pod name="f4search" location="/f4search.pod"/>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.core.search">
+   		<matchLocator 
+            class="org.fantom.FanExtension:FanMatchLocator" 
+            nature="com.xored.fanide.core.nature"> 
+    	</matchLocator> 
+    	<searchFactory
+            class="org.fantom.FanExtension:SearchFactory"
+            nature="com.xored.fanide.core.nature"
+            priority="0">
+      	</searchFactory>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.core.callHierarchy">
+      <callHerarchiesFactory
+            class="org.fantom.FanExtension:f4search::CallHierarchyFactory"
+            nature="com.xored.fanide.core.nature"
+            priority="0">
+      </callHerarchiesFactory>
+   </extension>
+</plugin>

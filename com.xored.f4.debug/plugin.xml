@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+<extension
+      point="org.fantom.pod">
+   <pod
+         location="/f4debug.pod"
+         name="f4debug">
+   </pod>
+</extension>
+
+   <extension
+         point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+            class="org.fantom.FanExtension:FanSourceContainerTypeDelegate"
+            id="com.xored.f4.debug.fanSourceContainerType"
+            name="Fantom Sources">
+      </sourceContainerType>
+   </extension>
+   <extension
+         point="org.eclipse.dltk.debug.scriptDebugModel">
+      <debugModel
+            debugModelId="com.xored.fanide.debug.fanModel"
+            natureId="com.xored.fanide.core.nature"
+            typeFactory="org.fantom.FanExtension:f4debug::FanTypeFactory">
+      </debugModel>
+   </extension>
+
+  <!--extension point="org.eclipse.core.runtime.preferences">
+    <initializer
+      class="org.fantom.FanExtension::FanDebugPreferenceInitializer" />
+  </extension-->
+</plugin>
