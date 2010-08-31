@@ -220,7 +220,7 @@ class CompileFan : IScriptBuilder
     //add workspace pods
     FantomProjectManager.instance.listProjects.each |FantomProject p|
     {
-      result[fp.podName] = (fp.outDir.uri + `${fp.podName}.pod`).toFile
+      result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
     }
     
     return result
