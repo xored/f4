@@ -11,6 +11,7 @@ using [java] org.eclipse.dltk.core::IModelElement
 using [java] org.eclipse.dltk.core::IField
 using [java] org.eclipse.dltk.core::IMethod
 using f4model
+
 **
 **
 **
@@ -24,12 +25,14 @@ internal const class DltkType : IFanType, Flags
   override const Str[] inheritance
   override const Int flags
   
+  // TODO: Get rid of Unsafe for God's sake
   private const Unsafe meHolder
   override IModelElement? me() { meHolder.val }
 
   override const Str[] params
   override const Str:IFanType parametrization
   override const Str genericQname
+  override const Bool isNullable
 
   new make(Str pod, IType type, [Str:IFanType]? parametrization := null)
   {
@@ -38,7 +41,8 @@ internal const class DltkType : IFanType, Flags
     this.qname = "$pod::$name"
     this.flags = type.getFlags
     this.meHolder = Unsafe(type)
-    this.inheritance = getInheritance(pod, type)
+    this.inheritance = type.getSuperClasses
+    this.isNullable = false
     slotsMap = [Str:IFanSlot][:].setList(
       type.getFields.map |IField f->IFanField| { DltkField(this, f) }
     ) { it.name }.setList(
@@ -74,12 +78,6 @@ internal const class DltkType : IFanType, Flags
     }
   }
   
-  private static Str[] getInheritance(Str pod, IType type)
-  {
-    if(type.getElementName == "Obj" && pod == "sys") return type.getSuperClasses
-    return type.getSuperClasses.add("sys::Obj").unique
-  }
-
   override DltkType parameterize(Str:IFanType parametrization)
   {
     return DltkType(pod, me as IType, [:].addAll(this.parametrization).addAll(parametrization))
@@ -97,4 +95,8 @@ internal const class DltkType : IFanType, Flags
   }
  
   override Str toStr() { genericQname }
+  
+  override IFanType toNullable() {
+    RtNullableType(this)
+  }
 }

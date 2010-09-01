@@ -137,6 +137,8 @@ const class FakeFanType : IFanType
   override const Str[] params := [,]
   override const Str:IFanType parametrization := [:]
   override const Str genericQname
+  override const Bool isNullable
+  override IFanType toNullable() { RtNullableType(this) }
   
   new make(Type t)
   {
@@ -160,6 +162,7 @@ const class FakeFanType : IFanType
     this.isMixin = t.isMixin
     this.isPublic = t.isPublic
     this.isSynthetic = t.isSynthetic
+    this.isNullable = false
     
     Str:IFanSlot tempSlotsMap := [:]
     IFanSlot[] tempSlots := [,]
@@ -244,6 +247,7 @@ const class FakeFanType : IFanType
   {
     FakeFanType.fake(name, pod, inheritance, slots)
   }
+  
 }
 
 abstract const class FakeFanSlot : IFanSlot

@@ -34,12 +34,8 @@ const mixin IFanType : DltkModelElement
 //////////////////////////////////////////////////////////////////////////
   
   **
-  ** Return a recursive flattened list of all the types this type
-  ** inherits from.  The result list always includes this type itself.
-  ** The result of this method represents the complete list of types
-  ** implemented by this type - instances of this type are assignable
-  ** to any type in this list.  All types (including mixins) will
-  ** include sys::Obj in this list.
+  ** List of types immediately inherited by this type as
+  ** they appear in source 
   **
   abstract Str[] inheritance()
   
@@ -130,6 +126,20 @@ const mixin IFanType : DltkModelElement
   ** 'KeyType:ValueType' for 'Map'
   ** 
   abstract Str genericQname()
+  
+//////////////////////////////////////////////////////////////////////////
+// Nullability
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Returns nullable variant of type
+  ** 
+  abstract IFanType toNullable()
+  
+  **
+  ** Checks nullability
+  ** 
+  abstract Bool isNullable()
 
 //////////////////////////////////////////////////////////////////////////
 // Slots
@@ -157,7 +167,7 @@ const mixin IFanType : DltkModelElement
   **
   virtual IFanSlot? slot(Str name, Bool checked := true)
   {
-    slotsMap[name] ?: (checked ? throw UnknownTypeErr() : null)
+    slotsMap[name] ?: (checked ? throw UnknownSlotErr() : null)
   }
   
   **
@@ -165,7 +175,7 @@ const mixin IFanType : DltkModelElement
   **
   virtual IFanMethod? method(Str name, Bool checked := true)
   {
-    (slot(name, checked) as IFanMethod) ?: (checked ? throw UnknownTypeErr() : null)
+    (slot(name, checked) as IFanMethod) ?: (checked ? throw UnknownSlotErr() : null)
   }
   
   **
@@ -173,32 +183,51 @@ const mixin IFanType : DltkModelElement
   **
   virtual IFanField? field(Str name, Bool checked := true)
   {
-    (slot(name, checked) as IFanField) ?: (checked ? throw UnknownTypeErr() : null)
+    (slot(name, checked) as IFanField) ?: (checked ? throw UnknownSlotErr() : null)
   }
   
   ** Find slot in this type or in super types 
   virtual IFanSlot? findSlot(Str name, IFanNamespace ns, Bool checked := true)
   {
+    internalFindSlot(name,ns) ?: ( checked ? throw UnknownSlotErr() : null )
+  }
+  
+  private IFanSlot? internalFindSlot(Str name, IFanNamespace ns, Str[] excluded := Str[,])
+  {
     dirty := slot(name, false)
-    if(dirty != null) return dirty
+    if (dirty != null)
+      return dirty
+    excluded.add(qname)
     //deep search
     dirty = inheritance.eachWhile |base|
     {
-      ns.findType(base)?.findSlot(name,ns,checked)
+      type := ns.findType(base)
+      return excluded.contains(type?.qname) ? null : type?.internalFindSlot(name,ns,excluded)
     }
-    return dirty ?: (checked ? throw UnknownSlotErr() : null)
+    if (dirty != null || excluded.contains("sys::Obj"))
+      return dirty
+    return ns.findType("sys::Obj")?.internalFindSlot(name,ns,excluded)
   }
   
   virtual IFanSlot[] allSlots(IFanNamespace ns)
   {
-    result := [Str:IFanSlot][:]
-    result.setAll(slotsMap)
-    inheritance.each 
-    {
-      superSlots := ns.findType(it)?.allSlots(ns)?.exclude { it.isCtor }
-      if(superSlots != null)
-        result.setList(superSlots) { it.name }
-    }
+    result := Str:IFanSlot[:]
+    addSlotsTo(ns,result)
     return result.vals
+  }
+  
+  private Void addSlotsTo(IFanNamespace ns, Str:IFanSlot map,Str[] excluded := [,])
+  {
+    excluded.add(qname)
+    //deep search
+    if (!excluded.contains("sys::Obj"))
+      ns.findType("sys::Obj")?.addSlotsTo(ns,map,excluded)
+    inheritance.each
+    {
+      type := ns.findType(it)
+      if (!excluded.contains(type?.qname))
+        type?.addSlotsTo(ns,map,excluded)
+    }
+    map.setAll(slotsMap)
   }
 }

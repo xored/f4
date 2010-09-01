@@ -1119,7 +1119,7 @@ class Parser : AstFactory
         return ItRef(s.start, s.end, itTypes.last)
 
       case Token.nullKeyword : consume; endRule(s)
-        return Literal(s.start, s.end, ExprId.nullLiteral, null, resolveObj)
+        return Literal(s.start, s.end, ExprId.nullLiteral, null, resolveObjQue)
       case Token.trueKeyword : consume; endRule(s)
         return Literal(s.start, s.end, ExprId.boolLiteral, true, resolveBool)
       case Token.falseKeyword : consume; endRule(s)
@@ -1519,13 +1519,13 @@ class Parser : AstFactory
     {
       err(locOfRange(-2, -1), ProblemKind.parser_invalidEmptyList)
       endRule(s)
-      return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType))
+      return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType, items))
     }
     if (matchAndConsume(Token.comma))
     {
       consume(Token.rbracket)
       endRule(s)
-      return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType))
+      return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType, items))
     }
     items.add(expr)
     while(matchAndConsume(Token.comma))
@@ -1535,7 +1535,7 @@ class Parser : AstFactory
     }
     consume(Token.rbracket)
     endRule(s)
-    return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType))
+    return ListLiteral(s.start, s.end, parsedType, items, resolveList(parsedType, items))
   } 
   
   MapLiteral mapLiteral(CType? parsedType := null)
@@ -1563,7 +1563,7 @@ class Parser : AstFactory
     {
       consume(Token.rbracket)
       endRule(s)
-      return MapLiteral(s.start, s.end, parsedType, keys, vals, resolveMap(keyType, valueType))
+      return MapLiteral(s.start, s.end, parsedType, keys, vals, resolveMap(keyType, valueType, keys, vals))
     }
     keys.add(expr)
     consume(Token.colon)
@@ -1585,7 +1585,7 @@ class Parser : AstFactory
     consume(Token.rbracket)
     endRule(s)
     // TODO: find base for keys and maps
-    return MapLiteral(s.start, s.end, parsedType, keys, vals, resolveMap(keyType, valueType))
+    return MapLiteral(s.start, s.end, parsedType, keys, vals, resolveMap(keyType, valueType, keys, vals))
   }  
 
   SuperRef superRef()
@@ -1669,7 +1669,7 @@ class Parser : AstFactory
   
   Expr idExpr(Expr? prev)
   {
-    if (curt === Token.star) return storage(prev)
+    if (curt === Token.amp) return storage(prev)
     Expr? expr
     if (curt === Token.identifier)
     {
@@ -1868,6 +1868,7 @@ class Parser : AstFactory
   Void addUsing(UsingDef def) {usings.add(def)}
   
   once IFanType? resolveObj() {ns.findPod("sys")?.findType("Obj", false)}
+  once IFanType? resolveObjQue() { resolveObj?.toNullable }
   once IFanType? resolveBool() {ns.findPod("sys")?.findType("Bool", false)}
   once IFanType? resolveStr() {ns.findPod("sys")?.findType("Str", false)}
   once IFanType? resolveInt() {ns.findPod("sys")?.findType("Int", false)}
@@ -1876,16 +1877,74 @@ class Parser : AstFactory
   once IFanType? resolveDuration() {ns.findPod("sys")?.findType("Duration", false)}
   once IFanType? resolveUri() {ns.findPod("sys")?.findType("Uri", false)}
   once IFanType? resolveRange() {ns.findPod("sys")?.findType("Range", false)}
-  IFanType? resolveList(CType? valueType)
+  IFanType? resolveList(CType? valueType, Expr[]? items := null)
   {
-    ns.findPod("sys")?.findType("List", false)?.parameterize(
-      ["sys::V" : valueType?.resolvedType])
+    resolved := resolveItemType(items ?: Expr[,], valueType)
+    type := ns.findPod("sys")?.findType("List", false)
+    return resolved == null ? type : type.parameterize(["sys::V" : resolved])
   }
-  IFanType? resolveMap(CType? keyType, CType? valueType)
+  IFanType? resolveMap(CType? keyType, CType? valueType, Expr[]? keys := null, Expr[]? vals := null)
   {
-    ns.findPod("sys")?.findType("Map", false)?.parameterize(
-      ["sys::K" : keyType?.resolvedType, "sys::V" : valueType?.resolvedType])
+    resolvedKey := resolveItemType(keys ?: Expr[,], keyType)
+    resolvedVal := resolveItemType(vals ?: Expr[,], valueType)
+    type := ns.findPod("sys")?.findType("Map", false);
+    if (resolvedKey != null && resolvedVal != null )
+      return type.parameterize(["sys::K":resolvedKey, "sys::V":resolvedVal])
+    else
+      return type
   }
+  private IFanType? resolveItemType(Expr[] items, CType? valueType := null)
+  {
+    explicit := valueType?.resolvedType
+    if (valueType != null && explicit == null) return explicit
+    
+    types := items.map { resolvedType }.exclude { it == null }
+    if (types.size == 0) return resolveObjQue
+    init := types.pop()
+    return types.reduce(init, #commonSuper.func.bind([this])) ?: resolveObjQue
+  }
+  
+  private IFanType? commonSuper(IFanType? first, IFanType second)
+  {
+    if (first == null) return second
+    line1 := lineage(first)
+    line2 := lineage(second)
+    Int i
+    for(i = line1.size.min(line2.size)-1; i >= 0; i--) {
+      if (line1[i].qname == line2[i].qname) break;
+    }
+    // TODO: wait for new specifications from Brian for generic arguments inference
+    return i >= 0 ? ns.findType(line1[i].qname) : null
+  }
+  **
+  ** Return list of superclasses ordered from Obj to given type
+  ** Mixins excluded
+  ** 
+  private IFanType[] lineage(IFanType type)
+  {
+    res := IFanType[type]
+    while (true)
+    {
+      next := immediateSuper(res[-1])
+      if (next == null || res.contains(next)) break
+      res.add(next)
+    }
+    res.reverse
+    if (res.peek.isMixin) res.pop
+    return res
+  }
+  
+  private IFanType? immediateSuper(IFanType type)
+  {
+    if (type.qname == "sys::Obj") return null
+    if (type.inheritance.size == 0) return resolveObj
+    given := ns.findType(type.inheritance[0])
+    if (given == null) return null
+    if (given.isMixin) return resolveObj
+    return given
+  }
+  
+  // TODO: Add genericity for Funcs
   once IFanType? resolveFunc() {ns.findPod("sys")?.findType("Func", false)}
   once IFanType? resolveSlot() {ns.findPod("sys")?.findType("Slot", false)}
   once IFanType? resolveMethod() {ns.findPod("sys")?.findType("Method", false)}
