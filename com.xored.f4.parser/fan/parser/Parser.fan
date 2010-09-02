@@ -1897,11 +1897,14 @@ class Parser : AstFactory
   {
     explicit := valueType?.resolvedType
     if (valueType != null && explicit == null) return explicit
-    
-    types := items.map { resolvedType }.exclude { it == null }
+    isNull := |Expr e->Bool| { e.id == ExprId.nullLiteral }
+    hasNull := items.any(isNull)
+    types := items.exclude(isNull).map { resolvedType }.exclude { it == null }
     if (types.size == 0) return resolveObjQue
     init := types.pop()
-    return types.reduce(init, #commonSuper.func.bind([this])) ?: resolveObjQue
+    IFanType? res := types.reduce(init, #commonSuper.func.bind([this]))
+    if (res == null) return resolveObjQue
+    return hasNull ? res.toNullable : res
   }
   
   private IFanType? commonSuper(IFanType? first, IFanType second)
@@ -1914,7 +1917,9 @@ class Parser : AstFactory
       if (line1[i].qname == line2[i].qname) break;
     }
     // TODO: wait for new specifications from Brian for generic arguments inference
-    return i >= 0 ? ns.findType(line1[i].qname) : null
+    if (i < 0) return null
+    res := ns.findType(line1[i].qname)
+    return first.isNullable||second.isNullable ? res.toNullable : res
   }
   **
   ** Return list of superclasses ordered from Obj to given type
