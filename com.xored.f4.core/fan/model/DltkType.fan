@@ -25,7 +25,6 @@ internal const class DltkType : IFanType, Flags
   override const Str[] inheritance
   override const Int flags
   
-  // TODO: Get rid of Unsafe for God's sake
   private const Unsafe meHolder
   override IModelElement? me() { meHolder.val }
 
@@ -34,6 +33,7 @@ internal const class DltkType : IFanType, Flags
   override const Str genericQname
   override const Bool isNullable
 
+  private static const Str[] genArgs := ["sys::A","sys::B","sys::C","sys::D","sys::E","sys::F","sys::G","sys::H"]
   new make(Str pod, IType type, [Str:IFanType]? parametrization := null)
   {
     this.pod = pod
@@ -68,7 +68,24 @@ internal const class DltkType : IFanType, Flags
     {
       this.params = ["sys::R"]
       this.parametrization = parametrization ?: [:]
-      this.genericQname = qname
+      if (isGeneric)
+        this.genericQname = qname
+      else
+      {
+        res := "|"
+        genArgs.eachWhile |arg| {
+          cur := parametrization[arg]
+          if (cur == null) return 0
+          res += (res == "|" ? "" : ",") + cur.genericQname
+          return null
+        }
+        retType := parametrization["sys::R"]
+        if (res == "|" || retType.qname != "sys::Void")
+          res += "->"
+        if (retType.qname != "sys::Void")
+          res += retType.genericQname
+        this.genericQname = res + "|"
+      }
     }
     else
     {

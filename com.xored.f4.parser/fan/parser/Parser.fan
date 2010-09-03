@@ -546,7 +546,8 @@ class Parser : AstFactory
     // at this point we either have an expr or local var declaration
     s := startRule
     expr := exprOrLocalDef
-    endOfStmt
+    // TODO: based on FAN-399, check if works
+    endOfStmt(true)
     endRule(s)
     return ExprStmt(s.start, s.end, expr)
   }
@@ -822,7 +823,7 @@ class Parser : AstFactory
       consume; consume
       second := ifExprBody
       endRule(s)
-      return BinaryExpr(s.start, s.end, first, second, ExprId.elvis, resolveObj)
+      return BinaryExpr(s.start, s.end, first, second, ExprId.elvis, commonSuper(first.resolvedType, second.resolvedType))
     }
     if (curt === Token.question)
     {
@@ -841,7 +842,7 @@ class Parser : AstFactory
       consume(Token.colon)
       falseExpr := ifExprBody
       endRule(s)
-      return TernaryExpr(s.start, s.end, condExpr, trueExpr, falseExpr, resolveObj)
+      return TernaryExpr(s.start, s.end, condExpr, trueExpr, falseExpr, commonSuper(trueExpr.resolvedType, falseExpr.resolvedType))
     }
     return first
   }
@@ -1064,7 +1065,7 @@ class Parser : AstFactory
   
   Expr? tryTypeOrLocalOrSlot()
   {
-    if (curt === Token.star) return idExpr(null)
+    if (curt === Token.amp) return idExpr(null)
     if (!noTypeExpected)
     {
       mark := pos
@@ -1211,14 +1212,15 @@ class Parser : AstFactory
       reset(mark)
       return closure
     }
-    if (match(Token.lbrace))
+    /*if (match(Token.lbrace))
     {
       // <Type>{ == ctor with closure param
       return call(StaticTargetExpr(s.start, s.end, t))
-    }
-    if (curt == Token.lparen)
+    }*/
+    if (curt == Token.lparen || curt == Token.lbrace)
     {
       // <Type>( == ctor
+      // <Type>{ == ctor with closure param
       return call(StaticTargetExpr(s.start, s.end, t))
     }
     return StaticTargetExpr(s.start, s.end, t)
@@ -1247,8 +1249,8 @@ class Parser : AstFactory
   }
 
   **
-  ** Passes arguments in parentheses (they mustn't exist) to method call on 'caller'.
-  ** If it is followed by closure, closure is treated as last argument or as an single
+  ** Passes arguments in parentheses (they don't have to exist) to method call on 'caller'.
+  ** If it is followed by closure, closure is treated as last argument or as a single
   ** argument for 'sys::Obj.with' call depending on 'caller' argument type in closure
   ** position.
   ** 
@@ -1282,7 +1284,7 @@ class Parser : AstFactory
     endRule(s)
 
     // if there is one more closure, make with-call
-    if (curt === Token.pipe || isClosure)
+    if (isClosure)
     {
       // if caller is method or closure, need to close previous
       // call and make a with-call on its result
@@ -1305,8 +1307,8 @@ class Parser : AstFactory
         args.add(cl)
       }
     }
-    
-    if(caller.resolvedType == resolveFunc && !callerIsMethod(caller) )
+    // TODO: determine whether () can be used as call shortcut (fantom.org #1194)    
+    if (caller.resolvedType?.qname == "sys::Func" && !callerIsMethod(caller) )
     {
       //generate invoke of 'call method'
       return InvokeExpr.staticInvoke(caller.start, s.end, caller, callCall(caller, args))
@@ -1322,14 +1324,16 @@ class Parser : AstFactory
 
   CallExpr callCall(Expr caller, Expr[] args)
   {
-    callSlot := resolveCallSlot
-    callRef := SlotRef(caller.end, caller.end, "call", ExprId.methodRef, callSlot, callerTypeForCall(caller), resolveObj)
+    callSlot := resolveCallSlot(caller.resolvedType)
+    callRef := SlotRef(caller.end, caller.end, "call", ExprId.methodRef, callSlot, callerTypeForCall(caller), resolveObjQue)
     return CallExpr(args.first?.start ?: caller.end, args.last?.end ?: caller.end, callRef, args)
   }
   
   private IFanType? callerTypeForCall(Expr caller)
   {
-    ((caller as MethodVarRef)?.def?.init as Closure)?.resolvedReturnType ?: resolveObj
+    // TODO: check what's line below for
+    //((caller as MethodVarRef)?.def?.init as Closure)?.resolvedReturnType ?: resolveObj
+    caller.resolvedType?.parametrization?.get("sys::R") ?: resolveObjQue
   }
   **
   ** Makes 'SlotRef' on 'with' slot.
@@ -1358,6 +1362,10 @@ class Parser : AstFactory
   **
   private IFanType? callerThisType(Expr caller)
   {
+    if (caller is InvokeExpr)
+    {
+      return (caller as InvokeExpr).callee.resolvedType
+    }
     if (caller is SlotRef)
     {
       return (caller as SlotRef).thisType
@@ -1366,8 +1374,8 @@ class Parser : AstFactory
     {
       return (caller as StaticTargetExpr).ctype.resolvedType
     }
+    //Somehow |This|
     return null
-    // TODO: support This in closure signatures
   }
 
   **
@@ -1399,6 +1407,10 @@ class Parser : AstFactory
   private IFanMethod? callerAsMethod(Expr caller)
   {
     IFanSlot? slot
+    if (caller is InvokeExpr)
+    {
+      caller = (caller as InvokeExpr).caller
+    }
     if (caller is SlotRef)
     {
       slot = (caller as SlotRef).modelSlot
@@ -1486,7 +1498,7 @@ class Parser : AstFactory
     else { exitFunc }
 
     endRule(s)
-    return Closure(s.start, s.end, signature, body, resolveFunc, argsHint)
+    return Closure(s.start, s.end, signature, body, signature?.resolvedType ?: resolveFunc, argsHint)
   }
 
   Expr listOrMapLiteral(CType? parsedType := null)
@@ -1584,7 +1596,6 @@ class Parser : AstFactory
     }
     consume(Token.rbracket)
     endRule(s)
-    // TODO: find base for keys and maps
     return MapLiteral(s.start, s.end, parsedType, keys, vals, resolveMap(keyType, valueType, keys, vals))
   }  
 
@@ -1593,8 +1604,7 @@ class Parser : AstFactory
     s := startRule
     consume(Token.superKeyword)
     endRule(s)
-    // TODO
-    return SuperRef(s.start, s.end, null, resolveObj)
+    return SuperRef(s.start, s.end, null, immediateSuper(currType) ?: resolveObj)
   }
 
   ThisRef thisRef()
@@ -1662,8 +1672,7 @@ class Parser : AstFactory
       else      
         return shortcut(s.start, s.end, ExprId.index, "get", base, index, op)
     }
-    if (isClosure) return call(base)
-    //if (base is Closure && peekt === Token.lparen) return call(base)
+    if (isClosure || curt === Token.lparen) return call(base)
     return null
   }
   
@@ -1721,9 +1730,6 @@ class Parser : AstFactory
       }
     }
     else throw err(curLoc, ProblemKind.parser_expectedId)
-    if (curt === Token.lparen && !cur.newline ||
-        curt === Token.pipe || curt === Token.lbrace) 
-      expr = call(expr)  
     return expr
   }
   
@@ -1736,7 +1742,7 @@ class Parser : AstFactory
   
   Bool isClosure()
   {
-    if (!match(Token.lbrace)) return false
+    if (!(match(Token.lbrace) || !nl && match(Token.pipe))) return false
 //    if (inFieldInit)
 //    {
       switch(peekt)
@@ -1869,6 +1875,7 @@ class Parser : AstFactory
   
   once IFanType? resolveObj() {ns.findPod("sys")?.findType("Obj", false)}
   once IFanType? resolveObjQue() { resolveObj?.toNullable }
+  once IFanType? resolveVoid() {ns.findPod("sys")?.findType("Void", false)}
   once IFanType? resolveBool() {ns.findPod("sys")?.findType("Bool", false)}
   once IFanType? resolveStr() {ns.findPod("sys")?.findType("Str", false)}
   once IFanType? resolveInt() {ns.findPod("sys")?.findType("Int", false)}
@@ -1881,22 +1888,38 @@ class Parser : AstFactory
   {
     resolved := resolveItemType(items ?: Expr[,], valueType)
     type := ns.findPod("sys")?.findType("List", false)
-    return resolved == null ? type : type.parameterize(["sys::V" : resolved])
+    return resolved == null ? type : type?.parameterize(["sys::V":resolved])
   }
   IFanType? resolveMap(CType? keyType, CType? valueType, Expr[]? keys := null, Expr[]? vals := null)
   {
     resolvedKey := resolveItemType(keys ?: Expr[,], keyType)
     resolvedVal := resolveItemType(vals ?: Expr[,], valueType)
-    type := ns.findPod("sys")?.findType("Map", false);
-    if (resolvedKey != null && resolvedVal != null )
-      return type.parameterize(["sys::K":resolvedKey, "sys::V":resolvedVal])
-    else
-      return type
+    type := ns.findPod("sys")?.findType("Map", false)
+    map := ["sys::K":resolvedKey,"sys::V":resolvedVal]
+    return type?.parameterize(map.exclude { it == null })
   }
+  
+  private static const Str[] genArgs := ["sys::A","sys::B",
+    "sys::C","sys::D","sys::E","sys::F","sys::G","sys::H"]
+  
+  // TODO: |A,B,C,D,E,F,G,H,I| is not assignable to |A,B,C,D,E,F,G,H,J| but, honestly, who cares
+  IFanType? resolveFunc(FuncTypeParam[]? argTypes := null, CType? retType := null) {
+    type := ns.findPod("sys")?.findType("Func", false)
+    resolvedRet := retType == null ? resolveVoid : retType.resolvedType
+    map := ["sys::R":resolvedRet]
+    if (argTypes != null) {
+      // TODO: Store variable names somehow
+      if (argTypes.size > genArgs.size)
+        argTypes = argTypes[0..<genArgs.size]
+      map.addList(argTypes.map{ it.ctype.resolvedType }.exclude{ it == null }) |v,i| { genArgs[i] }
+    }
+    return type?.parameterize(map)
+  }
+  
   private IFanType? resolveItemType(Expr[] items, CType? valueType := null)
   {
     explicit := valueType?.resolvedType
-    if (valueType != null && explicit == null) return explicit
+    if (valueType != null && explicit == null) return null
     isNull := |Expr e->Bool| { e.id == ExprId.nullLiteral }
     hasNull := items.any(isNull)
     types := items.exclude(isNull).map { resolvedType }.exclude { it == null }
@@ -1907,20 +1930,22 @@ class Parser : AstFactory
     return hasNull ? res.toNullable : res
   }
   
-  private IFanType? commonSuper(IFanType? first, IFanType second)
+  private IFanType? commonSuper(IFanType? first, IFanType? second)
   {
     if (first == null) return second
+    if (second == null) return resolveObjQue
     line1 := lineage(first)
     line2 := lineage(second)
     Int i
     for(i = line1.size.min(line2.size)-1; i >= 0; i--) {
       if (line1[i].qname == line2[i].qname) break;
     }
-    // TODO: wait for new specifications from Brian for generic arguments inference
+    // TODO: wait for generic arguments inference specs (fantom.org #1192)
     if (i < 0) return null
     res := ns.findType(line1[i].qname)
     return first.isNullable||second.isNullable ? res.toNullable : res
   }
+  
   **
   ** Return list of superclasses ordered from Obj to given type
   ** Mixins excluded
@@ -1939,9 +1964,9 @@ class Parser : AstFactory
     return res
   }
   
-  private IFanType? immediateSuper(IFanType type)
+  private IFanType? immediateSuper(IFanType? type)
   {
-    if (type.qname == "sys::Obj") return null
+    if (type == null || type.qname == "sys::Obj") return null
     if (type.inheritance.size == 0) return resolveObj
     given := ns.findType(type.inheritance[0])
     if (given == null) return null
@@ -1949,14 +1974,12 @@ class Parser : AstFactory
     return given
   }
   
-  // TODO: Add genericity for Funcs
-  once IFanType? resolveFunc() {ns.findPod("sys")?.findType("Func", false)}
   once IFanType? resolveSlot() {ns.findPod("sys")?.findType("Slot", false)}
   once IFanType? resolveMethod() {ns.findPod("sys")?.findType("Method", false)}
   once IFanType? resolveField() {ns.findPod("sys")?.findType("Field", false)}
   once IFanType? resolveType() {ns.findPod("sys")?.findType("Type", false)}
   once IFanSlot? resolveWithSlot() { resolveObj?.slot("with", false) }
-  once IFanSlot? resolveCallSlot() { resolveFunc?.slot("call", false) }
+  IFanSlot? resolveCallSlot(IFanType? t) { (t ?: resolveFunc)?.slot("call", false) }
   
 //////////////////////////////////////////////////////////////////////////
 // Types
@@ -2074,7 +2097,7 @@ class Parser : AstFactory
     }
     consume(Token.pipe)
     endRule(s)
-    return FuncType(s.start, s.end, formals, t, resolveFunc)
+    return FuncType(s.start, s.end, formals, t, resolveFunc(formals, t))
   }
 
   FuncTypeParam formal(Bool isClosure, IFanType? typeHint := null)
