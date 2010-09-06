@@ -1918,8 +1918,7 @@ class Parser : AstFactory
   
   private IFanType? resolveItemType(Expr[] items, CType? valueType := null)
   {
-    explicit := valueType?.resolvedType
-    if (valueType != null && explicit == null) return null
+    if (valueType != null) return valueType?.resolvedType
     isNull := |Expr e->Bool| { e.id == ExprId.nullLiteral }
     hasNull := items.any(isNull)
     types := items.exclude(isNull).map { resolvedType }.exclude { it == null }
@@ -1996,26 +1995,16 @@ class Parser : AstFactory
     }
   }
   
-  CType ctype()
-  {
-    s := startRule
-    t := mapType
-    if (noWs && matchAndConsume(Token.question))
-    {
-      endRule(s)
-      return NullableType(s.start, s.end, t)
-    }
-    return t
-  }
+  CType ctype() { return mapType }
   
   CType mapType()
   {
     s := startRule
-    t := listType
+    t := listOrNullType
     if(matchAndConsume(Token.colon))
     {      
       keyType := t
-      valType := listType
+      valType := mapType
       IFanType? resolvedType := resolveMap(keyType, valType)
       if (keyType.resolvedType == null && valType.resolvedType == null)
         resolvedType = null
@@ -2025,30 +2014,36 @@ class Parser : AstFactory
     return t
   }
 
-  CType listType()
+  CType listOrNullType()
   {
     s := startRule
-    t := nullType
-    while(matchAndConsume(Token.lbracket, Token.rbracket))
+    base := nonNullType
+    while(true)
     {
-      endRule(s)
-      t = ListType(s.start, s.end, t, resolveList(t))
-    }
-    return t
-  }
-
-  CType nullType()
-  {
-    s := startRule
-    t := nonNullType
-    if (noWs && matchAndConsume(Token.question))
-    {
-      endRule(s)
-      return NullableType(s.start, s.end, t)
-    }
-    return t
+      CType? type := typeChain(base)
+      if (type == null) break
+      base = type
+    } 
+    return base
   }
   
+  CType? typeChain(CType base)
+  {
+    s := startRule
+    s.start = base.start
+    if (matchAndConsume(Token.question))
+    {
+      endRule(s)
+      return NullableType(s.start, s.end, base)
+    }
+    if (matchAndConsume(Token.lbracket,Token.rbracket))
+    {
+      endRule(s)
+      return ListType(s.start, s.end, base, resolveList(base))
+    }
+    return null;
+  }
+
   CType nonNullType()
   {
     switch(curt)
@@ -2064,7 +2059,7 @@ class Parser : AstFactory
   {
     s := startRule
     consume(Token.lbracket)
-    t := ctype
+    t := mapType
     // TODO !!! FIXIT
     if (t isnot MapType) throw err(Loc(t.start, t.end, -1), ProblemKind.parser_invalidMapType)
     MapType mt := t

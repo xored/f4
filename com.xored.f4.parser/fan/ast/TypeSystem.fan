@@ -30,7 +30,7 @@ const class NullableType : CType
   const CType valType
   
   new make(Int start, Int end, CType valType) 
-    : super(start, end, valType.resolvedType) {this.valType = valType} 
+    : super(start, end, valType.resolvedType?.toNullable) {this.valType = valType} 
   
   override Str toStr() {return "$valType?"}
 }
