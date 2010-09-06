@@ -572,7 +572,7 @@ class Parser : AstFactory
     localType = tryType
 
     // type followed by identifier must be local variable declaration
-    if (localType != null && match(Token.identifier))
+    if (localType != null && !nl && match(Token.identifier))
     {
       name := id
       Expr? init
@@ -1277,7 +1277,7 @@ class Parser : AstFactory
     expectedArgs := expectedClosureArgs(caller, args.size)
 
     // TODO: compare signatures of expected and following closures
-    if (expectedArgs != null)
+    if (expectedArgs != null && isClosure)
     {
       args.add(closure(expectedArgs))
     }
