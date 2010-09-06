@@ -234,8 +234,8 @@ const class InvokeExpr : Expr
   const Expr callee
   const Expr caller
   
-  new make(Int start, Int end, Expr callee, Expr caller, ExprId id)
-    : super(start, end, id, caller.resolvedType)
+  new make(Int start, Int end, Expr callee, Expr caller, ExprId id, Bool safe := false)
+    : super(start, end, id, safe ? caller.resolvedType?.toNullable : caller.resolvedType)
   {
     this.callee = callee
     this.caller = caller
@@ -245,13 +245,13 @@ const class InvokeExpr : Expr
     : this.make(start, end, callee, caller, ExprId.staticInvoke) {}
   
   new staticSafeInvoke(Int start, Int end, Expr callee, Expr caller)
-    : this.make(start, end, callee, caller, ExprId.staticSafeInvoke) {}
+    : this.make(start, end, callee, caller, ExprId.staticSafeInvoke, true) {}
   
   new dynamicInvoke(Int start, Int end, Expr callee, Expr caller)
     : this.make(start, end, callee, caller, ExprId.dynamicInvoke) {}
   
   new dynamicSafeInvoke(Int start, Int end, Expr callee, Expr caller)
-    : this.make(start, end, callee, caller, ExprId.dynamicSafeInvoke) {}
+    : this.make(start, end, callee, caller, ExprId.dynamicSafeInvoke, true) {}
   
   override Void accept(AstVisitor v)
   {
