@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -73,6 +74,18 @@ public class AddFanNatureAction implements IObjectActionDelegate {
 									}
 								}
 							}
+							
+							// TODO: Is there a better place for this code?
+							if (!project.hasNature(getNature())) {
+							  IProjectDescription desc = project.getDescription();
+							  String[] nats = desc.getNatureIds();
+							  String[] newNats = new String[nats.length + 1];
+							  System.arraycopy(nats, 0, newNats, 0, nats.length);
+							  newNats[nats.length] = getNature();
+							  desc.setNatureIds(newNats);
+							  project.setDescription(desc, monitor);
+							}
+							
 							setInstallInterpreterBuildPath(project, monitor);
 							addSourceFolder("fan", DLTKCore.create(project));
 							FanProjectCreationWizard.createBuildFanFile(
