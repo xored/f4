@@ -204,7 +204,7 @@ const mixin IFanType : DltkModelElement
     dirty = inheritance.eachWhile |base|
     {
       type := ns.findType(base)
-      return excluded.contains(type?.qname) ? null : type?.internalFindSlot(name,ns,excluded)
+      return type == null ? null : (excluded.contains(type?.qname) ? null : type?.internalFindSlot(name,ns,excluded))
     }
     if (dirty != null || excluded.contains("sys::Obj"))
       return dirty
