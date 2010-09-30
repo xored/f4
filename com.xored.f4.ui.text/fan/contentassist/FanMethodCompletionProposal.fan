@@ -117,8 +117,9 @@ class FanMethodCompletionProposal : ScriptMethodCompletionProposal {
       buffer.add("|").add(" ")
       argumentOffset += 2
     } else {
-      buffer.add("|").add("->").add(returnType).add("|").add(" ")
-      argumentOffset += 6 + returnType.size
+//      buffer.add("|").add("->").add(returnType).add("|").add(" ")
+//      argumentOffset += 6 + returnType.size
+       argumentOffset += 1
     }
     
     buffer.add("{   }")

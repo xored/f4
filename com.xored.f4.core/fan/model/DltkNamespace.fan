@@ -92,7 +92,7 @@ internal class DltkNamespace : IFanNamespace
     {
       valueTypename := name[0..-3]
       valueType := findType(valueTypename)
-      return findType("sys::List").parameterize(["sys::V" : valueType])
+      return findType("sys::List")?.parameterize(["sys::V" : valueType])
     }
     if(ParseUtil.isMapType(name))
     {
