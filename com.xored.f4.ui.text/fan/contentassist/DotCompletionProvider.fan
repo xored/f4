@@ -27,7 +27,7 @@ class DotCompletionProvider : CompletionProvider
     if(ending == null) return false
     
     //TODO: improve, looks too similar to magic now
-    nodePos := pos - ending.size + (prefix.isEmpty ? 1 : 0)
+    nodePos := pos - ending.size +1//+ (prefix.isEmpty ? 1 : 0)
     path = AstFinder.find(unit, nodePos) 
     if(path.last is CType) return true
     if(path.last is Expr) return true
@@ -66,9 +66,12 @@ class DotCompletionProvider : CompletionProvider
     slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
     if(slotLiteral != null) return slotLiteral.resolvedType
     
-    typeLiteral := path.findLast(TypeLiteral#) as TypeLiteral
-    if(typeLiteral != null) return typeLiteral.resolvedType
-    
+//    typeLiteral := path.findLast(TypeLiteral#) as TypeLiteral
+//    if(typeLiteral != null) return typeLiteral.resolvedType
+//    
+    if(prefix != "") {
+      return  path[-2]->resolvedType
+    }
     return path.last->resolvedType
     
   }
