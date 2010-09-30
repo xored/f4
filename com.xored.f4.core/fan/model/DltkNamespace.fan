@@ -111,7 +111,7 @@ internal class DltkNamespace : IFanNamespace
             valueTypename := cutName[i + 1..-1]
             keyType := findType(keyTypename)
             valueType := findType(valueTypename)
-            return findType("sys::Map").parameterize(["sys::K" : keyType, "sys::V" : valueType])
+            return findType("sys::Map")?.parameterize(["sys::K" : keyType, "sys::V" : valueType])
           }
         }
       }
