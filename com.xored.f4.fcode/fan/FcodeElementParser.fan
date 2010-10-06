@@ -111,6 +111,9 @@ class BinaryElementVisitor : FcodeVisitor
   {
     info := MethodInfo()
     info.name = method.name
+    if(method.isGetter || method.isSetter || method.name.contains("\$")) {
+      return
+    }
     
     info.modifiers = FcodeUtil.flagsFcodeToDltk(method.flags)
     info.setExceptionTypes
@@ -127,25 +130,9 @@ class BinaryElementVisitor : FcodeVisitor
     info.setParameterTypes(paramTypes)
     info.setParameterInitializers(method.fparams.map{ it.hasDefault ? "<init>" : null } as Str?[])
 
-    //This is a special call to filter some methods
-    //we don't want in model
-    if(isDisabled(info, method.fparent.name)) return
-    
     requestor.enterMethod(info)
     requestor.exitMethod(0)
   }
   
   override Void endVisitType() { requestor.exitType(0) }
-  
-  private Bool isDisabled(MethodInfo info, Str type)
-  {
-    //List.fcode for some reason contains method Void size(Int it)
-    if(
-       type == "List" &&
-       info.name == "size" && 
-       info.returnType.endsWith("Void") &&
-       info.parameterNames.first == "it") 
-      return true
-    return false
-  }
 }
