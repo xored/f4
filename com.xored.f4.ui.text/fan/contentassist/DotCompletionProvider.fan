@@ -61,19 +61,18 @@ class DotCompletionProvider : CompletionProvider
     return true
   }
   
+  private Node getNode(AstPath path) {
+    slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
+    if(slotLiteral != null) return slotLiteral
+    
+    if(prefix != "") {
+      return  path[-2]
+    }
+    return path.last
+  }
   private IFanType? getType(AstPath path)
   {
-    slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
-    if(slotLiteral != null) return slotLiteral.resolvedType
-    
-//    typeLiteral := path.findLast(TypeLiteral#) as TypeLiteral
-//    if(typeLiteral != null) return typeLiteral.resolvedType
-//    
-    if(prefix != "") {
-      return  path[-2]->resolvedType
-    }
-    return path.last->resolvedType
-    
+    return getNode(path)->resolvedType
   }
   
   
@@ -97,8 +96,8 @@ class DotCompletionProvider : CompletionProvider
   ** 
   private Bool isStatic()
   {
-    //TODO: verify
-    path.last is StaticTargetExpr  || path.last is CType
+    node := getNode(path)
+    return node is StaticTargetExpr || node is CType
   }
   
   private |IFanSlot->Bool| filter()
