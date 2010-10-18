@@ -155,7 +155,11 @@ class Parser : AstFactory
     s["modifiers"] = modifiers
 
     isEnum  := false
-    if (matchAndConsume(Token.mixinKeyword)) {}
+    if (matchAndConsume(Token.mixinKeyword)) 
+    {
+      Modifiers m := s["modifiers"]
+      s.replace("modifiers", Modifiers.make(m.start, pos, m.list.dup.add(Modifier.make(pos, pos + 6, ModifierId.Mixin))))
+    }
     else if (matchAndConsume(Token.enumKeyword))
     {
       consume(Token.classKeyword)

@@ -191,6 +191,9 @@ class FanToggleBreakpointAdapter : ScriptToggleBreakpointAdapter
     Closure? closure := path.findLast(Closure#)
     TypeDef? def := path.findLast(TypeDef#)
     if (closure == null) {
+      if(def != null && def.modifiers.list.any { it.id == ModifierId.Mixin }) {
+        return "$def.name.text\$"
+      }
       return def?.name?.text      
     } else {
       MethodDef? method := path.findLast(MethodDef#)
