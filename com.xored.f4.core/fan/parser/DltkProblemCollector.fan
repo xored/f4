@@ -25,6 +25,7 @@ const class DltkProblem : Problem, IProblem, IDltkProblem
   override Int getSourceStart() {return start}
   override Bool isError() {return severity === Severity.err}
   override Bool isWarning() {return severity === Severity.warn}
+  override Bool isTask() { return false }
   override Void setSourceEnd(Int sourceEnd) {}
   override Void setSourceLineNumber(Int lineNumber) {}
   override Void setSourceStart(Int sourceStart) {}
