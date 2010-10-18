@@ -41,13 +41,10 @@ const class ContainerResetter : Actor
   {
     try
     {
-      
-    
       project := (msg as Unsafe).val as IProject
-      echo("resetting container for $project.getName")
-    scriptProject := DLTKCore.create(project)
-    DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
-     .initialize(containerPath(scriptProject), scriptProject)
+      scriptProject := DLTKCore.create(project)
+      DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
+        .initialize(containerPath(scriptProject), scriptProject)
       
     } catch(Err e)
     {
