@@ -223,6 +223,8 @@ class CompileFan : IScriptBuilder
       result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
     }
     
+    //uncomment if necessary 
+    //result.setAll(fp.depends)
     return result
   }
   

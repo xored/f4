@@ -70,11 +70,13 @@ class InterpreterContainer :
         return
       }
       
-      if (project.getProject.hasNature(PDE_NATURE)) {
-        file := findPdePod(podName)
-        if (file != null)
-          entries.add(DLTKCore.newLibraryEntry(Path(file)))
-      } else {
+//Ivan: Commented out the detection of pod location via extension points
+//      since it is running before the train. 
+//      if (project.getProject.hasNature(PDE_NATURE)) {
+//        file := findPdePod(podName)
+//        if (file != null)
+//          entries.add(DLTKCore.newLibraryEntry(Path(file)))
+//      } else {
         lib := libraries.find |IBuildpathEntry l -> Bool| {
           l.getPath.removeFileExtension.lastSegment == podName
         }
@@ -82,7 +84,7 @@ class InterpreterContainer :
           entries.add(copyLib(lib))
           return
         }
-      }
+//      }
     }
     librariesList.clear
     entries.each { librariesList.add(it) }
