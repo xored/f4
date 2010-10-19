@@ -205,7 +205,7 @@ const class FantomProject
       bp.getEntryKind == IBuildpathEntry.BPE_SOURCE
     }.map |IBuildpathEntry bp -> Uri|
     {
-      Uri.fromStr(bp.getPath.segments[1..-1].join("/")).plusSlash
+      bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
     }, baseDir.uri)
   }
   
