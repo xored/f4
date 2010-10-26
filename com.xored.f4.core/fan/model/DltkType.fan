@@ -97,7 +97,7 @@ internal const class DltkType : IFanType, Flags
   
   override DltkType parameterize(Str:IFanType parametrization)
   {
-    return DltkType(pod, me as IType, [:].addAll(this.parametrization).addAll(parametrization))
+    return DltkType(pod, me, [:].addAll(this.parametrization).addAll(parametrization))
   }
 
   **

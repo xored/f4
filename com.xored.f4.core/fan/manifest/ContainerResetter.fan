@@ -57,7 +57,7 @@ const class ContainerResetter : Actor
     return null
   }
   
-  private IPath containerPath(IScriptProject project) 
+  private IPath? containerPath(IScriptProject project) 
   { 
     IBuildpathEntry? entry := project.getRawBuildpath.find |IBuildpathEntry entry->Bool|
     {

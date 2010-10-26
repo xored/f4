@@ -65,7 +65,7 @@ internal class MethodVarFinder : AstVisitor
   override Bool enterNode(Node node)
   {    
     if (node.start >= pos) return false
-    if (node is LocalDef) locals.add(node as MethodVar)
+    if (node is LocalDef) locals.add((MethodVar)node)
     return true
   } 
 }

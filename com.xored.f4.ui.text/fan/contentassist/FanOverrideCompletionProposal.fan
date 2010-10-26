@@ -21,10 +21,7 @@ class FanOverrideCompletionProposal : ScriptTypeCompletionProposal, ICompletionP
 
     fDTLKProject= jproject
     
-    StringBuffer buffer := StringBuffer()
-    buffer.append(completionProposal)    
-    
-    setReplacementString(buffer.toString())    
+    setReplacementString(completionProposal ?: "")    
   }
 
   override CharSequence? getPrefixCompletionText(IDocument? document, Int completionOffset) {

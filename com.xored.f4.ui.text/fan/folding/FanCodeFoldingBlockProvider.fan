@@ -51,7 +51,7 @@ class FanCodeFoldingBlockProvider : IFoldingBlockProvider
   private IFanNamespace getNamespace(IFoldingContent? content) {
     project := content?.getModelElement?.getScriptProject?.getProject
     if(project == null) return EmptyNamespace()
-    if (!project?.isOpen) return EmptyNamespace()
+    if (!(project?.isOpen ?: false)) return EmptyNamespace()
     return FantomProjectManager.instance[project].ns
   }
   

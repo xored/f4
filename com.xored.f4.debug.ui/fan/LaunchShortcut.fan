@@ -84,7 +84,7 @@ class LaunchShortcut : AbstractScriptLaunchShortcut
     attrs.each |v, k|
     {
       if(v is Str) wc.setAttribute(k, v as Str)
-      else if (v is Bool) wc.setAttribute(k, v as Bool)
+      else if (v is Bool) wc.setAttribute(k, (Bool)v)
       else if (v is Int) wc.setAttribute(k, v as Int)
       else if(v == null) wc.setAttribute(k, null as Str)
     }

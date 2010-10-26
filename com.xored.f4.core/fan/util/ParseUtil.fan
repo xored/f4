@@ -96,7 +96,7 @@ class ParseUtil
   ** 
   static Bool isFuncType(Str type)
   {
-    return type[0] == '|'
+    return type.chars.first == '|'
   }
   
   static Bool isNullableType(Str type)
