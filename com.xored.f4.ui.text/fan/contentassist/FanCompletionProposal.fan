@@ -2,7 +2,7 @@ using [java] org.eclipse.dltk.ui
 using [java] org.eclipse.dltk.ui.text.completion
 using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
-using [java] com.xored.fanide.internal.ui
+using "[java]com.xored.fanide.internal.ui"
 using [java] com.xored.f4.ui.text
 
 public class FanCompletionProposal : ScriptCompletionProposalBridge {

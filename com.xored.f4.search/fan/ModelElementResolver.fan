@@ -1,5 +1,5 @@
 using [java]org.eclipse.dltk.core
-using [java]org.eclipse.dltk.internal.core::SourceRange
+using "[java]org.eclipse.dltk.internal.core"::SourceRange
 using f4parser
 
 class ModelElementResolver : IModelElementVisitor

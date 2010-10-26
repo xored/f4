@@ -10,8 +10,8 @@ using [java] org.eclipse.dltk.core::IModelElement
 using [java] org.eclipse.dltk.core.model.binary::IBinaryElementParser
 using [java] org.eclipse.dltk.core.model.binary::IBinaryModule
 
-using [java] com.xored.fanide.internal.core.model::PodModule
-using [java] com.xored.fanide.internal.core.model::PodFragment
+using "[java]com.xored.fanide.internal.core.model"::PodModule
+using "[java]com.xored.fanide.internal.core.model"::PodFragment
 
 using [java] org.eclipse.dltk.compiler::IBinaryElementRequestor
 using [java]org.eclipse.dltk.compiler::IElementRequestor$FieldInfo as FieldInfo

@@ -191,12 +191,12 @@ class CompileFan : IScriptBuilder
     input.summary     = fp.summary
     input.mode        = CompilerInputMode.file
     input.baseDir     = fp.baseDir
-    input.srcDirs     = fp.srcDirs
-    input.resDirs     = fp.resDirs
+    input.srcFiles    = fp.srcDirs
+    input.resFiles    = fp.resDirs
     input.index       = fp.index
     input.outDir      = fp.outDir
     input.output      = CompilerOutputMode.podFile
-    input.jsDirs      = fp.jsDirs
+    input.jsFiles     = fp.jsDirs
 
     compile(input).each |err| 
     {

@@ -32,14 +32,14 @@ using [java] org.eclipse.dltk.core::IDLTKLanguageToolkit
 using [java] org.eclipse.dltk.core::IParameter
 using [java] org.eclipse.dltk.core.model.binary::BinaryMember
 using [java] org.eclipse.dltk.core.model.binary::BinaryMethod
-using [java] org.eclipse.dltk.internal.ui.editor::EditorUtility
-using [java] org.eclipse.dltk.internal.ui.editor::IScriptEditor
-using [java] org.eclipse.dltk.internal.ui.editor::ScriptOutlinePage
+using "[java]org.eclipse.dltk.internal.ui.editor"::EditorUtility
+using "[java]org.eclipse.dltk.internal.ui.editor"::IScriptEditor
+using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptOutlinePage
 
 using [java] com.xored.fanide.core::FanLanguageToolkit
-using [java] com.xored.fanide.internal.core.model::PodModule
-using [java] com.xored.fanide.internal.ui.editor::FanOutlinePage
-using [java] com.xored.fanide.internal.ui::FanUI
+using "[java]com.xored.fanide.internal.core.model"::PodModule
+using "[java]com.xored.fanide.internal.ui.editor"::FanOutlinePage
+using "[java]com.xored.fanide.internal.ui"::FanUI
 
 using f4fcode::FcodeReader
 using f4fcode::FcodeVisitor

@@ -3,8 +3,8 @@ using [java] org.eclipse.core.resources
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui
 using [java] org.eclipse.jdt.core
-using [java] org.eclipse.jdt.internal.core
-using [java] org.eclipse.jdt.internal.ui.packageview
+using "[java]org.eclipse.jdt.internal.core"
+using "[java]org.eclipse.jdt.internal.ui.packageview"
 using [java] org.eclipse.jdt.ui
 using [java] org.eclipse.jface.viewers
 using [java] org.eclipse.swt.graphics

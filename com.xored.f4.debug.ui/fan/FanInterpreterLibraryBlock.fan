@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev Jun 1, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.debug.ui.interpreters
+using "[java]org.eclipse.dltk.internal.debug.ui.interpreters"
 using [java] org.eclipse.jface.dialogs
 using [java] org.eclipse.jface.viewers
 using [java] org.eclipse.jface.viewers::DelegatingStyledCellLabelProvider$IStyledLabelProvider as IStyledLabelProvider

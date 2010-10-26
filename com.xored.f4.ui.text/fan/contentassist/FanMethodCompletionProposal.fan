@@ -17,7 +17,7 @@ using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
 using [java] org.eclipse.jface.text
 
-using [java] com.xored.fanide.internal.ui
+using "[java]com.xored.fanide.internal.ui"
 
 using f4model
 using f4parser

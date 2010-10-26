@@ -10,6 +10,8 @@ using [java]org.eclipse.dltk.core::IScriptModel
 using [java]org.eclipse.dltk.core::IScriptProject
 using [java]org.eclipse.dltk.core::DLTKCore
 using [java]org.eclipse.core.resources::ResourcesPlugin
+
+using concurrent
 **
 **
 **

@@ -11,10 +11,10 @@ using [java] org.eclipse.debug.core.sourcelookup
 using [java] org.eclipse.debug.core.sourcelookup.containers
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui
-using [java] org.eclipse.dltk.internal.ui.editor
+using "[java]org.eclipse.dltk.internal.ui.editor"
 using [java] org.eclipse.jdt.launching.sourcelookup.containers
 using [java] org.eclipse.debug.ui
-using [java] org.eclipse.debug.internal.ui
+using "[java]org.eclipse.debug.internal.ui"
 using [java] org.eclipse.ui
 using [java] org.eclipse.ui.part
 

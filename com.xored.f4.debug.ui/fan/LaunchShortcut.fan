@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev May 31, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.debug.ui.launcher
+using "[java]org.eclipse.dltk.internal.debug.ui.launcher"
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.debug.ui
 using [java] org.eclipse.core.resources

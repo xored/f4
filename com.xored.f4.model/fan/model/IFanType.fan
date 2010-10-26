@@ -204,7 +204,7 @@ const mixin IFanType : DltkModelElement
     dirty = inheritance.eachWhile |base|
     {
       type := ns.findType(base)
-      return type == null ? null : (excluded.contains(type?.qname) ? null : type?.internalFindSlot(name,ns,excluded))
+      return type == null ? null : (excluded.contains(type.qname) ? null : type?.internalFindSlot(name,ns,excluded))
     }
     if (dirty != null || excluded.contains("sys::Obj"))
       return dirty
@@ -224,10 +224,11 @@ const mixin IFanType : DltkModelElement
     //deep search
     if (!excluded.contains("sys::Obj"))
       ns.findType("sys::Obj")?.addSlotsTo(ns,map,excluded)
-    inheritance.each
+    inheritance.each |t|
     {
-      type := ns.findType(it)
-      if (!excluded.contains(type?.qname))
+      type := ns.findType(t)
+      if(type == null) return
+      if (!excluded.contains(type.qname))
         type?.addSlotsTo(ns,map,excluded)
     }
     map.setAll(slotsMap)

@@ -1,4 +1,4 @@
-using [java]org.eclipse.dltk.internal.ui.text
+using "[java]org.eclipse.dltk.internal.ui.text"
 using [java]org.eclipse.core.runtime
 using [java]org.eclipse.dltk.core
 using [java]org.eclipse.ui.progress
