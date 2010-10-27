@@ -6,8 +6,11 @@
 //   Ivan Inozemtsev May 17, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.core::ISearchPatternProcessor
+using f4core
 using [java] org.eclipse.dltk.core.search::AbstractSearchFactory
+using [java] org.eclipse.dltk.core.search::SearchPatternProcessor as DltkSearchPatternProcessor
+using [java] org.eclipse.dltk.core::ISearchPatternProcessor
+using [java] org.eclipse.dltk.core::ISearchPatternProcessor$ITypePattern as ITypePattern
 using [java] fanx.interop::CharArray
 
 **************************************************************************
@@ -24,57 +27,81 @@ class SearchFactory : AbstractSearchFactory
   }
 }
 
+
+**************************************************************************
+** FanTypePattern
+**************************************************************************
+class FanTypePattern : ITypePattern
+{
+  new make(Str pattern) 
+  {
+    podTypeMethod := SearchPatternProcessor.podTypeMethod(pattern)
+    getQualificatin = podTypeMethod.first
+    getSimpleName = podTypeMethod.getSafe(1, "unrecognized")
+    
+  }
+  override once CharArray? qualification() {
+    SearchPatternProcessor.nullOrArray(getQualificatin)
+  }
+  
+  override once CharArray? simpleName() {
+    SearchPatternProcessor.nullOrArray(getSimpleName)
+  }
+  override Str? getQualificatin
+  override Str? getSimpleName
+}
 **************************************************************************
 ** SearchPatternProcessor
 **************************************************************************
-class SearchPatternProcessor : ISearchPatternProcessor
+class SearchPatternProcessor : DltkSearchPatternProcessor
 {
   private static const Str podType := "::"
   private static const Str typeMethod := "."
   
-  override Str? getDelimiterReplacementString := "."
-  
+  override ITypePattern? parseType(Str? pattern) { FanTypePattern(pattern ?: "unrecognized") }
   ** podName from podName::typeName.methodName
   override CharArray? extractDeclaringTypeQualification(Str? pattern)
   {
-    if(!pattern.contains(podType)) return null
-    return toCharArray(pattern[0..<pattern.index(podType)])
+    nullOrArray(podTypeMethod(pattern).first)
   }
   
   ** typeName from podName::typeName.methodName
   override CharArray? extractDeclaringTypeSimpleName(Str? pattern)
   {
-    if(!pattern.contains(typeMethod)) return null
-    start := pattern.index(podType)?.plus(2) ?: 0
-    end := pattern.indexr(typeMethod) 
-    return toCharArray(pattern[start..<end])
+    nullOrArray(podTypeMethod(pattern).getSafe(1))
   }
   
   ** methodName from [podName::]typeName.methodName
   override CharArray? extractSelector(Str? pattern)
   {
-    result := pattern[(pattern.indexr(typeMethod)?.plus(1) ?: 0)..-1]
-    return toCharArray(result)
+    nullOrArray(podTypeMethod(pattern).getSafe(2))
   }
   
-  ** podName from podName::typeName
-  override CharArray? extractTypeQualification(Str? pattern)
-  {
-    if(!pattern.contains(podType)) return null
-    return toCharArray(pattern[0..<pattern.index(podType)])
-  }
+  static CharArray? nullOrArray(Str? s) { s == null ? null : InteropUtil.toCharArray(s.chars) }
   
-  ** typeName from podName::typeName
-  override Str? extractTypeChars(Str? pattern)
+  static Str?[] podTypeMethod(Str? pattern)
   {
-    pattern[(pattern.indexr(podType) ?: 0)..-1]
-  }
-  
-  
-  private static CharArray toCharArray(Str str)
-  {
-    result := CharArray(str.size)
-    str.each |ch, i| { result[i] = ch }
-    return result
+    if(pattern == null) return [,]
+    Str? pod
+    Str? type
+    Str? method
+
+    podIndex := pattern.index(podType)
+    if(podIndex != null)
+    {
+      pod = pattern[0..<podIndex]
+      pattern = pattern[(podIndex + podType.size)..-1]
+    }
+    
+    methodIndex := pattern.index(typeMethod)
+    if(methodIndex != null) 
+    {
+      method = pattern[(methodIndex + typeMethod.size)..-1]
+      pattern = pattern[0..<methodIndex]
+    }
+    
+    type = pattern
+
+    return [pod, type, method]
   }
 }
