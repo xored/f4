@@ -36,18 +36,18 @@ class FanTypePattern : ITypePattern
   new make(Str pattern) 
   {
     podTypeMethod := SearchPatternProcessor.podTypeMethod(pattern)
-    getQualificatin = podTypeMethod.first
+    getQualification = podTypeMethod.first
     getSimpleName = podTypeMethod.getSafe(1, "unrecognized")
     
   }
   override once CharArray? qualification() {
-    SearchPatternProcessor.nullOrArray(getQualificatin)
+    SearchPatternProcessor.nullOrArray(getQualification)
   }
   
   override once CharArray? simpleName() {
     SearchPatternProcessor.nullOrArray(getSimpleName)
   }
-  override Str? getQualificatin
+  override Str? getQualification
   override Str? getSimpleName
 }
 **************************************************************************
