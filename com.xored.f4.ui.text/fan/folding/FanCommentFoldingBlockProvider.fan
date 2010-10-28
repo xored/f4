@@ -13,8 +13,8 @@ using [java]org.eclipse.dltk.ui.text.folding::IFoldingBlockRequestor
 using [java]org.eclipse.dltk.ui.text.folding::PartitioningFoldingBlockProvider
 using [java]org.eclipse.dltk.ui.text::IPartitioningProvider
 using [java]org.eclipse.jface.preference::IPreferenceStore
-using [java]com.xored.fanide.internal.ui.text::IFanPartitions
-using [java]com.xored.fanide.internal.ui::FanUI
+using "[java]com.xored.fanide.internal.ui.text"::IFanPartitions
+using "[java]com.xored.fanide.internal.ui"::FanUI
 using [java]org.eclipse.jface.text::Document
 using [java]org.eclipse.dltk.ui.text.folding::IFoldingBlockKind
 using [java]org.eclipse.jface.text::IRegion

@@ -1,6 +1,6 @@
 using [java] org.eclipse.dltk.ui.text
 using [java] org.eclipse.dltk.ui.text.completion
-using [java] com.xored.fanide.internal.ui
+using "[java]com.xored.fanide.internal.ui"
 
 class FanContentAssistPreference : ContentAssistPreference {
 

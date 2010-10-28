@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev Jun 1, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.debug.ui.interpreters
+using "[java]org.eclipse.dltk.internal.debug.ui.interpreters"
 using f4core
 **
 **

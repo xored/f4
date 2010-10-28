@@ -13,7 +13,7 @@ using [java] org.eclipse.debug.core.sourcelookup.containers
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.jdt.debug.core
 
-using [java] com.xored.fanide.internal.core.model
+using "[java]com.xored.fanide.internal.core.model"
 using [java] java.lang::Class
 using [java] java.io::File as JavaFile
 using f4core

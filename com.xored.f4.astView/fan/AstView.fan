@@ -7,7 +7,7 @@ using [java]org.eclipse.swt.widgets
 using [java]org.eclipse.jface.viewers
 using [java]org.eclipse.dltk.ui
 using [java]org.eclipse.dltk.core
-using [java]com.xored.fanide.internal.ui.editor
+using "[java]com.xored.fanide.internal.ui.editor"
 
 class AstView : ViewPart, IPartListener
 { 

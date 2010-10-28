@@ -68,8 +68,8 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
     PerformanceNode rpm := RuntimePerformanceMonitor.begin
     this.requestor.beginReporting
     
-    ns := ParseUtil.ns(sourceModule as ISourceModule)
-    cunit := ParseUtil.parse(sourceModule as ISourceModule)
+    ns := ParseUtil.ns((ISourceModule)sourceModule)
+    cunit := ParseUtil.parse((ISourceModule)sourceModule)
     content := sourceModule.getSourceContents
 
     try

@@ -16,7 +16,7 @@ using [java] org.eclipse.core.resources
 using [java] org.eclipse.dltk.core.search
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.debug.ui
-using [java] org.eclipse.dltk.internal.ui.editor
+using "[java]org.eclipse.dltk.internal.ui.editor"
 using [java] com.xored.fanide.core
 using f4core
 

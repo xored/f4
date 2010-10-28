@@ -41,7 +41,7 @@ class SelectionEngine : ISelectionEngine
     else if(node is SlotRef) return selectSlotRef(node)
     else if(node is SlotDef) return selectSlotDef(path)
     else if(node is MethodVarRef) return selectMethodVarRef(node)
-    else if(node is MethodVar) return selectMethodVar(node as MethodVar)
+    else if(node is MethodVar) return selectMethodVar((MethodVar)node)
     else if(node is Expr) return selectExpr(node)
     else if(ignored.any { node.typeof.fits(it) }) return IModelElement[,] //don't care about blocks
     else 

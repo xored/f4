@@ -14,7 +14,7 @@ using [java] org.eclipse.core.resources::IProject
 using [java] org.eclipse.dltk.testing
 using [java] org.eclipse.dltk.testing.model
 using [java] org.eclipse.dltk.core
-using [java] org.eclipse.dltk.internal.launching
+using "[java]org.eclipse.dltk.internal.launching"
 using [java] org.eclipse.jface.action::IAction
 using [java] org.eclipse.jface.action::Action
 using [java] java.lang::Class

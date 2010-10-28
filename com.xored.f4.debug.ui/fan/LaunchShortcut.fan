@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev May 31, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.debug.ui.launcher
+using "[java]org.eclipse.dltk.internal.debug.ui.launcher"
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.debug.ui
 using [java] org.eclipse.core.resources
@@ -84,7 +84,7 @@ class LaunchShortcut : AbstractScriptLaunchShortcut
     attrs.each |v, k|
     {
       if(v is Str) wc.setAttribute(k, v as Str)
-      else if (v is Bool) wc.setAttribute(k, v as Bool)
+      else if (v is Bool) wc.setAttribute(k, (Bool)v)
       else if (v is Int) wc.setAttribute(k, v as Int)
       else if(v == null) wc.setAttribute(k, null as Str)
     }

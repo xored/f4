@@ -17,7 +17,7 @@ using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
 using [java] org.eclipse.jface.text
 
-using [java] com.xored.fanide.internal.ui
+using "[java]com.xored.fanide.internal.ui"
 
 using f4model
 using f4parser
@@ -49,7 +49,7 @@ class FanMethodCompletionProposal : ScriptMethodCompletionProposal {
     setCursorPosition(buffer.toString.size + 1)
     
     // check if last param is Func
-    lastClosure := ParseUtil.isFuncType(params.last?.of) ? params.last : null
+    lastClosure := ParseUtil.isFuncType(params.last?.of ?: "") ? params.last : null
     if(lastClosure != null) params = params[0..-2]
     
     argumentOffset := 0

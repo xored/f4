@@ -8,8 +8,8 @@
 
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.core.runtime
-using [java] org.eclipse.dltk.internal.debug.ui.interpreters
-using [java] org.eclipse.dltk.internal.ui.actions
+using "[java]org.eclipse.dltk.internal.debug.ui.interpreters"
+using "[java]org.eclipse.dltk.internal.ui.actions"
 using [java] org.eclipse.dltk.ui.util
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jface.dialogs

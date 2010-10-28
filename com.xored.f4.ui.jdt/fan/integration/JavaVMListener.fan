@@ -2,7 +2,7 @@ using [java] java.lang
 using [java] java.lang.reflect
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.core.runtime
-using [java] org.eclipse.dltk.internal.ui.actions
+using "[java]org.eclipse.dltk.internal.ui.actions"
 using [java] org.eclipse.dltk.ui.util
 using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.jface.dialogs
@@ -40,7 +40,7 @@ const class JavaVMListener : IVMInstallChangedListener {
     Shell shell := PlatformUI.getWorkbench?.getActiveWorkbenchWindow().getShell()
     if (FanBuildUtils.doBuildDialog(null, shell)) {
       WorkbenchRunnableAdapter op := WorkbenchRunnableAdapter(
-        |IProgressMonitor? monitor ->| { 
+        |IProgressMonitor? monitor| { 
           FanBuildUtils.processChanges(null, monitor)
         })
       try {

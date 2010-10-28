@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev Jun 1, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.debug.ui.interpreters
+using "[java]org.eclipse.dltk.internal.debug.ui.interpreters"
 using [java] org.eclipse.swt.widgets::Shell
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.core.runtime

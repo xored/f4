@@ -11,14 +11,14 @@ using [java] org.eclipse.swt::SWT
 using [java] org.eclipse.swt.graphics::Color
 using [java] org.eclipse.swt.graphics::RGB
 using [java] org.eclipse.jface.text::TextAttribute
-using [java] org.eclipse.dltk.internal.ui.text::DLTKColorManager
+using "[java]org.eclipse.dltk.internal.ui.text"::DLTKColorManager
 using [java] org.eclipse.dltk.ui::DLTKUIPlugin
 using [java] org.eclipse.dltk.ui::PreferenceConstants
 using [java] org.eclipse.dltk.ui.text::IColorManagerExtension
 using [java] org.eclipse.jface.preference::PreferenceConverter
 
-using [java] com.xored.fanide.internal.ui::FanUI
-using [java] com.xored.fanide.internal.ui.text::FanColorConstants
+using "[java]com.xored.fanide.internal.ui"::FanUI
+using "[java]com.xored.fanide.internal.ui.text"::FanColorConstants
 
 **
 ** FcodeFontStyle

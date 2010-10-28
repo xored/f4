@@ -47,7 +47,7 @@ class FandocProvider : ScriptDocumentationProviderBridge
   {
     type(member)?.slots?.find |n|
     {
-      name(n as Node).text == member.getElementName
+      name((Node)n).text == member.getElementName
     } as Node
   }
   

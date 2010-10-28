@@ -6,8 +6,8 @@
 //   ivaninozemtsev Apr 29, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.dltk.internal.launching::AbstractInterpreterInstallType
-using [java] org.eclipse.dltk.internal.launching::AbstractInterpreterInstallType$ILookupRunnable as ILookupRunnable
+using "[java]org.eclipse.dltk.internal.launching"::AbstractInterpreterInstallType
+using "[java]org.eclipse.dltk.internal.launching"::AbstractInterpreterInstallType$ILookupRunnable as ILookupRunnable
 using [java] org.eclipse.dltk.launching::IInterpreterInstall
 using [java] org.eclipse.dltk.core.environment::IDeployment
 using [java] org.eclipse.core.runtime::IPath

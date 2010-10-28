@@ -12,6 +12,8 @@ using [java]org.eclipse.dltk.core::IScriptProject
 using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.core.runtime::IPath
+
+using concurrent
 **
 ** Listens for Build.fan changes and updates container
 ** Automatically groups update requests by project
@@ -55,7 +57,7 @@ const class ContainerResetter : Actor
     return null
   }
   
-  private IPath containerPath(IScriptProject project) 
+  private IPath? containerPath(IScriptProject project) 
   { 
     IBuildpathEntry? entry := project.getRawBuildpath.find |IBuildpathEntry entry->Bool|
     {

@@ -1,6 +1,6 @@
 using f4parser
 using [java]org.eclipse.dltk.core.search
-using [java]org.eclipse.dltk.internal.core.search.matching
+using "[java]org.eclipse.dltk.internal.core.search.matching"
 
 class MethodPredicate : IPredicate
 {

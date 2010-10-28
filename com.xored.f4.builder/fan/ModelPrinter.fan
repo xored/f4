@@ -7,7 +7,7 @@
 //
 
 using [java]org.eclipse.dltk.core
-using [java]com.xored.fanide.internal.core.model
+using "[java]com.xored.fanide.internal.core.model"
 **
 **
 **

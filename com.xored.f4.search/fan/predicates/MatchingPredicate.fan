@@ -3,7 +3,7 @@ using [java]java.lang
 using [java]org.eclipse.dltk.core
 using [java]org.eclipse.dltk.core.search
 using [java]org.eclipse.dltk.core.search.matching2
-using [java]org.eclipse.dltk.internal.core.search.matching
+using "[java]org.eclipse.dltk.internal.core.search.matching"
 
 class MatchingPredicate : AbstractMatchingPredicate
 {

@@ -13,7 +13,7 @@ using [java] java.util::HashMap as JHashMap
 using [java] org.eclipse.core.runtime
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.core.search
-using [java] org.eclipse.dltk.internal.core
+using "[java]org.eclipse.dltk.internal.core"
 
 using f4core
 using f4parser
