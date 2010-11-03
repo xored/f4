@@ -20,7 +20,6 @@ using [java]org.eclipse.dltk.compiler.problem::DefaultProblem
 using [java]org.eclipse.dltk.compiler.problem::ProblemSeverities
 using [java]org.eclipse.dltk.core
 using [java]org.eclipse.dltk.core.builder
-using [java]org.eclipse.dltk.core.builder::IScriptBuilder$DependencyResponse as DependencyResponse
 using [java]org.eclipse.core.filesystem::URIUtil
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.launching::JavaRuntime
@@ -45,55 +44,48 @@ class CompileFan : IScriptBuilder
   ** 
   ** @param project
   **
-  override Void initialize(IScriptProject? project)
+  override Bool initialize(IScriptProject? project)
   {
-    //do nothing
+    return true
   }
 
-  **
-  ** Called for each resource required to build. Only resources with specified
-  ** project nature are here.
-  ** 
-  override IStatus? buildResources(IScriptProject? project, JList? resList,
-      IProgressMonitor? monitor, Int status)
+  override Void prepare(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
   {
-    if(!building)
+    
+  }
+
+  override Void build(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
+  {
+    fp := fantomProject(change.getScriptProject)
+    //buildPod(fp)
+    allProjects := FantomProjectManager.instance.listProjects
+    projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
+    projectsToBuild.sort |FantomProject a, FantomProject b -> Int|
     {
-      fp := fantomProject(project)
-      if(buildRequired(fp, resList.toArray)) buildPod(fp)
+      //b depends on a
+      if(allDependents(a,allProjects).contains(b)) return -1
+      //a depends on b
+      else if(allDependents(b,allProjects).contains(a)) return 1
+      return 0
+    }.each 
+    { 
+      buildPod(it) 
     }
-    return Status(IStatus.OK, pluginId, "OK")
   }
   
+  override Void clean(IScriptProject? project, IProgressMonitor? monitor)
+  {
+    clearMarkers(project.getProject)
+  } 
+
+  override Void endBuild(IScriptProject? project, IProgressMonitor? monitor) 
+  {
+    reporters.vals.each { it.flush }
+    reporters.clear
+    building = false
+  }
+
   
-  **
-  ** Return all dependencies for selected resource. Should also return all
-  ** dependencies of returned elements.
-  ** 
-  ** For example if c depends on b and b depends on a, and we ask for
-  ** dependencies or a, then b and c should be returned.
-  ** 
-  ** Resources should be checked for type. Because different kind of resource
-  ** could be here.
-  ** 
-  ** @param buildType
-  **            build type {@link #FULL_BUILD} or {@link #INCREMENTAL_BUILD}
-  ** @param localElements
-  **            changed source modules
-  ** @param externalElements
-  **            newly added external source modules
-  ** @param oldExternalFolders
-  **            old external fragments
-  ** @param externalFolders
-  **            new external fragments
-  ** @return <code>null</code> if there are no dependencies found,
-  **         {@link DependencyResponse#FULL_LOCAL_BUILD} to promote to the
-  **         full build, or the result of
-  **         {@link DependencyResponse#create(Set)}
-  **
-  override DependencyResponse? getDependencies(IScriptProject? project, Int buildType,
-      JSet? localElements, JSet? externalElements, JSet? oldExternalFolders,
-      JSet? externalFolders)  { return null }
 
   private FantomProject[] allDependents(FantomProject project, FantomProject[] allProjects)
   {
@@ -116,30 +108,13 @@ class CompileFan : IScriptBuilder
       }
     }
   }
-  **
-  ** @see IncrementalProjectBuilder
-  ** 
-  override Void clean(IScriptProject? project, IProgressMonitor? monitor)
-  {
-    clearMarkers(project.getProject)
-  } 
-
-  **
-  ** Reset after a build session
-  ** 
-  override Void endBuild(IScriptProject? project, IProgressMonitor? monitor) 
-  {
-    reporters.vals.each { it.flush }
-    reporters.clear
-    building = false
-  }
   
   static const Str pluginId := "com.xored.f4.builder"
   **
   ** Called for each resource required to build. Only resources with specified
   ** project nature are here.
   ** 
-  override IStatus? buildModelElements(IScriptProject? project, JList? elements,
+  IStatus? buildModelElements(IScriptProject? project, JList? elements,
       IProgressMonitor? monitor, Int status)
   {
     allProjects := FantomProjectManager.instance.listProjects
@@ -266,7 +241,7 @@ class CompileFan : IScriptBuilder
   {
     FantomProjectManager.instance[project.getProject]
   }
-  private Bool buildRequired(FantomProject project, IResource[] resources)
+  private Bool buildRequired(FantomProject project, IFile[] resources)
   {
     resources.any |res|
     {
