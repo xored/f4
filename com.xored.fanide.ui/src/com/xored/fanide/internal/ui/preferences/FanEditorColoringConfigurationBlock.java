@@ -40,25 +40,40 @@ public class FanEditorColoringConfigurationBlock extends
 	private static final String PREVIEW_FILE_NAME = "PreviewFile.txt";
 
 	private static final String[][] fSyntaxColorListModel = new String[][] {
+		
+			//Documentation
 			{ FanPreferencesMessages.FanEditorPreferencePage_documentation,
 					FanPreferenceConstants.EDITOR_DOC_COLOR,
 					sDocumentationCategory },
+
+			//Comments
 			{ FanPreferencesMessages.FanEditorPreferencePage_multiLineComment,
 					FanPreferenceConstants.EDITOR_MULTI_LINE_COMMENT_COLOR,
 					sCommentsCategory },
+					
 			{ PreferencesMessages.DLTKEditorPreferencePage_singleLineComment,
 					FanPreferenceConstants.EDITOR_SINGLE_LINE_COMMENT_COLOR,
 					sCommentsCategory },
+					
 			{ PreferencesMessages.DLTKEditorPreferencePage_CommentTaskTags,
-					FanPreferenceConstants.COMMENT_TASK_TAGS, sCommentsCategory },
-			{
-					FanPreferencesMessages.FanEditorPreferencePage_interpreterStringComment,
+					FanPreferenceConstants.COMMENT_TASK_TAGS, 
+					sCommentsCategory },
+					
+			{ FanPreferencesMessages.FanEditorPreferencePage_interpreterStringComment,
 					FanPreferenceConstants.COMMENT_INTERPRETER_STRING,
 					sCommentsCategory },
+					
+					
+			//Core		
+			
+			//Fantom-specifi
 			{ FanPreferencesMessages.FanEditorPreferencePage_dsl,
 					FanPreferenceConstants.EDITOR_DSL_COLOR, sCoreCategory },
+					
+			//Java-like
 			{ PreferencesMessages.DLTKEditorPreferencePage_keywords,
 					FanPreferenceConstants.EDITOR_KEYWORD_COLOR, sCoreCategory },
+			
 			{ PreferencesMessages.DLTKEditorPreferencePage_returnKeyword,
 					FanPreferenceConstants.EDITOR_KEYWORD_RETURN_COLOR,
 					sCoreCategory },
@@ -69,25 +84,39 @@ public class FanEditorColoringConfigurationBlock extends
 			{ PreferencesMessages.DLTKEditorPreferencePage_numbers,
 					FanPreferenceConstants.EDITOR_NUMBER_COLOR, sCoreCategory },
 
-			{ PreferencesMessages.DLTKEditorPreferencePage_decorators,
-					FanPreferenceConstants.EDITOR_DECORATOR_COLOR,
-					sCoreCategory },
-
+		
 			{ PreferencesMessages.DLTKEditorPreferencePage_class_colors,
 					FanPreferenceConstants.EDITOR_CLASS_DEFINITION_COLOR,
 					sCoreCategory },
-
 			{ PreferencesMessages.DLTKEditorPreferencePage_function_colors,
 					FanPreferenceConstants.EDITOR_FUNCTION_DEFINITION_COLOR,
 					sCoreCategory },
-
-			{ PreferencesMessages.DLTKEditorPreferencePage_variables,
-					FanPreferenceConstants.EDITOR_VARIABLE_COLOR, sCoreCategory },
+			
+			{ "Local Var Refs",
+					FanPreferenceConstants.EDITOR_VAR_REF_COLOR, sCoreCategory },
+			
+			{ "Local Var Defs",
+					FanPreferenceConstants.EDITOR_VAR_DEF_COLOR, sCoreCategory },
+			{ "Parameters",
+					FanPreferenceConstants.EDITOR_PARAM_COLOR, sCoreCategory },
+				
 			{ FanPreferencesMessages.FanEditorPreferencePage_fields,
 					FanPreferenceConstants.EDITOR_FIELD_COLOR, sCoreCategory },
 			{ FanPreferencesMessages.FanEditorPreferencePage_static_fields,
 					FanPreferenceConstants.EDITOR_STATIC_FIELD_COLOR,
-					sCoreCategory } };
+					sCoreCategory },
+			{ FanPreferencesMessages.FanEditorPreferencePage_methods,
+					FanPreferenceConstants.EDITOR_METHOD_COLOR, sCoreCategory },
+			{ FanPreferencesMessages.FanEditorPreferencePage_static_methods,
+					FanPreferenceConstants.EDITOR_STATIC_METHOD_COLOR,
+					sCoreCategory },
+			//WTFs
+			{ PreferencesMessages.DLTKEditorPreferencePage_decorators,
+					FanPreferenceConstants.EDITOR_DECORATOR_COLOR,
+					sCoreCategory }
+		};
+	
+	
 
 	public FanEditorColoringConfigurationBlock(OverlayPreferenceStore store) {
 		super(store);

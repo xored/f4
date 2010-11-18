@@ -552,66 +552,23 @@ public class FanPreferenceConstants extends PreferenceConstants {
 	/*
 	 * Variables
 	 */
-	/**
-	 * A named preference that holds the color used to render VARIABLE.
-	 * <p>
-	 * Value is of type <code>String</code>. A RGB color value encoded as a
-	 * string using class <code>PreferenceConverter</code>
-	 * </p>
-	 * 
-	 * @see org.eclipse.jface.resource.StringConverter
-	 * @see org.eclipse.jface.preference.PreferenceConverter
-	 */
-	public final static String EDITOR_VARIABLE_COLOR = FanColorConstants.FAN_VARIABLE;
-
-	/**
-	 * A named preference that controls whether VARIABLE are rendered in bold.
-	 * <p>
-	 * Value is of type <code>Boolean</code>. If <code>true</code> single line
-	 * comments are rendered in bold. If <code>false</code> the are rendered
-	 * using no font style attribute.
-	 * </p>
-	 */
-	public final static String EDITOR_VARIABLE_BOLD = FanColorConstants.FAN_VARIABLE
-			+ EDITOR_BOLD_SUFFIX;
-
-	/**
-	 * A named preference that controls whether VARIABLE are rendered in italic.
-	 * <p>
-	 * Value is of type <code>Boolean</code>. If <code>true</code> single line
-	 * comments are rendered in italic. If <code>false</code> the are rendered
-	 * using no italic font style attribute.
-	 * </p>
-	 */
-	public final static String EDITOR_VARIABLE_ITALIC = FanColorConstants.FAN_VARIABLE
-			+ EDITOR_ITALIC_SUFFIX;
-
-	/**
-	 * A named preference that controls whether single line comments are
-	 * rendered in strikethrough.
-	 * <p>
-	 * Value is of type <code>Boolean</code>. If <code>true</code> single line
-	 * comments are rendered in strikethrough. If <code>false</code> the are
-	 * rendered using no italic font style attribute.
-	 * </p>
-	 */
-	public final static String EDITOR_VARIABLE_STRIKETHROUGH = FanColorConstants.FAN_VARIABLE
-			+ EDITOR_STRIKETHROUGH_SUFFIX;
-
-	/**
-	 * A named preference that controls whether VARIABLE are rendered in
-	 * underline.
-	 * <p>
-	 * Value is of type <code>Boolean</code>. If <code>true</code> single line
-	 * comments are rendered in underline. If <code>false</code> the are
-	 * rendered using no italic font style attribute.
-	 * </p>
-	 * 
-	 * 
-	 */
-
-	public final static String EDITOR_VARIABLE_UNDERLINE = FanColorConstants.FAN_VARIABLE
-			+ EDITOR_UNDERLINE_SUFFIX;
+	public final static String EDITOR_VAR_REF_COLOR = FanColorConstants.FAN_VAR_REF;
+	public final static String EDITOR_VAR_REF_BOLD = FanColorConstants.FAN_VAR_REF + EDITOR_BOLD_SUFFIX;
+	public final static String EDITOR_VAR_REF_ITALIC = FanColorConstants.FAN_VAR_REF + EDITOR_ITALIC_SUFFIX;
+	public final static String EDITOR_VAR_REF_STRIKETHROUGH = FanColorConstants.FAN_VAR_REF + EDITOR_STRIKETHROUGH_SUFFIX;
+	public final static String EDITOR_VAR_REF_UNDERLINE = FanColorConstants.FAN_VAR_REF + EDITOR_UNDERLINE_SUFFIX;
+	
+	public final static String EDITOR_VAR_DEF_COLOR = FanColorConstants.FAN_VAR_DEF;
+	public final static String EDITOR_VAR_DEF_BOLD = FanColorConstants.FAN_VAR_DEF + EDITOR_BOLD_SUFFIX;
+	public final static String EDITOR_VAR_DEF_ITALIC = FanColorConstants.FAN_VAR_DEF + EDITOR_ITALIC_SUFFIX;
+	public final static String EDITOR_VAR_DEF_STRIKETHROUGH = FanColorConstants.FAN_VAR_DEF + EDITOR_STRIKETHROUGH_SUFFIX;
+	public final static String EDITOR_VAR_DEF_UNDERLINE = FanColorConstants.FAN_VAR_DEF + EDITOR_UNDERLINE_SUFFIX;
+	
+	public final static String EDITOR_PARAM_COLOR = FanColorConstants.FAN_PARAM;
+	public final static String EDITOR_PARAM_BOLD = FanColorConstants.FAN_PARAM + EDITOR_BOLD_SUFFIX;
+	public final static String EDITOR_PARAM_ITALIC = FanColorConstants.FAN_PARAM + EDITOR_ITALIC_SUFFIX;
+	public final static String EDITOR_PARAM_STRIKETHROUGH = FanColorConstants.FAN_PARAM + EDITOR_STRIKETHROUGH_SUFFIX;
+	public final static String EDITOR_PARAM_UNDERLINE = FanColorConstants.FAN_PARAM + EDITOR_UNDERLINE_SUFFIX;
 
 	// fields
 
@@ -642,6 +599,19 @@ public class FanPreferenceConstants extends PreferenceConstants {
 
 	public final static String EDITOR_FOLDING_INIT_IMPORTS = "fan_folding_init_imports";
 
+	public final static String EDITOR_METHOD_COLOR = FanColorConstants.FAN_METHOD;
+	public final static String EDITOR_METHOD_BOLD = FanColorConstants.FAN_METHOD + EDITOR_BOLD_SUFFIX;
+	public final static String EDITOR_METHOD_ITALIC = FanColorConstants.FAN_METHOD + EDITOR_ITALIC_SUFFIX;
+	public final static String EDITOR_METHOD_STRIKETHROUGH = FanColorConstants.FAN_METHOD + EDITOR_STRIKETHROUGH_SUFFIX;
+	public final static String EDITOR_METHOD_UNDERLINE = FanColorConstants.FAN_METHOD + EDITOR_UNDERLINE_SUFFIX;
+	
+	public final static String EDITOR_STATIC_METHOD_COLOR = FanColorConstants.FAN_STATIC_METHOD;
+	public final static String EDITOR_STATIC_METHOD_BOLD = FanColorConstants.FAN_STATIC_METHOD + EDITOR_BOLD_SUFFIX;
+	public final static String EDITOR_STATIC_METHOD_ITALIC = FanColorConstants.FAN_STATIC_METHOD + EDITOR_ITALIC_SUFFIX;
+	public final static String EDITOR_STATIC_METHOD_STRIKETHROUGH = FanColorConstants.FAN_STATIC_METHOD + EDITOR_STRIKETHROUGH_SUFFIX;
+	public final static String EDITOR_STATIC_METHOD_UNDERLINE = FanColorConstants.FAN_STATIC_METHOD + EDITOR_UNDERLINE_SUFFIX;
+	
+	
 	public static void initializeDefaultValues(IPreferenceStore store) {
 		PreferenceConstants.initializeDefaultValues(store);
 
@@ -677,7 +647,7 @@ public class FanPreferenceConstants extends PreferenceConstants {
 				new RGB(0, 0, 0));
 
 		PreferenceConverter.setDefault(store,
-				FanPreferenceConstants.EDITOR_VARIABLE_COLOR,
+				FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
 				new RGB(200, 0, 0));
 		PreferenceConverter.setDefault(store,
 				FanPreferenceConstants.EDITOR_FIELD_COLOR, new RGB(0, 0, 200));
@@ -754,6 +724,10 @@ public class FanPreferenceConstants extends PreferenceConstants {
 		store.setDefault(
 				PreferenceConstants.CODEASSIST_AUTOACTIVATION_TRIGGERS, ".");
 		store.setDefault(CODEGEN_ADD_COMMENTS, false);
+		
+		PreferenceConverter.setDefault(store, EDITOR_METHOD_COLOR, new RGB(0, 128, 128));
+		PreferenceConverter.setDefault(store, EDITOR_STATIC_METHOD_COLOR, new RGB(0, 128, 128));
+		store.setDefault(EDITOR_STATIC_METHOD_ITALIC, true);
 	}
 
 	protected static void initializeFoldingDefaults(IPreferenceStore store) {

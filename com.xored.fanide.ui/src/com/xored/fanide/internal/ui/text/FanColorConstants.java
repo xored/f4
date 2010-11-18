@@ -76,10 +76,21 @@ public final class FanColorConstants {
 	public static final String FAN_DECORATOR = "DLTK_decorator";
 
 	/**
-	 * The color key for Fantom variable (value <code>"fan_variable"</code>).
+	 * The color key for Fantom local variable reference
 	 */
-	public static final String FAN_VARIABLE = "fan_variable"; //$NON-NLS-1$
+	public static final String FAN_VAR_REF = "fan_var_ref"; //$NON-NLS-1$
+	
+	/**
+	 * The color key for Fantom local variable definition
+	 */
+	public static final String FAN_VAR_DEF = "fan_var_def"; //$NON-NLS-1$
+	
 
+	/**
+	 * The color key for Fantom parameter def or ref
+	 */
+	public static final String FAN_PARAM = "fan_param"; //$NON-NLS-1$
+	
 	/**
 	 * The color key for Fantom field.
 	 */
@@ -95,5 +106,15 @@ public final class FanColorConstants {
 	 */
 	public static final String FAN_TODO_TAG = DLTKColorConstants.TASK_TAG;
 	public static final String FAN_INTERPRETER_STRING = "FAN_interpreter_string";
+	
+	/**
+	 * The color key for Fantom method
+	 */
+	public static final String FAN_METHOD = "fan_method"; //$NON-NLS-1$
+	
+	/**
+	 * The color key for Fantom static method
+	 */
+	public static final String FAN_STATIC_METHOD = "fan_static_method"; //$NON-NLS-1$
 
 }

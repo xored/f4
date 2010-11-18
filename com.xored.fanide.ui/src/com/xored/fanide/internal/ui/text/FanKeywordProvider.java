@@ -46,6 +46,7 @@ public final class FanKeywordProvider {
 	public final static String KEYWORD_FALSE = "false";
 	public final static String KEYWORD_IS = "is";
 	public final static String KEYWORD_ISNOT = "isnot";
+	public final static String KEYWORD_FACET = "facet";
 
 	public static String[] getKeywords() {
 		return new String[] { KEYWORD_ABSTRACT, KEYWORD_NATIVE, KEYWORD_ONCE,
@@ -72,6 +73,7 @@ public final class FanKeywordProvider {
 				KEYWORD_IF, KEYWORD_ELSE, KEYWORD_RETURN, KEYWORD_THROW,
 				KEYWORD_WHILE, KEYWORD_TRY, KEYWORD_CATCH, KEYWORD_FINALLY,
 				KEYWORD_SWITCH, KEYWORD_CASE, KEYWORD_DEFAULT, KEYWORD_TRUE,
-				KEYWORD_FALSE, KEYWORD_IS, KEYWORD_ISNOT };
+				KEYWORD_FALSE, KEYWORD_IS, KEYWORD_ISNOT,
+				KEYWORD_FACET };
 	}
 }

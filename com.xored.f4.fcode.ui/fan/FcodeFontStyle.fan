@@ -82,7 +82,7 @@ internal class FcodeFontStyle
   static const Str field := FanColorConstants.FAN_FIELD
   static const Str staticField := FanColorConstants.FAN_STATIC_FIELD
   static const Str functionDefinition := FanColorConstants.FAN_FUNCTION_DEFINITION
-  static const Str variable :=  FanColorConstants.FAN_VARIABLE
+  static const Str variable :=  FanColorConstants.FAN_VAR_REF
   static const Str num := FanColorConstants.FAN_NUMBER
   static const Str str := FanColorConstants.FAN_STRING
   static const Str comment := FanColorConstants.FAN_SINGLE_LINE_COMMENT

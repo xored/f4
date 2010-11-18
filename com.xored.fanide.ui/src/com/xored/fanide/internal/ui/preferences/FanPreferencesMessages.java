@@ -39,6 +39,9 @@ public class FanPreferencesMessages extends NLS {
 	public static String FanEditorPreferencePage_fields;
 
 	public static String FanEditorPreferencePage_static_fields;
+	
+	public static String FanEditorPreferencePage_methods;
+	public static String FanEditorPreferencePage_static_methods;
 
 	public static String SourceAttachmentPropertyPage_noarchive_message;
 	public static String SourceAttachmentPropertyPage_invalid_container;
