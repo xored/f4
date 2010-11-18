@@ -7,12 +7,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Composite;
 
 import com.xored.fanide.internal.ui.FanUI;
+import com.xored.fanide.internal.ui.FanUILanguageToolkit;
 
 public class FanMergeViewer extends ScriptMergeViewer {
 
 	public FanMergeViewer(Composite parent, CompareConfiguration configuration) {
-		super(parent, configuration);
-		// TODO Auto-generated constructor stub
+		super(parent, configuration, FanUILanguageToolkit.getInstance());
 	}
 
 	@Override
