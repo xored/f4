@@ -168,7 +168,7 @@ class FanSourcesTests : Test, UnixExecutableCutter
         && f.name != "gamma.fan"
         && f.name != "test.fan") 
       {
-        echo(++i + " : " + f)
+        echo("${++i} : $f")
         Str content := f.readAllStr
         start := DateTime.now
         collector := ProblemCollector.make

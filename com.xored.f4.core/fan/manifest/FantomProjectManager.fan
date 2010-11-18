@@ -71,7 +71,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener
   {
     send([#doInit, Unsafe([,])].toImmutable)
   }
-  FantomProject? get(IProject project) { send([#doGet, Unsafe([project])].toImmutable).get }
+  @Operator FantomProject? get(IProject project) { send([#doGet, Unsafe([project])].toImmutable).get }
   
   FantomProject? getByPod(Str podName) { send([#doGetByPod, Unsafe([podName])].toImmutable).get }
   

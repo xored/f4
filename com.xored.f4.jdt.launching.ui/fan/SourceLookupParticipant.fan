@@ -42,7 +42,7 @@ class SourceLookupParticipant : AbstractSourceLookupParticipant
     if(sourceName == null) return null
     
     //strip 1st two elements
-    return File.os(sourceName).uri.sliceToPathAbs(2..-1).plusSlash.toStr
+    return File.os(sourceName).uri.getRangeToPathAbs(2..-1).plusSlash.toStr
   }
   
   private static Obj? getClas(Str name)

@@ -12,7 +12,7 @@ class RuleState
     this.tokenPos = tokenPos
   }  
   
-  Obj get(Str key)
+  @Operator Obj get(Str key)
   {
     res := store[key]
     if (res == null) throw Err("No $key found")
@@ -23,7 +23,7 @@ class RuleState
   
   Void replace(Str key, Obj? val) {store[key] = val}
   
-  Void set(Str key, Obj? val)
+  @Operator Void set(Str key, Obj? val)
   {
     was := store[key]
     if (was == null) store[key] = val

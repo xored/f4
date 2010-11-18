@@ -26,7 +26,7 @@ const class AstPath
   //////////////////////////////////////////////////////////////////////////
   // Convenience methods
   //////////////////////////////////////////////////////////////////////////
-  Node get(Int index) { nodes[index] }
+  @Operator Node get(Int index) { nodes[index] }
   Node? last() { nodes.last }
   Node? find(Type t) { nodes.find { it.typeof === t} }
   Node[] findAll(Type t) { nodes.findAll { it.typeof === t} } 

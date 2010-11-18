@@ -46,7 +46,7 @@ class FanTestProcessor : ITestingProcessor
     if (line.startsWith("-- Run:")) {
       if (state != STATE_NORMAL) finishTest()
       testID = ++index
-      testName = line.slice(9 ..< line.indexr("..."))
+      testName = line[9 ..<line.indexr("...")]
       client.testTree(testID, testName, false, 0)
       client.testStarted(testID, testName)
       session.setTotalCount(testID)
@@ -68,9 +68,8 @@ class FanTestProcessor : ITestingProcessor
     switch (state) {
     case STATE_TEST_FAILED:
       try {
-        resultActual = line.slice(line.index("Test failed: ")
-            + "Test failed: ".size .. line.index(" != "))
-        resultExpected = line.slice(line.index(" != ") + 4 .. -1)
+        resultActual = line[line.index("Test failed: ") + "Test failed: ".size .. line.index(" != ")]
+        resultExpected = line[line.index(" != ") + 4 ..-1]
         client.testActual(resultActual)
         client.testExpected(resultExpected)
       } catch (Err e) {
