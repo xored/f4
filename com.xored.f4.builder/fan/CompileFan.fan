@@ -24,7 +24,6 @@ using [java]org.eclipse.core.filesystem::URIUtil
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.launching::JavaRuntime
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
-using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.dltk.launching::LibraryLocation
 using [java]com.xored.fanide.core.utils::FanProjectUtils
 **************************************************************************
@@ -57,6 +56,7 @@ class CompileFan : IScriptBuilder
   override Void build(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
   {
     fp := fantomProject(change.getScriptProject)
+    
     //buildPod(fp)
     allProjects := FantomProjectManager.instance.listProjects
     projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
@@ -143,64 +143,11 @@ class CompileFan : IScriptBuilder
   {
     building = true
     clearMarkers(fp.project)
-    if(fp.hasErrs)
-    {
-      reportProjectErrs(fp)
-      return
-    }
-    
-    if(!fp.isInterpreterSet)
-    {
-      reportInterpreterErrors(fp)
-      return
-    }
-    
-    buf := StrBuf()
-    input := CompilerInput.make
-    input.log         = CompilerLog(buf.out)
-    input.podName     = fp.podName
-    input.version     = fp.version
-    input.ns          = F4Namespace(getAllPods(fp), fp.classpath)
-    input.depends     = fp.rawDepends.dup
-    input.includeDoc  = true
-    input.summary     = fp.summary
-    input.mode        = CompilerInputMode.file
-    input.baseDir     = fp.baseDir
-    input.srcFiles    = fp.srcDirs
-    input.resFiles    = fp.resDirs
-    input.index       = fp.index
-    input.outDir      = fp.outDir
-    input.output      = CompilerOutputMode.podFile
-    input.jsFiles     = fp.jsDirs
-
-    compile(input).each |err| 
+    InternalBuilder(fp).build.each |err| 
     {
       reportErr(err, fp.project) 
     }
     refreshPod(fp)
-  }
-  
-  private static [Str:File] getAllPods(FantomProject fp)
-  {
-    result :=  [:]
-    
-    //add interpreter libraries
-    libLocs := ScriptRuntime.getLibraryLocations(fp.getInterpreterInstall) as LibraryLocation[]
-    libLocs.each 
-    {
-      file := PathUtil.resolveLocalPath(it.getLibraryPath())
-      result[file.basename] = file
-    }
-    
-    //add workspace pods
-    FantomProjectManager.instance.listProjects.each |FantomProject p|
-    {
-      result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
-    }
-    
-    //uncomment if necessary 
-    //result.setAll(fp.depends)
-    return result
   }
   
   private Void refreshPod(FantomProject project)
@@ -218,22 +165,6 @@ class CompileFan : IScriptBuilder
     }
   }
   
-  private CompilerErr[] compile(CompilerInput input)
-  {
-    caughtErrs := CompilerErr[,]
-    compiler := Compiler(input)
-    try { compiler.compile } 
-    catch(CompilerErr e) 
-    {
-      caughtErrs.add(e) 
-    }
-    catch(Err e)
-    {
-      e.trace
-    }
-    return [compiler.errs, compiler.warns, caughtErrs].flatten.unique
-  }
-
   //////////////////////////////////////////////////////////////////////////
   // Helper methods
   //////////////////////////////////////////////////////////////////////////
@@ -269,42 +200,6 @@ class CompileFan : IScriptBuilder
   }
   
   private Str:ProblemReporter reporters := [Str:ProblemReporter][:]
-  
-  private Void reportErrs(ProblemReporter r, ProjectErr[] errs)
-  {
-    l := r.resource.getLocation.toString
-    errs.each 
-    {
-      r.reportProblem(
-        DefaultProblem(
-            l,
-            it.msg,
-            0, 
-            Str[,],
-            ProblemSeverities.Error,
-            -1,
-            -1,
-            it.line,
-            -1
-          )
-        )
-    }
-  }
-  private Void reportProjectErrs(FantomProject project)
-  {
-    p := project.project
-    reportErrs(reporters.getOrAdd(p.getLocationURI.toString) |->Obj| { ProblemReporter(p) }, project.projectErrs)
-    f := project.project.getFile(Manifest.filename)
-    reportErrs(reporters.getOrAdd(f.getLocationURI.toString) |->Obj| { ProblemReporter(f) }, project.buildfanErrs)
-    
-  }
-  
-  private Void reportInterpreterErrors(FantomProject project)
-  {
-    err := ProjectErr("Interpreter is not configured")
-    p := project.project
-    reportErrs(reporters.getOrAdd(p.getLocationURI.toString) |->Obj| { ProblemReporter(p) }, [err])
-  }
   
   private Void reportErr(CompilerErr err, IProject project)
   {

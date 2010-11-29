@@ -59,7 +59,8 @@ class LaunchConfigDelegate : AbstractScriptLaunchConfigurationDelegate
   {
     Str className := config.getAttribute(LaunchConsts.fanClass, "")
     Str projectName := config.getAttribute(LaunchConsts.fanProject, "")
-    if(projectName.isEmpty) return className
+    Bool useClassOnly := config.getAttribute(LaunchConsts.useClassOnly, false)
+    if(projectName.isEmpty || useClassOnly) return className
 
     podName := FantomProjectManager.instance[ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)].podName
     if(className.isEmpty) return podName
