@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.fantom.pod">
+      <pod
+            location="/f4builderUI.pod"
+            name="f4builderUI">
+      </pod>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+         <page
+              category="com.xored.fanide.ui.preferences"
+              class="org.fantom.FanExtension:f4builderUI::CompilerPreferencePage"
+              id="com.xored.fanide.ui.preferences.compiler"
+              name="Compiler"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+         <page
+         	  category="com.xored.fanide.ui.propertyPage"
+          	  class="org.fantom.FanExtension:f4builderUI::CompilerPreferencePage"
+              id="com.xored.fanide.ui.propertyPage.compiler"
+              name="Compiler">
+		      <enabledWhen>
+		        <adapt type="org.eclipse.core.resources.IProject">
+		          <test property="org.eclipse.core.resources.projectNature" value="com.xored.fanide.core.nature"/>
+		        </adapt>         
+		      </enabledWhen>
+         </page>    
+   </extension>
+
+</plugin>

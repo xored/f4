@@ -143,13 +143,17 @@ class CompileFan : IScriptBuilder
   {
     building = true
     clearMarkers(fp.project)
-    InternalBuilder(fp).build.each |err| 
+    createBuilder(fp).build.each |err| 
     {
       reportErr(err, fp.project) 
     }
     refreshPod(fp)
   }
   
+  private Builder createBuilder(FantomProject fp)
+  {
+    BuilderPrefs.get.isUseExternalBuilder ? ExternalBuilder(fp) : InternalBuilder(fp) 
+  }
   private Void refreshPod(FantomProject project)
   {
     if(project.rawOutDir == null || project.rawOutDir.isAbs) return
