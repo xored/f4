@@ -1,16 +1,33 @@
+using f4core
 using [java]org.eclipse.core.runtime.preferences::AbstractPreferenceInitializer
-using [java]org.eclipse.core.runtime::Preferences
+using [java]org.eclipse.core.resources::IProject
 using [java]com.xored.fanide.core::FanCore
+using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 class BuilderPrefs
 {
   static const Str useExternalBuilder := "useExternalBuilder"
+
+  private PreferencesLookupDelegate delegate
+  private Str qualifier := FanCore.PLUGIN_ID
+  private IProject project
+  private new make(IProject project) 
+  { 
+    this.project = project
+    delegate = PreferencesLookupDelegate(project)
+  }
   
-  private Preferences prefs
-  private new make(Preferences prefs) { this.prefs = prefs }
   
-  static BuilderPrefs get() { BuilderPrefs(FanCore.getDefault.getPluginPreferences) }
+  static BuilderPrefs get(FantomProject proj) 
+  {
+    return BuilderPrefs(proj.project) 
+  }
   
-  Bool isUseExternalBuilder() { prefs.getBoolean(useExternalBuilder) }
+  Bool isUseExternalBuilder() 
+  { 
+    delegate.getBoolean(qualifier, useExternalBuilder)
+  }
+  
+  
 }
 
 class BuilderPrefsInitializer : AbstractPreferenceInitializer
