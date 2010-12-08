@@ -106,8 +106,13 @@ class FanHyperlink
     pos = (result.index(".") ?: result.index(" ")) ?: result.index("(")
     
     if(pos != null) result = result[0..<pos]
-    return result
+    return normalizeName(result)
   }
+  
+  **
+  ** Strip $
+  ** 
+  private static Str normalizeName(Str typeName) { typeName.endsWith("\$") ? typeName[0..-2] : typeName }
   
   public once Int lineNumber()
   {
