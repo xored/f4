@@ -26,6 +26,11 @@ using [java]org.eclipse.jdt.launching::JavaRuntime
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.dltk.launching::LibraryLocation
 using [java]com.xored.fanide.core.utils::FanProjectUtils
+
+using [java]org.eclipse.dltk.logconsole::ILogConsoleManager
+using [java]org.eclipse.dltk.logconsole::ILogConsole
+using [java]org.eclipse.dltk.logconsole::LogConsolePlugin
+using [java]org.eclipse.dltk.logconsole::LogConsoleType
 **************************************************************************
 ** CompileFan
 **************************************************************************
@@ -50,7 +55,6 @@ class CompileFan : IScriptBuilder
 
   override Void prepare(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
   {
-    
   }
 
   override Void build(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
@@ -143,13 +147,19 @@ class CompileFan : IScriptBuilder
   {
     building = true
     clearMarkers(fp.project)
-    createBuilder(fp).build.each |err| 
+    createBuilder(fp).build { writeToLog(it) }.each |err| 
     {
       reportErr(err, fp.project) 
     }
+    writeToLog //append empty line
     refreshPod(fp)
   }
   
+  private Void writeToLog(Str entry := "")
+  {
+    getConsole.println(entry.trimEnd)
+    
+  }
   private Builder createBuilder(FantomProject fp)
   {
     BuilderPrefs.get(fp).isUseExternalBuilder ? ExternalBuilder(fp) : InternalBuilder(fp) 
@@ -229,6 +239,19 @@ class CompileFan : IScriptBuilder
     project.deleteMarkers(F4Consts.buildProblem, true, IResource.DEPTH_INFINITE)
   }
   
+  private once ILogConsole getConsole() { console }
+  
   private Bool building := false
+  
+  public static ILogConsole console() 
+  {
+    LogConsolePlugin.getConsoleManager.getConsole(BuildConsole())
+  }
 }
 
+class BuildConsole : LogConsoleType
+{
+  new make() : super(CompileFan.pluginId) {}
+  
+  override Str? computeTitle(Obj? id) { "Fantom build" }
+}

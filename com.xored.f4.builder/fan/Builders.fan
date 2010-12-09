@@ -20,18 +20,18 @@ abstract class Builder
     this.fp = fp
   }
   
-  CompilerErr[] build()
+  CompilerErr[] build(|Str|? consumer := null)
   {
     configErrs := [
         fp.projectErrs.map { projectErr(it) }, 
         fp.buildfanErrs.map { projectErr(it) }, 
         interpreterErrs
       ].flatten
-    return configErrs.isEmpty ? buildPod : configErrs
+    return configErrs.isEmpty ? buildPod(consumer) : configErrs
   }
   
   
-  abstract CompilerErr[] buildPod()
+  abstract CompilerErr[] buildPod(|Str|? consumer)
   
   private CompilerErr buildFanErr(ProjectErr e) 
   {
@@ -82,7 +82,7 @@ class InternalBuilder : Builder
 {
   new make(FantomProject fp) : super(fp) {}
   
-  override CompilerErr[] buildPod()
+  override CompilerErr[] buildPod(|Str|? consumer)
   {
     buf := StrBuf()
     input := CompilerInput.make
@@ -118,11 +118,20 @@ class InternalBuilder : Builder
   }
 }
 
+class SpyCompilerLog : CompilerLog
+{
+  private |Str|? listener
+  new make(|Str|? listener, OutStream out := Env.cur.out) : super(out) 
+  {
+    this.listener = listener
+  }
+}
+
 class ExternalBuilder : Builder
 {
   new make(FantomProject fp) : super(fp) {}
   
-  override CompilerErr[] buildPod() 
+  override CompilerErr[] buildPod(|Str|? consumer) 
   {
     wc := TargetLaunchUtil.createFanLaunchConfig
     wc.setAttribute(LaunchConsts.skipAutosave, true)
@@ -137,9 +146,8 @@ class ExternalBuilder : Builder
     if(launch.getProcesses.isEmpty) return [,]
     process := launch.getProcesses.first as IProcess
     out := StrBuf()
-    process.getStreamsProxy.getOutputStreamMonitor.addListener |txt| {
-      out.add(txt)
-    }
+    process.getStreamsProxy.getOutputStreamMonitor.addListener |txt| { consumer?.call(txt); out.add(txt) }
+    process.getStreamsProxy.getErrorStreamMonitor.addListener |txt| { consumer?.call(txt); out.add(txt) }
     while(!process.isTerminated) Actor.sleep(25ms)
     return parseErrors(out.toStr)
   }

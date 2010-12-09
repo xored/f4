@@ -20,43 +20,55 @@ using [java]org.eclipse.swt.graphics::Font
 
 class CompilerPreferencePage : Base
 {
-  static const Str propertyPageId := "com.xored.fanide.ui.propertyPage.compiler"
-  static const Str preferencePageId := "com.xored.fanide.ui.preferences.compiler"
+  static const Str propertyPageId := "com.xored.f4.builder.ui.propertyPage.compiler"
+  static const Str preferencePageId := "com.xored.f4.builder.ui.preferences.compiler"
   override Str? getPropertyPageId := propertyPageId
   override Str? getPreferencePageId := preferencePageId
   override Str? getHelpId := null
   override Str? getProjectHelpId := null
   override protected Str? getDefaultDescription := "Fantom compiler preferences"
-  override protected IPreferenceStore? getDefaultPreferenceStore := PreferencesAdapter(FanCore.getDefault.getPluginPreferences)
+  override protected IPreferenceStore? getDefaultPreferenceStore := null
   override protected AbstractOptionsBlock? createOptionsBlock(
       IStatusChangeListener? context, 
       IProject? project,
       IWorkbenchPreferenceContainer? container
   ) {
-    CompilerOptionsBlock(context, project, preferenceKeys, container)
+    CompilerOptionsBlock(context, project, container)
   }
   
-  protected PreferenceKey[] preferenceKeys := [PreferenceKey(FanCore.PLUGIN_ID, BuilderPrefs.useExternalBuilder)]
 }
 
 class CompilerOptionsBlock : AbstractOptionsBlock
 {
-  new make(IStatusChangeListener? context,
-      IProject? project, PreferenceKey[] allKeys,
-      IWorkbenchPreferenceContainer? container) : super(context, project, allKeys, container) 
+  private static PreferenceKey useExternalBuilderKey()
   {
-    useExternalBuilder = allKeys.first
+    PreferenceKey(CompileFan.pluginId, BuilderPrefs.useExternalBuilder)
   }
   
-  protected PreferenceKey useExternalBuilder;
+  private static PreferenceKey buildDependantsKey()
+  {
+    PreferenceKey(CompileFan.pluginId, BuilderPrefs.buildDependants)
+  }
+  
+  private static PreferenceKey[] allKeys()
+  {
+    [useExternalBuilderKey, buildDependantsKey]
+  }
+  new make(IStatusChangeListener? context,
+      IProject? project, 
+      IWorkbenchPreferenceContainer? container) : super(context, project, allKeys, container) 
+  {
+  }
+  
   override protected Control? createOptionsBlock(Composite? parent)
   {
     composite := SWTFactory.createComposite(parent, parent.getFont, 1, 1, GridData.FILL_HORIZONTAL)
-    button := SWTFactory.createCheckButton(composite,
+    bindControl(SWTFactory.createCheckButton(composite,
       "Use external compiler", null,
-      false, 1);
-    bindControl(button, useExternalBuilder, null)
-
+      false, 1), useExternalBuilderKey, null)
+    bindControl(SWTFactory.createCheckButton(composite,
+      "Automatically build dependent projects", null,
+      false, 1), buildDependantsKey, null)
     return composite
   }
 }
