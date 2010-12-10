@@ -47,7 +47,6 @@ public class FanNewEnumWizard extends NewElementWizard {
 	
 	@Override
 	public boolean performFinish() {
-		warnAboutTypeCommentDeprecation();
 		boolean res= super.performFinish();
 		ISourceModule module = fPage.getCreatedOrModifiedModule();
 		if (res) {
