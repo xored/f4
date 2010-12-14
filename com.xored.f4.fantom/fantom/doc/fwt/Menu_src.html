@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::Menu</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='Menu.html'>Menu</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fwt::Menu</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Widget.html'>fwt::Widget</a>
+    <a href='MenuItem.html'>fwt::MenuItem</a>
+      fwt::Menu</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** Menu contains MenuItems.  Menu is also itself a MenuItem</span>
+<span class='z'>** when nested inside other Menus.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> collection = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>class</span> Menu : MenuItem
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>()</span> : <span class='k'>super</span>.make<span class='b'>()</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback function when menu is opened.  This callback</span>
+  <span class='z'>** provides a change to build a lazily populated menu.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**  - `EventId.open`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - none</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners <span id='onOpen'>onOpen</span>:= EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Open this menu as a popup at the coordinates relative to</span>
+  <span class='z'>** the parent widget.  This method blocks until the menu is</span>
+  <span class='z'>** closed.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> This <span id='open'>open</span><span class='b'>(</span>Widget parent, Point pos<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a menu item for the specified command.  Default</span>
+  <span class='z'>** implementation is to add an item without the icon.</span>
+  <span class='z'>**</span>
+  MenuItem <span id='addCommand'>addCommand</span><span class='b'>(</span>Command c<span class='b'>)</span>
+  <span class='b'>{</span>
+    item := MenuItem.makeCommand<span class='b'>(</span>c<span class='b'>)</span> <span class='b'>{</span> it.image = <span class='k'>null</span> <span class='b'>}</span>
+    add<span class='b'>(</span>item<span class='b'>)</span>
+    <span class='k'>return</span> item
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a separator to the menu.</span>
+  <span class='z'>**</span>
+  Void <span id='addSep'>addSep</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    item := MenuItem <span class='b'>{</span> it.mode = MenuItemMode.sep <span class='b'>}</span>
+    add<span class='b'>(</span>item<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> This <span id='add'>add</span><span class='b'>(</span>Widget? kid<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>kid isnot MenuItem<span class='b'>)</span>
+      <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"Child of Menu must be MenuItem, not ${Type.of(kid)}"</span><span class='b'>)</span>
+    <span class='k'>super</span>.add<span class='b'>(</span>kid<span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Menu.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#add'>add</a></li>
+  <li style='display: block;'><a href='#addCommand'>addCommand</a></li>
+  <li style='display: block;'><a href='#addSep'>addSep</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#onOpen'>onOpen</a></li>
+  <li style='display: block;'><a href='#open'>open</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

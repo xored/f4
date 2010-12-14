@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>obix::ObixMod</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>obix</a></li>
+  <li>&gt;</li>
+  <li><a href='ObixMod.html'>ObixMod</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract const class</h2>
+<h1>obix::ObixMod</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../web/WebMod.html'>web::WebMod</a>
+    obix::ObixMod</pre>
+</div>
+<div class='detail'>
+
+<p>ObixMod is an abstract base class that implements the standard plumbing for adding oBIX server side support. Standardized URIs handled by the base class:</p>
+
+<pre>{modBase}/xsl     debug style sheet
+{modBase}/about   about object
+{modBase}/batch   batch operation</pre>
+
+<p>All other URIs to the mod are automatically handled by the following callbacks:</p>
+
+<ul>
+<li>GET: <a href='ObixMod.html#onRead'>onRead</a></li>
+
+<li>PUT: <a href='ObixMod.html#onWrite'>onWrite</a></li>
+
+<li>POST: <a href='ObixMod.html#onInvoke'>onInvoke</a></li>
+</ul>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='about' class='method'>about<a href='ObixMod_src.html#about'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='ObixObj.html'>ObixObj</a> about()</code></p>
+
+<p>Get represenation of the About object.  Subclasses should override this to customize their about.  See <a href='ObixMod.html#make'>make</a> to customize vendor and product fields.</p>
+</dd>
+<dt id='aboutProductName' class='field hidden'>aboutProductName<a href='ObixMod_src.html#aboutProductName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Str.html'>Str</a> aboutProductName</code></p>
+</dd>
+<dt id='aboutProductUrl' class='field hidden'>aboutProductUrl<a href='ObixMod_src.html#aboutProductUrl'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Uri.html'>Uri</a> aboutProductUrl</code></p>
+</dd>
+<dt id='aboutProductVer' class='field hidden'>aboutProductVer<a href='ObixMod_src.html#aboutProductVer'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Str.html'>Str</a> aboutProductVer</code></p>
+</dd>
+<dt id='aboutServerName' class='field hidden'>aboutServerName<a href='ObixMod_src.html#aboutServerName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Str.html'>Str</a> aboutServerName</code></p>
+</dd>
+<dt id='aboutVendorName' class='field hidden'>aboutVendorName<a href='ObixMod_src.html#aboutVendorName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Str.html'>Str</a> aboutVendorName</code></p>
+</dd>
+<dt id='aboutVendorUrl' class='field hidden'>aboutVendorUrl<a href='ObixMod_src.html#aboutVendorUrl'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const private <a href='../sys/Uri.html'>Uri</a> aboutVendorUrl</code></p>
+</dd>
+<dt id='lobby' class='method'>lobby<a href='ObixMod_src.html#lobby'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='ObixObj.html'>ObixObj</a> lobby()</code></p>
+
+<p>Get represenation of the Lobby object.  Subclasses can override this to customize their lobby.</p>
+</dd>
+<dt id='make' class='method'>make<a href='ObixMod_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/Str.html'>Str</a>:<a href='../sys/Obj.html'>Obj</a> about := [Str:Obj][:])</code></p>
+
+<p>Construct with the given map for <code>obix:About</code> parameters:</p>
+
+<ul>
+<li>serverName: defaults to <code>Env.cur.host</code></li>
+
+<li>vendorName: defaults to "Fantom"</li>
+
+<li>vendorUrl: defaults to "http://fantom.org/"</li>
+
+<li>productName: defaults to "Fantom"</li>
+
+<li>productVersion: defaults to version of obix pod</li>
+
+<li>productUrl: defaults to "http://fantom.org/"</li>
+</ul>
+</dd>
+<dt id='onAbout' class='method hidden'>onAbout<a href='ObixMod_src.html#onAbout'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> onAbout()</code></p>
+</dd>
+<dt id='onInvoke' class='method'>onInvoke<a href='ObixMod_src.html#onInvoke'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='ObixObj.html'>ObixObj</a> onInvoke(<a href='../sys/Uri.html'>Uri</a> uri, <a href='ObixObj.html'>ObixObj</a> arg)</code></p>
+
+<p>Invoke the operation for the given URI and return the result. The URI is relative to the ObixMod base - see <code><a href='../web/WebReq.html#modRel'>web::WebReq.modRel</a></code> Throw UnresolvedErr if URI doesn't map to a valid operation.</p>
+</dd>
+<dt id='onLobby' class='method hidden'>onLobby<a href='ObixMod_src.html#onLobby'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> onLobby()</code></p>
+</dd>
+<dt id='onRead' class='method'>onRead<a href='ObixMod_src.html#onRead'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='ObixObj.html'>ObixObj</a> onRead(<a href='../sys/Uri.html'>Uri</a> uri)</code></p>
+
+<p>Return the ObixObj representation of the given URI for the application.  The URI is relative to the ObixMod base - see <code><a href='../web/WebReq.html#modRel'>web::WebReq.modRel</a></code>.  Throw UnresolvedErr if URI doesn't map to a valid object.  The resulting object must have its href set to the proper absolute URI according to 5.2 of the oBIX specification.</p>
+</dd>
+<dt id='onService' class='method'>onService<a href='ObixMod_src.html#onService'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onService()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../web/Weblet.html#onService'>web::Weblet.onService</a></p>
+<p>Doc inherited from <a href='../web/Weblet.html#onService'>web::Weblet.onService</a></p>
+</div>
+
+<p>Service a web request. The default implementation routes to <a href='../web/Weblet.html#onGet'>onGet</a>, <a href='../web/Weblet.html#onPost'>onPost</a>, etc based on the request's method.</p>
+</dd>
+<dt id='onWrite' class='method'>onWrite<a href='ObixMod_src.html#onWrite'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='ObixObj.html'>ObixObj</a> onWrite(<a href='../sys/Uri.html'>Uri</a> uri, <a href='ObixObj.html'>ObixObj</a> val)</code></p>
+
+<p>Write the value for the given URI and return the new representation.  The URI is relative to the ObixMod base - see <code><a href='../web/WebReq.html#modRel'>web::WebReq.modRel</a></code>.  Throw UnresolvedErr if URI doesn't map to a valid object.  Throw ReadonlyErr if URI doesn't map to a writable object.</p>
+</dd>
+<dt id='onXsl' class='method hidden'>onXsl<a href='ObixMod_src.html#onXsl'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> onXsl()</code></p>
+</dd>
+<dt id='readReqObj' class='method hidden'>readReqObj<a href='ObixMod_src.html#readReqObj'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='ObixObj.html'>ObixObj</a> readReqObj()</code></p>
+</dd>
+<dt id='writeResObj' class='method hidden'>writeResObj<a href='ObixMod_src.html#writeResObj'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> writeResObj(<a href='ObixObj.html'>ObixObj</a> obj)</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='ObixMod_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#about'>about</a></li>
+  <li class='hidden'><a href='#aboutProductName'>aboutProductName</a></li>
+  <li class='hidden'><a href='#aboutProductUrl'>aboutProductUrl</a></li>
+  <li class='hidden'><a href='#aboutProductVer'>aboutProductVer</a></li>
+  <li class='hidden'><a href='#aboutServerName'>aboutServerName</a></li>
+  <li class='hidden'><a href='#aboutVendorName'>aboutVendorName</a></li>
+  <li class='hidden'><a href='#aboutVendorUrl'>aboutVendorUrl</a></li>
+  <li><a href='#lobby'>lobby</a></li>
+  <li><a href='#make'>make</a></li>
+  <li class='hidden'><a href='#onAbout'>onAbout</a></li>
+  <li><a href='#onInvoke'>onInvoke</a></li>
+  <li class='hidden'><a href='#onLobby'>onLobby</a></li>
+  <li><a href='#onRead'>onRead</a></li>
+  <li><a href='#onService'>onService</a></li>
+  <li><a href='#onWrite'>onWrite</a></li>
+  <li class='hidden'><a href='#onXsl'>onXsl</a></li>
+  <li class='hidden'><a href='#readReqObj'>readReqObj</a></li>
+  <li class='hidden'><a href='#writeResObj'>writeResObj</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+obix 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

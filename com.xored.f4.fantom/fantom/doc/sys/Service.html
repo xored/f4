@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Service</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Service.html'>Service</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>mixin</h2>
+<h1>sys::Service</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Service</pre>
+</div>
+<div class='detail'>
+
+<p>Services are used to publish functionality in a VM for use by other software components.  The service registry for the VM is keyed by public types each service implements.</p>
+
+<p>The following table illustrates the service lifecycle:</p>
+
+<pre>Method        isInstalled  isRunning
+-----------   -----------  ----------
+constructed   false        false
+install       true         false
+start         true         true
+stop          true         false
+uninstall     false        false</pre>
+
+<p>While the service is installed, it may be looked up in the registry via <a href='Service.html#find'>find</a> and <a href='Service.html#findAll'>findAll</a>.  The running state is used to invoke the <a href='Service.html#onStart'>onStart</a> and <a href='Service.html#onStop'>onStop</a> callbacks which gives the service a chance to setup/shutdown its actors and associated resources.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='equals' class='method'>equals<a href='Service_src.html#equals'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> equals(<a href='Obj.html'>Obj</a>? that)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#equals'>sys::Obj.equals</a></p>
+</div>
+
+<p>Services are required to implement equality by reference.</p>
+</dd>
+<dt id='find' class='method'>find<a href='Service_src.html#find'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Service.html'>Service</a>? find(<a href='Type.html'>Type</a> t, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Find an installed service by type.  If not found and checked is false return null, otherwise throw UnknownServiceErr.  If multiple services are registered for the given type then return the first one registered.</p>
+</dd>
+<dt id='findAll' class='method'>findAll<a href='Service_src.html#findAll'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Service.html'>Service</a>[] findAll(<a href='Type.html'>Type</a> t)</code></p>
+
+<p>Find all services installed for the given type.  If no services are found then return an empty list.</p>
+</dd>
+<dt id='hash' class='method'>hash<a href='Service_src.html#hash'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> hash()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#hash'>sys::Obj.hash</a></p>
+</div>
+
+<p>Services are required to implement equality by reference.</p>
+</dd>
+<dt id='install' class='method'>install<a href='Service_src.html#install'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> install()</code></p>
+
+<p>Install this service into the VM's service registry. If already installed, do nothing.  Return this.</p>
+</dd>
+<dt id='isInstalled' class='method'>isInstalled<a href='Service_src.html#isInstalled'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isInstalled()</code></p>
+
+<p>Is the service in the installed state. Note this method requires accessing a global hash table, so it should not be heavily polled in a concurrent environment.</p>
+</dd>
+<dt id='isRunning' class='method'>isRunning<a href='Service_src.html#isRunning'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isRunning()</code></p>
+
+<p>Is the service in the running state. Note this method requires accessing a global hash table, so it should not be heavily polled in a concurrent environment.</p>
+</dd>
+<dt id='list' class='method'>list<a href='Service_src.html#list'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Service.html'>Service</a>[] list()</code></p>
+
+<p>List all the installed services.</p>
+</dd>
+<dt id='onStart' class='method'>onStart<a href='Service_src.html#onStart'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual protected <a href='Void.html'>Void</a> onStart()</code></p>
+
+<p>Callback when service transitions into running state.</p>
+</dd>
+<dt id='onStop' class='method'>onStop<a href='Service_src.html#onStop'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual protected <a href='Void.html'>Void</a> onStop()</code></p>
+
+<p>Callback when service transitions out of the running state.</p>
+</dd>
+<dt id='start' class='method'>start<a href='Service_src.html#start'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> start()</code></p>
+
+<p>Start this service.  If not installed, this method autoamatically calls <a href='Service.html#install'>install</a>.  If already running, do nothing.  Return this.</p>
+</dd>
+<dt id='stop' class='method'>stop<a href='Service_src.html#stop'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> stop()</code></p>
+
+<p>Stop this service.  If not running, do nothing. Return this.</p>
+</dd>
+<dt id='uninstall' class='method'>uninstall<a href='Service_src.html#uninstall'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> uninstall()</code></p>
+
+<p>Uninstall this service from the VM's service registry. If the service is running, this method automatically calls <a href='Service.html#stop'>stop</a>.  If not installed, do nothing.  Return this.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Service_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#equals'>equals</a></li>
+  <li><a href='#find'>find</a></li>
+  <li><a href='#findAll'>findAll</a></li>
+  <li><a href='#hash'>hash</a></li>
+  <li><a href='#install'>install</a></li>
+  <li><a href='#isInstalled'>isInstalled</a></li>
+  <li><a href='#isRunning'>isRunning</a></li>
+  <li><a href='#list'>list</a></li>
+  <li><a href='#onStart'>onStart</a></li>
+  <li><a href='#onStop'>onStop</a></li>
+  <li><a href='#start'>start</a></li>
+  <li><a href='#stop'>stop</a></li>
+  <li><a href='#uninstall'>uninstall</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

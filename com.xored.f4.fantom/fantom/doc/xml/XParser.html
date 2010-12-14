@@ -1,0 +1,490 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml::XParser</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='XParser.html'>XParser</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>xml::XParser</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  xml::XParser</pre>
+</div>
+<div class='detail'>
+
+<p>XParser is a simple, lightweight XML parser.  It may be used as a pull parser by iterating through the element and text sections of an XML stream or it may be used to read an entire XML tree into memory as XElems.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='buf' class='field hidden'>buf<a href='XParser_src.html#buf'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/StrBuf.html'>StrBuf</a> buf := StrBuf()</code></p>
+</dd>
+<dt id='bufToStr' class='method hidden'>bufToStr<a href='XParser_src.html#bufToStr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a> bufToStr()</code></p>
+</dd>
+<dt id='cdata' class='field hidden'>cdata<a href='XParser_src.html#cdata'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> cdata</code></p>
+</dd>
+<dt id='close' class='method'>close<a href='XParser_src.html#close'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> close()</code></p>
+
+<p>Close the underlying input stream.  Return true if the stream was closed successfully or false if the stream was closed abnormally.</p>
+</dd>
+<dt id='col' class='field'>col<a href='XParser_src.html#col'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='../sys/Int.html'>Int</a> col := 1</code></p>
+
+<p>Current one based column number.</p>
+</dd>
+<dt id='consume' class='method hidden'>consume<a href='XParser_src.html#consume'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> consume(<a href='../sys/Str.html'>Str</a> s)</code></p>
+
+<p>Read from the stream and verify that the next characters match the specified String.</p>
+</dd>
+<dt id='curPi' class='field hidden'>curPi<a href='XParser_src.html#curPi'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XPi.html'>XPi</a>? curPi</code></p>
+</dd>
+<dt id='defaultNs' class='field hidden'>defaultNs<a href='XParser_src.html#defaultNs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XNs.html'>XNs</a>? defaultNs</code></p>
+</dd>
+<dt id='depth' class='field'>depth<a href='XParser_src.html#depth'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='../sys/Int.html'>Int</a> depth := -1</code></p>
+
+<p>Get the depth of the current element with the document. A depth of zero indicates the root element.  A depth of -1 indicates a position before or after the root element.</p>
+</dd>
+<dt id='doc' class='field'>doc<a href='XParser_src.html#doc'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='XDoc.html'>XDoc</a> doc := XDoc()</code></p>
+
+<p>Get the root document node.</p>
+</dd>
+<dt id='elem' class='method'>elem<a href='XParser_src.html#elem'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XElem.html'>XElem</a>? elem()</code></p>
+
+<p>Get the current element if <a href='XParser.html#nodeType'>nodeType</a> is <code>elemStart</code> or <code>elemEnd</code>.  If <a href='XParser.html#nodeType'>nodeType</a> is <code>text</code> or <code>pi</code> then this is the parent element.  After <code>elemEnd</code> this XElem instance is no longer valid and will be reused for further processing.  If depth is -1 return null.</p>
+</dd>
+<dt id='elemAt' class='method'>elemAt<a href='XParser_src.html#elemAt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XElem.html'>XElem</a> elemAt(<a href='../sys/Int.html'>Int</a> depth)</code></p>
+
+<p>Get the element at the specified depth.  Depth must be between 0 and <a href='XParser.html#depth'>depth</a> inclusively.  Calling <code>elemAt(0)</code> will return the root element and <code>elemAt(depth)</code> returns the current element. If depth is invalid IndexErr is thrown.</p>
+</dd>
+<dt id='emptyElem' class='field hidden'>emptyElem<a href='XParser_src.html#emptyElem'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> emptyElem</code></p>
+</dd>
+<dt id='entityBuf' class='field hidden'>entityBuf<a href='XParser_src.html#entityBuf'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/StrBuf.html'>StrBuf</a> entityBuf := StrBuf()</code></p>
+</dd>
+<dt id='eosErr' class='method hidden'>eosErr<a href='XParser_src.html#eosErr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XErr.html'>XErr</a> eosErr()</code></p>
+
+<p>Make an XIncompleteErr for unexected end of stream.</p>
+</dd>
+<dt id='err' class='method hidden'>err<a href='XParser_src.html#err'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XErr.html'>XErr</a> err(<a href='../sys/Str.html'>Str</a> msg, <a href='../sys/Int.html'>Int</a> line := this.line, <a href='../sys/Int.html'>Int</a> col := this.col)</code></p>
+
+<p>Make an XException using with current line and column.</p>
+</dd>
+<dt id='in' class='field hidden'>in<a href='XParser_src.html#in'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/InStream.html'>InStream</a> in</code></p>
+</dd>
+<dt id='isName' class='method hidden'>isName<a href='XParser_src.html#isName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='../sys/Bool.html'>Bool</a> isName(<a href='../sys/Int.html'>Int</a> c)</code></p>
+</dd>
+<dt id='isSpace' class='method hidden'>isSpace<a href='XParser_src.html#isSpace'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='../sys/Bool.html'>Bool</a> isSpace(<a href='../sys/Int.html'>Int</a> c)</code></p>
+</dd>
+<dt id='line' class='field'>line<a href='XParser_src.html#line'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='../sys/Int.html'>Int</a> line := 1</code></p>
+
+<p>Current one based line number.</p>
+</dd>
+<dt id='make' class='method'>make<a href='XParser_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/InStream.html'>InStream</a> in)</code></p>
+
+<p>Construct input stream to read.</p>
+</dd>
+<dt id='name' class='field hidden'>name<a href='XParser_src.html#name'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>? name</code></p>
+</dd>
+<dt id='nameMap' class='field hidden'>nameMap<a href='XParser_src.html#nameMap'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Bool.html'>Bool</a>[] nameMap</code></p>
+</dd>
+<dt id='next' class='method'>next<a href='XParser_src.html#next'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XNodeType.html'>XNodeType</a>? next()</code></p>
+
+<p>Advance the parser to the next node and return the node type. Return the current node type:</p>
+
+<ul>
+<li><code><a href='XNodeType.html#elemStart'>XNodeType.elemStart</a></code></li>
+
+<li><code><a href='XNodeType.html#elemEnd'>XNodeType.elemEnd</a></code></li>
+
+<li><code><a href='XNodeType.html#text'>XNodeType.text</a></code></li>
+
+<li><code><a href='XNodeType.html#pi'>XNodeType.pi</a></code></li>
+
+<li>null indicates end of stream Also see <a href='XParser.html#nodeType'>nodeType</a>.</li>
+</ul>
+</dd>
+<dt id='nodeType' class='field'>nodeType<a href='XParser_src.html#nodeType'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='XNodeType.html'>XNodeType</a>? nodeType</code></p>
+
+<p>Get the current node type constant which is always the result of the last call to <a href='XParser.html#next'>next</a>.  Node type will be:</p>
+
+<ul>
+<li><code><a href='XNodeType.html#elemStart'>XNodeType.elemStart</a></code></li>
+
+<li><code><a href='XNodeType.html#elemEnd'>XNodeType.elemEnd</a></code></li>
+
+<li><code><a href='XNodeType.html#text'>XNodeType.text</a></code></li>
+
+<li><code><a href='XNodeType.html#pi'>XNodeType.pi</a></code></li>
+
+<li>null indicates end of stream</li>
+</ul>
+</dd>
+<dt id='nsStack' class='field hidden'>nsStack<a href='XParser_src.html#nsStack'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XNsDefs.html'>XNsDefs</a>[] nsStack := XNsDefs[XNsDefs()]</code></p>
+</dd>
+<dt id='parseAttr' class='method hidden'>parseAttr<a href='XParser_src.html#parseAttr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> parseAttr(<a href='../sys/Int.html'>Int</a> c, <a href='XElem.html'>XElem</a> elem)</code></p>
+
+<p>Parse a <code>[41]</code> attribute production.  We are passed the first character of the attribute name.  Return if the attribute had a unresolved namespace prefix.</p>
+</dd>
+<dt id='parseCDATA' class='method hidden'>parseCDATA<a href='XParser_src.html#parseCDATA'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseCDATA()</code></p>
+
+<p>Parse a CDATA section.</p>
+</dd>
+<dt id='parseDoc' class='method'>parseDoc<a href='XParser_src.html#parseDoc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XDoc.html'>XDoc</a> parseDoc(<a href='../sys/Bool.html'>Bool</a> close := true)</code></p>
+
+<p>Parse the entire document into memory as a tree of XElems and optionally close the underlying input stream.</p>
+</dd>
+<dt id='parseDocType' class='method hidden'>parseDocType<a href='XParser_src.html#parseDocType'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseDocType()</code></p>
+
+<p>Parse <code>[28]</code> DocType := &lt;!DOCTYPE ... ></p>
+</dd>
+<dt id='parseElem' class='method'>parseElem<a href='XParser_src.html#parseElem'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XElem.html'>XElem</a> parseElem(<a href='../sys/Bool.html'>Bool</a> close := true)</code></p>
+
+<p>Parse the current element entirely into memory as a tree of XElems and optionally close the underlying input stream.</p>
+</dd>
+<dt id='parseElemEnd' class='method hidden'>parseElemEnd<a href='XParser_src.html#parseElemEnd'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseElemEnd()</code></p>
+
+<p>Parse an element end production.  Next character should be first char of element name.</p>
+</dd>
+<dt id='parseElemStart' class='method hidden'>parseElemStart<a href='XParser_src.html#parseElemStart'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseElemStart(<a href='../sys/Int.html'>Int</a> c)</code></p>
+
+<p>Parse a <code>[40]</code> element start production.  We are passed the first character after the &lt; (beginning of name).</p>
+</dd>
+<dt id='parseName' class='method hidden'>parseName<a href='XParser_src.html#parseName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a> parseName(<a href='../sys/Int.html'>Int</a> c, <a href='../sys/Bool.html'>Bool</a> includeColon)</code></p>
+
+<p>Parse an XML name token.</p>
+</dd>
+<dt id='parsePi' class='method hidden'>parsePi<a href='XParser_src.html#parsePi'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parsePi()</code></p>
+
+<p>Parse <code>[16]</code> PI := &lt;? ... ?></p>
+</dd>
+<dt id='parseProlog' class='method hidden'>parseProlog<a href='XParser_src.html#parseProlog'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseProlog()</code></p>
+
+<p>Parse the prolog up to the root element.</p>
+</dd>
+<dt id='parseQName' class='method hidden'>parseQName<a href='XParser_src.html#parseQName'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> parseQName(<a href='../sys/Int.html'>Int</a> c)</code></p>
+
+<p>Parse an element or attribute name of the format <code>[&lt;prefix>:]name</code> and store result in prefix and name fields.</p>
+</dd>
+<dt id='parseQuotedStr' class='method hidden'>parseQuotedStr<a href='XParser_src.html#parseQuotedStr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a> parseQuotedStr(<a href='../sys/Int.html'>Int</a> quote)</code></p>
+
+<p>Parse a quoted string token "..." or <code>...</code></p>
+</dd>
+<dt id='parseText' class='method hidden'>parseText<a href='XParser_src.html#parseText'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> parseText(<a href='../sys/Int.html'>Int</a> c)</code></p>
+
+<p>Parse a character data text section.  Return false if all the text was whitespace only.</p>
+</dd>
+<dt id='pi' class='method'>pi<a href='XParser_src.html#pi'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XPi.html'>XPi</a>? pi()</code></p>
+
+<p>if the current node type is <code>pi</code> return the XPi instance otherwise return null.</p>
+</dd>
+<dt id='pop' class='method hidden'>pop<a href='XParser_src.html#pop'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> pop()</code></p>
+
+<p>Pop decreases the element depth, but leaves the actual element in the stack for reuse.  However we do need to re-evaluate our namespace scope if the popped element declared namespaces.</p>
+</dd>
+<dt id='popStack' class='field hidden'>popStack<a href='XParser_src.html#popStack'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> popStack</code></p>
+</dd>
+<dt id='prefix' class='field hidden'>prefix<a href='XParser_src.html#prefix'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>? prefix</code></p>
+</dd>
+<dt id='prefixToNs' class='method hidden'>prefixToNs<a href='XParser_src.html#prefixToNs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XNs.html'>XNs</a> prefixToNs(<a href='../sys/Str.html'>Str</a> prefix, <a href='../sys/Int.html'>Int</a> line, <a href='../sys/Int.html'>Int</a> col, <a href='../sys/Bool.html'>Bool</a> checked)</code></p>
+
+<p>Map the prefix string to a XNs instance declared in the current element or ancestor element.  If the prefix cannot be found and checked if false then return <code>unresolvedNs</code>, otherwise throw exception.</p>
+</dd>
+<dt id='push' class='method hidden'>push<a href='XParser_src.html#push'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XElem.html'>XElem</a> push()</code></p>
+
+<p>Push a new XElem on the stack.  The stack itself only allocates a new XElem the first time a given depth is reached.  Further pushes at that depth will always reuse the last XElem from the given depth.</p>
+</dd>
+<dt id='pushNs' class='method hidden'>pushNs<a href='XParser_src.html#pushNs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> pushNs(<a href='../sys/Str.html'>Str</a> prefix, <a href='../sys/Str.html'>Str</a> val, <a href='../sys/Int.html'>Int</a> line, <a href='../sys/Int.html'>Int</a> col)</code></p>
+
+<p>Push a namespace onto the stack at the current depth.</p>
+</dd>
+<dt id='pushback' class='field hidden'>pushback<a href='XParser_src.html#pushback'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> pushback := -1</code></p>
+</dd>
+<dt id='reEvalDefaultNs' class='method hidden'>reEvalDefaultNs<a href='XParser_src.html#reEvalDefaultNs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> reEvalDefaultNs()</code></p>
+
+<p>Recalculate what the default namespace should be because we just popped the element that declared the default namespace last.</p>
+</dd>
+<dt id='read' class='method hidden'>read<a href='XParser_src.html#read'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> read()</code></p>
+
+<p>Read the next character from the stream:</p>
+
+<ul>
+<li>handle pushbacks</li>
+
+<li>updates the line and col count</li>
+
+<li>normalizes line breaks</li>
+
+<li>throw EOFException if end of stream reached</li>
+</ul>
+</dd>
+<dt id='skip' class='method'>skip<a href='XParser_src.html#skip'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> skip(<a href='../sys/Int.html'>Int</a> toDepth := this.depth)</code></p>
+
+<p>Skip parses all the content until reaching the end tag of the specified depth.  When this method returns, the next call to <a href='XParser.html#next'>next</a> will return the node immediately following the end tag.</p>
+</dd>
+<dt id='skipComment' class='method hidden'>skipComment<a href='XParser_src.html#skipComment'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> skipComment()</code></p>
+
+<p>Skip <code>[15]</code> Comment := &lt;!-- ... --></p>
+</dd>
+<dt id='skipSpace' class='method hidden'>skipSpace<a href='XParser_src.html#skipSpace'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> skipSpace()</code></p>
+
+<p>Skip <code>[3]</code> Space = <code> </code> <code>\n</code> <code>\r</code> <code>\t</code> Return true if one or more space chars found.</p>
+</dd>
+<dt id='spaceMap' class='field hidden'>spaceMap<a href='XParser_src.html#spaceMap'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Bool.html'>Bool</a>[] spaceMap</code></p>
+</dd>
+<dt id='stack' class='field hidden'>stack<a href='XParser_src.html#stack'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='XElem.html'>XElem</a>[] stack := XElem[XElem("")]</code></p>
+</dd>
+<dt id='text' class='method'>text<a href='XParser_src.html#text'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XText.html'>XText</a>? text()</code></p>
+
+<p>If the current type is <code>text</code> the XText instance used to store the character data.  After a call to <a href='XParser.html#next'>next</a> this XText instance is no longer valid and will be reused for further processing.  If the current type is not <code>text</code> then return null.</p>
+</dd>
+<dt id='toCharData' class='method hidden'>toCharData<a href='XParser_src.html#toCharData'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> toCharData(<a href='../sys/Int.html'>Int</a> c)</code></p>
+
+<p>If the specified char is the amp (&amp;) then resolve the entity otherwise just return the char.  If the character is markup then throw an exception.</p>
+</dd>
+<dt id='toNum' class='method hidden'>toNum<a href='XParser_src.html#toNum'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> toNum(<a href='../sys/Int.html'>Int</a> x, <a href='../sys/Int.html'>Int</a> c, <a href='../sys/Int.html'>Int</a> base)</code></p>
+</dd>
+<dt id='unresolvedNs' class='field hidden'>unresolvedNs<a href='XParser_src.html#unresolvedNs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Uri.html'>Uri</a> unresolvedNs := `__unresolved__`</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='XParser_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden'><a href='#buf'>buf</a></li>
+  <li class='hidden'><a href='#bufToStr'>bufToStr</a></li>
+  <li class='hidden'><a href='#cdata'>cdata</a></li>
+  <li><a href='#close'>close</a></li>
+  <li><a href='#col'>col</a></li>
+  <li class='hidden'><a href='#consume'>consume</a></li>
+  <li class='hidden'><a href='#curPi'>curPi</a></li>
+  <li class='hidden'><a href='#defaultNs'>defaultNs</a></li>
+  <li><a href='#depth'>depth</a></li>
+  <li><a href='#doc'>doc</a></li>
+  <li><a href='#elem'>elem</a></li>
+  <li><a href='#elemAt'>elemAt</a></li>
+  <li class='hidden'><a href='#emptyElem'>emptyElem</a></li>
+  <li class='hidden'><a href='#entityBuf'>entityBuf</a></li>
+  <li class='hidden'><a href='#eosErr'>eosErr</a></li>
+  <li class='hidden'><a href='#err'>err</a></li>
+  <li class='hidden'><a href='#in'>in</a></li>
+  <li class='hidden'><a href='#isName'>isName</a></li>
+  <li class='hidden'><a href='#isSpace'>isSpace</a></li>
+  <li><a href='#line'>line</a></li>
+  <li><a href='#make'>make</a></li>
+  <li class='hidden'><a href='#name'>name</a></li>
+  <li class='hidden'><a href='#nameMap'>nameMap</a></li>
+  <li><a href='#next'>next</a></li>
+  <li><a href='#nodeType'>nodeType</a></li>
+  <li class='hidden'><a href='#nsStack'>nsStack</a></li>
+  <li class='hidden'><a href='#parseAttr'>parseAttr</a></li>
+  <li class='hidden'><a href='#parseCDATA'>parseCDATA</a></li>
+  <li><a href='#parseDoc'>parseDoc</a></li>
+  <li class='hidden'><a href='#parseDocType'>parseDocType</a></li>
+  <li><a href='#parseElem'>parseElem</a></li>
+  <li class='hidden'><a href='#parseElemEnd'>parseElemEnd</a></li>
+  <li class='hidden'><a href='#parseElemStart'>parseElemStart</a></li>
+  <li class='hidden'><a href='#parseName'>parseName</a></li>
+  <li class='hidden'><a href='#parsePi'>parsePi</a></li>
+  <li class='hidden'><a href='#parseProlog'>parseProlog</a></li>
+  <li class='hidden'><a href='#parseQName'>parseQName</a></li>
+  <li class='hidden'><a href='#parseQuotedStr'>parseQuotedStr</a></li>
+  <li class='hidden'><a href='#parseText'>parseText</a></li>
+  <li><a href='#pi'>pi</a></li>
+  <li class='hidden'><a href='#pop'>pop</a></li>
+  <li class='hidden'><a href='#popStack'>popStack</a></li>
+  <li class='hidden'><a href='#prefix'>prefix</a></li>
+  <li class='hidden'><a href='#prefixToNs'>prefixToNs</a></li>
+  <li class='hidden'><a href='#push'>push</a></li>
+  <li class='hidden'><a href='#pushNs'>pushNs</a></li>
+  <li class='hidden'><a href='#pushback'>pushback</a></li>
+  <li class='hidden'><a href='#reEvalDefaultNs'>reEvalDefaultNs</a></li>
+  <li class='hidden'><a href='#read'>read</a></li>
+  <li><a href='#skip'>skip</a></li>
+  <li class='hidden'><a href='#skipComment'>skipComment</a></li>
+  <li class='hidden'><a href='#skipSpace'>skipSpace</a></li>
+  <li class='hidden'><a href='#spaceMap'>spaceMap</a></li>
+  <li class='hidden'><a href='#stack'>stack</a></li>
+  <li><a href='#text'>text</a></li>
+  <li class='hidden'><a href='#toCharData'>toCharData</a></li>
+  <li class='hidden'><a href='#toNum'>toNum</a></li>
+  <li class='hidden'><a href='#unresolvedNs'>unresolvedNs</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

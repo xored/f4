@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::MapType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='MapType.html'>MapType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::MapType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='GenericType.html'>compiler::GenericType</a>
+    compiler::MapType</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   26 Jul 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** GenericType models a parameterized generic type: List, Map, or Func</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> GenericType : CType
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> make<span class='b'>(</span>CType base<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.base = base
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CType</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> CNamespace ns<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> base.ns <span class='b'>}</span>
+  <span class='k'>override</span> CPod pod<span class='b'>()</span>      <span class='b'>{</span> <span class='k'>return</span> ns.sysPod <span class='b'>}</span>
+  <span class='k'>override</span> Str name<span class='b'>()</span>      <span class='b'>{</span> <span class='k'>return</span> base.name <span class='b'>}</span>
+  <span class='k'>override</span> Str qname<span class='b'>()</span>     <span class='b'>{</span> <span class='k'>return</span> base.qname <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isVal<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isNullable<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType toNullable<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> NullableType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isGeneric<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isParameterized<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> CType toListOf<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ListType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CType<span class='b'>[]</span> mixins<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> CType<span class='b'>[</span>,<span class='b'>]</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CFacet? facet<span class='b'>(</span>Str qname<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> base.facet<span class='b'>(</span>qname<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> Str:CSlot slots<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> parameterizeSlots <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> COperators operators<span class='b'>()</span> <span class='b'>{</span> COperators<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Parameterize</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Str:CSlot parameterizeSlots<span class='b'>()</span>
+  <span class='b'>{</span>
+    base.slots.map |CSlot slot-&gt;CSlot| <span class='b'>{</span> parameterizeSlot<span class='b'>(</span>slot<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CSlot parameterizeSlot<span class='b'>(</span>CSlot slot<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>slot <span class='k'>is</span> CMethod<span class='b'>)</span>
+    <span class='b'>{</span>
+      CMethod m := slot
+      <span class='k'>if</span> <span class='b'>(</span>!m.isGeneric<span class='b'>)</span> <span class='k'>return</span> slot
+      <span class='k'>return</span> ParameterizedMethod<span class='b'>(</span><span class='k'>this</span>, m<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      f := <span class='b'>(</span>CField<span class='b'>)</span>slot
+      <span class='k'>if</span> <span class='b'>(</span>!f.fieldType.isGenericParameter<span class='b'>)</span> <span class='k'>return</span> slot
+      <span class='k'>return</span> ParameterizedField<span class='b'>(</span><span class='k'>this</span>, f<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>internal</span> CType parameterize<span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!t.isGenericParameter<span class='b'>)</span> <span class='k'>return</span> t
+    nullable := t.isNullable
+    nn := t.toNonNullable
+    <span class='k'>if</span> <span class='b'>(</span>nn <span class='k'>is</span> ListType<span class='b'>)</span>
+    <span class='b'>{</span>
+      t = parameterizeListType<span class='b'>(</span>nn<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>nn <span class='k'>is</span> FuncType<span class='b'>)</span>
+    <span class='b'>{</span>
+      t = parameterizeFuncType<span class='b'>(</span>nn<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>nn.name.size != 1<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Cannot parameterize $t.qname"</span><span class='b'>)</span>
+      t = doParameterize<span class='b'>(</span>nn.name<span class='b'>[</span>0<span class='b'>])</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> nullable ? t.toNullable : t
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CType parameterizeListType<span class='b'>(</span>ListType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> parameterize<span class='b'>(</span>t.v<span class='b'>)</span>.toListOf
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CType parameterizeFuncType<span class='b'>(</span>FuncType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    CType<span class='b'>[]</span> params := t.params.map |CType p-&gt;CType| <span class='b'>{</span> parameterize<span class='b'>(</span>p<span class='b'>)</span> <span class='b'>}</span>
+    ret := parameterize<span class='b'>(</span>t.ret<span class='b'>)</span>
+    <span class='k'>return</span> FuncType<span class='b'>(</span>params, t.names, ret<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>abstract</span> CType doParameterize<span class='b'>(</span>Int ch<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> CType? base
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ListType</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** ListType models a parameterized List type.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> ListType : GenericType
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>CType v<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>v.ns.listType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.v = v
+    <span class='k'>this</span>.signature = <span class='s'>"${v.signature}[]"</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isGenericParameter<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> v.isGenericParameter
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Int flags<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> v.isPublic ? FConst.Public : FConst.Internal
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool fits<span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    t = t.toNonNullable
+    <span class='k'>if</span> <span class='b'>(</span><span class='k'>this</span> == t<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.signature == <span class='s'>"sys::List"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.isObj<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.name.size == 1 &amp;&amp; t.pod.name == <span class='s'>"sys"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+
+    that := t.deref <span class='k'>as</span> ListType
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='k'>return</span> v.fits<span class='b'>(</span>that.v<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CType doParameterize<span class='b'>(</span>Int ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> <span class='s'>'V'</span>: <span class='k'>return</span> v
+      <span class='k'>case</span> <span class='s'>'L'</span>: <span class='k'>return</span> <span class='k'>this</span>
+      <span class='k'>default</span>:  <span class='k'>throw</span> Err<span class='b'>(</span>ch.toChar<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isValid<span class='b'>()</span> <span class='b'>{</span> v.isValid <span class='b'>}</span>
+
+  <span class='k'>readonly</span> CType v         <span class='y'>// value type</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str signature   <span class='y'>// v[]</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** MapType</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** MapType models a parameterized Map type.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> MapType : GenericType
+<span class='b'>{</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>CType k, CType v<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>k.ns.mapType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.k = k
+    <span class='k'>this</span>.v = v
+    <span class='k'>this</span>.signature = <span class='s'>"[${k.signature}:${v.signature}]"</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Int <span id='flags'>flags</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> k.isPublic &amp;&amp; v.isPublic ? FConst.Public : FConst.Internal
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isGenericParameter'>isGenericParameter</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> k.isGenericParameter || v.isGenericParameter
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='fits'>fits</span><span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    t = t.toNonNullable
+    <span class='k'>if</span> <span class='b'>(</span><span class='k'>this</span> == t<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.signature == <span class='s'>"sys::Map"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.isObj<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.name.size == 1 &amp;&amp; t.pod.name == <span class='s'>"sys"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+
+    that := t.deref <span class='k'>as</span> MapType
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='k'>return</span> k.fits<span class='b'>(</span>that.k<span class='b'>)</span> &amp;&amp; v.fits<span class='b'>(</span>that.v<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CType <span id='doParameterize'>doParameterize</span><span class='b'>(</span>Int ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> <span class='s'>'K'</span>: <span class='k'>return</span> k
+      <span class='k'>case</span> <span class='s'>'V'</span>: <span class='k'>return</span> v
+      <span class='k'>case</span> <span class='s'>'M'</span>: <span class='k'>return</span> <span class='k'>this</span>
+      <span class='k'>default</span>:  <span class='k'>throw</span> Err<span class='b'>(</span>ch.toChar<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isValid'>isValid</span><span class='b'>()</span> <span class='b'>{</span> k.isValid &amp;&amp; v.isValid <span class='b'>}</span>
+
+  <span class='k'>readonly</span> CType <span id='k'>k</span>         <span class='y'>// keytype</span>
+  <span class='k'>readonly</span> CType <span id='v'>v</span>         <span class='y'>// value type</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str <span id='signature'>signature</span>   <span class='y'>// [k:v]</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** FuncType</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** FuncType models a parameterized Func type.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FuncType : GenericType
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>CType<span class='b'>[]</span> params, Str<span class='b'>[]</span> names, CType ret<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>ret.ns.funcType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.params = params
+    <span class='k'>this</span>.names  = names
+    <span class='k'>this</span>.ret    = ret
+    <span class='k'>this</span>.isGenericParameter = ret.isGenericParameter
+
+    s := StrBuf.make.add<span class='b'>(</span><span class='s'>"|"</span><span class='b'>)</span>
+    params.each |CType p, Int i|
+    <span class='b'>{</span>
+      isGenericParameter = isGenericParameter.or<span class='b'>(</span>p.isGenericParameter<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>i &gt; 0<span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>; s.add<span class='b'>(</span>p.signature<span class='b'>)</span>
+    <span class='b'>}</span>
+    s.add<span class='b'>(</span><span class='s'>"-&gt;"</span><span class='b'>)</span>.add<span class='b'>(</span>ret.signature<span class='b'>)</span>.add<span class='b'>(</span><span class='s'>"|"</span><span class='b'>)</span>
+    <span class='k'>this</span>.signature = s.toStr
+  <span class='b'>}</span>
+
+  <span class='k'>new</span> makeItBlock<span class='b'>(</span>CType itType<span class='b'>)</span>
+    : <span class='k'>this</span>.make<span class='b'>([</span>itType<span class='b'>]</span>, <span class='b'>[</span><span class='s'>"it"</span><span class='b'>]</span>, itType.ns.voidType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// sanity check</span>
+    <span class='k'>if</span> <span class='b'>(</span>itType.isThis<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Invalid it-block func signature: $this"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Int flags<span class='b'>()</span>
+  <span class='b'>{</span>
+    allPublic := ret.isPublic &amp;&amp; params.all |CType p-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> p.isPublic <span class='b'>}</span>
+    <span class='k'>return</span> allPublic ? FConst.Public : FConst.Internal
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool fits<span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    t = t.toNonNullable
+    <span class='k'>if</span> <span class='b'>(</span><span class='k'>this</span> == t<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.signature == <span class='s'>"sys::Func"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.isObj<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.name.size == 1 &amp;&amp; t.pod.name == <span class='s'>"sys"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+
+    that := t.deref <span class='k'>as</span> FuncType
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// match return type (if void is needed, anything matches)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!that.ret.isVoid &amp;&amp; !ret.fits<span class='b'>(</span>that.ret<span class='b'>))</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// match params - it is ok for me to have less than</span>
+    <span class='y'>// the type params (if I want to ignore them), but I</span>
+    <span class='y'>// must have no more</span>
+    <span class='k'>if</span> <span class='b'>(</span>params.size &gt; that.params.size<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;params.size; ++i<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>!that.params<span class='b'>[</span>i<span class='b'>]</span>.fits<span class='b'>(</span>params<span class='b'>[</span>i<span class='b'>]))</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// this method works for the specified method type</span>
+    <span class='k'>return</span> <span class='k'>true</span>;
+  <span class='b'>}</span>
+
+  Int arity<span class='b'>()</span> <span class='b'>{</span> params.size <span class='b'>}</span>
+
+  FuncType toArity<span class='b'>(</span>Int num<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>num == params.size<span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+    <span class='k'>if</span> <span class='b'>(</span>num &gt; params.size<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Cannot increase arity $this"</span><span class='b'>)</span>
+    <span class='k'>return</span> make<span class='b'>(</span>params<span class='b'>[</span>0..&lt;num<span class='b'>]</span>, names<span class='b'>[</span>0..&lt;num<span class='b'>]</span>, ret<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  FuncType mostSpecific<span class='b'>(</span>FuncType b<span class='b'>)</span>
+  <span class='b'>{</span>
+    a := <span class='k'>this</span>
+    <span class='k'>if</span> <span class='b'>(</span>a.arity != b.arity<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Different arities: $a / $b"</span><span class='b'>)</span>
+    params := a.params.map |p, i| <span class='b'>{</span> toMostSpecific<span class='b'>(</span>p, b.params<span class='b'>[</span>i<span class='b'>])</span> <span class='b'>}</span>
+    ret := toMostSpecific<span class='b'>(</span>a.ret, b.ret<span class='b'>)</span>
+    <span class='k'>return</span> make<span class='b'>(</span>params, b.names, ret<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> CType toMostSpecific<span class='b'>(</span>CType a, CType b<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>b.isGenericParameter<span class='b'>)</span> <span class='k'>return</span> a
+    <span class='k'>if</span> <span class='b'>(</span>a.isObj || a.isVoid || a.isGenericParameter<span class='b'>)</span> <span class='k'>return</span> b
+    <span class='k'>return</span> a
+  <span class='b'>}</span>
+
+  ParamDef<span class='b'>[]</span> toParamDefs<span class='b'>(</span>Loc loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    p := ParamDef<span class='b'>[</span>,<span class='b'>]</span>
+    p.capacity = params.size
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;params.size; ++i<span class='b'>)</span>
+    <span class='b'>{</span>
+      p.add<span class='b'>(</span>ParamDef<span class='b'>(</span>loc, params<span class='b'>[</span>i<span class='b'>]</span>, names<span class='b'>[</span>i<span class='b'>]))</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> p
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CType doParameterize<span class='b'>(</span>Int ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span><span class='s'>'A'</span> &lt;= ch &amp;&amp; ch &lt;= <span class='s'>'H'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      index := ch - <span class='s'>'A'</span>
+      <span class='k'>if</span> <span class='b'>(</span>index &lt; params.size<span class='b'>)</span> <span class='k'>return</span> params<span class='b'>[</span>index<span class='b'>]</span>
+      <span class='k'>return</span> ns.objType
+    <span class='b'>}</span>
+
+    <span class='k'>switch</span> <span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> <span class='s'>'R'</span>: <span class='k'>return</span> ret
+      <span class='k'>default</span>:  <span class='k'>throw</span> Err<span class='b'>(</span>ch.toChar<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this function type has 'This' type in its signature.</span>
+  <span class='z'>**</span>
+  Bool usesThis<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ret.isThis || params.any |CType p-&gt;Bool| <span class='b'>{</span> p.isThis <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Replace any occurance of "sys::This" with thisType.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> FuncType parameterizeThis<span class='b'>(</span>CType thisType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!usesThis<span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+    f := |CType t-&gt;CType| <span class='b'>{</span> t.isThis ? thisType : t <span class='b'>}</span>
+    <span class='k'>return</span> FuncType<span class='b'>(</span>params.map<span class='b'>(</span>f<span class='b'>)</span>, names, f<span class='b'>(</span>ret<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isValid<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='b'>(</span>ret.isVoid || ret.isValid<span class='b'>)</span> &amp;&amp; params.all |CType p-&gt;Bool| <span class='b'>{</span> p.isValid <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>readonly</span> CType<span class='b'>[]</span> params  <span class='y'>// a, b, c ...</span>
+  <span class='k'>readonly</span> Str<span class='b'>[]</span> names     <span class='y'>// parameter names</span>
+  <span class='k'>readonly</span> CType ret       <span class='y'>// return type</span>
+  Bool unnamed             <span class='y'>// where any names auto-generated</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str signature   <span class='y'>// |a,b..n-&gt;r|</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Bool isGenericParameter
+  Bool inferredSignature   <span class='y'>// were one or more parameters inferred</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** GenericParameterType</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** GenericParameterType models the generic parameter types</span>
+<span class='z'>** sys::V, sys::K, etc.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> GenericParameterType : CType
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>CNamespace ns, Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.ns = ns
+    <span class='k'>this</span>.name = name
+    <span class='k'>this</span>.qname = <span class='s'>"sys::$name"</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CNamespace ns
+  <span class='k'>override</span> CPod pod<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ns.sysPod <span class='b'>}</span>
+  <span class='k'>override</span> Str name
+  <span class='k'>override</span> Str qname
+  <span class='k'>override</span> Str signature<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> qname <span class='b'>}</span>
+  <span class='k'>override</span> Int flags<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> FConst.Public <span class='b'>}</span>
+  <span class='k'>override</span> Bool isVal<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isNullable<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType toNullable<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> NullableType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isGeneric<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isParameterized<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isGenericParameter<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType toListOf<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ListType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>override</span> CType? base<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ns.objType <span class='b'>}</span>
+  <span class='k'>override</span> CType<span class='b'>[]</span> mixins<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> CType<span class='b'>[</span>,<span class='b'>]</span> <span class='b'>}</span>
+  <span class='k'>override</span> CFacet? facet<span class='b'>(</span>Str qname<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+  <span class='k'>override</span> Str:CSlot slots<span class='b'>()</span> <span class='b'>{</span> <span class='k'>throw</span> UnsupportedErr<span class='b'>()</span> <span class='b'>}</span>
+  <span class='k'>override</span> COperators operators<span class='b'>()</span> <span class='b'>{</span> ns.objType.operators <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ParameterizedField</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> ParameterizedField : CField
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>GenericType parent, CField generic<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.parent = parent
+    <span class='k'>this</span>.generic = generic
+    <span class='k'>this</span>.fieldType = parent.parameterize<span class='b'>(</span>generic.fieldType<span class='b'>)</span>
+    <span class='k'>this</span>.getter = ParameterizedMethod<span class='b'>(</span>parent, generic.getter<span class='b'>)</span>
+    <span class='k'>this</span>.setter = ParameterizedMethod<span class='b'>(</span>parent, generic.setter<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str name<span class='b'>()</span>  <span class='b'>{</span> <span class='k'>return</span> generic.name <span class='b'>}</span>
+  <span class='k'>override</span> Str qname<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.qname <span class='b'>}</span>
+  <span class='k'>override</span> Str signature<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.signature <span class='b'>}</span>
+  <span class='k'>override</span> Int flags<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.flags <span class='b'>}</span>
+  <span class='k'>override</span> CFacet? facet<span class='b'>(</span>Str qname<span class='b'>)</span> <span class='b'>{</span> generic.facet<span class='b'>(</span>qname<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CType fieldType
+  <span class='k'>override</span> CMethod? getter
+  <span class='k'>override</span> CMethod? setter
+  <span class='k'>override</span> CType inheritedReturnType<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> fieldType <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isParameterized<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> CType parent
+  <span class='k'>readonly</span> CField generic
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ParameterizedMethod</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** ParameterizedMethod models a parameterized CMethod</span>
+<span class='z'>**</span>
+<span class='k'>class</span> ParameterizedMethod : CMethod
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>GenericType parent, CMethod generic<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.parent = parent
+    <span class='k'>this</span>.generic = generic
+
+    <span class='k'>this</span>.returnType = parent.parameterize<span class='b'>(</span>generic.returnType<span class='b'>)</span>
+    <span class='k'>this</span>.params = generic.params.map |CParam p-&gt;CParam|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>!p.paramType.isGenericParameter<span class='b'>)</span>
+        <span class='k'>return</span> p
+      <span class='k'>else</span>
+        <span class='k'>return</span> ParameterizedMethodParam<span class='b'>(</span>parent, p<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    signature = <span class='s'>"$returnType $name("</span> + params.join<span class='b'>(</span><span class='s'>", "</span><span class='b'>)</span> + <span class='s'>")"</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str name<span class='b'>()</span>  <span class='b'>{</span> <span class='k'>return</span> generic.name <span class='b'>}</span>
+  <span class='k'>override</span> Str qname<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.qname <span class='b'>}</span>
+  <span class='k'>override</span> Int flags<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.flags <span class='b'>}</span>
+  <span class='k'>override</span> CFacet? facet<span class='b'>(</span>Str qname<span class='b'>)</span> <span class='b'>{</span> generic.facet<span class='b'>(</span>qname<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool isParameterized<span class='b'>()</span>  <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CType inheritedReturnType<span class='b'>()</span>  <span class='b'>{</span> <span class='k'>return</span> generic.inheritedReturnType <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> CType parent
+  <span class='k'>override</span> <span class='k'>readonly</span> Str signature
+  <span class='k'>override</span> <span class='k'>readonly</span> CMethod? generic
+  <span class='k'>override</span> <span class='k'>readonly</span> CType returnType
+  <span class='k'>override</span> <span class='k'>readonly</span> CParam<span class='b'>[]</span> params
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ParameterizedMethodParam</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> ParameterizedMethodParam : CParam
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>GenericType parent, CParam generic<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.generic = generic
+    <span class='k'>this</span>.paramType = parent.parameterize<span class='b'>(</span>generic.paramType<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str name<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.name <span class='b'>}</span>
+  <span class='k'>override</span> Bool hasDefault<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> generic.hasDefault <span class='b'>}</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"$paramType $name"</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> CType paramType
+  <span class='k'>readonly</span> CParam generic
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='MapType.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#doParameterize'>doParameterize</a></li>
+  <li style='display: block;'><a href='#fits'>fits</a></li>
+  <li style='display: block;'><a href='#flags'>flags</a></li>
+  <li style='display: block;'><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li style='display: block;'><a href='#isValid'>isValid</a></li>
+  <li style='display: block;'><a href='#k'>k</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#signature'>signature</a></li>
+  <li style='display: block;'><a href='#v'>v</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

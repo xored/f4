@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>files_4::Files</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>examples</a></li>
+  <li>&gt;</li>
+  <li><a href='Files.html'>sys-files.html</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='src'>
+<pre>
+<span>#! /usr/bin/env fan
+</span><span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   23 Jul 07  Brian Frank  Creation</span>
+<span class='y'>//   08 Sep 09  Brian Frank  Rework fandoc -&gt; example</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Working with sys::File</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Files
+<span class='b'>{</span>
+  File <span id='temp'>temp</span> := Env.cur.tempDir
+
+  Void <span id='main'>main</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    constructors
+    naming
+    dirs
+    textIO
+    binaryIO
+    objIO
+  <span class='b'>}</span>
+
+  Void <span id='constructors'>constructors</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- constructors ---"</span><span class='b'>)</span>
+    <span class='y'>// construct from Uri</span>
+    show<span class='b'>(</span>File.make<span class='b'>(</span><span class='u'>`dir/foo.txt`</span><span class='b'>)</span>, <span class='s'>"File.make(Uri) longhand"</span><span class='b'>)</span>
+    show<span class='b'>(</span>File<span class='b'>(</span><span class='u'>`dir/foo.txt`</span><span class='b'>)</span>,      <span class='s'>"File.make(Uri) shorthand"</span><span class='b'>)</span>
+    show<span class='b'>(</span><span class='u'>`dir/foo.txt`</span>.toFile,     <span class='s'>"Uri.toFile"</span><span class='b'>)</span>
+
+    <span class='y'>// construct from OS specific path</span>
+    show<span class='b'>(</span>File.os<span class='b'>(</span><span class='s'>"bin\\command.exe"</span><span class='b'>)</span>,               <span class='s'>"File.os"</span><span class='b'>)</span>
+    show<span class='b'>(</span>File.os<span class='b'>(</span><span class='s'>"bin"</span> + File.sep + <span class='s'>"command.exe"</span><span class='b'>)</span>, <span class='s'>"File.os with separator"</span><span class='b'>)</span>
+
+    <span class='y'>// construct File instance against base directory</span>
+    dir := <span class='u'>`/somedir/`</span>.toFile
+    show<span class='b'>(</span>dir + <span class='u'>`foo.txt`</span>,          <span class='s'>"/somedir/foo.txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>dir + <span class='u'>`subdir/foo.txt`</span>,   <span class='s'>"/somedir/subdir/foo.txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>dir + <span class='u'>`../foo.txt`</span>,       <span class='s'>"/foo.txt"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='naming'>naming</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- naming ---"</span><span class='b'>)</span>
+    f := <span class='u'>`/files/today/foo.txt`</span>.toFile
+    show<span class='b'>(</span>f.uri,          <span class='s'>"/files/today/foo.txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.path,         <span class='s'>"[files, today, foo.txt]"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.pathStr,      <span class='s'>"/files/today/foo.txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.name,         <span class='s'>"foo.txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.basename,     <span class='s'>"foo"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.ext,          <span class='s'>"txt"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.parent.path,  <span class='s'>"[files, today]"</span><span class='b'>)</span>
+    show<span class='b'>(</span>f.osPath,       <span class='s'>"\\files\\today\\foo.txt"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='dirs'>dirs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- dirs ---"</span><span class='b'>)</span>
+
+    <span class='y'>// check if file is a directory</span>
+    dir := Env.cur.homeDir
+    show<span class='b'>(</span>dir.isDir,  <span class='s'>"dir.isDir"</span><span class='b'>)</span>
+
+    <span class='y'>// list all files in a directory (files and dirs)</span>
+    show<span class='b'>(</span>dir.list, <span class='s'>"dir.list"</span><span class='b'>)</span>
+
+    <span class='y'>// list file names in a directory</span>
+    show<span class='b'>(</span>dir.list.map |f-&gt;Str| <span class='b'>{</span> f.name <span class='b'>}</span>, <span class='s'>"dir.list mapped to names"</span><span class='b'>)</span>
+
+    <span class='y'>// get sub directories (filter out files)</span>
+    show<span class='b'>(</span>dir.list.findAll |f| <span class='b'>{</span> f.isDir <span class='b'>}</span>, <span class='s'>"list sub-directories hard way"</span><span class='b'>)</span>
+    show<span class='b'>(</span>dir.listDirs,                     <span class='s'>"list sub-directories easy way"</span><span class='b'>)</span>
+
+    <span class='y'>// get child files (filter out sub directories)</span>
+    show<span class='b'>(</span>dir.list.findAll |f| <span class='b'>{</span> !f.isDir <span class='b'>}</span>, <span class='s'>"list child files hard way"</span><span class='b'>)</span>
+    show<span class='b'>(</span>dir.listFiles,                     <span class='s'>"list child files easy way"</span><span class='b'>)</span>
+
+    <span class='y'>// create directory (uri must end in / slash)</span>
+    testDir := temp + <span class='u'>`testdir/`</span>
+    testDir.create
+    show<span class='b'>(</span>testDir, <span class='s'>"create directory"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='textIO'>textIO</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- text IO ---"</span><span class='b'>)</span>
+    f := temp + <span class='u'>`text-io.txt`</span>
+    show<span class='b'>(</span>f, <span class='s'>"creating text file"</span><span class='b'>)</span>
+
+    <span class='y'>// write text file (overwrites existing)</span>
+    f.out.printLine<span class='b'>(</span><span class='s'>"hello"</span><span class='b'>)</span>.close
+
+    <span class='y'>// append to existing text file</span>
+    f.out<span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>.printLine<span class='b'>(</span><span class='s'>"world"</span><span class='b'>)</span>.close
+
+    <span class='y'>// read text file as big string</span>
+    echo<span class='b'>(</span><span class='s'>"\nreadAllStr:"</span><span class='b'>)</span>
+    echo<span class='b'>(</span>f.readAllStr.toCode<span class='b'>)</span>
+
+    <span class='y'>// read text file into list of lints</span>
+    echo<span class='b'>(</span><span class='s'>"\nreadAllLines:"</span><span class='b'>)</span>
+    echo<span class='b'>(</span>f.readAllLines<span class='b'>)</span>
+
+    <span class='y'>// read text file, line by line</span>
+    echo<span class='b'>(</span><span class='s'>"\neachLine:"</span><span class='b'>)</span>
+    f.eachLine |line| <span class='b'>{</span> echo<span class='b'>(</span>line.toCode<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='binaryIO'>binaryIO</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- binary IO ---"</span><span class='b'>)</span>
+    f := temp + <span class='u'>`binary-io.txt`</span>
+    show<span class='b'>(</span>f, <span class='s'>"creating binary file"</span><span class='b'>)</span>
+
+    <span class='y'>// write some binary data</span>
+    out := f.out
+    out.write<span class='b'>(</span>0x11<span class='b'>)</span>
+    out.writeI2<span class='b'>(</span>0x2233<span class='b'>)</span>
+    out.writeI4<span class='b'>(</span>0x44556677<span class='b'>)</span>
+    out.writeUtf<span class='b'>(</span><span class='s'>"abc"</span><span class='b'>)</span>
+    out.close
+
+    <span class='y'>// read binary data back again</span>
+    show<span class='b'>(</span>f.readAllBuf.toHex, <span class='s'>"read entire file into memory buffer"</span><span class='b'>)</span>
+    in := f.in
+    show<span class='b'>(</span>in.read.toHex,      <span class='s'>"read single 8-bit byte"</span><span class='b'>)</span>
+    show<span class='b'>(</span>in.readU2.toHex,    <span class='s'>"read unsigned 16-bit int"</span><span class='b'>)</span>
+    show<span class='b'>(</span>in.readU4.toHex,    <span class='s'>"read unsigned 32-bit int"</span><span class='b'>)</span>
+    show<span class='b'>(</span>in.readUtf,         <span class='s'>"read UTF string"</span><span class='b'>)</span>
+    in.close
+  <span class='b'>}</span>
+
+  Void <span id='objIO'>objIO</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"\n--- object IO ---"</span><span class='b'>)</span>
+    f := temp + <span class='u'>`obj-io.txt`</span>
+    echo<span class='b'>(</span><span class='s'>"creating:"</span><span class='b'>)</span>
+    echo<span class='b'>(</span>f<span class='b'>)</span>
+
+    <span class='y'>// write a serialized object (list of things)</span>
+    f.writeObj<span class='b'>([</span>2, <span class='s'>"hello"</span>, 5sec<span class='b'>])</span>
+
+    <span class='y'>// read object back again</span>
+    show<span class='b'>(</span>f.readObj, <span class='s'>"File.readObj"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='show'>show</span><span class='b'>(</span>Obj? result, Str what<span class='b'>)</span>
+  <span class='b'>{</span>
+    resultStr := <span class='s'>""</span> + result
+    <span class='k'>if</span> <span class='b'>(</span>resultStr.size &gt; 40<span class='b'>)</span> resultStr = resultStr<span class='b'>[</span>0..40<span class='b'>]</span> + <span class='s'>"..."</span>
+    echo<span class='b'>(</span>what.padr<span class='b'>(</span>40<span class='b'>)</span> + <span class='s'>" =&gt; "</span> + resultStr<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span>
+
+
+
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#binaryIO'>binaryIO</a></li>
+  <li style='display: block;'><a href='#constructors'>constructors</a></li>
+  <li style='display: block;'><a href='#dirs'>dirs</a></li>
+  <li style='display: block;'><a href='#main'>main</a></li>
+  <li style='display: block;'><a href='#naming'>naming</a></li>
+  <li style='display: block;'><a href='#objIO'>objIO</a></li>
+  <li style='display: block;'><a href='#show'>show</a></li>
+  <li style='display: block;'><a href='#temp'>temp</a></li>
+  <li style='display: block;'><a href='#textIO'>textIO</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+[11-Nov-2010 Thu 10:09:02AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

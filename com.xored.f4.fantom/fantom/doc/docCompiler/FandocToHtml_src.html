@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>docCompiler::FandocToHtml</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docCompiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FandocToHtml.html'>FandocToHtml</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>docCompiler::FandocToHtml</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='DocCompilerStep.html'>docCompiler::DocCompilerStep</a>
+    docCompiler::FandocToHtml</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   5 May 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+<span class='k'>using</span> fandoc
+
+<span class='z'>**</span>
+<span class='z'>** FandocToHtml generates an HTML file for each fandoc file in pod</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FandocToHtml : DocCompilerStep
+<span class='b'>{</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>DocCompiler compiler<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+  <span class='b'>}</span>
+
+  Void <span id='run'>run</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// first find all the fandoc files and see</span>
+    <span class='y'>// if we can find the index.fandoc file</span>
+    fandocFiles := File<span class='b'>[</span>,<span class='b'>]</span>
+    File? indexFile := <span class='k'>null</span>
+    compiler.pod.files.each |File file|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>file.name == <span class='s'>"pod.fandoc"</span><span class='b'>)</span>  <span class='y'>// handled in PodIndexToHtml</span>
+        <span class='k'>return</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>file.name == <span class='s'>"index.fog"</span><span class='b'>)</span>
+        indexFile = file
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>file.ext == <span class='s'>"fandoc"</span><span class='b'>)</span>
+        fandocFiles.add<span class='b'>(</span>file<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we have an index file process it first</span>
+    <span class='k'>if</span> <span class='b'>(</span>indexFile != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>try</span>
+      <span class='b'>{</span>
+        log.debug<span class='b'>(</span><span class='s'>"  FandocIndex [$indexFile]"</span><span class='b'>)</span>
+        compiler.fandocIndex = indexFile.in.readObj
+        loc := Loc.makeFile<span class='b'>(</span>indexFile<span class='b'>)</span>
+        outFile := compiler.podOutDir + <span class='u'>`index.html`</span>
+        FandocIndexToHtmlGenerator<span class='b'>(</span>compiler, loc, outFile.out<span class='b'>)</span>.generate
+      <span class='b'>}</span>
+      <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+      <span class='b'>{</span>
+        errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot read index.fog"</span>,
+          Loc.makeFile<span class='b'>(</span>indexFile<span class='b'>)</span>, e<span class='b'>))</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// process rest of the files</span>
+    fandocFiles.each |File file| <span class='b'>{</span> generate<span class='b'>(</span>file<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Doc? <span id='generate'>generate</span><span class='b'>(</span>File inFile<span class='b'>)</span>
+
+  <span class='b'>{</span>
+    log.debug<span class='b'>(</span><span class='s'>"  Fandoc [$inFile]"</span><span class='b'>)</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      doc := FandocParser<span class='b'>()</span>.parse<span class='b'>(</span>inFile.name, inFile.in<span class='b'>)</span>
+      loc := Loc<span class='b'>(</span><span class='s'>"${compiler.pod}::${inFile.name}"</span><span class='b'>)</span>
+
+      outFile := compiler.podOutDir + <span class='u'>`${inFile.basename}.html`</span>
+      FandocToHtmlGenerator<span class='b'>(</span>compiler, loc, outFile, doc<span class='b'>)</span>.generate
+
+      <span class='k'>return</span> doc
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot parse fandoc file"</span>, Loc.makeFile<span class='b'>(</span>inFile<span class='b'>)</span>, e<span class='b'>))</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FandocToHtml.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#generate'>generate</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#run'>run</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docCompiler 1.0.56
+[11-Nov-2010 Thu 10:08:23AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

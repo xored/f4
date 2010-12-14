@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::Expr</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='Expr.html'>Expr</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>compiler::Expr</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Node.html'>compiler::Node</a>
+    compiler::Expr</pre>
+</div>
+<div class='detail'>
+
+<p>Expr</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='asTableSwitchCase' class='method'>asTableSwitchCase<a href='Expr_src.html#asTableSwitchCase'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Int.html'>Int</a>? asTableSwitchCase()</code></p>
+
+<p>Return this expression as an Int literal usable in a tableswitch, or null if this Expr doesn't represent a constant Int.  Expressions which work as table switch cases: int literals and enum constants</p>
+</dd>
+<dt id='assignRequiresTempVar' class='method'>assignRequiresTempVar<a href='Expr_src.html#assignRequiresTempVar'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> assignRequiresTempVar()</code></p>
+
+<p>Assignments to instance fields require a temporary local variable.</p>
+</dd>
+<dt id='assignTarget' class='method'>assignTarget<a href='Expr_src.html#assignTarget'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Obj.html'>Obj</a>? assignTarget()</code></p>
+
+<p>If this expression performs assignment, then return the target of that assignment.  Otherwise return null.</p>
+</dd>
+<dt id='commonType' class='method'>commonType<a href='Expr_src.html#commonType'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='CType.html'>CType</a> commonType(<a href='CNamespace.html'>CNamespace</a> ns, <a href='Expr.html'>Expr</a>[] exprs)</code></p>
+
+<p>Given a list of Expr instances, find the common base type they all share.  This method does not take into account the null literal.  It is used for type inference for lists and maps.</p>
+</dd>
+<dt id='ctype' class='field'>ctype<a href='Expr_src.html#ctype'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CType.html'>CType</a>? ctype</code></p>
+</dd>
+<dt id='ctypes' class='method'>ctypes<a href='Expr_src.html#ctypes'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='CType.html'>CType</a>[] ctypes(<a href='Expr.html'>Expr</a>[] exprs)</code></p>
+
+<p>Map the list of expressions into their list of types</p>
+</dd>
+<dt id='id' class='field'>id<a href='Expr_src.html#id'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='ExprId.html'>ExprId</a> id</code></p>
+</dd>
+<dt id='isAlwaysNullable' class='method'>isAlwaysNullable<a href='Expr_src.html#isAlwaysNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isAlwaysNullable()</code></p>
+
+<p>Return if this expression is guaranteed to sometimes return a null result (safe invoke, as, etc)</p>
+</dd>
+<dt id='isAssignable' class='method'>isAssignable<a href='Expr_src.html#isAssignable'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isAssignable()</code></p>
+
+<p>Return if this expression can be used as the left hand side of an assignment expression.</p>
+</dd>
+<dt id='isCond' class='method'>isCond<a href='Expr_src.html#isCond'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isCond()</code></p>
+
+<p>Is this a boolean conditional (boolOr/boolAnd)</p>
+</dd>
+<dt id='isDefiniteAssign' class='method'>isDefiniteAssign<a href='Expr_src.html#isDefiniteAssign'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isDefiniteAssign(|<a href='Expr.html'>Expr</a> -> <a href='../sys/Bool.html'>Bool</a>| f)</code></p>
+
+<p>If this an assignment expression, then return the result of calling the given function with the LHS. Otherwise return false.</p>
+</dd>
+<dt id='isStmt' class='method'>isStmt<a href='Expr_src.html#isStmt'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isStmt()</code></p>
+
+<p>Does this expression make up a complete statement. If you override this to true, then you must make sure the expr is popped in CodeAsm.</p>
+</dd>
+<dt id='leave' class='field'>leave<a href='Expr_src.html#leave'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> leave := true { protected set }</code></p>
+</dd>
+<dt id='make' class='method'>make<a href='Expr_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='Loc.html'>Loc</a> loc, <a href='ExprId.html'>ExprId</a> id)</code></p>
+</dd>
+<dt id='makeForLiteral' class='method'>makeForLiteral<a href='Expr_src.html#makeForLiteral'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Expr.html'>Expr</a> makeForLiteral(<a href='Loc.html'>Loc</a> loc, <a href='CNamespace.html'>CNamespace</a> ns, <a href='../sys/Obj.html'>Obj</a> val)</code></p>
+
+<p>Make an Expr which will serialize the given literal.</p>
+</dd>
+<dt id='noLeave' class='method'>noLeave<a href='Expr_src.html#noLeave'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a> noLeave()</code></p>
+
+<p>Set this expression to not be left on the stack.</p>
+</dd>
+<dt id='print' class='method'>print<a href='Expr_src.html#print'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> print(<a href='AstWriter.html'>AstWriter</a> out)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Node.html#print'>compiler::Node.print</a></p>
+<p>Doc inherited from <a href='Node.html#print'>compiler::Node.print</a></p>
+</div>
+
+<p>Pretty print this node and it's descendants.</p>
+</dd>
+<dt id='sameVarAs' class='method'>sameVarAs<a href='Expr_src.html#sameVarAs'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> sameVarAs(<a href='Expr.html'>Expr</a> that)</code></p>
+
+<p>Return if this expression represents the same variable or field as that.  This is used for self assignment checks.</p>
+</dd>
+<dt id='serialize' class='method'>serialize<a href='Expr_src.html#serialize'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Str.html'>Str</a> serialize()</code></p>
+
+<p>Return this expression as serialization text or throw exception if not serializable.</p>
+</dd>
+<dt id='synthetic' class='method'>synthetic<a href='Expr_src.html#synthetic'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> synthetic()</code></p>
+
+<p>Was this expression generated by the compiler (not necessarily everything auto-generated has this flag true, but we set in cases where error checking needs to be handled special)</p>
+</dd>
+<dt id='toDocStr' class='method'>toDocStr<a href='Expr_src.html#toDocStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? toDocStr()</code></p>
+
+<p>Get this expression as a string suitable for documentation.</p>
+</dd>
+<dt id='toStmt' class='method'>toStmt<a href='Expr_src.html#toStmt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='ExprStmt.html'>ExprStmt</a> toStmt()</code></p>
+
+<p>Return this expression as an ExprStmt</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Expr_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+<p>Doc inherited from <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return a string representation of this object.</p>
+</dd>
+<dt id='toTypeStr' class='method'>toTypeStr<a href='Expr_src.html#toTypeStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> toTypeStr()</code></p>
+
+<p>Get this expression's type as a string for error reporting.</p>
+</dd>
+<dt id='walk' class='method'>walk<a href='Expr_src.html#walk'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a> walk(<a href='Visitor.html'>Visitor</a> v)</code></p>
+</dd>
+<dt id='walkChildren' class='method'>walkChildren<a href='Expr_src.html#walkChildren'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> walkChildren(<a href='Visitor.html'>Visitor</a> v)</code></p>
+</dd>
+<dt id='walkExpr' class='method'>walkExpr<a href='Expr_src.html#walkExpr'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Expr.html'>Expr</a>? walkExpr(<a href='Visitor.html'>Visitor</a> v, <a href='Expr.html'>Expr</a>? expr)</code></p>
+</dd>
+<dt id='walkExprs' class='method'>walkExprs<a href='Expr_src.html#walkExprs'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Expr.html'>Expr</a>[] walkExprs(<a href='Visitor.html'>Visitor</a> v, <a href='Expr.html'>Expr</a>?[] exprs)</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Expr_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#asTableSwitchCase'>asTableSwitchCase</a></li>
+  <li><a href='#assignRequiresTempVar'>assignRequiresTempVar</a></li>
+  <li><a href='#assignTarget'>assignTarget</a></li>
+  <li><a href='#commonType'>commonType</a></li>
+  <li><a href='#ctype'>ctype</a></li>
+  <li><a href='#ctypes'>ctypes</a></li>
+  <li><a href='#id'>id</a></li>
+  <li><a href='#isAlwaysNullable'>isAlwaysNullable</a></li>
+  <li><a href='#isAssignable'>isAssignable</a></li>
+  <li><a href='#isCond'>isCond</a></li>
+  <li><a href='#isDefiniteAssign'>isDefiniteAssign</a></li>
+  <li><a href='#isStmt'>isStmt</a></li>
+  <li><a href='#leave'>leave</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#makeForLiteral'>makeForLiteral</a></li>
+  <li><a href='#noLeave'>noLeave</a></li>
+  <li><a href='#print'>print</a></li>
+  <li><a href='#sameVarAs'>sameVarAs</a></li>
+  <li><a href='#serialize'>serialize</a></li>
+  <li><a href='#synthetic'>synthetic</a></li>
+  <li><a href='#toDocStr'>toDocStr</a></li>
+  <li><a href='#toStmt'>toStmt</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#toTypeStr'>toTypeStr</a></li>
+  <li><a href='#walk'>walk</a></li>
+  <li><a href='#walkChildren'>walkChildren</a></li>
+  <li><a href='#walkExpr'>walkExpr</a></li>
+  <li><a href='#walkExprs'>walkExprs</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

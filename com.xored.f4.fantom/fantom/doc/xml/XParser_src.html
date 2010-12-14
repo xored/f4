@@ -1,0 +1,1180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml::XParser</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='XParser.html'>XParser</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>xml::XParser</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  xml::XParser</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   21 Dec 01  Brian Frank  Original public domain Java version</span>
+<span class='y'>//    7 Nov 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** XParser is a simple, lightweight XML parser.  It may be</span>
+<span class='z'>** used as a pull parser by iterating through the element</span>
+<span class='z'>** and text sections of an XML stream or it may be used to</span>
+<span class='z'>** read an entire XML tree into memory as XElems.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> XParser
+<span class='b'>{</span>
+
+<span class='y'>////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct input stream to read.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>InStream in<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.in = in
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// "DOM" API</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the entire document into memory as a tree</span>
+  <span class='z'>** of XElems and optionally close the underlying input</span>
+  <span class='z'>** stream.</span>
+  <span class='z'>**</span>
+  XDoc <span id='parseDoc'>parseDoc</span><span class='b'>(</span>Bool close := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      parseProlog
+      doc.root = parseElem<span class='b'>(</span>close<span class='b'>)</span>
+      <span class='k'>return</span> doc
+    <span class='b'>}</span>
+    <span class='k'>finally</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>close<span class='b'>)</span> <span class='k'>this</span>.close
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the current element entirely into memory as a tree</span>
+  <span class='z'>** of XElems and optionally close the underlying input</span>
+  <span class='z'>** stream.</span>
+  <span class='z'>**</span>
+  XElem <span id='parseElem'>parseElem</span><span class='b'>(</span>Bool close := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      depth := 1
+      root := elem.copy
+      XElem? cur := root
+      <span class='k'>while</span> <span class='b'>(</span>depth &gt; 0<span class='b'>)</span>
+      <span class='b'>{</span>
+        nodeType := next
+        <span class='k'>if</span> <span class='b'>(</span>nodeType == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> eosErr
+        <span class='k'>switch</span> <span class='b'>(</span>nodeType<span class='b'>)</span>
+        <span class='b'>{</span>
+          <span class='k'>case</span> XNodeType.elemStart:
+            oldCur := cur
+            cur = elem.copy
+            oldCur.add<span class='b'>(</span>cur<span class='b'>)</span>
+            depth++
+          <span class='k'>case</span> XNodeType.elemEnd:
+            cur = cur.parent
+            depth--
+          <span class='k'>case</span> XNodeType.text:
+            cur.add<span class='b'>(</span>text.copy<span class='b'>)</span>
+          <span class='k'>case</span> XNodeType.pi:
+            cur.add<span class='b'>(</span>curPi<span class='b'>)</span>
+          <span class='k'>default</span>:
+            <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"unhandled node type: $nodeType"</span><span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      <span class='k'>return</span> root
+    <span class='b'>}</span>
+    <span class='k'>finally</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>close<span class='b'>)</span> <span class='k'>this</span>.close
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Pull API</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Advance the parser to the next node and return the node type.</span>
+  <span class='z'>** Return the current node type:</span>
+  <span class='z'>**   - `XNodeType.elemStart`</span>
+  <span class='z'>**   - `XNodeType.elemEnd`</span>
+  <span class='z'>**   - `XNodeType.text`</span>
+  <span class='z'>**   - `XNodeType.pi`</span>
+  <span class='z'>**   - null indicates end of stream</span>
+  <span class='z'>** Also see `nodeType`.</span>
+  <span class='z'>**</span>
+  XNodeType? <span id='next'>next</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>popStack<span class='b'>)</span>
+    <span class='b'>{</span>
+      popStack = <span class='k'>false</span>
+      pop
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>emptyElem<span class='b'>)</span>
+    <span class='b'>{</span>
+      emptyElem = <span class='k'>false</span>
+      popStack = <span class='k'>true</span> <span class='y'>// pop stack on next call to next()</span>
+      <span class='k'>return</span> nodeType = XNodeType.elemEnd
+    <span class='b'>}</span>
+
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c := 0
+      <span class='k'>try</span> <span class='b'>{</span> c = read <span class='b'>}</span> <span class='k'>catch</span> <span class='b'>(</span>XIncompleteErr e<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> nodeType = <span class='k'>null</span> <span class='b'>}</span>
+
+      <span class='y'>// markup</span>
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&lt;'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        c = read
+
+        <span class='y'>// comment, CDATA, or DOCType</span>
+        <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'!'</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          c = read
+          <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'-'</span><span class='b'>)</span>
+          <span class='b'>{</span>
+            c = read
+            <span class='k'>if</span> <span class='b'>(</span>c != <span class='s'>'-'</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting comment"</span><span class='b'>)</span>
+            skipComment
+            <span class='k'>continue</span>
+          <span class='b'>}</span>
+          <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'['</span><span class='b'>)</span>
+          <span class='b'>{</span>
+            consume<span class='b'>(</span><span class='s'>"CDATA["</span><span class='b'>)</span>
+            parseCDATA<span class='b'>()</span>
+            <span class='k'>return</span> nodeType = XNodeType.text
+          <span class='b'>}</span>
+          <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'D'</span><span class='b'>)</span>
+          <span class='b'>{</span>
+             consume<span class='b'>(</span><span class='s'>"OCTYPE"</span><span class='b'>)</span>
+             parseDocType
+             <span class='k'>continue</span>
+          <span class='b'>}</span>
+          <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Unexpected markup"</span><span class='b'>)</span>
+        <span class='b'>}</span>
+
+        <span class='y'>// processor instruction</span>
+        <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'?'</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          parsePi
+          <span class='k'>if</span> <span class='b'>(</span>curPi.target.equalsIgnoreCase<span class='b'>(</span><span class='s'>"xml"</span><span class='b'>))</span> <span class='k'>continue</span>
+          <span class='k'>if</span> <span class='b'>(</span>depth &lt; 0<span class='b'>)</span> doc.add<span class='b'>(</span>curPi<span class='b'>)</span>
+          <span class='k'>return</span> nodeType = XNodeType.pi
+        <span class='b'>}</span>
+
+        <span class='y'>// element end</span>
+        <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'/'</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          parseElemEnd
+          popStack = <span class='k'>true</span>  <span class='y'>// pop stack on next call to next()</span>
+          <span class='k'>return</span> nodeType = XNodeType.elemEnd
+        <span class='b'>}</span>
+
+        <span class='y'>// must be element start</span>
+        <span class='k'>else</span>
+        <span class='b'>{</span>
+          parseElemStart<span class='b'>(</span>c<span class='b'>)</span>
+          <span class='k'>return</span> nodeType = XNodeType.elemStart
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// char data</span>
+      <span class='k'>if</span> <span class='b'>(</span>!parseText<span class='b'>(</span>c<span class='b'>))</span> <span class='k'>continue</span>
+      <span class='k'>return</span> nodeType = XNodeType.text
+    <span class='b'>}</span>
+
+    <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"illegal state"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Skip parses all the content until reaching the end tag</span>
+  <span class='z'>** of the specified depth.  When this method returns, the</span>
+  <span class='z'>** next call to `next` will return the node immediately</span>
+  <span class='z'>** following the end tag.</span>
+  <span class='z'>**</span>
+  Void <span id='skip'>skip</span><span class='b'>(</span>Int toDepth := depth<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>nodeType === XNodeType.elemEnd &amp;&amp; depth == toDepth<span class='b'>)</span> <span class='k'>return</span>
+      nodeType = next<span class='b'>()</span>
+      <span class='k'>if</span> <span class='b'>(</span>nodeType == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> eosErr
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the root document node.</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> XDoc <span id='doc'>doc</span> := XDoc<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the current node type constant which is always the</span>
+  <span class='z'>** result of the last call to `next`.  Node type will be:</span>
+  <span class='z'>**   - `XNodeType.elemStart`</span>
+  <span class='z'>**   - `XNodeType.elemEnd`</span>
+  <span class='z'>**   - `XNodeType.text`</span>
+  <span class='z'>**   - `XNodeType.pi`</span>
+  <span class='z'>**   - null indicates end of stream</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> XNodeType? <span id='nodeType'>nodeType</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the depth of the current element with the document.</span>
+  <span class='z'>** A depth of zero indicates the root element.  A depth</span>
+  <span class='z'>** of -1 indicates a position before or after the root element.</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> Int <span id='depth'>depth</span> := -1
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the current element if `nodeType` is 'elemStart' or</span>
+  <span class='z'>** 'elemEnd'.  If `nodeType` is 'text' or 'pi' then this is the</span>
+  <span class='z'>** parent element.  After 'elemEnd' this XElem instance is no</span>
+  <span class='z'>** longer valid and will be reused for further processing.  If</span>
+  <span class='z'>** depth is -1 return null.</span>
+  <span class='z'>**</span>
+  XElem? <span id='elem'>elem</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>depth &lt; 0<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> stack<span class='b'>[</span>depth<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the element at the specified depth.  Depth must be between 0</span>
+  <span class='z'>** and `depth` inclusively.  Calling 'elemAt(0)' will return the</span>
+  <span class='z'>** root element and 'elemAt(depth)' returns the current element.</span>
+  <span class='z'>** If depth is invalid IndexErr is thrown.</span>
+  <span class='z'>**</span>
+  XElem <span id='elemAt'>elemAt</span><span class='b'>(</span>Int depth<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>depth &lt; 0 || depth &gt; <span class='k'>this</span>.depth<span class='b'>)</span> <span class='k'>throw</span> IndexErr<span class='b'>(</span>depth.toStr<span class='b'>)</span>
+    <span class='k'>return</span> stack<span class='b'>[</span>depth<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If the current type is 'text' the XText instance used to</span>
+  <span class='z'>** store the character data.  After a call to `next`</span>
+  <span class='z'>** this XText instance is no longer valid and will be reused for</span>
+  <span class='z'>** further processing.  If the current type is not 'text' then</span>
+  <span class='z'>** return null.</span>
+  <span class='z'>**</span>
+  XText? <span id='text'>text</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>nodeType !== XNodeType.text<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> XText<span class='b'>(</span>buf.toStr<span class='b'>)</span> <span class='b'>{</span> it.cdata = <span class='k'>this</span>.cdata <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** if the current node type is 'pi' return the XPi instance</span>
+  <span class='z'>** otherwise return null.</span>
+  <span class='z'>**</span>
+  XPi? <span id='pi'>pi</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>nodeType !== XNodeType.pi<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> curPi
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Current one based line number.</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> Int <span id='line'>line</span> := 1
+
+  <span class='z'>**</span>
+  <span class='z'>** Current one based column number.</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> Int <span id='col'>col</span> := 1
+
+  <span class='z'>**</span>
+  <span class='z'>** Close the underlying input stream.  Return true if the stream</span>
+  <span class='z'>** was closed successfully or false if the stream was closed abnormally.</span>
+  <span class='z'>**</span>
+  Bool <span id='close'>close</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> in.close
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Parse Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the prolog up to the root element.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseProlog'>parseProlog</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>while</span> <span class='b'>(</span>next<span class='b'>()</span> !== XNodeType.elemStart<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// processing instructions are ok in prolog</span>
+      <span class='k'>if</span> <span class='b'>(</span>nodeType === XNodeType.pi<span class='b'>)</span> <span class='k'>continue</span>
+
+      <span class='y'>// anything else is bad</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting element start, not $nodeType"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse '[28]' DocType := &lt;!DOCTYPE ... &gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseDocType'>parseDocType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// parse root element name</span>
+    skipSpace
+    rootElem := parseName<span class='b'>(</span>read, <span class='k'>true</span><span class='b'>)</span>
+
+    <span class='y'>// check for publicId/systemId</span>
+    skipSpace
+    Str? publicId := <span class='k'>null</span>
+    Str? systemId := <span class='k'>null</span>
+    c := read
+    <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'P'</span> || c == <span class='s'>'S'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      key := parseName<span class='b'>(</span>c, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>key == <span class='s'>"PUBLIC"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        skipSpace; c = read
+        <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'"'</span> || c == <span class='s'>'\''</span><span class='b'>)</span> publicId = parseQuotedStr<span class='b'>(</span>c<span class='b'>)</span>
+        <span class='k'>else</span> pushback = c
+
+        skipSpace; c = read
+        <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'"'</span> || c == <span class='s'>'\''</span><span class='b'>)</span> systemId = parseQuotedStr<span class='b'>(</span>c<span class='b'>)</span>
+        <span class='k'>else</span> pushback = c
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>key == <span class='s'>"SYSTEM"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        skipSpace; c = read
+        <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'"'</span> || c == <span class='s'>'\''</span><span class='b'>)</span> systemId = parseQuotedStr<span class='b'>(</span>c<span class='b'>)</span>
+        <span class='k'>else</span> pushback = c
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> pushback = c
+
+    <span class='y'>// init XDocType</span>
+    docType := doc.docType = XDocType<span class='b'>()</span>
+    docType.rootElem = rootElem
+    docType.publicId = publicId
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>systemId != <span class='k'>null</span><span class='b'>)</span> docType.systemId = Uri.decode<span class='b'>(</span>systemId<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Invalid system id uri: $systemId"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// skip the rest of the doctype</span>
+    depth := 1
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c = read
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&lt;'</span><span class='b'>)</span> depth++
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&gt;'</span><span class='b'>)</span> depth--
+      <span class='k'>if</span> <span class='b'>(</span>depth == 0<span class='b'>)</span> <span class='k'>return</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a '[40]' element start production.  We are passed</span>
+  <span class='z'>** the first character after the &lt; (beginning of name).</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseElemStart'>parseElemStart</span><span class='b'>(</span>Int c<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// get our next XElem onto stack to reuse</span>
+    elem := push
+    startLine := <span class='k'>this</span>.line
+    startCol := <span class='k'>this</span>.col - 1
+
+    <span class='y'>// prefix / name</span>
+    parseQName<span class='b'>(</span>c<span class='b'>)</span>
+    elem.name = name
+    elem.line = line
+    prefix := <span class='k'>this</span>.prefix
+    resolveAttrNs := <span class='k'>false</span>
+
+    <span class='y'>// attributes</span>
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      sp := skipSpace
+      c = read
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&gt;'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>break</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'/'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        c = read
+        <span class='k'>if</span> <span class='b'>(</span>c != <span class='s'>'&gt;'</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting /&gt; empty element"</span><span class='b'>)</span>
+        emptyElem = <span class='k'>true</span>
+        <span class='k'>break</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>!sp<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting space before attribute"</span>, line, col-1<span class='b'>)</span>
+        resolveAttrNs = resolveAttrNs.or<span class='b'>(</span>parseAttr<span class='b'>(</span>c, elem<span class='b'>))</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// after reading all the attributes, now it is safe to</span>
+    <span class='y'>// resolve prefixes into their actual XNs instances</span>
+    <span class='y'>// first resolve the element itself...</span>
+    <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='k'>null</span><span class='b'>)</span>
+      elem.ns = defaultNs
+    <span class='k'>else</span>
+      elem.ns = prefixToNs<span class='b'>(</span>prefix, startLine, startCol, <span class='k'>true</span><span class='b'>)</span>
+
+    <span class='y'>// if we detected an unresolved attribute namespace prefix, try</span>
+    <span class='y'>// to resolve it now that we've fully parsed the start tag</span>
+    <span class='k'>if</span> <span class='b'>(</span>resolveAttrNs<span class='b'>)</span>
+    <span class='b'>{</span>
+      elem.eachAttr |XAttr a, Int i|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>a.uri !== unresolvedNs<span class='b'>)</span> <span class='k'>return</span>
+        ns := prefixToNs<span class='b'>(</span>a.ns.prefix, startLine, startCol, <span class='k'>true</span><span class='b'>)</span>
+        elem.attrList<span class='b'>[</span>i<span class='b'>]</span> = XAttr<span class='b'>(</span>a.name, a.val, ns<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse an element end production.  Next character</span>
+  <span class='z'>** should be first char of element name.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseElemEnd'>parseElemEnd</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// prefix / name</span>
+    line := <span class='k'>this</span>.line
+    col  := <span class='k'>this</span>.col
+    parseQName<span class='b'>(</span>read<span class='b'>)</span>
+    XNs? ns := <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='k'>null</span><span class='b'>)</span>
+      ns = defaultNs
+    <span class='k'>else</span>
+      ns = prefixToNs<span class='b'>(</span>prefix, line, col, <span class='k'>true</span><span class='b'>)</span>
+
+    <span class='y'>// get end element</span>
+    <span class='k'>if</span> <span class='b'>(</span>depth &lt; 0<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Element end without start"</span>, line, col<span class='b'>)</span>
+    elem := stack<span class='b'>[</span>depth<span class='b'>]</span>
+
+    <span class='y'>// verify</span>
+    <span class='k'>if</span> <span class='b'>(</span>elem.name != name || elem.ns !== ns<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting end of element '${elem.qname}' (start line ${elem.line})"</span>, line, col<span class='b'>)</span>
+
+    skipSpace
+    <span class='k'>if</span> <span class='b'>(</span>read != <span class='s'>'&gt;'</span><span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting &gt; end of element"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a '[41]' attribute production.  We are passed</span>
+  <span class='z'>** the first character of the attribute name.  Return</span>
+  <span class='z'>** if the attribute had a unresolved namespace prefix.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='parseAttr'>parseAttr</span><span class='b'>(</span>Int c, XElem elem<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// prefix / name</span>
+    startLine := <span class='k'>this</span>.line
+    startCol := <span class='k'>this</span>.col - 1
+    parseQName<span class='b'>(</span>c<span class='b'>)</span>
+    prefix := <span class='k'>this</span>.prefix
+    name   := <span class='k'>this</span>.name
+
+    <span class='y'>// Eq [25] production</span>
+    skipSpace
+    <span class='k'>if</span> <span class='b'>(</span>read != <span class='s'>'='</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting '='"</span>, line, col-1<span class='b'>)</span>
+    skipSpace
+
+    <span class='y'>// String literal</span>
+    c = read
+    <span class='k'>if</span> <span class='b'>(</span>c != <span class='s'>'"'</span> &amp;&amp; c != <span class='s'>'\''</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting quoted attribute value"</span>, line, col-1<span class='b'>)</span>
+    val := parseQuotedStr<span class='b'>(</span>c<span class='b'>)</span>
+
+    <span class='y'>// check namespace declaration "xmlns", "xmlns:foo", or "xml:foo"</span>
+    <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>name == <span class='s'>"xmlns"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        pushNs<span class='b'>(</span><span class='s'>""</span>, val, startLine, startCol<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='s'>"xmlns"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        pushNs<span class='b'>(</span>name, val, startLine, startCol<span class='b'>)</span>
+        prefix = <span class='k'>null</span>
+        name = <span class='s'>"xmlns:"</span> + name
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>prefix.equalsIgnoreCase<span class='b'>(</span><span class='s'>"xml"</span><span class='b'>))</span>
+      <span class='b'>{</span>
+        prefix = <span class='k'>null</span>
+        name = <span class='s'>"xml:"</span> + name
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if no prefix then add unqualified attribute</span>
+    <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='k'>null</span><span class='b'>)</span> <span class='b'>{</span> elem.addAttr<span class='b'>(</span>name, val<span class='b'>)</span>; <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+
+    <span class='y'>// attempt to resolve prefix to namespace, this may fail if</span>
+    <span class='y'>// prefix is in the current element, in which case we return</span>
+    <span class='y'>// true to resolve after the element start tag is complete</span>
+    ns := prefixToNs<span class='b'>(</span>prefix, line, col, <span class='k'>false</span><span class='b'>)</span>
+    elem.addAttr<span class='b'>(</span>name, val, ns<span class='b'>)</span>
+    <span class='k'>return</span> ns.uri === unresolvedNs
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse an element or attribute name of the</span>
+  <span class='z'>** format '[&lt;prefix&gt;:]name' and store result in</span>
+  <span class='z'>** prefix and name fields.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseQName'>parseQName</span><span class='b'>(</span>Int c<span class='b'>)</span>
+  <span class='b'>{</span>
+    prefix = <span class='k'>null</span>
+    name = parseName<span class='b'>(</span>c, <span class='k'>false</span><span class='b'>)</span>
+
+    c = read
+    <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>':'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      prefix = name
+      name = parseName<span class='b'>(</span>read, <span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      pushback = c
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a quoted string token "..." or '...'</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Str <span id='parseQuotedStr'>parseQuotedStr</span><span class='b'>(</span>Int quote<span class='b'>)</span>
+  <span class='b'>{</span>
+    buf := <span class='k'>this</span>.buf
+    buf.clear
+    c := 0
+    <span class='k'>while</span> <span class='b'>((</span>c = read<span class='b'>)</span> != quote<span class='b'>)</span> buf.addChar<span class='b'>(</span>toCharData<span class='b'>(</span>c<span class='b'>))</span>
+    <span class='k'>return</span> bufToStr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse an XML name token.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Str <span id='parseName'>parseName</span><span class='b'>(</span>Int c, Bool includeColon<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!isName<span class='b'>(</span>c<span class='b'>))</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected XML name"</span><span class='b'>)</span>
+
+    buf := <span class='k'>this</span>.buf
+    buf.clear.addChar<span class='b'>(</span>c<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>includeColon<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>while</span> <span class='b'>(</span>isName<span class='b'>(</span>c = read<span class='b'>)</span> || c == <span class='s'>':'</span><span class='b'>)</span> buf.addChar<span class='b'>(</span>c<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>while</span> <span class='b'>(</span>isName<span class='b'>(</span>c = read<span class='b'>))</span> buf.addChar<span class='b'>(</span>c<span class='b'>)</span>
+    <span class='b'>}</span>
+    pushback = c
+    <span class='k'>return</span> bufToStr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a CDATA section.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parseCDATA'>parseCDATA</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    buf.clear
+    cdata = <span class='k'>true</span>
+
+    c2 := -1; c1 := -1; c0 := -1
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c2 = c1
+      c1 = c0
+      c0 = read
+      <span class='k'>if</span> <span class='b'>(</span>c2 == <span class='s'>']'</span> &amp;&amp; c1 == <span class='s'>']'</span> &amp;&amp; c0 == <span class='s'>'&gt;'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        buf.remove<span class='b'>(</span>-1<span class='b'>)</span>.remove<span class='b'>(</span>-1<span class='b'>)</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+      buf.addChar<span class='b'>(</span>c0<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a character data text section.  Return</span>
+  <span class='z'>** false if all the text was whitespace only.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='parseText'>parseText</span><span class='b'>(</span>Int c<span class='b'>)</span>
+  <span class='b'>{</span>
+    line := <span class='k'>this</span>.line
+    col  := <span class='k'>this</span>.col - 1
+    gotText := !isSpace<span class='b'>(</span>c<span class='b'>)</span>
+    buf.clear.addChar<span class='b'>(</span>toCharData<span class='b'>(</span>c<span class='b'>))</span>
+    cdata = <span class='k'>false</span>
+
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>try</span>
+      <span class='b'>{</span>
+        c = read
+      <span class='b'>}</span>
+      <span class='k'>catch</span> <span class='b'>(</span>XIncompleteErr e<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>!gotText<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+        <span class='k'>if</span> <span class='b'>(</span>depth &lt; 0<span class='b'>)</span> <span class='k'>throw</span> XErr<span class='b'>(</span><span class='s'>"Expecting root element"</span>, line, col<span class='b'>)</span>
+        <span class='k'>throw</span> e
+      <span class='b'>}</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&lt;'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        pushback = c
+        <span class='k'>if</span> <span class='b'>(</span>gotText &amp;&amp; depth &lt; 0<span class='b'>)</span> <span class='k'>throw</span> XErr<span class='b'>(</span><span class='s'>"Expecting root element"</span>, line, col<span class='b'>)</span>
+        <span class='k'>return</span> gotText
+      <span class='b'>}</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>!isSpace<span class='b'>(</span>c<span class='b'>))</span> gotText = <span class='k'>true</span>
+      buf.addChar<span class='b'>(</span>toCharData<span class='b'>(</span>c<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"illegal state"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse '[16]' PI := &lt;? ... ?&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='parsePi'>parsePi</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    target := parseName<span class='b'>(</span>read, <span class='k'>true</span><span class='b'>)</span>
+    skipSpace
+    buf.clear
+    c1 := -1; c0 := -1
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c1 = c0
+      c0 = read
+      <span class='k'>if</span> <span class='b'>(</span>c1 == <span class='s'>'?'</span> &amp;&amp; c0 == <span class='s'>'&gt;'</span><span class='b'>)</span> <span class='k'>break</span>
+      buf.addChar<span class='b'>(</span>c0<span class='b'>)</span>
+    <span class='b'>}</span>
+    buf.remove<span class='b'>(</span>-1<span class='b'>)</span>
+    curPi = XPi<span class='b'>(</span>target, buf.toStr<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Skip Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Skip '[3]' Space = ' ' '\n' '\r' '\t'</span>
+  <span class='z'>** Return true if one or more space chars found.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='skipSpace'>skipSpace</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    c := read
+    <span class='k'>if</span> <span class='b'>(</span>!isSpace<span class='b'>(</span>c<span class='b'>))</span>
+    <span class='b'>{</span>
+      pushback = c
+      <span class='k'>return</span> <span class='k'>false</span>
+    <span class='b'>}</span>
+
+    <span class='k'>while</span> <span class='b'>(</span>isSpace<span class='b'>(</span>c = read<span class='b'>()))</span> <span class='b'>{}</span>
+    pushback = c
+    <span class='k'>return</span> <span class='k'>true</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Skip '[15]' Comment := &lt;!-- ... --&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='skipComment'>skipComment</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    c2 := -1; c1 := -1; c0 := -1
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c2 = c1
+      c1 = c0
+      c0 = read
+      <span class='k'>if</span> <span class='b'>(</span>c2 == <span class='s'>'-'</span> &amp;&amp; c1 == <span class='s'>'-'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>c0 != <span class='s'>'&gt;'</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Cannot have -- in middle of comment"</span><span class='b'>)</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Consume Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read from the stream and verify that the next</span>
+  <span class='z'>** characters match the specified String.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='consume'>consume</span><span class='b'>(</span>Str s<span class='b'>)</span>
+  <span class='b'>{</span>
+    s.each |Int expected|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>expected != read<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected '"</span> + expected.toChar + <span class='s'>"'"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Read</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next character from the stream:</span>
+  <span class='z'>**  - handle pushbacks</span>
+  <span class='z'>**  - updates the line and col count</span>
+  <span class='z'>**  - normalizes line breaks</span>
+  <span class='z'>**  - throw EOFException if end of stream reached</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int <span id='read'>read</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// check pushback</span>
+    c := pushback
+    <span class='k'>if</span> <span class='b'>(</span>c != -1<span class='b'>)</span> <span class='b'>{</span> pushback = -1; <span class='k'>return</span> c <span class='b'>}</span>
+
+    <span class='y'>// read the next character</span>
+    cx := in.readChar
+    <span class='k'>if</span> <span class='b'>(</span>cx == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> eosErr
+    c = cx
+
+    <span class='y'>// update line:col and normalize line breaks (2.11)</span>
+    <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'\n'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      line++; col=1
+      <span class='k'>return</span> <span class='s'>'\n'</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'\r'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      lookAhead := in.readChar
+      <span class='k'>if</span> <span class='b'>(</span>lookAhead != <span class='k'>null</span> &amp;&amp; lookAhead != <span class='s'>'\n'</span><span class='b'>)</span> pushback = lookAhead
+      line++; col=0
+      <span class='k'>return</span> <span class='s'>'\n'</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      col++
+      <span class='k'>return</span> c
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If the specified char is the amp (&amp;) then resolve</span>
+  <span class='z'>** the entity otherwise just return the char.  If the</span>
+  <span class='z'>** character is markup then throw an exception.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int <span id='toCharData'>toCharData</span><span class='b'>(</span>Int c<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'&lt;'</span><span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Invalid markup in char data"</span><span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>c != <span class='s'>'&amp;'</span><span class='b'>)</span> <span class='k'>return</span> c
+
+    c = read
+
+    <span class='y'>// &amp;#_; and &amp;#x_;</span>
+    <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'#'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      c = in.readChar; col++
+      x := 0
+      base := 10
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='s'>'x'</span><span class='b'>)</span> base = 16
+      <span class='k'>else</span> x = toNum<span class='b'>(</span>x, c, base<span class='b'>)</span>
+      c = in.readChar; col++
+      <span class='k'>while</span> <span class='b'>(</span>c != <span class='s'>';'</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        x = toNum<span class='b'>(</span>x, c, base<span class='b'>)</span>
+        c = in.readChar; col++
+      <span class='b'>}</span>
+      <span class='k'>return</span> x
+    <span class='b'>}</span>
+
+    ebuf := <span class='k'>this</span>.entityBuf
+    ebuf.clear
+    ebuf.addChar<span class='b'>(</span>c<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>((</span>c = read<span class='b'>())</span> != <span class='s'>';'</span><span class='b'>)</span> ebuf.addChar<span class='b'>(</span>c<span class='b'>)</span>
+    entity := ebuf.toStr
+
+    <span class='k'>if</span> <span class='b'>(</span>entity == <span class='s'>"lt"</span><span class='b'>)</span>   <span class='k'>return</span> <span class='s'>'&lt;'</span>
+    <span class='k'>if</span> <span class='b'>(</span>entity == <span class='s'>"gt"</span><span class='b'>)</span>   <span class='k'>return</span> <span class='s'>'&gt;'</span>
+    <span class='k'>if</span> <span class='b'>(</span>entity == <span class='s'>"amp"</span><span class='b'>)</span>  <span class='k'>return</span> <span class='s'>'&amp;'</span>
+    <span class='k'>if</span> <span class='b'>(</span>entity == <span class='s'>"quot"</span><span class='b'>)</span> <span class='k'>return</span> <span class='s'>'"'</span>
+    <span class='k'>if</span> <span class='b'>(</span>entity == <span class='s'>"apos"</span><span class='b'>)</span> <span class='k'>return</span> <span class='s'>'\''</span>
+
+    <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Unsupported entity &amp;${entity};"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Int <span id='toNum'>toNum</span><span class='b'>(</span>Int x, Int c, Int base<span class='b'>)</span>
+  <span class='b'>{</span>
+    digit := c.fromDigit<span class='b'>(</span>base<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>digit == <span class='k'>null</span><span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Expected base $base number"</span><span class='b'>)</span>
+    <span class='k'>return</span> x * base + digit
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Str <span id='bufToStr'>bufToStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> buf.toStr
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Namespace Scoping</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map the prefix string to a XNs instance declared</span>
+  <span class='z'>** in the current element or ancestor element.  If the prefix cannot</span>
+  <span class='z'>** be found and checked if false then return 'unresolvedNs', otherwise</span>
+  <span class='z'>** throw exception.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> XNs <span id='prefixToNs'>prefixToNs</span><span class='b'>(</span>Str prefix, Int line, Int col, Bool checked<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=depth; i&gt;=0; --i<span class='b'>)</span>
+    <span class='b'>{</span>
+      ns := nsStack<span class='b'>[</span>i<span class='b'>]</span>.find<span class='b'>(</span>prefix<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>ns != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> ns
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>!checked<span class='b'>)</span> <span class='k'>return</span> XNs<span class='b'>(</span>prefix, unresolvedNs<span class='b'>)</span>
+    <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Undeclared namespace prefix '${prefix}'"</span>, line, col<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Push a namespace onto the stack at the current depth.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='pushNs'>pushNs</span><span class='b'>(</span>Str prefix, Str val, Int line, Int col<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// parse value into uri</span>
+    uri := <span class='u'>``</span>
+    <span class='k'>try</span>
+      <span class='k'>if</span> <span class='b'>(</span>!val.isEmpty<span class='b'>)</span> uri = Uri.decode<span class='b'>(</span>val<span class='b'>)</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Invalid namespace uri $val"</span>, line, col<span class='b'>)</span>
+
+    <span class='y'>// make ns instance</span>
+    ns := XNs<span class='b'>(</span>prefix, uri<span class='b'>)</span>
+
+    <span class='y'>// update stack</span>
+    nsStack<span class='b'>[</span>depth<span class='b'>]</span>.list.add<span class='b'>(</span>ns<span class='b'>)</span>
+
+    <span class='y'>// re-evaluate default ns</span>
+    <span class='k'>if</span> <span class='b'>(</span>prefix.isEmpty<span class='b'>)</span> reEvalDefaultNs
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Recalculate what the default namespace should be</span>
+  <span class='z'>** because we just popped the element that declared</span>
+  <span class='z'>** the default namespace last.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='reEvalDefaultNs'>reEvalDefaultNs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    defaultNs = <span class='k'>null</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=depth; i&gt;=0; --i<span class='b'>)</span>
+    <span class='b'>{</span>
+      defaultNs = nsStack<span class='b'>[</span>i<span class='b'>]</span>.find<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>defaultNs != <span class='k'>null</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>defaultNs.uri.toStr.isEmpty<span class='b'>)</span> defaultNs = <span class='k'>null</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Stack</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Push a new XElem on the stack.  The stack itself</span>
+  <span class='z'>** only allocates a new XElem the first time a given</span>
+  <span class='z'>** depth is reached.  Further pushes at that depth</span>
+  <span class='z'>** will always reuse the last XElem from the given</span>
+  <span class='z'>** depth.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> XElem <span id='push'>push</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// attempt to reuse element from given depth</span>
+    depth++
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      elem := stack<span class='b'>[</span>depth<span class='b'>]</span>.clearAttrs
+      <span class='k'>return</span> elem
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>IndexErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+      elem := XElem<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+      stack.add<span class='b'>(</span>elem<span class='b'>)</span>
+      nsStack.add<span class='b'>(</span>XNsDefs<span class='b'>())</span>
+      <span class='k'>return</span> elem
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pop decreases the element depth, but leaves the</span>
+  <span class='z'>** actual element in the stack for reuse.  However</span>
+  <span class='z'>** we do need to re-evaluate our namespace scope if</span>
+  <span class='z'>** the popped element declared namespaces.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='pop'>pop</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    nsDefs := nsStack<span class='b'>[</span>depth<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>!nsDefs.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      nsDefs.clear
+      reEvalDefaultNs
+    <span class='b'>}</span>
+    depth--
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Error</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make an XException using with current line and column.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> XErr <span id='err'>err</span><span class='b'>(</span>Str msg, Int line := <span class='k'>this</span>.line, Int col := <span class='k'>this</span>.col<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> XErr<span class='b'>(</span>msg, line, col<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make an XIncompleteErr for unexected end of stream.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> XErr <span id='eosErr'>eosErr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>throw</span> XIncompleteErr<span class='b'>(</span><span class='s'>"Unexpected end of stream"</span>, line, col<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Test</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='x'>/*
+  static Void main()
+  {
+    t1 := Duration.now
+    m1 := Sys.diagnostics["mem.heap"].toStr.toInt
+
+    doc := XParser(File.os(Sys.args[0]).in).parseDoc
+    doc.write(Env.cur.out)
+
+    m2 := Sys.diagnostics["mem.heap"].toStr.toInt
+    t2 := Duration.now
+    echo("Mem " + ((m2-m1)/1024) + "kb " + (t2-t1).toMillis + "ms")
+  }
+  */</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Char Map</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> Bool <span id='isName'>isName</span><span class='b'>(</span>Int c<span class='b'>)</span>  <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>c &lt; 128<span class='b'>)</span> ? nameMap<span class='b'>[</span>c<span class='b'>]</span> : <span class='k'>true</span> <span class='b'>}</span>
+  <span class='k'>private</span> <span class='k'>static</span> Bool <span id='isSpace'>isSpace</span><span class='b'>(</span>Int c<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>c &lt; 128<span class='b'>)</span> ? spaceMap<span class='b'>[</span>c<span class='b'>]</span> : <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Bool<span class='b'>[]</span> <span id='nameMap'>nameMap</span>
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Bool<span class='b'>[]</span> <span id='spaceMap'>spaceMap</span>
+  <span class='k'>static</span>
+  <span class='b'>{</span>
+    name := Bool<span class='b'>[</span>,<span class='b'>]</span>
+    128.times |-&gt;| <span class='b'>{</span> name.add<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=<span class='s'>'a'</span>; i&lt;=<span class='s'>'z'</span>; ++i<span class='b'>)</span> name<span class='b'>[</span>i<span class='b'>]</span> = <span class='k'>true</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=<span class='s'>'A'</span>; i&lt;=<span class='s'>'Z'</span>; ++i<span class='b'>)</span> name<span class='b'>[</span>i<span class='b'>]</span> = <span class='k'>true</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=<span class='s'>'0'</span>; i&lt;=<span class='s'>'9'</span>; ++i<span class='b'>)</span> name<span class='b'>[</span>i<span class='b'>]</span> = <span class='k'>true</span>
+    name<span class='b'>[</span><span class='s'>'-'</span><span class='b'>]</span> = <span class='k'>true</span>
+    name<span class='b'>[</span><span class='s'>'.'</span><span class='b'>]</span> = <span class='k'>true</span>
+    name<span class='b'>[</span><span class='s'>'_'</span><span class='b'>]</span> = <span class='k'>true</span>
+    nameMap = name
+
+    space := Bool<span class='b'>[</span>,<span class='b'>]</span>
+    128.times |-&gt;| <span class='b'>{</span> space.add<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span> <span class='b'>}</span>
+    space<span class='b'>[</span><span class='s'>'\n'</span><span class='b'>]</span> = <span class='k'>true</span>
+    space<span class='b'>[</span><span class='s'>'\r'</span><span class='b'>]</span> = <span class='k'>true</span>
+    space<span class='b'>[</span><span class='s'>' '</span><span class='b'>]</span>  = <span class='k'>true</span>
+    space<span class='b'>[</span><span class='s'>'\t'</span><span class='b'>]</span> = <span class='k'>true</span>
+    spaceMap = space
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fieldsname</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> <span class='k'>const</span> <span class='k'>static</span> Uri <span id='unresolvedNs'>unresolvedNs</span> := <span class='u'>`__unresolved__`</span>
+
+  <span class='k'>private</span> InStream <span id='in'>in</span>
+  <span class='k'>private</span> Int <span id='pushback'>pushback</span> := -1
+  <span class='k'>private</span> XElem<span class='b'>[]</span> <span id='stack'>stack</span> := <span class='b'>[</span>XElem<span class='b'>(</span><span class='s'>""</span><span class='b'>)]</span>
+  <span class='k'>private</span> XNsDefs<span class='b'>[]</span> <span id='nsStack'>nsStack</span> := <span class='b'>[</span>XNsDefs<span class='b'>()]</span>
+  <span class='k'>private</span> XNs? <span id='defaultNs'>defaultNs</span>
+  <span class='k'>private</span> XPi? <span id='curPi'>curPi</span>
+  <span class='k'>private</span> StrBuf <span id='buf'>buf</span> := StrBuf<span class='b'>()</span>         <span class='y'>// working string buffer</span>
+  <span class='k'>private</span> StrBuf <span id='entityBuf'>entityBuf</span> := StrBuf<span class='b'>()</span>   <span class='y'>// working string buffer</span>
+  <span class='k'>private</span> Bool <span id='cdata'>cdata</span>      <span class='y'>// is current buf CDATA section</span>
+  <span class='k'>private</span> Str? <span id='name'>name</span>       <span class='y'>// result of parseQName()</span>
+  <span class='k'>private</span> Str? <span id='prefix'>prefix</span>     <span class='y'>// result of parseQName()</span>
+  <span class='k'>private</span> Bool <span id='popStack'>popStack</span>   <span class='y'>// used for next event</span>
+  <span class='k'>private</span> Bool <span id='emptyElem'>emptyElem</span>  <span class='y'>// used for next event</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** NsDefs</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>class</span> XNsDefs
+<span class='b'>{</span>
+  XNs? find<span class='b'>(</span>Str prefix<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>list.isEmpty<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;list.size; ++i<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>list<span class='b'>[</span>i<span class='b'>]</span>.prefix == prefix<span class='b'>)</span> <span class='k'>return</span> list<span class='b'>[</span>i<span class='b'>]</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  Bool isEmpty<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> list.isEmpty <span class='b'>}</span>
+
+  Void clear<span class='b'>()</span> <span class='b'>{</span> list.clear <span class='b'>}</span>
+
+  XNs<span class='b'>[]</span> list := XNs<span class='b'>[</span>,<span class='b'>]</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='XParser.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden' style='display: block;'><a href='#buf'>buf</a></li>
+  <li class='hidden' style='display: block;'><a href='#bufToStr'>bufToStr</a></li>
+  <li class='hidden' style='display: block;'><a href='#cdata'>cdata</a></li>
+  <li style='display: block;'><a href='#close'>close</a></li>
+  <li style='display: block;'><a href='#col'>col</a></li>
+  <li class='hidden' style='display: block;'><a href='#consume'>consume</a></li>
+  <li class='hidden' style='display: block;'><a href='#curPi'>curPi</a></li>
+  <li class='hidden' style='display: block;'><a href='#defaultNs'>defaultNs</a></li>
+  <li style='display: block;'><a href='#depth'>depth</a></li>
+  <li style='display: block;'><a href='#doc'>doc</a></li>
+  <li style='display: block;'><a href='#elem'>elem</a></li>
+  <li style='display: block;'><a href='#elemAt'>elemAt</a></li>
+  <li class='hidden' style='display: block;'><a href='#emptyElem'>emptyElem</a></li>
+  <li class='hidden' style='display: block;'><a href='#entityBuf'>entityBuf</a></li>
+  <li class='hidden' style='display: block;'><a href='#eosErr'>eosErr</a></li>
+  <li class='hidden' style='display: block;'><a href='#err'>err</a></li>
+  <li class='hidden' style='display: block;'><a href='#in'>in</a></li>
+  <li class='hidden' style='display: block;'><a href='#isName'>isName</a></li>
+  <li class='hidden' style='display: block;'><a href='#isSpace'>isSpace</a></li>
+  <li style='display: block;'><a href='#line'>line</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#name'>name</a></li>
+  <li class='hidden' style='display: block;'><a href='#nameMap'>nameMap</a></li>
+  <li style='display: block;'><a href='#next'>next</a></li>
+  <li style='display: block;'><a href='#nodeType'>nodeType</a></li>
+  <li class='hidden' style='display: block;'><a href='#nsStack'>nsStack</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseAttr'>parseAttr</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseCDATA'>parseCDATA</a></li>
+  <li style='display: block;'><a href='#parseDoc'>parseDoc</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseDocType'>parseDocType</a></li>
+  <li style='display: block;'><a href='#parseElem'>parseElem</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseElemEnd'>parseElemEnd</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseElemStart'>parseElemStart</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseName'>parseName</a></li>
+  <li class='hidden' style='display: block;'><a href='#parsePi'>parsePi</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseProlog'>parseProlog</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseQName'>parseQName</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseQuotedStr'>parseQuotedStr</a></li>
+  <li class='hidden' style='display: block;'><a href='#parseText'>parseText</a></li>
+  <li style='display: block;'><a href='#pi'>pi</a></li>
+  <li class='hidden' style='display: block;'><a href='#pop'>pop</a></li>
+  <li class='hidden' style='display: block;'><a href='#popStack'>popStack</a></li>
+  <li class='hidden' style='display: block;'><a href='#prefix'>prefix</a></li>
+  <li class='hidden' style='display: block;'><a href='#prefixToNs'>prefixToNs</a></li>
+  <li class='hidden' style='display: block;'><a href='#push'>push</a></li>
+  <li class='hidden' style='display: block;'><a href='#pushNs'>pushNs</a></li>
+  <li class='hidden' style='display: block;'><a href='#pushback'>pushback</a></li>
+  <li class='hidden' style='display: block;'><a href='#reEvalDefaultNs'>reEvalDefaultNs</a></li>
+  <li class='hidden' style='display: block;'><a href='#read'>read</a></li>
+  <li style='display: block;'><a href='#skip'>skip</a></li>
+  <li class='hidden' style='display: block;'><a href='#skipComment'>skipComment</a></li>
+  <li class='hidden' style='display: block;'><a href='#skipSpace'>skipSpace</a></li>
+  <li class='hidden' style='display: block;'><a href='#spaceMap'>spaceMap</a></li>
+  <li class='hidden' style='display: block;'><a href='#stack'>stack</a></li>
+  <li style='display: block;'><a href='#text'>text</a></li>
+  <li class='hidden' style='display: block;'><a href='#toCharData'>toCharData</a></li>
+  <li class='hidden' style='display: block;'><a href='#toNum'>toNum</a></li>
+  <li class='hidden' style='display: block;'><a href='#unresolvedNs'>unresolvedNs</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

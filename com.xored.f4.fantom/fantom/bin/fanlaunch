@@ -1,0 +1,78 @@
+#!/bin/bash
+#
+# fanlaunch: common code for unix scripts
+#
+
+# Operating system
+cygwin=false;
+darwin=false;
+linux=false;
+case "`uname`" in
+    CYGWIN*)
+      cygwin=true
+      ;;
+    Darwin*)
+      darwin=true
+      ;;
+    Linux*)
+      linux=true
+      ;;
+esac
+
+# MAC OS X we have to set to set a special flag
+# to ensure that SWT will run correctly
+if $darwin; then
+  osFlags="-XstartOnFirstThread"
+fi
+
+# Set FAN_HOME if it is not already set (from Groovy)
+if [ -z "$FAN_HOME" -o ! -d "$FAN_HOME" ] ; then
+  # Resolve links: $0 may be a link
+  PRG="$0"
+  # Need this for relative symlinks.
+  while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+      PRG="$link"
+    else
+      PRG=`dirname "$PRG"`"/$link"
+    fi
+  done
+  SAVED="`pwd`"
+  cd "`dirname \"$PRG\"`/.."
+  FAN_HOME="`pwd -P`"
+  cd "$SAVED"
+fi
+
+# Set FAN_CP classpath if not already set
+if [ -z "$FAN_CP" -o ! -d "$FAN_CP" ] ; then
+  # always put sys.jar in classpath
+  FAN_CP="$FAN_HOME/lib/java/sys.jar"
+fi
+
+# Set FAN_JAVA if not already set
+if [ -z "$FAN_JAVA" ] ; then
+  FAN_JAVA=`which java`
+  if [ -z "$FAN_JAVA" ] ; then
+    echo "Cannot find java, please either add the java bin directory to"
+    echo "the PATH environment variable or set the FAN_JAVA variable to"
+    echo "the path of the java binary file"
+    exit 1
+  fi
+fi
+
+# read a single line property from $FAN_HOME/etc/sys/config.props
+function read_prop()
+{
+  eval "$1='`sed '/^\#/d' "$FAN_HOME/etc/sys/config.props" | sed '/^\/\//d' | grep \"$2=\"  | tail -n 1 | sed 's/^[^=]*=//;s/^[[:space:]]*//;s/[[:space:]]*$//'`'"
+}
+# Launcher function
+fanlaunch()
+{
+  export FAN_HOME
+  FAN_MAIN="fanx.tools.$1"
+  shift
+  read_prop JAVA_OPTIONS java.options
+  "$FAN_JAVA" $osFlags $JAVA_OPTIONS $libPath -cp "$FAN_CP" -Dfan.home="$FAN_HOME" "$FAN_MAIN" "$@"
+}

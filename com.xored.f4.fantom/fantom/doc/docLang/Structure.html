@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Structure</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Structure.html'>Structure</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='next'><a href='Literals.html'>Literals</a> <a href='Literals.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Structure</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Fantom software is structured using three primary abstractions:</p>
+
+<ul>
+<li><a href='#pods'>Pods</a>: modules of deployment and versioning</li>
+
+<li><a href='#types'>Types</a>: basic units of object oriented type system</li>
+
+<li><a href='#slots'>Slots</a>: fields and methods</li>
+</ul>
+
+<p>These abstractions are organized into a three level namespace which uses the following syntax for qualified names:</p>
+
+<ul>
+<li><code>pod</code></li>
+
+<li><code>pod::Type</code></li>
+
+<li><code>pod::Type.slot</code></li>
+</ul>
+
+<h1 id='pods'>Pods </h1>
+
+<p>Pods are the top of Fantom's namespace as well as the unit of deployment.  A pod's name is globally unique and is used to organize the top level of Fantom's namespace. Pod names are similar to Java packages or C# namespaces.  To guarantee uniqueness, try use a naming convention which won't produce conflicts (see <a href='Conventions.html#naming'>conventions</a>).</p>
+
+<p>Pods are also the fundamental unit of deployment, versioning, and dependency management.  In this role pods are like Java JAR files or .NET DLLs.  A pod is a standard zip file which bundles the Fantom code for the pod's types, metadata, plus any associated file resources.</p>
+
+<p>The <code><a href='../sys/Pod.html'>sys::Pod</a></code> type is the reflection API for working with pods installed in a given Fantom installation.  Code examples for common pod operations:</p>
+
+<pre>Pod.list                       // list the pods installed
+Pod.find("acmeFoo")            // find a pod (throws exception if not found)
+Pod.find("acmeFoo", false)     // find a pod (returns null if not found)
+myPod.file(`/img/icon.png`)    // lookup a resource file in myPod
+`fan://myPod/img/icon.png`.get // lookup a resource file in myPod
+Pod.of(someObj)                // get the pod of an object</pre>
+
+<p>See <a href='Pods.html'>Pods</a> chapter for more details.</p>
+
+<h1 id='types'>Types </h1>
+
+<p>A Type is an object oriented class which encapsulates state and behavior.  Types are contained within pods and identified by a name unique within that pod.  The <code>::</code> double colon is used to combine the pod name with the type name to create the <em>qualified name</em> or <em>qname</em>.  Because pod names are globally unique, a type's qname is also globally unique.  For example <code>sys::Str</code> is the qname of the <code>Str</code> type which is contained by the <code>sys</code> pod.</p>
+
+<p>There are two variations of Types in Fantom: <a href='TypeSystem.html#classes'>classes</a> and <a href='TypeSystem.html#mixins'>mixins</a>.</p>
+
+<p>The <code><a href='../sys/Type.html'>sys::Type</a></code> type is the reflection API for working with types at runtime. Code snippets for common type operations:</p>
+
+<pre>Type.of(someObj)          // get the type of the an object
+myPod.types               // list the types in myPod
+myPod.findType("Foo")     // find a type within myPod by its simple name
+Type.find("myPod::Foo")   // lookup a type by its qualified name
+Int#                      // type literal for sys::Int
+someType.fits(Num#)       // reflective version of is/instanceof operator</pre>
+
+<h1 id='slots'>Slots </h1>
+
+<p>Types encapsulate state and behavior as a collection of slots.  Slots are named uniquely within a given type.  The <code>.</code> dot is used to combine the parent type's qname to create the slot's qname.  For example <code>sys::DateTime.now</code> is the globally unique qualified name which identifies the <code>now</code> method within the <code>DateTime</code> type within the <code>sys</code> pod.</p>
+
+<p>There are two types of slots:</p>
+
+<ul>
+<li><a href='#methods'>Methods</a>: model behavior</li>
+
+<li><a href='#fields'>Fields</a>: model state</li>
+</ul>
+
+<p>The <code><a href='../sys/Slot.html'>sys::Slot</a></code> type is the reflection API for working with slots at runtime. Code examples for commonly used slot operations:</p>
+
+<pre>someType.slot("xyz")         // lookup the slot called xyz on someType
+Slot.find("myPod::Foo.xyz")  // looukp a slot by its qualified name
+method.call([arg0, arg1])    // invoke method using reflection
+method.func                  // the function which implements the method
+field.get(instance)          // get a field using reflection
+SomeType#xyx                 // slot literal for slot on SomeType
+#xyx                         // slot literal current type</pre>
+
+<p>All slots are keyed by a unique name.  This means Fantom does not support methods overridden by parameter type like Java or C#.  Although you may find this to be a drag on occasion, there are a couple features in Fan that make this restriction quite palatable.  First method parameters may have defaults - this eliminates the convenience methods commonly used in Java or C# APIs.  Second all types subclass from Obj - this eliminates the API bloat required to support all the primitives in an API like <code>java.io.PrintWriter</code>.  Lastly, constructors in Fantom are named which eliminates another common requirement for parameter based overloading.  The benefit of this restriction is the really cool ability to lookup methods simply by name or qname making reflective programming and dynamic invocation a zillion times simpler.</p>
+
+<h2 id='methods'>Methods </h2>
+
+<p>Methods are the basic unit for encapsulating behavior in Fantom.  Methods are really just slot wrappers for a <a href='Functions.html'>function</a>.  Every method has a return type and zero or more typed parameters.  Methods which don't return an object have a return type of <code><a href='../sys/Void.html'>sys::Void</a></code>.</p>
+
+<p>The <code><a href='../sys/Method.html'>sys::Method</a></code> API is used to work with methods reflectively at runtime.</p>
+
+<p>Methods are discussed in depth in the <a href='Methods.html'>Methods</a> chapter.</p>
+
+<h2 id='fields'>Fields </h2>
+
+<p>Fields are used to model state in a given type.  Fields in Fantom are composed of three concepts:</p>
+
+<ul>
+<li>Getter: a method used to access the current value of the field;</li>
+
+<li>Setter: a method used to change the current value of the field;</li>
+
+<li>Storage: a storage location in memory for the current value;</li>
+</ul>
+
+<p>Most fields have all three components, but typically the getter and setter is auto-generated by the compiler.  Const fields have only storage and no getter or setter.  Fantom also allows abstract and calculated fields which have a getter and setter, but no storage.</p>
+
+<p>The <code><a href='../sys/Field.html'>sys::Field</a></code> API is used to work with fields reflectively at runtime.</p>
+
+<p>We'll take a deep dive into fields later in the <a href='Fields.html'>Fields</a> chapter.</p>
+<div class='prevNext'>
+<div class='next'><a href='Literals.html'>Literals</a> <a href='Literals.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#pods'>Pods </a></li><li><a href='#types'>Types </a></li><li><a href='#slots'>Slots </a><ul>
+<li><a href='#methods'>Methods </a></li><li><a href='#fields'>Fields </a></li></ul>
+</li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

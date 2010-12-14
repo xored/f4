@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>build::BuildScript</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>build</a></li>
+  <li>&gt;</li>
+  <li><a href='BuildScript.html'>BuildScript</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>build::BuildScript</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  build::BuildScript</pre>
+</div>
+<div class='detail'>
+
+<p>BuildScript is the base class for build scripts - it manages the command line interface, argument parsing, environment, and target execution.</p>
+
+<p>See <a href='../docTools/Build.html'>docTools::Build</a> for details.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='config' class='method'>config<a href='BuildScript_src.html#config'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? config(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Str.html'>Str</a>? def := null)</code></p>
+
+<p>Get a config property using the following rules:</p>
+
+<ol style='list-style-type:decimal'>
+<li><code><a href='../sys/Env.html#vars'>sys::Env.vars</a></code> with <code>FAN_BUILD_$name.upper</code></li>
+
+<li><code><a href='../sys/Env.html#config'>sys::Env.config</a></code> for build pod</li>
+
+<li>fallback to <code>def</code> parameter</li>
+</ol>
+</dd>
+<dt id='configDir' class='method'>configDir<a href='BuildScript_src.html#configDir'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/File.html'>File</a>? configDir(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/File.html'>File</a>? def := null)</code></p>
+
+<p>Get a <a href='BuildScript.html#config'>config</a> prop which identifies a directory. If the prop isn't configured or doesn't map to a valid directory, then return def.</p>
+</dd>
+<dt id='devHomeDir' class='field'>devHomeDir<a href='BuildScript_src.html#devHomeDir'>Source</a></dt>
+<dd>
+<p><code class='sig'>const <a href='../sys/File.html'>File</a> devHomeDir := ...</code></p>
+
+<p>Home directory of development installation.  By default this value is initialized by <code>devHome</code> config prop, otherwise <code><a href='../sys/Env.html#homeDir'>sys::Env.homeDir</a></code> is used.</p>
+</dd>
+<dt id='dumpEnv' class='method'>dumpEnv<a href='BuildScript_src.html#dumpEnv'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> dumpEnv()</code></p>
+
+<p>Dump script environment for debug.</p>
+</dd>
+<dt id='fatal' class='method'>fatal<a href='BuildScript_src.html#fatal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='FatalBuildErr.html'>FatalBuildErr</a> fatal(<a href='../sys/Str.html'>Str</a> msg, <a href='../sys/Err.html'>Err</a>? err := null)</code></p>
+
+<p>Log an error and return a FatalBuildErr instance</p>
+</dd>
+<dt id='log' class='field'>log<a href='BuildScript_src.html#log'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='BuildLog.html'>BuildLog</a> log := BuildLog()</code></p>
+
+<p>Log used for error reporting and tracing</p>
+</dd>
+<dt id='main' class='method'>main<a href='BuildScript_src.html#main'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a> main(<a href='../sys/Str.html'>Str</a>[] args := Env.cur().args())</code></p>
+
+<p>Run the script with the specified arguments. Return 0 on success or -1 on failure.</p>
+</dd>
+<dt id='parseArgs' class='method hidden'>parseArgs<a href='BuildScript_src.html#parseArgs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='TargetMethod.html'>TargetMethod</a>[]? parseArgs(<a href='../sys/Str.html'>Str</a>[] args)</code></p>
+
+<p>Parse the arguments passed from the command line. Return true for success or false to end the script.</p>
+</dd>
+<dt id='resolveDirs' class='method hidden'>resolveDirs<a href='BuildScript_src.html#resolveDirs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/File.html'>File</a>[] resolveDirs(<a href='../sys/Uri.html'>Uri</a>[] uris)</code></p>
+
+<p>Resolve a set of URIs to directories relative to scriptDir.</p>
+</dd>
+<dt id='resolveFiles' class='method hidden'>resolveFiles<a href='BuildScript_src.html#resolveFiles'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/File.html'>File</a>[] resolveFiles(<a href='../sys/Uri.html'>Uri</a>[] uris)</code></p>
+
+<p>Resolve a set of URIs to files relative to scriptDir.</p>
+</dd>
+<dt id='resolveFilesOrDirs' class='method hidden'>resolveFilesOrDirs<a href='BuildScript_src.html#resolveFilesOrDirs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/File.html'>File</a>[] resolveFilesOrDirs(<a href='../sys/Uri.html'>Uri</a>[] uris)</code></p>
+
+<p>Resolve a set of URIs to files/dirs relative to scriptDir.</p>
+</dd>
+<dt id='scriptDir' class='field'>scriptDir<a href='BuildScript_src.html#scriptDir'>Source</a></dt>
+<dd>
+<p><code class='sig'>const <a href='../sys/File.html'>File</a> scriptDir := this.scriptFile.parent</code></p>
+
+<p>The directory containing the this script</p>
+</dd>
+<dt id='scriptFile' class='field'>scriptFile<a href='BuildScript_src.html#scriptFile'>Source</a></dt>
+<dd>
+<p><code class='sig'>const <a href='../sys/File.html'>File</a> scriptFile := ...</code></p>
+
+<p>The source file of this script</p>
+</dd>
+<dt id='target' class='method'>target<a href='BuildScript_src.html#target'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='TargetMethod.html'>TargetMethod</a>? target(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Lookup a target by name.  If not found and checked is false return null, otherwise throw an exception.</p>
+</dd>
+<dt id='targets' class='method'>targets<a href='BuildScript_src.html#targets'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='TargetMethod.html'>TargetMethod</a>[] targets()</code></p>
+
+<p>Get the list of published targets for this script.  The first target should be the default.  The list of targets is defined by all the methods with the <code><a href='Target.html'>Target</a></code> facet.</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='BuildScript_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return this script's source file path.</p>
+</dd>
+<dt id='usage' class='method hidden'>usage<a href='BuildScript_src.html#usage'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> usage()</code></p>
+
+<p>Dump usage including all this script's published targets.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='BuildScript_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#config'>config</a></li>
+  <li><a href='#configDir'>configDir</a></li>
+  <li><a href='#devHomeDir'>devHomeDir</a></li>
+  <li><a href='#dumpEnv'>dumpEnv</a></li>
+  <li><a href='#fatal'>fatal</a></li>
+  <li><a href='#log'>log</a></li>
+  <li><a href='#main'>main</a></li>
+  <li class='hidden'><a href='#parseArgs'>parseArgs</a></li>
+  <li class='hidden'><a href='#resolveDirs'>resolveDirs</a></li>
+  <li class='hidden'><a href='#resolveFiles'>resolveFiles</a></li>
+  <li class='hidden'><a href='#resolveFilesOrDirs'>resolveFilesOrDirs</a></li>
+  <li><a href='#scriptDir'>scriptDir</a></li>
+  <li><a href='#scriptFile'>scriptFile</a></li>
+  <li><a href='#target'>target</a></li>
+  <li><a href='#targets'>targets</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li class='hidden'><a href='#usage'>usage</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+build 1.0.56
+[11-Nov-2010 Thu 10:08:18AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

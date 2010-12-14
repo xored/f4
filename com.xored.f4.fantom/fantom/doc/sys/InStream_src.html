@@ -1,0 +1,499 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::InStream</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='InStream.html'>InStream</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>sys::InStream</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::InStream</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Mar 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** InStream is used to read binary and text stream based input.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> InStream
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Constructor for an InStream which wraps another stream.</span>
+  <span class='z'>** All reads from this stream will be routed to the specified</span>
+  <span class='z'>** inner stream.</span>
+  <span class='z'>**</span>
+  <span class='z'>** If in is null, then it is the subclass responsibility to</span>
+  <span class='z'>** handle reads by overriding the following methods: `read`,</span>
+  <span class='z'>** `readBuf`, and `unread`.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>InStream? in<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Virtuals</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next unsigned byte from the input stream.</span>
+  <span class='z'>** Return null if at end of stream.  Throw IOErr on error.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int? <span id='read'>read</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to read the next n bytes into the Buf at it's current</span>
+  <span class='z'>** position.  The buffer will be grown as needed.  Return the number</span>
+  <span class='z'>** of bytes read and increment buf's size and position accordingly.</span>
+  <span class='z'>** Return null and leave buf's state untouched if end of stream.</span>
+  <span class='z'>** Note this method may not read the full number of n bytes, use</span>
+  <span class='z'>** `readBufFully` if you must block until all n bytes read.</span>
+  <span class='z'>** Throw IOErr on error.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int? <span id='readBuf'>readBuf</span><span class='b'>(</span>Buf buf, Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pushback a byte so that it is the next byte to be read.  There</span>
+  <span class='z'>** is a finite limit to the number of bytes which may be pushed</span>
+  <span class='z'>** back.  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='unread'>unread</span><span class='b'>(</span>Int b<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Close the input stream.  This method is guaranteed to never</span>
+  <span class='z'>** throw an IOErr.  Return true if the stream was closed successfully</span>
+  <span class='z'>** or false if the stream was closed abnormally.  Default implementation</span>
+  <span class='z'>** does nothing and returns true.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Bool <span id='close'>close</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to skip 'n' number of bytes.  Return the number of bytes</span>
+  <span class='z'>** actually skipped which may be equal to or lesser than n.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int <span id='skip'>skip</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Buf Support</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire contents of the stream into a memory Buf.</span>
+  <span class='z'>** The resulting buffer is automatically positioned at the beginning.</span>
+  <span class='z'>** This InStream is guaranteed to be closed.</span>
+  <span class='z'>**</span>
+  Buf <span id='readAllBuf'>readAllBuf</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next n bytes from the stream into the Buf at it's</span>
+  <span class='z'>** current position.  The buffer will be grown as needed.  If the</span>
+  <span class='z'>** buf parameter is null, then a memory buffer is automatically created</span>
+  <span class='z'>** with a capacity of n.  Block until exactly n bytes have been</span>
+  <span class='z'>** read or throw IOErr if end of stream is reached first.  Return</span>
+  <span class='z'>** the Buf passed in or the one created automatically if buf is null.</span>
+  <span class='z'>** The buffer is automatically positioned at zero.</span>
+  <span class='z'>**</span>
+  Buf <span id='readBufFully'>readBufFully</span><span class='b'>(</span>Buf? buf, Int n<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Binary Data</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Byte order mode for binary reads.</span>
+  <span class='z'>** Default is `Endian.big` (network byte order).</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Endian <span id='endian'>endian</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Peek at the next byte to be read without actually consuming</span>
+  <span class='z'>** it.  Peek has the same semantics as a read/unread.  Return</span>
+  <span class='z'>** null if at end of stream.</span>
+  <span class='z'>**</span>
+  Int? <span id='peek'>peek</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next byte as an unsigned 8-bit number.  This method may</span>
+  <span class='z'>** be paired with `OutStream.write`.  Throw IOErr on error or if the</span>
+  <span class='z'>** end of stream is reached before one byte can be read.  This method</span>
+  <span class='z'>** differs from `read` in that it will throw IOErr on end of stream</span>
+  <span class='z'>** rather than return null.</span>
+  <span class='z'>**</span>
+  Int <span id='readU1'>readU1</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next byte as a signed 8-bit number.  This method may be</span>
+  <span class='z'>** paired with `OutStream.write`.  Throw IOErr on error or if the end</span>
+  <span class='z'>** of stream is reached before one byte can be read.</span>
+  <span class='z'>**</span>
+  Int <span id='readS1'>readS1</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next two bytes as an unsigned 16-bit number using configured</span>
+  <span class='z'>** `endian`.  This method may be paired with `OutStream.writeI2`.</span>
+  <span class='z'>** Throw IOErr on error or if the end of stream is reached before</span>
+  <span class='z'>** two bytes can be read.</span>
+  <span class='z'>**</span>
+  Int <span id='readU2'>readU2</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next two bytes as a signed 16-bit number using configured</span>
+  <span class='z'>** `endian`.  This method may be paired with `OutStream.writeI2`.</span>
+  <span class='z'>** Throw IOErr on error or if the end of stream is reached before</span>
+  <span class='z'>** two bytes can be read.</span>
+  <span class='z'>**</span>
+  Int <span id='readS2'>readS2</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next four bytes as an unsigned 32-bit number using configured</span>
+  <span class='z'>** `endian`.  This method may be paired with `OutStream.writeI4`.</span>
+  <span class='z'>** Throw IOErr on error or if the end of stream is reached before</span>
+  <span class='z'>** four bytes can be read.</span>
+  <span class='z'>**</span>
+  Int <span id='readU4'>readU4</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next four bytes as a signed 32-bit number using configured</span>
+  <span class='z'>** `endian`.  This method may be paired with `OutStream.writeI4`.</span>
+  <span class='z'>** Throw IOErr on error or if the end of stream is reached before</span>
+  <span class='z'>** four bytes can be read.</span>
+  <span class='z'>**</span>
+  Int <span id='readS4'>readS4</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next eight bytes as a signed 64-bit number using configured</span>
+  <span class='z'>** `endian`.  This method may be paired with `OutStream.writeI8`.</span>
+  <span class='z'>** Throw IOErr on error or if the end of stream is reached before</span>
+  <span class='z'>** eight bytes can be read.  Note there is no readU8 (because Java</span>
+  <span class='z'>** doesn't support unsigned longs).</span>
+  <span class='z'>**</span>
+  Int <span id='readS8'>readS8</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next four bytes as a 32-bit floating point number using</span>
+  <span class='z'>** using configured `endian` according to `Float.bits32`.  This method</span>
+  <span class='z'>** may be paired with `OutStream.writeF4`.  Throw IOErr on error or if</span>
+  <span class='z'>** the end of stream is reached before four bytes can be read.</span>
+  <span class='z'>**</span>
+  Float <span id='readF4'>readF4</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next eight bytes as a 64-bit floating point number using</span>
+  <span class='z'>** configured `endian` according to `Float.bits`.  This method may be</span>
+  <span class='z'>** paired with `OutStream.writeF8`.  Throw IOErr on error or if the</span>
+  <span class='z'>** end of stream is reached before four bytes can be read.</span>
+  <span class='z'>**</span>
+  Float <span id='readF8'>readF8</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next byte and return true if nonzero.  This method may</span>
+  <span class='z'>** be paired with `OutStream.writeBool`.  Throw IOErr on error or if</span>
+  <span class='z'>** the end of stream is reached before one byte can be read.</span>
+  <span class='z'>**</span>
+  Bool <span id='readBool'>readBool</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read a decimal string according to `readUtf`.</span>
+  <span class='z'>**</span>
+  Decimal <span id='readDecimal'>readDecimal</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read a Str in modified UTF-8 format according the java.io.DataInput</span>
+  <span class='z'>** specification. This method may be paired with `OutStream.writeUtf`.</span>
+  <span class='z'>** Throw IOErr on error, invalid UTF encoding, or if the end of stream</span>
+  <span class='z'>** is reached before the string is fully read.</span>
+  <span class='z'>**</span>
+  Str <span id='readUtf'>readUtf</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Text Data</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The current charset used to decode bytes into Unicode</span>
+  <span class='z'>** characters.  The default charset should always be UTF-8.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Charset <span id='charset'>charset</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read a single Unicode character from the stream using the</span>
+  <span class='z'>** current charset encoding.  Return null if at end of stream.</span>
+  <span class='z'>** Throw IOErr if there is a problem reading the stream, or</span>
+  <span class='z'>** an invalid character encoding is encountered.</span>
+  <span class='z'>**</span>
+  Int? <span id='readChar'>readChar</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pushback a char so that it is the next char to be read.  This</span>
+  <span class='z'>** method pushes back one or more bytes depending on the current</span>
+  <span class='z'>** character encoding.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='unreadChar'>unreadChar</span><span class='b'>(</span>Int b<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Peek at the next char to be read without actually consuming</span>
+  <span class='z'>** it.  Peek has the same semantics as a readChar/unreadChar.</span>
+  <span class='z'>** Return null if at end of stream.</span>
+  <span class='z'>**</span>
+  Int? <span id='peekChar'>peekChar</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next n chars from the stream as a Str using the</span>
+  <span class='z'>** current `charset`.  Block until exactly n chars have been</span>
+  <span class='z'>** read or throw IOErr if end of stream is reached first.</span>
+  <span class='z'>**</span>
+  Str <span id='readChars'>readChars</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next line from the input stream as a Str based on the</span>
+  <span class='z'>** configured charset.  A line is terminated by \n, \r\n, \r, or</span>
+  <span class='z'>** EOF.  The Str returned never contains the trailing newline.</span>
+  <span class='z'>**</span>
+  <span class='z'>** The max parameter specifies the maximum number of Unicode</span>
+  <span class='z'>** chacters (not bytes) to read before truncating the line and</span>
+  <span class='z'>** returning.  If max is null, then no boundary is enforced except</span>
+  <span class='z'>** of course the end of the stream.  Max defaults to 4kb.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Return null if the end of stream has been reached.  Throw IOErr</span>
+  <span class='z'>** if there is a problem reading the stream or an invalid character</span>
+  <span class='z'>** encoding is encountered.</span>
+  <span class='z'>**</span>
+  Str? <span id='readLine'>readLine</span><span class='b'>(</span>Int? max := 4096<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read a Str token from the input stream which is terminated</span>
+  <span class='z'>** when the specified function 'c' returns true.  The terminating</span>
+  <span class='z'>** char is unread and will be the next char read once this</span>
+  <span class='z'>** method returns.  Characters are read based on the currently</span>
+  <span class='z'>** configured charset.</span>
+  <span class='z'>**</span>
+  <span class='z'>** If 'c' is null then the default implementation tokenizes up</span>
+  <span class='z'>** until the next character which returns true for `Int.isSpace`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** The max parameter specifies the maximum number of Unicode</span>
+  <span class='z'>** chacters (not bytes) to read before truncating the line and</span>
+  <span class='z'>** returning.  If max is null, then no boundary is enforced except</span>
+  <span class='z'>** of course the end of the stream.  Max defaults to 4kb.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Return null if the end of stream has been reached.  Throw IOErr</span>
+  <span class='z'>** if there is a problem reading the stream or an invalid character</span>
+  <span class='z'>** encoding is encountered.</span>
+  <span class='z'>**</span>
+  Str? <span id='readStrToken'>readStrToken</span><span class='b'>(</span>Int? max := 4096, |Int ch-&gt;Bool|? c := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire stream into a list of Str lines based on the</span>
+  <span class='z'>** configured charset encoding.  Each Str in the list maps</span>
+  <span class='z'>** to a line terminated by \n, \r\n, \r, or EOF.  The Str lines</span>
+  <span class='z'>** themselves do not contain a trailing newline.  Empty lines</span>
+  <span class='z'>** are returned as the empty Str "".  Return an empty list if</span>
+  <span class='z'>** currently at end of stream (not null).  Throw IOErr if there</span>
+  <span class='z'>** is a problem reading the stream or an invalid character encoding</span>
+  <span class='z'>** is encountered.  This InStream is guaranteed to be closed upon</span>
+  <span class='z'>** return.</span>
+  <span class='z'>**</span>
+  Str<span class='b'>[]</span> <span id='readAllLines'>readAllLines</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire stream into Str lines based on the current</span>
+  <span class='z'>** encoding.  Call the specified function for each line read.</span>
+  <span class='z'>** Each line is terminated by \n, \r\n, \r, or EOF.  The Str</span>
+  <span class='z'>** lines themselves do not contain a trailing newline.  Empty</span>
+  <span class='z'>** lines are returned as the empty Str "".  This InStream is</span>
+  <span class='z'>** guaranteed to be closed upon return.</span>
+  <span class='z'>**</span>
+  Void <span id='eachLine'>eachLine</span><span class='b'>(</span>|Str line| f<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire stream into a Str based on the configured</span>
+  <span class='z'>** charset encoding.  If the normalizeNewlines flag is true,</span>
+  <span class='z'>** then all occurances of \r\n or \r newlines are normalized</span>
+  <span class='z'>** into \n.  Return "" if the stream is empty.  Throw IOErr if</span>
+  <span class='z'>** there is a problem reading the stream or an invalid character</span>
+  <span class='z'>** encoding is encountered.  This InStream is guaranteed to</span>
+  <span class='z'>** be closed.</span>
+  <span class='z'>**</span>
+  Str <span id='readAllStr'>readAllStr</span><span class='b'>(</span>Bool normalizeNewlines := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read a serialized object from the stream according to</span>
+  <span class='z'>** the Fantom [serialization format]`docLang::Serialization`.</span>
+  <span class='z'>** Throw IOErr or ParseErr on error.  This method may consume</span>
+  <span class='z'>** bytes/chars past the end of the serialized object (we may</span>
+  <span class='z'>** want to add a "full stop" token at some point to support</span>
+  <span class='z'>** compound object streams).</span>
+  <span class='z'>**</span>
+  <span class='z'>** The options may be used to specify additional decoding</span>
+  <span class='z'>** logic:</span>
+  <span class='z'>**   - "makeArgs": Obj[] arguments to pass to the root</span>
+  <span class='z'>**     object's make constructor via 'Type.make'</span>
+  <span class='z'>**</span>
+  Obj? <span id='readObj'>readObj</span><span class='b'>([</span>Str:Obj<span class='b'>]</span>? options := <span class='k'>null</span><span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire stream into a 'Str:Str' of name/value pairs using the</span>
+  <span class='z'>** Fantom props file format.  This format is similiar but different than</span>
+  <span class='z'>** the Java properties file format:</span>
+  <span class='z'>**   - Input must be UTF-8 encoded (current charset is ignored)</span>
+  <span class='z'>**   - Name/value pairs formatted as logical line: '&lt;name&gt;=&lt;value&gt;'</span>
+  <span class='z'>**   - Any Unicode character allowed in name or value</span>
+  <span class='z'>**   - Leading and trailing whitespace trimmed from both name and value</span>
+  <span class='z'>**   - Duplicate name keys within one file is an error condition</span>
+  <span class='z'>**   - Comment to end of line is '//' if start of line or preceeded</span>
+  <span class='z'>**     by whitespace</span>
+  <span class='z'>**   - Block comment is '/* */' (may be nested)</span>
+  <span class='z'>**   - Use trailing '\' to continue logical line to another actual line,</span>
+  <span class='z'>**     any leading whitespace (space or tab char) is trimmed from beginning</span>
+  <span class='z'>**     of continued line</span>
+  <span class='z'>**   - Fantom Str literal escape sequences supported: '\n \r \t or \uxxxx'</span>
+  <span class='z'>**   - The '$' character is treated as a normal character and should not be</span>
+  <span class='z'>**     escaped, but convention is to indicate a variable in a format string</span>
+  <span class='z'>**   - Convention is that name is lower camel case with dot separators</span>
+  <span class='z'>**</span>
+  <span class='z'>** Throw IOErr if there is a problem reading the stream or an invalid</span>
+  <span class='z'>** props format is encountered.  This InStream is guaranteed to be closed.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Also see `Env.props`.</span>
+  <span class='z'>**</span>
+  Str:Str <span id='readProps'>readProps</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pipe bytes from this input stream to the specified output stream.</span>
+  <span class='z'>** If n is specified, then block until exactly n bytes have been</span>
+  <span class='z'>** read or throw IOErr if end of stream is reached first.  If n is</span>
+  <span class='z'>** null then the entire contents of this input stream are piped.  If</span>
+  <span class='z'>** close is true, then this input stream is guaranteed to be closed</span>
+  <span class='z'>** upon return (the OutStream is never closed).  Return the number</span>
+  <span class='z'>** of bytes piped to the output stream.</span>
+  <span class='z'>**</span>
+  Int <span id='pipe'>pipe</span><span class='b'>(</span>OutStream out, Int? n := <span class='k'>null</span>, Bool close := <span class='k'>true</span><span class='b'>)</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** SysInStream</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>class</span> SysInStream : InStream
+<span class='b'>{</span>
+  <span class='k'>override</span> Int? read<span class='b'>()</span>
+  <span class='k'>override</span> Int? readBuf<span class='b'>(</span>Buf buf, Int n<span class='b'>)</span>
+  <span class='k'>override</span> This unread<span class='b'>(</span>Int n<span class='b'>)</span>
+  <span class='k'>override</span> Bool close<span class='b'>()</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='InStream.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#charset'>charset</a></li>
+  <li style='display: block;'><a href='#close'>close</a></li>
+  <li style='display: block;'><a href='#eachLine'>eachLine</a></li>
+  <li style='display: block;'><a href='#endian'>endian</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#peek'>peek</a></li>
+  <li style='display: block;'><a href='#peekChar'>peekChar</a></li>
+  <li style='display: block;'><a href='#pipe'>pipe</a></li>
+  <li style='display: block;'><a href='#read'>read</a></li>
+  <li style='display: block;'><a href='#readAllBuf'>readAllBuf</a></li>
+  <li style='display: block;'><a href='#readAllLines'>readAllLines</a></li>
+  <li style='display: block;'><a href='#readAllStr'>readAllStr</a></li>
+  <li style='display: block;'><a href='#readBool'>readBool</a></li>
+  <li style='display: block;'><a href='#readBuf'>readBuf</a></li>
+  <li style='display: block;'><a href='#readBufFully'>readBufFully</a></li>
+  <li style='display: block;'><a href='#readChar'>readChar</a></li>
+  <li style='display: block;'><a href='#readChars'>readChars</a></li>
+  <li style='display: block;'><a href='#readDecimal'>readDecimal</a></li>
+  <li style='display: block;'><a href='#readF4'>readF4</a></li>
+  <li style='display: block;'><a href='#readF8'>readF8</a></li>
+  <li style='display: block;'><a href='#readLine'>readLine</a></li>
+  <li style='display: block;'><a href='#readObj'>readObj</a></li>
+  <li style='display: block;'><a href='#readProps'>readProps</a></li>
+  <li style='display: block;'><a href='#readS1'>readS1</a></li>
+  <li style='display: block;'><a href='#readS2'>readS2</a></li>
+  <li style='display: block;'><a href='#readS4'>readS4</a></li>
+  <li style='display: block;'><a href='#readS8'>readS8</a></li>
+  <li style='display: block;'><a href='#readStrToken'>readStrToken</a></li>
+  <li style='display: block;'><a href='#readU1'>readU1</a></li>
+  <li style='display: block;'><a href='#readU2'>readU2</a></li>
+  <li style='display: block;'><a href='#readU4'>readU4</a></li>
+  <li style='display: block;'><a href='#readUtf'>readUtf</a></li>
+  <li style='display: block;'><a href='#skip'>skip</a></li>
+  <li style='display: block;'><a href='#unread'>unread</a></li>
+  <li style='display: block;'><a href='#unreadChar'>unreadChar</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

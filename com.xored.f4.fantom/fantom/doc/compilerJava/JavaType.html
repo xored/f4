@@ -1,0 +1,401 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compilerJava::JavaType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compilerJava</a></li>
+  <li>&gt;</li>
+  <li><a href='JavaType.html'>JavaType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compilerJava::JavaType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compilerJava::JavaType : <a href='../compiler/CType.html'>compiler::CType</a></pre>
+</div>
+<div class='detail'>
+
+<p>JavaType is the implementation of CType for a Java class.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='arrayOf' class='field'>arrayOf<a href='JavaType_src.html#arrayOf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='JavaType.html'>JavaType</a>? arrayOf</code></p>
+
+<p>If this an array, this is the component type.</p>
+</dd>
+<dt id='arrayRank' class='field'>arrayRank<a href='JavaType_src.html#arrayRank'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a> arrayRank := 0</code></p>
+
+<p>The rank of the array where 0 is not an array, 1 is one dimension, 2 is two dimensional, etc.</p>
+</dd>
+<dt id='base' class='field'>base<a href='JavaType_src.html#base'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CType.html'>CType</a>? base</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#base'>compiler::CType.base</a></p>
+</div>
+</dd>
+<dt id='classLiteral' class='method'>classLiteral<a href='JavaType_src.html#classLiteral'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='../compiler/CMethod.html'>CMethod</a> classLiteral(<a href='JavaBridge.html'>JavaBridge</a> bridge, <a href='../compiler/CType.html'>CType</a> base)</code></p>
+
+<p>We use an implicit method called "&lt;class>" on each type as the protocol for telling the Java runtime to load a class literal</p>
+</dd>
+<dt id='facet' class='method'>facet<a href='JavaType_src.html#facet'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CFacet.html'>CFacet</a>? facet(<a href='../sys/Str.html'>Str</a> qname)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#facet'>compiler::CType.facet</a></p>
+</div>
+</dd>
+<dt id='fits' class='method'>fits<a href='JavaType_src.html#fits'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> fits(<a href='../compiler/CType.html'>CType</a> t)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#fits'>compiler::CType.fits</a></p>
+</div>
+</dd>
+<dt id='fitsFan' class='method hidden'>fitsFan<a href='JavaType_src.html#fitsFan'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> fitsFan(<a href='../compiler/CType.html'>CType</a> t)</code></p>
+</dd>
+<dt id='fitsJava' class='method hidden'>fitsJava<a href='JavaType_src.html#fitsJava'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> fitsJava(<a href='JavaType.html'>JavaType</a> t)</code></p>
+</dd>
+<dt id='flags' class='field'>flags<a href='JavaType_src.html#flags'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Int.html'>Int</a> flags</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#flags'>compiler::CType.flags</a></p>
+</div>
+</dd>
+<dt id='inferredArrayOf' class='method'>inferredArrayOf<a href='JavaType_src.html#inferredArrayOf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../compiler/CType.html'>CType</a>? inferredArrayOf()</code></p>
+
+<p>The arrayOf field always stores a JavaType so that we can correctly resolve the FFI qname.  This means that that an array of java.lang.Object will have an arrayOf value of [java]java.lang::Object.  This method correctly maps the arrayOf map to its canonical Fantom type.</p>
+</dd>
+<dt id='inferredAs' class='method'>inferredAs<a href='JavaType_src.html#inferredAs'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CType.html'>CType</a> inferredAs()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#inferredAs'>compiler::CType.inferredAs</a></p>
+</div>
+</dd>
+<dt id='isArray' class='method'>isArray<a href='JavaType_src.html#isArray'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isArray()</code></p>
+
+<p>Is this a array type such as <code>[java]foo.bar::[Baz</code></p>
+</dd>
+<dt id='isForeign' class='method'>isForeign<a href='JavaType_src.html#isForeign'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isForeign()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isForeign'>compiler::CType.isForeign</a></p>
+</div>
+</dd>
+<dt id='isGeneric' class='method'>isGeneric<a href='JavaType_src.html#isGeneric'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isGeneric()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isGeneric'>compiler::CType.isGeneric</a></p>
+</div>
+</dd>
+<dt id='isGenericParameter' class='method'>isGenericParameter<a href='JavaType_src.html#isGenericParameter'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isGenericParameter()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isGenericParameter'>compiler::CType.isGenericParameter</a></p>
+</div>
+</dd>
+<dt id='isInteropArray' class='method'>isInteropArray<a href='JavaType_src.html#isInteropArray'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isInteropArray()</code></p>
+
+<p>Return if this is an interop array like <code>fanx.interop.IntArray</code> which models <code>int[]</code>.</p>
+</dd>
+<dt id='isNullable' class='method'>isNullable<a href='JavaType_src.html#isNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isNullable()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isNullable'>compiler::CType.isNullable</a></p>
+</div>
+</dd>
+<dt id='isParameterized' class='method'>isParameterized<a href='JavaType_src.html#isParameterized'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isParameterized()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isParameterized'>compiler::CType.isParameterized</a></p>
+</div>
+</dd>
+<dt id='isPrimitive' class='method'>isPrimitive<a href='JavaType_src.html#isPrimitive'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isPrimitive()</code></p>
+</dd>
+<dt id='isPrimitiveFloat' class='method'>isPrimitiveFloat<a href='JavaType_src.html#isPrimitiveFloat'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isPrimitiveFloat()</code></p>
+</dd>
+<dt id='isPrimitiveIntLike' class='method'>isPrimitiveIntLike<a href='JavaType_src.html#isPrimitiveIntLike'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isPrimitiveIntLike()</code></p>
+</dd>
+<dt id='isSupported' class='method'>isSupported<a href='JavaType_src.html#isSupported'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isSupported()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isSupported'>compiler::CType.isSupported</a></p>
+</div>
+</dd>
+<dt id='isVal' class='method'>isVal<a href='JavaType_src.html#isVal'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> isVal()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#isVal'>compiler::CType.isVal</a></p>
+</div>
+</dd>
+<dt id='load' class='method hidden'>load<a href='JavaType_src.html#load'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> load()</code></p>
+</dd>
+<dt id='loaded' class='field hidden'>loaded<a href='JavaType_src.html#loaded'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> loaded := false</code></p>
+</dd>
+<dt id='make' class='method'>make<a href='JavaType_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='JavaPod.html'>JavaPod</a> pod, <a href='../sys/Str.html'>Str</a> name, <a href='../compiler/CType.html'>CType</a>? primitiveNullable := null)</code></p>
+
+<p>Construct with loaded Type.</p>
+</dd>
+<dt id='method' class='method'>method<a href='JavaType_src.html#method'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CMethod.html'>CMethod</a>? method(<a href='../sys/Str.html'>Str</a> name)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#method'>compiler::CType.method</a></p>
+</div>
+
+<p>Handle the case where a field and method have the same name; in this case the field will always be first with a linked list to the overloaded methods</p>
+</dd>
+<dt id='mixins' class='field'>mixins<a href='JavaType_src.html#mixins'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CType.html'>CType</a>[] mixins</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#mixins'>compiler::CType.mixins</a></p>
+</div>
+</dd>
+<dt id='name' class='field'>name<a href='JavaType_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'>override readonly <a href='../sys/Str.html'>Str</a> name</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#name'>compiler::CType.name</a></p>
+</div>
+</dd>
+<dt id='newMethod' class='method'>newMethod<a href='JavaType_src.html#newMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../compiler/CMethod.html'>CMethod</a> newMethod()</code></p>
+
+<p>We use an implicit constructor called "&lt;new>" on each type as the protocol for telling the Java runtime to perform a <code>new</code> opcode for object allocation:</p>
+
+<pre>CallNew Type.&lt;new>  // allocate object
+args...             // arguments are pushed onto stack
+CallCtor &lt;init>     // call to java constructor</pre>
+</dd>
+<dt id='ns' class='method'>ns<a href='JavaType_src.html#ns'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CNamespace.html'>CNamespace</a> ns()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#ns'>compiler::CType.ns</a></p>
+</div>
+</dd>
+<dt id='operators' class='method'>operators<a href='JavaType_src.html#operators'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/COperators.html'>COperators</a> operators()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#operators'>compiler::CType.operators</a></p>
+</div>
+</dd>
+<dt id='pod' class='field'>pod<a href='JavaType_src.html#pod'>Source</a></dt>
+<dd>
+<p><code class='sig'>override readonly <a href='JavaPod.html'>JavaPod</a> pod</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#pod'>compiler::CType.pod</a></p>
+</div>
+</dd>
+<dt id='primitiveNullable' class='field hidden'>primitiveNullable<a href='JavaType_src.html#primitiveNullable'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../compiler/CType.html'>CType</a>? primitiveNullable</code></p>
+</dd>
+<dt id='qname' class='field'>qname<a href='JavaType_src.html#qname'>Source</a></dt>
+<dd>
+<p><code class='sig'>override readonly <a href='../sys/Str.html'>Str</a> qname</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#qname'>compiler::CType.qname</a></p>
+</div>
+</dd>
+<dt id='signature' class='method'>signature<a href='JavaType_src.html#signature'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> signature()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#signature'>compiler::CType.signature</a></p>
+</div>
+</dd>
+<dt id='slot' class='method'>slot<a href='JavaType_src.html#slot'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CSlot.html'>CSlot</a>? slot(<a href='../sys/Str.html'>Str</a> name)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#slot'>compiler::CType.slot</a></p>
+</div>
+</dd>
+<dt id='slots' class='field'>slots<a href='JavaType_src.html#slots'>Source</a></dt>
+<dd>
+<p><code class='sig'>override readonly <a href='../sys/Str.html'>Str</a>:<a href='../compiler/CSlot.html'>CSlot</a> slots</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#slots'>compiler::CType.slots</a></p>
+</div>
+</dd>
+<dt id='toArrayOf' class='method'>toArrayOf<a href='JavaType_src.html#toArrayOf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='JavaType.html'>JavaType</a> toArrayOf()</code></p>
+
+<p>Get the type which is an array of this type.</p>
+</dd>
+<dt id='toJavaClassName' class='method'>toJavaClassName<a href='JavaType_src.html#toJavaClassName'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> toJavaClassName()</code></p>
+
+<p>Get this type's Java class name:</p>
+
+<pre>[java]java.lang::Class  => java.lang.Class
+[java]java.lang::[Class => [Ljava.lang.Class;</pre>
+</dd>
+<dt id='toListOf' class='method'>toListOf<a href='JavaType_src.html#toListOf'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CType.html'>CType</a> toListOf()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#toListOf'>compiler::CType.toListOf</a></p>
+</div>
+</dd>
+<dt id='toNullable' class='method'>toNullable<a href='JavaType_src.html#toNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../compiler/CType.html'>CType</a> toNullable()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../compiler/CType.html#toNullable'>compiler::CType.toNullable</a></p>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='JavaType_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#arrayOf'>arrayOf</a></li>
+  <li><a href='#arrayRank'>arrayRank</a></li>
+  <li><a href='#base'>base</a></li>
+  <li><a href='#classLiteral'>classLiteral</a></li>
+  <li><a href='#facet'>facet</a></li>
+  <li><a href='#fits'>fits</a></li>
+  <li class='hidden'><a href='#fitsFan'>fitsFan</a></li>
+  <li class='hidden'><a href='#fitsJava'>fitsJava</a></li>
+  <li><a href='#flags'>flags</a></li>
+  <li><a href='#inferredArrayOf'>inferredArrayOf</a></li>
+  <li><a href='#inferredAs'>inferredAs</a></li>
+  <li><a href='#isArray'>isArray</a></li>
+  <li><a href='#isForeign'>isForeign</a></li>
+  <li><a href='#isGeneric'>isGeneric</a></li>
+  <li><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li><a href='#isInteropArray'>isInteropArray</a></li>
+  <li><a href='#isNullable'>isNullable</a></li>
+  <li><a href='#isParameterized'>isParameterized</a></li>
+  <li><a href='#isPrimitive'>isPrimitive</a></li>
+  <li><a href='#isPrimitiveFloat'>isPrimitiveFloat</a></li>
+  <li><a href='#isPrimitiveIntLike'>isPrimitiveIntLike</a></li>
+  <li><a href='#isSupported'>isSupported</a></li>
+  <li><a href='#isVal'>isVal</a></li>
+  <li class='hidden'><a href='#load'>load</a></li>
+  <li class='hidden'><a href='#loaded'>loaded</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#method'>method</a></li>
+  <li><a href='#mixins'>mixins</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#newMethod'>newMethod</a></li>
+  <li><a href='#ns'>ns</a></li>
+  <li><a href='#operators'>operators</a></li>
+  <li><a href='#pod'>pod</a></li>
+  <li class='hidden'><a href='#primitiveNullable'>primitiveNullable</a></li>
+  <li><a href='#qname'>qname</a></li>
+  <li><a href='#signature'>signature</a></li>
+  <li><a href='#slot'>slot</a></li>
+  <li><a href='#slots'>slots</a></li>
+  <li><a href='#toArrayOf'>toArrayOf</a></li>
+  <li><a href='#toJavaClassName'>toJavaClassName</a></li>
+  <li><a href='#toListOf'>toListOf</a></li>
+  <li><a href='#toNullable'>toNullable</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compilerJava 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

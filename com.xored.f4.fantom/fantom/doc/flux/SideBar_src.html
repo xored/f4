@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::SideBar</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='SideBar.html'>SideBar</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>flux::SideBar</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../fwt/Widget.html'>fwt::Widget</a>
+    <a href='../fwt/Pane.html'>fwt::Pane</a>
+      <a href='../fwt/ContentPane.html'>fwt::ContentPane</a>
+        flux::SideBar</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   21 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+<span class='k'>using</span> fwt
+
+<span class='z'>**</span>
+<span class='z'>** SideBar is a plugin used along side the main views.  SideBars</span>
+<span class='z'>** are registered using the indexed prop "flux.sideBar={qname}".</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> SideBar : ContentPane
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// State</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the top level flux window.</span>
+  <span class='z'>**</span>
+  Frame? <span id='frame'>frame</span> <span class='b'>{</span> <span class='k'>internal</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get this sidebar's preferred alignment which is used to</span>
+  <span class='z'>** determine its default position.  Valid values are:</span>
+  <span class='z'>**   - Halign.left (default)</span>
+  <span class='z'>**   - Halign.right</span>
+  <span class='z'>**   - Valign.bottom</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Obj <span id='prefAlign'>prefAlign</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> Halign.left <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is the sidebar currently shown in the frame?</span>
+  <span class='z'>**</span>
+  Bool <span id='showing'>showing</span> := <span class='k'>false</span> <span class='b'>{</span> <span class='k'>internal</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Show this sidebar in the frame.</span>
+  <span class='z'>**</span>
+  This <span id='show'>show</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>showing<span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+    showing=<span class='k'>true</span>
+    frame.sideBarPane.show<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    content?.relayout
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Hide this sidebar in the frame.</span>
+  <span class='z'>**</span>
+  This <span id='hide'>hide</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!showing<span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+    showing=<span class='k'>false</span>
+    frame.sideBarPane.hide<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Eventing</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when sidebar is first loaded into memory.</span>
+  <span class='z'>** This is the time to load persistent state.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onLoad'>onLoad</span><span class='b'>()</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when sidebar is being unloaded from memory.</span>
+  <span class='z'>** This is the time to save persistent state.  This is</span>
+  <span class='z'>** called no matter whether the sidebar is shown or hidden.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onUnload'>onUnload</span><span class='b'>()</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when sidebar is shown in the frame.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onShow'>onShow</span><span class='b'>()</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when sidebar is hidden in the frame.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onHide'>onHide</span><span class='b'>()</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when specified view is selected as the</span>
+  <span class='z'>** active tab.  This callback is invoked only if showing.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onActive'>onActive</span><span class='b'>(</span>View view<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when specified view is unselected as the</span>
+  <span class='z'>** active tab.  This callback is invoked only if showing.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onInactive'>onInactive</span><span class='b'>(</span>View view<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when the frame's list of marks is updated.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onMarks'>onMarks</span><span class='b'>(</span>Mark<span class='b'>[]</span> marks<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback before the current view is jumped to</span>
+  <span class='z'>** the specified mark.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='onGotoMark'>onGotoMark</span><span class='b'>(</span>Mark mark<span class='b'>)</span> <span class='b'>{}</span>
+
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='SideBar.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#frame'>frame</a></li>
+  <li style='display: block;'><a href='#hide'>hide</a></li>
+  <li style='display: block;'><a href='#onActive'>onActive</a></li>
+  <li style='display: block;'><a href='#onGotoMark'>onGotoMark</a></li>
+  <li style='display: block;'><a href='#onHide'>onHide</a></li>
+  <li style='display: block;'><a href='#onInactive'>onInactive</a></li>
+  <li style='display: block;'><a href='#onLoad'>onLoad</a></li>
+  <li style='display: block;'><a href='#onMarks'>onMarks</a></li>
+  <li style='display: block;'><a href='#onShow'>onShow</a></li>
+  <li style='display: block;'><a href='#onUnload'>onUnload</a></li>
+  <li style='display: block;'><a href='#prefAlign'>prefAlign</a></li>
+  <li style='display: block;'><a href='#show'>show</a></li>
+  <li style='display: block;'><a href='#showing'>showing</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

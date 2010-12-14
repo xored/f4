@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fluxText::SyntaxRules</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fluxText</a></li>
+  <li>&gt;</li>
+  <li><a href='SyntaxRules.html'>SyntaxRules</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>fluxText::SyntaxRules</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  fluxText::SyntaxRules</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   10 Aug 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> flux
+
+<span class='z'>**</span>
+<span class='z'>** SyntaxRules defines the rules for parsing text for color coding.</span>
+<span class='z'>**</span>
+@Serializable
+<span class='k'>const</span> <span class='k'>class</span> SyntaxRules
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor with it-block</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>|This|? f := <span class='k'>null</span><span class='b'>)</span> <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>f != <span class='k'>null</span><span class='b'>)</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Rule Configuration</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** Bracket characters defaults to "()[]{}".</span>
+  <span class='k'>const</span> Str <span id='brackets'>brackets</span> := <span class='s'>"(){}[]"</span>
+
+  <span class='z'>** List of the keywords.</span>
+  <span class='k'>const</span> Str<span class='b'>[]</span>? <span id='keywords'>keywords</span>
+
+  <span class='z'>** Start tokens for single line comments to end</span>
+  <span class='z'>** of line (list of strings).</span>
+  <span class='k'>const</span> Str<span class='b'>[]</span>? <span id='comments'>comments</span>
+
+  <span class='z'>** String and character literal styles</span>
+  <span class='k'>const</span> SyntaxStr<span class='b'>[]</span>? <span id='strs'>strs</span>
+
+  <span class='z'>** Start token for multi-line block comments</span>
+  <span class='k'>const</span> Str? <span id='blockCommentStart'>blockCommentStart</span>
+
+  <span class='z'>** End token for multi-line block comments</span>
+  <span class='k'>const</span> Str? <span id='blockCommentEnd'>blockCommentEnd</span>
+
+  <span class='z'>** Can block comments be nested (default is false).</span>
+  <span class='k'>const</span> Bool <span id='blockCommentsNest'>blockCommentsNest</span> := <span class='k'>false</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>internal</span> <span class='k'>static</span> SyntaxRules <span id='load'>load</span><span class='b'>(</span>SyntaxOptions options, File? f, Str? firstLine<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// try file extension first</span>
+    SyntaxRules? rules := <span class='k'>null</span>
+    extToRulesName := options.extToRules<span class='b'>[</span>f?.ext?.lower ?: <span class='s'>"not.found"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>extToRulesName != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      rules = findRules<span class='b'>(</span>extToRulesName<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>rules != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> rules
+    <span class='b'>}</span>
+
+    <span class='y'>// try shebang</span>
+    firstLine = firstLine ?: <span class='s'>""</span>
+    <span class='k'>if</span> <span class='b'>(</span>firstLine.startsWith<span class='b'>(</span><span class='s'>"#!"</span><span class='b'>)</span> || firstLine.startsWith<span class='b'>(</span><span class='s'>"# !"</span><span class='b'>))</span>
+    <span class='b'>{</span>
+      toks := firstLine<span class='b'>[</span>firstLine.index<span class='b'>(</span><span class='s'>"!"</span><span class='b'>)</span>+1..-1<span class='b'>]</span>.split
+      cmd := toks<span class='b'>[</span>0<span class='b'>]</span>.split<span class='b'>(</span><span class='s'>'/'</span><span class='b'>)</span>.last.lower
+      <span class='k'>if</span> <span class='b'>(</span>cmd == <span class='s'>"env"</span> &amp;&amp; toks.size &gt; 1<span class='b'>)</span>
+        cmd = toks<span class='b'>[</span>1<span class='b'>]</span>.split<span class='b'>(</span><span class='s'>'/'</span><span class='b'>)</span>.last.lower
+      cmdToRulesName := options.extToRules<span class='b'>[</span>cmd<span class='b'>]</span>
+      rules = findRules<span class='b'>(</span>cmdToRulesName<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>rules != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> rules
+    <span class='b'>}</span>
+
+    <span class='y'>// return default rules</span>
+    <span class='k'>return</span> SyntaxRules<span class='b'>()</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> SyntaxRules? <span id='findRules'>findRules</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    file := Env.cur.findFile<span class='b'>(</span><span class='u'>`etc/fluxText/syntax/syntax-${name}.fog`</span>, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>file == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> file.readObj
+  <span class='b'>}</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**</span>
+<span class='z'>** Syntax rules for a string or character literal</span>
+<span class='z'>**</span>
+@Serializable
+<span class='k'>const</span> <span class='k'>class</span> SyntaxStr
+<span class='b'>{</span>
+  <span class='z'>** Token which delimits the start and end of the string.</span>
+  <span class='z'>** If the end delimiter is different, then also set the</span>
+  <span class='z'>** `delimiterEnd` field.</span>
+  <span class='k'>const</span> Str delimiter := <span class='s'>"\""</span>
+
+  <span class='z'>** Token which delimits the end of the string, or if</span>
+  <span class='z'>** null, then `delimiter` is assumed to be both the</span>
+  <span class='z'>** start and end of the string.</span>
+  <span class='k'>const</span> Str? delimiterEnd
+
+  <span class='z'>** Escape character placed before ending delimiter to indicate</span>
+  <span class='z'>** the delimiter is part of the string, not the end.  The</span>
+  <span class='z'>** escape character is also assumed to escape itself.</span>
+  <span class='k'>const</span> Int escape
+
+  <span class='z'>** Can this string literal span multiple lines</span>
+  <span class='k'>const</span> Bool multiLine := <span class='k'>false</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='SyntaxRules.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#blockCommentEnd'>blockCommentEnd</a></li>
+  <li style='display: block;'><a href='#blockCommentStart'>blockCommentStart</a></li>
+  <li style='display: block;'><a href='#blockCommentsNest'>blockCommentsNest</a></li>
+  <li style='display: block;'><a href='#brackets'>brackets</a></li>
+  <li style='display: block;'><a href='#comments'>comments</a></li>
+  <li class='hidden' style='display: block;'><a href='#findRules'>findRules</a></li>
+  <li style='display: block;'><a href='#keywords'>keywords</a></li>
+  <li class='hidden' style='display: block;'><a href='#load'>load</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#strs'>strs</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fluxText 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Methods</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Methods.html'>Methods</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Slots.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Slots.html'>Slots</a></div>
+<div class='next'><a href='Fields.html'>Fields</a> <a href='Fields.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Methods</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>A method is a slot which defines a function within a class or mixin:</p>
+
+<pre>class Boo
+{
+  static Int add(Int a, Int b) { return a + b }
+  Int incr() { return count++ }
+  Int count := 0
+}</pre>
+
+<p>In the example above <code>add</code> and <code>incr</code> are method slots on the class <code>Boo</code>. The <code>incr</code> method is an instance method which means it is always invoked on an instance of <code>Boo</code>.  The <code>add</code> method is static and is not invoked on an instance:</p>
+
+<pre>b := Boo.make
+x := b.incr()
+y := Boo.add(3, 4)</pre>
+
+<p>Method invocation is performed using the <code>.</code> dot operator on a <em>target</em>. The target for instance methods is an instance of the type; for static methods the target is the type name.</p>
+
+<p>Methods in your own type (or types you inherit) are automatically scoped such that the target type or instance is implied.  For example:</p>
+
+<pre>class Foo : Boo
+{
+  Int more() { return incr() + add(3, 4) }
+}</pre>
+
+<p>If the method does not take any parameters, then we can leave off the <code>()</code> empty parenthesis.  By convention the empty parenthesis are <em>always</em> omitted:</p>
+
+<pre>b.incr  // same as b.incr()</pre>
+
+<p>You can also the <code>?.</code> operator to safely handle a null target.  See <a href='Expressions.html#safeInvoke'>safe invokes</a>.</p>
+
+<h1 id='this'>This </h1>
+
+<p>Instance methods always have an implied first parameter which is the instance itself identified via the keyword <code>this</code>.  The definitions of <code>a</code> and <code>b</code> are identical in the following example:</p>
+
+<pre>class Foo : Boo
+{
+  Int a() { return incr }
+  Int b() { return this.incr }
+}</pre>
+
+<h1 id='ctor'>Constructors </h1>
+
+<p>Constructors are special methods used to create new instances of a class.  In Fantom, constructors are named methods.  The difference is that they use the <code>new</code> keyword in their definition instead of a return type (the return type is implied to be an instance of the type):</p>
+
+<pre>class MissingPerson
+{
+  new make(Str name) { this.name = name }
+  Str name
+}</pre>
+
+<p>By convention, the primary constructor should be called <code>make</code> and other constructors should be prefixed with <code>make</code>.  Like other slots, constructors must be uniquely named within their type.  To create an instance, you call the constructor like a static method:</p>
+
+<pre>jack := MissingPerson.make("Jack Shephard")</pre>
+
+<p>You can also use the <a href='#constructionCalls'>shorthand syntax</a> for calling a constructor called "make":</p>
+
+<pre>sayid := MissingPerson("Sayid Jarrah")</pre>
+
+<p>From a client perspective, constructors look just like named factory methods (in fact switching between a static method and constructor maintains source level compatibility, but not binary compatibility).  Constructors have the unusual property of acting like a static method on the outside and an instance method on the inside.  On the outside you call a constructor like a static method and get back an instance of the type.  On the inside of a constructor, the instance has already been allocated and is available using the <code>this</code> keyword.</p>
+
+<p>If you do not declare a constructor on your class, then the compiler will automatically generate a public no arg constructor called <code>make</code>.</p>
+
+<p>Only classes can have constructors.  It is a compile time error to declare a constructor on a mixin.</p>
+
+<h2 id='constructionCalls'>Construction Calls </h2>
+
+<p>Fantom supports a special syntax called <em>construction calls</em> with the syntax <code>Type(args)</code>.  These calls are resolved as follows:</p>
+
+<ol style='list-style-type:decimal'>
+<li>bind to <code>Type.fromStr</code> <em>if</em> there is exactly one Str argument <em>and</em> <code>Type.fromStr</code> exists (see <a href='Expressions.html#simples'>simple literals</a>)</li>
+
+<li>otherwise bind to <code>Type.make</code></li>
+</ol>
+
+<p>The construction operator works on static methods or constructors. So you can use it when <code>make</code> is a constructor or when <code>make</code> is a factory method.  The method of construction call <code>Foo(...)</code> must return <code>Foo</code>.</p>
+
+<p>Convention is to always prefer a construction call to using <code>make</code> explicitly:</p>
+
+<pre>ArgErr.make   // non-preferred
+ArgErr()      // preferred
+
+ArgErr.make("bad arg")   // non-preferred
+ArgErr("bad arg")        // preferred</pre>
+
+<h2 id='ctorChaining'>Constructor Chaining </h2>
+
+<p>When creating subclasses, you must call one of your parent class constructors or another of your own constructors using a syntax called <em>constructor chaining</em>.  The syntax to call a parent constructor is based on C++ and C# using the <code>:</code> after the formal parameters, but before the method body:</p>
+
+<pre>class Foo
+{
+  new make() {}
+  new makeName(Str name) {}
+}
+
+class Bar : Foo
+{
+  new make() : super() {}
+  new makeFullName(Str? first, Str last) : super.makeName(last) {}
+  new makeLastName(Str last) : this.makeFullName(null, last) {}
+}</pre>
+
+<p>All constructor chains start with the <code>this</code> or <code>super</code> keyword.  Use <code>this</code> to chain to one of your own constructors or <code>super</code> to call a parent constructor.  Then the constructor to call is specified as a normal method call with the name and argument list.  As a shortcut, you can omit the name if the parent constructor being called has the same name.</p>
+
+<p>In the example above, <code>Bar.make</code> illustrates calling <code>Foo.make</code>- omitting the name implies calling a parent of the same name - <code>make</code> in this case. <code>Bar.makeFullName</code> illustrates calling a super class constructor by name. <code>Bar.makeLastName</code> shows how to call a peer constructor on your own class - this is useful for ensuring all your initialization code is centralized in one constructor.</p>
+
+<h1 id='staticCtor'>Static Constructors </h1>
+
+<p>Static constructors are methods executed to initialize the class itself.  They are typically used to initialize <a href='Fields.html#static'>static fields</a>. Static constructors use a Java like syntax:</p>
+
+<pre>class Foo
+{
+  static { echo("initializing Foo...") }
+}</pre>
+
+<p>Assignment to static fields is done in an auto-generated static initializer.  It is permissible to have multiple static initializers, in which case they are run in the order of declaration:</p>
+
+<pre>class Foo
+{
+  static const Int a := 10
+  static { echo("1st a=$a b=$b") }
+  static const Int b := 20
+  static { echo("2nd a=$a b=$b") }
+  static { a = 30 }
+  static { echo("3rd a=$a b=$b") }
+}
+
+// outputs
+1st a=10 b=null
+2nd a=10 b=20
+3rd a=30 b=20</pre>
+
+<h1 id='defaultParams'>Default Parameters </h1>
+
+<p>You can specify a default argument for parameters.  Defaults can be applied to the last zero or more parameters (right to left).  For example:</p>
+
+<pre>static Int add(Int a, Int b, Int c := 0, Int d := 0)
+{
+  return a + b + c + d
+}</pre>
+
+<p>In this example the last two parameters <code>c</code> and <code>d</code> default to zero. This allows you to call the <code>add</code> method with 2, 3, or 4 arguments:</p>
+
+<pre>add(3, 4, 5, 6)
+add(3, 4, 5)     // same as add(3, 4, 5, 0)
+add(3, 4)        // same as add(3, 4, 0, 0)</pre>
+
+<h1 id='operators'>Operators </h1>
+
+<p>Fantom supports operator overloading using <em>operator methods</em>. Operator methods are just normal methods which are annotated with the <code><a href='../sys/Operator.html'>@Operator</a></code> marker facet.  The following naming conventions are enforced for determining which operator is used by the method:</p>
+
+<pre>prefix     symbol    degree
+------     ------    ------
+negate     -a        unary
+increment  ++a       unary
+decrement  --a       unary
+plus       a + b     binary
+minus      a - b     binary
+mult       a * b     binary
+div        a / b     binary
+mod        a % b     binary
+get        a[b]      binary
+set        a[b] = c  ternary</pre>
+
+<p>In the case of the unary and ternary operators the method name must match exactly.  For the binary operators, the method must only start with the given name.  This allows binary operators to be overloaded by parameter type:</p>
+
+<pre>class Foo
+{
+  @Operator Int plusInt(Int x) { ... }
+  @Operator Float plusFloat(Float x) { ... }
+}
+
+Foo + Int    =>  calls Foo.plusInt and yields Int
+Foo + Float  =>  calls Foo.plusFloat and yields Float</pre>
+
+<p>The compiler performs method resolution of operators using a very simple algorithm.  If there are multiple potential matches the compiler will report an error indicating the operator resolves ambiguously.  The compiler does <em>not</em> take class hierarchy into account to attempt to find the "best" match.</p>
+
+<h1 id='virtual'>Virtual Methods </h1>
+
+<p>Virtual methods are designed to be overridden by a subclass to enable polymorphism.  Methods must be marked using the <code>virtual</code> keyword before they can be overridden by subclasses.  Subclasses must declare they are overriding a method using the <code>override</code> keyword:</p>
+
+<pre>class Animal
+{
+  virtual Void talk() { echo("generic") }
+}
+
+class Cat : Animal
+{
+  override Void talk() { echo("meow") }
+}
+
+Animal().talk   // prints generic
+Cat().talk      // prints meow</pre>
+
+<p>By default when a subclass overrides a method, it is implied to be virtual - its own subclasses can override it again.  You can use <code>final</code> keyword to prevent further overrides:</p>
+
+<pre>class Lion : Cat
+{
+  override final Void talk() { echo("roar!") }
+}</pre>
+
+<h1 id='abstract'>Abstract Methods </h1>
+
+<p>Abstract methods are virtual methods without an implementation.  They are declared using the <code>abstract</code> keyword.  Abstract methods are implied to be virtual - it is an error to use both the <code>abstract</code> and <code>virtual</code> keyword.  Abstract methods must not provide a method body.  If declared within a <a href='Classes.html#abstract'>class</a>, then the containing class must also be <code>abstract</code>.</p>
+
+<h1 id='once'>Once Methods </h1>
+
+<p>The <code>once</code> keyword can be used to declare <em>once methods</em>.  A once method only computes its result the first time it is called and then returns a cached value on subsequent calls.  Once methods are a great technique for lazily creating state without a lot of boiler plate code:</p>
+
+<pre>// hard way
+Str fullName
+{
+  get
+  {
+    if (&amp;fullName == null) &amp;fullName = "$firstName  $lastName"
+    return &amp;fullName
+  }
+}
+
+// easy way
+once Str fullName() { return "$firstName  $lastName" }</pre>
+
+<p>Restrictions for once methods:</p>
+
+<ul>
+<li>Must not be declared within a const class</li>
+
+<li>Must not be declared within a mixin</li>
+
+<li>Must not be a constructor</li>
+
+<li>Must not be static</li>
+
+<li>Must not be abstract</li>
+
+<li>Must return non-Void</li>
+
+<li>Must have no parameters</li>
+</ul>
+
+<p>If a once method throws an exception, then there is no cached value - subsequent calls will re-execute the method until it returns a value.</p>
+
+<h1 id='covariance'>Covariance </h1>
+
+<p>Fantom supports <a href='Inheritance.html#covariance'>covariance</a> - which allows an overridden method to narrow the return type of the inherited method:</p>
+
+<pre>abstract class Animal
+{
+  abstract Animal mommy()
+  abstract Animal daddy()
+}
+
+class Cat : Animal
+{
+  override Cat mommy() {...}
+  override Cat daddy() {...}
+}</pre>
+
+<h1 id='thisReturns'>This Returns </h1>
+
+<p>A method declared to return <code>This</code> is a special case of covariance which always returns the type being used.  This technique is typically used by methods which return <code>this</code> to enable method chaining. Consider this example:</p>
+
+<pre>class Connection
+{
+  Connection open() { return this }
+}
+
+class MyConnection : Connection
+{
+  MyConnection talk() { return this }
+}</pre>
+
+<p>The APIs are written to allow method chaining, so we'd like to be able to write something like this:</p>
+
+<pre>MyConnection.make.open.talk</pre>
+
+<p>If you actually tried to compile that code you'd get an error like "Unknown slot Connection.talk".  We could write code without method chaining, or we could even use the "->" operator.  But this technique is so commonly used, that Fantom allows you to declare the return type as <code>This</code>:</p>
+
+<pre>class Connection
+{
+  This open() { return this }
+}
+
+class MyConnection : Connection
+{
+  This talk() { return this }
+}</pre>
+
+<p>The <code>This</code> type is a special marker type like <code>Void</code>.  It indicates that a method is guaranteed to always return an instance of the target type.  In our example above, the expression <code>x.open</code> will always evaluate to an instance of <code>Type.of(x)</code>.</p>
+
+<p>Use of <code>This</code> is restricted to the return type of non-static methods.  You can't use it for static methods, parameter types, local variable types, or for fields.  Overrides of a methods which return <code>This</code> must also return <code>This</code>.</p>
+
+<h1 id='dynamicInvoke'>Dynamic Invoke </h1>
+
+<p>As any dynamic language proponent can tell you - sometimes static typing can be a real pain.  So Fantom supports a hybrid static/dynamic design by providing two call operators.  The <code>.</code> dot operator accesses a slot using static typing - if the slot cannot be resolved at compile time, then it results in a compile time error.</p>
+
+<p>The <code>-></code> dynamic invoke operator lets you perform calls with no compile time type checking.  What dynamic invoke actually does it generate a call to the <code><a href='../sys/Obj.html#trap'>sys::Obj.trap</a></code> method.  By default the <code>trap</code> method uses reflection to lookup and call the method.  If the name maps to a field, then <code>trap</code> will get or set the field depending on the number of arguments:</p>
+
+<pre>a->x        a.trap("x", [,])
+a->x = b    a.trap("x", [b])
+a->x(b)     a.trap("x", [b])
+a->x(b, c)  a.trap("x", [b, c])</pre>
+
+<p>In the simplest case, the <code>-></code> operator is syntax sugar to by-pass static type checking and use reflection.  But the ability to override the <code>trap</code> method is a powerful technique in the Fantom toolkit for building dynamic solutions.</p>
+
+<p>You can also the <code>?-></code> operator to safely handle a null target.  See <a href='Expressions.html#safeInvoke'>safe invokes</a>.</p>
+
+<h1 id='native'>Native Methods </h1>
+
+<p>Native methods are implemented in an alternate language which is "native" for each target platform.  Native methods are typically written in Java for the Java VM and C# for the .NET CLR.  Native methods use the <code>native</code> keyword and must not have a method body (like abstract methods).  The infrastructure for supporting native methods is discussed in the <a href='Natives.html'>Natives</a> chapter.</p>
+<div class='prevNext'>
+<div class='prev'><a href='Slots.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Slots.html'>Slots</a></div>
+<div class='next'><a href='Fields.html'>Fields</a> <a href='Fields.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#this'>This </a></li><li><a href='#ctor'>Constructors </a><ul>
+<li><a href='#constructionCalls'>Construction Calls </a></li><li><a href='#ctorChaining'>Constructor Chaining </a></li></ul>
+</li><li><a href='#staticCtor'>Static Constructors </a></li><li><a href='#defaultParams'>Default Parameters </a></li><li><a href='#operators'>Operators </a></li><li><a href='#virtual'>Virtual Methods </a></li><li><a href='#abstract'>Abstract Methods </a></li><li><a href='#once'>Once Methods </a></li><li><a href='#covariance'>Covariance </a></li><li><a href='#thisReturns'>This Returns </a></li><li><a href='#dynamicInvoke'>Dynamic Invoke </a></li><li><a href='#native'>Native Methods </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

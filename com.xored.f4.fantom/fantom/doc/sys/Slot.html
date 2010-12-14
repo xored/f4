@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Slot</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Slot.html'>Slot</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract const class</h2>
+<h1>sys::Slot</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Slot</pre>
+</div>
+<div class='detail'>
+
+<p>Slot represents a member field or method on a Type.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='doc' class='method'>doc<a href='Slot_src.html#doc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? doc()</code></p>
+
+<p>Return the raw fandoc for this slot or null if not available. If there is additional documentation meta-data available it is included an the start of the string as a series of "@name=value" lines.</p>
+</dd>
+<dt id='facet' class='method'>facet<a href='Slot_src.html#facet'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Facet.html'>Facet</a>? facet(<a href='Type.html'>Type</a> type, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Get a facet by its type.  If not found on this slot then return null or throw UnknownFacetErr based on check flag. See <a href='../docLang/Facets.html'>Facets Doc</a> for details.</p>
+</dd>
+<dt id='facets' class='method'>facets<a href='Slot_src.html#facets'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Facet.html'>Facet</a>[] facets()</code></p>
+
+<p>Get the list of facets defined on this slot or return an empty list if no facets are defined. If looking up a facet by type, then use the <a href='Slot.html#facet'>facet</a> method which will provide better performance. See <a href='../docLang/Facets.html'>Facets Doc</a> for details.</p>
+</dd>
+<dt id='find' class='method'>find<a href='Slot_src.html#find'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Slot.html'>Slot</a>? find(<a href='Str.html'>Str</a> qname, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Find a Slot by it's qualified name "pod::Type.slot".  If the slot doesn't exist and checked is false then return null, otherwise throw UnknownSlotErr.</p>
+</dd>
+<dt id='findField' class='method'>findField<a href='Slot_src.html#findField'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Field.html'>Field</a>? findField(<a href='Str.html'>Str</a> qname, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Convenience for <code>(Field)find(qname, checked)</code></p>
+</dd>
+<dt id='findFunc' class='method'>findFunc<a href='Slot_src.html#findFunc'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Func.html'>Func</a>? findFunc(<a href='Str.html'>Str</a> qname, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Convenience for <code>findMethod(qname, checked).func</code></p>
+</dd>
+<dt id='findMethod' class='method'>findMethod<a href='Slot_src.html#findMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Method.html'>Method</a>? findMethod(<a href='Str.html'>Str</a> qname, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Convenience for <code>(Method)find(qname, checked)</code></p>
+</dd>
+<dt id='hasFacet' class='method'>hasFacet<a href='Slot_src.html#hasFacet'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> hasFacet(<a href='Type.html'>Type</a> type)</code></p>
+
+<p>Return if this type has the specified facet defined.</p>
+</dd>
+<dt id='isAbstract' class='method'>isAbstract<a href='Slot_src.html#isAbstract'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isAbstract()</code></p>
+
+<p>Return if slot is abstract (no implementation provided).</p>
+</dd>
+<dt id='isConst' class='method'>isConst<a href='Slot_src.html#isConst'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isConst()</code></p>
+
+<p>Return if slot is constant and thread safe.  A constant field is explicitly marked with the const modifier and guaranteed to always reference the same immutable object for the life of the VM.  A const method is guaranteed to not capture any state from its thread, and is safe to execute on other threads. The compiler marks methods as const based on the following analysis:</p>
+
+<ul>
+<li>static methods are always automatically const</li>
+
+<li>instance methods are never const</li>
+
+<li>closures which don't capture any variables from their scope are automatically const</li>
+
+<li>partional apply methods which only capture const variables from their scope are automatically const</li>
+</ul>
+</dd>
+<dt id='isCtor' class='method'>isCtor<a href='Slot_src.html#isCtor'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isCtor()</code></p>
+
+<p>Return if slot is constructor method.</p>
+</dd>
+<dt id='isField' class='method'>isField<a href='Slot_src.html#isField'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isField()</code></p>
+
+<p>Return true if this is an instance of Field.</p>
+</dd>
+<dt id='isInternal' class='method'>isInternal<a href='Slot_src.html#isInternal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isInternal()</code></p>
+
+<p>Return if slot has internal protection scope.</p>
+</dd>
+<dt id='isMethod' class='method'>isMethod<a href='Slot_src.html#isMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isMethod()</code></p>
+
+<p>Return true if this is an instance of Method.</p>
+</dd>
+<dt id='isNative' class='method'>isNative<a href='Slot_src.html#isNative'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isNative()</code></p>
+
+<p>Return if slot is native.</p>
+</dd>
+<dt id='isOverride' class='method'>isOverride<a href='Slot_src.html#isOverride'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isOverride()</code></p>
+
+<p>Return if slot is an override (of parent's virtual method).</p>
+</dd>
+<dt id='isPrivate' class='method'>isPrivate<a href='Slot_src.html#isPrivate'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isPrivate()</code></p>
+
+<p>Return if slot has private protection scope.</p>
+</dd>
+<dt id='isProtected' class='method'>isProtected<a href='Slot_src.html#isProtected'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isProtected()</code></p>
+
+<p>Return if slot has protected protection scope.</p>
+</dd>
+<dt id='isPublic' class='method'>isPublic<a href='Slot_src.html#isPublic'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isPublic()</code></p>
+
+<p>Return if slot has public protection scope.</p>
+</dd>
+<dt id='isStatic' class='method'>isStatic<a href='Slot_src.html#isStatic'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isStatic()</code></p>
+
+<p>Return if slot is static (class based, rather than instance).</p>
+</dd>
+<dt id='isSynthetic' class='method'>isSynthetic<a href='Slot_src.html#isSynthetic'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isSynthetic()</code></p>
+
+<p>Return if this slot was generated by the compiler.</p>
+</dd>
+<dt id='isVirtual' class='method'>isVirtual<a href='Slot_src.html#isVirtual'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isVirtual()</code></p>
+
+<p>Return if slot is virtual (may be overridden in subclasses).</p>
+</dd>
+<dt id='make' class='method hidden'>make<a href='Slot_src.html#make'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new make()</code></p>
+
+<p>Internal constructor.</p>
+</dd>
+<dt id='name' class='method'>name<a href='Slot_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> name()</code></p>
+
+<p>Simple name of the slot such as "size".</p>
+</dd>
+<dt id='parent' class='method'>parent<a href='Slot_src.html#parent'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Type.html'>Type</a> parent()</code></p>
+
+<p>Parent type which defines this slot.</p>
+</dd>
+<dt id='qname' class='method'>qname<a href='Slot_src.html#qname'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> qname()</code></p>
+
+<p>Qualified name such as "sys:Str.size".</p>
+</dd>
+<dt id='signature' class='method'>signature<a href='Slot_src.html#signature'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='Str.html'>Str</a> signature()</code></p>
+
+<p>Return a string representation of the Fantom code signature.</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Slot_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Always return qname().</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Slot_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#doc'>doc</a></li>
+  <li><a href='#facet'>facet</a></li>
+  <li><a href='#facets'>facets</a></li>
+  <li><a href='#find'>find</a></li>
+  <li><a href='#findField'>findField</a></li>
+  <li><a href='#findFunc'>findFunc</a></li>
+  <li><a href='#findMethod'>findMethod</a></li>
+  <li><a href='#hasFacet'>hasFacet</a></li>
+  <li><a href='#isAbstract'>isAbstract</a></li>
+  <li><a href='#isConst'>isConst</a></li>
+  <li><a href='#isCtor'>isCtor</a></li>
+  <li><a href='#isField'>isField</a></li>
+  <li><a href='#isInternal'>isInternal</a></li>
+  <li><a href='#isMethod'>isMethod</a></li>
+  <li><a href='#isNative'>isNative</a></li>
+  <li><a href='#isOverride'>isOverride</a></li>
+  <li><a href='#isPrivate'>isPrivate</a></li>
+  <li><a href='#isProtected'>isProtected</a></li>
+  <li><a href='#isPublic'>isPublic</a></li>
+  <li><a href='#isStatic'>isStatic</a></li>
+  <li><a href='#isSynthetic'>isSynthetic</a></li>
+  <li><a href='#isVirtual'>isVirtual</a></li>
+  <li class='hidden'><a href='#make'>make</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#parent'>parent</a></li>
+  <li><a href='#qname'>qname</a></li>
+  <li><a href='#signature'>signature</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

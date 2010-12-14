@@ -1,0 +1,457 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::Table</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='Table.html'>Table</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fwt::Table</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Widget.html'>fwt::Widget</a>
+    fwt::Table</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   19 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** Table displays grid of rows and columns.</span>
+<span class='z'>**</span>
+@Js
+@Serializable
+<span class='k'>class</span> Table : Widget
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>|This|? f := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>f != <span class='k'>null</span><span class='b'>)</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when row is double clicked or Return/Enter</span>
+  <span class='z'>** key is pressed.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.action`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.index`: the row index.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners <span id='onAction'>onAction</span> := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when selected rows change.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.select`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.index`: the primary selection row index.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners <span id='onSelect'>onSelect</span> := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when user invokes a right click popup action.</span>
+  <span class='z'>** If the callback wishes to display a popup, then set</span>
+  <span class='z'>** the `Event.popup` field with menu to open.  If multiple</span>
+  <span class='z'>** callbacks are installed, the first one to return a nonnull</span>
+  <span class='z'>** popup consumes the event.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.popup`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.index`: the row index, or 'null' if this is a</span>
+  <span class='z'>**     background popup.</span>
+  <span class='z'>**   - `Event.pos`: the mouse position of the popup.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners <span id='onPopup'>onPopup</span> := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Horizontal scroll bar.</span>
+  <span class='z'>**</span>
+  @Transient ScrollBar <span id='hbar'>hbar</span> := ScrollBar<span class='b'>()</span> <span class='b'>{</span> <span class='k'>private</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Vertical scroll bar.</span>
+  <span class='z'>**</span>
+  @Transient ScrollBar <span id='vbar'>vbar</span> := ScrollBar<span class='b'>()</span> <span class='b'>{</span> <span class='k'>private</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a border around the widget.  Default is true.  This</span>
+  <span class='z'>** field cannot be changed once the widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='border'>border</span> := <span class='k'>true</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** True to enable multi-row selection, false for single</span>
+  <span class='z'>** row selection.  Default is false.  This field cannot</span>
+  <span class='z'>** be changed once the widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='multi'>multi</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Backing data model of table.</span>
+  <span class='z'>**</span>
+  TableModel <span id='model'>model</span> := TableModel<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is the header visible. Defaults to true.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Bool <span id='headerVisible'>headerVisible</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Update the entire table's contents from the model.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Void <span id='refreshAll'>refreshAll</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get and set the selected row indices.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Int<span class='b'>[]</span> <span id='selected'>selected</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the zero based row index at the specified coordinate</span>
+  <span class='z'>** relative to this widget or null if not over a valid cell.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Int? <span id='rowAt'>rowAt</span><span class='b'>(</span>Point pos<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the zero based column index at the specified coordinate</span>
+  <span class='z'>** relative to this widget or null if not over a valid cell.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Int? <span id='colAt'>colAt</span><span class='b'>(</span>Point pos<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if the given column is visible.  All columns are</span>
+  <span class='z'>** visible by default and can be toggled via `setColVisible`.</span>
+  <span class='z'>**</span>
+  Bool <span id='isColVisible'>isColVisible</span><span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> view.isColVisible<span class='b'>(</span>col<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Show or hide the given column.  Changing visibility of columns</span>
+  <span class='z'>** does not modify the indexing of TableModel, it only changes how</span>
+  <span class='z'>** the model is viewed.  See `isColVisible`.  This method does not</span>
+  <span class='z'>** automatically refresh table, call `refreshAll` when complete.</span>
+  <span class='z'>**</span>
+  Void <span id='setColVisible'>setColVisible</span><span class='b'>(</span>Int col, Bool visible<span class='b'>)</span> <span class='b'>{</span> view.setColVisible<span class='b'>(</span>col, visible<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The column index by which the table is currently sorted, or null</span>
+  <span class='z'>** if the table is not currently sorted by a column.  See `sort`.</span>
+  <span class='z'>**</span>
+  Int? <span id='sortCol'>sortCol</span><span class='b'>()</span> <span class='b'>{</span> view.sortCol <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if the table is currently sorting up or down.  See `sort`.</span>
+  <span class='z'>**</span>
+  SortMode <span id='sortMode'>sortMode</span><span class='b'>()</span> <span class='b'>{</span> view.sortMode <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Sort a table by the given column index. If col is null, then</span>
+  <span class='z'>** the table is ordered by its natural order of the table model.</span>
+  <span class='z'>** Sort order is determined by `TableModel.sortCompare`.  Sorting</span>
+  <span class='z'>** does not modify the indexing of TableModel, it only changes how</span>
+  <span class='z'>** the model is viewed.  Also see `sortCol` and `sortMode`.  This</span>
+  <span class='z'>** method automatically refreshes the table.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Void <span id='sort'>sort</span><span class='b'>(</span>Int? col, SortMode mode := SortMode.up<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The view wraps the table model to implement the row/col mapping</span>
+  <span class='z'>** from the view coordinate space to the model coordinate space based</span>
+  <span class='z'>** on column visibility and row sort order.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> TableView <span id='view'>view</span> := TableView<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>{</span> get <span class='b'>{</span> &amp;view.sync <span class='b'>}</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** TableModel</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** TableModel models the data of a table widget.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>class</span> TableModel
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get number of rows in table.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int numRows<span class='b'>()</span> <span class='b'>{</span> 0 <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get number of columns in table.  Default returns 1.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int numCols<span class='b'>()</span> <span class='b'>{</span> 1 <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the header text for specified column.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str header<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> <span class='s'>"Header $col"</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the horizontal alignment for specified column.</span>
+  <span class='z'>** Default is left.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Halign halign<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> Halign.left <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the preferred width in pixels for this column.</span>
+  <span class='z'>** Return null (the default) to use the Tables default</span>
+  <span class='z'>** width.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int? prefWidth<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the text to display for specified cell.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str text<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='s'>"$col:$row"</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the image to display for specified cell or null.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Image? image<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the font used to render the text for this cell.</span>
+  <span class='z'>** If null, use the default system font.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Font? font<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the foreground color for this cell. If null, use</span>
+  <span class='z'>** the default foreground color.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Color? fg<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the background color for this cell. If null, use</span>
+  <span class='z'>** the default background color.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Color? bg<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare two cells when sorting the given col.  Return -1,</span>
+  <span class='z'>** 0, or 1 according to the same semanatics as `sys::Obj.compare`.</span>
+  <span class='z'>** Default behavior sorts `text` using `sys::Str.localeCompare`.</span>
+  <span class='z'>** See `fwt::Table.sort`.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Int sortCompare<span class='b'>(</span>Int col, Int row1, Int row2<span class='b'>)</span>
+  <span class='b'>{</span>
+    text<span class='b'>(</span>col, row1<span class='b'>)</span>.localeCompare<span class='b'>(</span>text<span class='b'>(</span>col, row2<span class='b'>))</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** TableView</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** TableView wraps the table model to implement the row/col mapping</span>
+<span class='z'>** from the view coordinate space to the model coordinate space based</span>
+<span class='z'>** on column visibility and row sort order.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>internal</span> <span class='k'>class</span> TableView : TableModel
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Table table<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.table = table <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// TableModel overrides</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Int numRows<span class='b'>()</span> <span class='b'>{</span> rows.size <span class='b'>}</span>
+
+  <span class='k'>override</span> Int numCols<span class='b'>()</span> <span class='b'>{</span> cols.size <span class='b'>}</span>
+
+  <span class='k'>override</span> Str header<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> table.model.header<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Halign halign<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> table.model.halign<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Int? prefWidth<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> table.model.prefWidth<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Str text<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> table.model.text<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>]</span>, rows<span class='b'>[</span>row<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Image? image<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> table.model.image<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>]</span>, rows<span class='b'>[</span>row<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Font? font<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> table.model.font<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>]</span>, rows<span class='b'>[</span>row<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Color? fg<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> table.model.fg<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>]</span>, rows<span class='b'>[</span>row<span class='b'>])</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Color? bg<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> table.model.bg<span class='b'>(</span>cols<span class='b'>[</span>col<span class='b'>]</span>, rows<span class='b'>[</span>row<span class='b'>])</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// View Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Bool isColVisible<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> vis<span class='b'>[</span>col<span class='b'>]</span> <span class='b'>}</span>
+
+  This setColVisible<span class='b'>(</span>Int col, Bool visible<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if not changing anything then short circuit</span>
+    <span class='k'>if</span> <span class='b'>(</span>vis<span class='b'>[</span>col<span class='b'>]</span> == visible<span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+
+    <span class='y'>// update column mappings</span>
+    vis<span class='b'>[</span>col<span class='b'>]</span> = visible
+    cols.clear
+    vis.each |v, i| <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>v<span class='b'>)</span> cols.add<span class='b'>(</span>i<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  Void sort<span class='b'>(</span>Int? col, SortMode mode := SortMode.up<span class='b'>)</span>
+  <span class='b'>{</span>
+    model := table.model
+    sortCol = col
+    sortMode = mode
+    <span class='k'>if</span> <span class='b'>(</span>col == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      rows.each |val, i| <span class='b'>{</span> rows<span class='b'>[</span>i<span class='b'>]</span> = i <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>mode === SortMode.up<span class='b'>)</span>
+        rows.sort |a, b| <span class='b'>{</span> model.sortCompare<span class='b'>(</span>col, a, b<span class='b'>)</span> <span class='b'>}</span>
+      <span class='k'>else</span>
+        rows.sortr |a, b| <span class='b'>{</span> model.sortCompare<span class='b'>(</span>col, a, b<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  This sync<span class='b'>()</span>
+  <span class='b'>{</span>
+    model := table.model
+    <span class='k'>if</span> <span class='b'>(</span>rows.size != model.numRows<span class='b'>)</span> syncRows
+    <span class='k'>if</span> <span class='b'>(</span>vis.size  != model.numCols<span class='b'>)</span> syncCols
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void syncRows<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// rebuild from scratch using base model order</span>
+    model := table.model
+    rows.clear
+    rows.capacity = model.numRows
+    model.numRows.times |i| <span class='b'>{</span> rows.add<span class='b'>(</span>i<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// if sort was in-place, then resort</span>
+    <span class='k'>if</span> <span class='b'>(</span>sortCol != <span class='k'>null</span><span class='b'>)</span> sort<span class='b'>(</span>sortCol, sortMode<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void syncCols<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// rebuild from scratch</span>
+    model := table.model
+    cols.clear; cols.capacity = model.numCols
+    vis.clear; vis.capacity = model.numCols
+    model.numCols.times |i| <span class='b'>{</span> cols.add<span class='b'>(</span>i<span class='b'>)</span>; vis.add<span class='b'>(</span><span class='k'>true</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Table table
+  <span class='k'>private</span> Int<span class='b'>[]</span> rows := <span class='b'>[</span>,<span class='b'>]</span>   <span class='y'>// view to base row index mapping</span>
+  <span class='k'>private</span> Int<span class='b'>[]</span> cols := <span class='b'>[</span>,<span class='b'>]</span>   <span class='y'>// view to base col index mapping</span>
+  <span class='k'>private</span> Bool<span class='b'>[]</span> vis := <span class='b'>[</span>,<span class='b'>]</span>   <span class='y'>// visible</span>
+  <span class='k'>readonly</span> Int? sortCol
+  <span class='k'>readonly</span> SortMode sortMode := SortMode.up
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Table.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#border'>border</a></li>
+  <li style='display: block;'><a href='#colAt'>colAt</a></li>
+  <li style='display: block;'><a href='#hbar'>hbar</a></li>
+  <li style='display: block;'><a href='#headerVisible'>headerVisible</a></li>
+  <li style='display: block;'><a href='#isColVisible'>isColVisible</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#model'>model</a></li>
+  <li style='display: block;'><a href='#multi'>multi</a></li>
+  <li style='display: block;'><a href='#onAction'>onAction</a></li>
+  <li style='display: block;'><a href='#onPopup'>onPopup</a></li>
+  <li style='display: block;'><a href='#onSelect'>onSelect</a></li>
+  <li style='display: block;'><a href='#refreshAll'>refreshAll</a></li>
+  <li style='display: block;'><a href='#rowAt'>rowAt</a></li>
+  <li style='display: block;'><a href='#selected'>selected</a></li>
+  <li style='display: block;'><a href='#setColVisible'>setColVisible</a></li>
+  <li style='display: block;'><a href='#sort'>sort</a></li>
+  <li style='display: block;'><a href='#sortCol'>sortCol</a></li>
+  <li style='display: block;'><a href='#sortMode'>sortMode</a></li>
+  <li style='display: block;'><a href='#vbar'>vbar</a></li>
+  <li class='hidden' style='display: block;'><a href='#view'>view</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

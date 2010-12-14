@@ -1,0 +1,943 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compilerJava::JavaBridge</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compilerJava</a></li>
+  <li>&gt;</li>
+  <li><a href='JavaBridge.html'>JavaBridge</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compilerJava::JavaBridge</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../compiler/CompilerSupport.html'>compiler::CompilerSupport</a>
+    <a href='../compiler/CBridge.html'>compiler::CBridge</a>
+      compilerJava::JavaBridge</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   17 Nov 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+
+<span class='z'>**</span>
+<span class='z'>** JavaBridge is the compiler plugin for bringing Java</span>
+<span class='z'>** classes into the Fantom type system.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> JavaBridge : CBridge
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct a JavaBridge for current environment</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler c, ClassPath cp := ClassPath.makeForCurrent<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>c<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.cp = cp
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Namespace</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map a FFI "podName" to a Java package.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> CPod <span id='resolvePod'>resolvePod</span><span class='b'>(</span>Str name, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// the empty package is used to represent primitives</span>
+    <span class='k'>if</span> <span class='b'>(</span>name == <span class='s'>""</span><span class='b'>)</span> <span class='k'>return</span> primitives
+
+    <span class='y'>// look for package name in classpatch</span>
+    classes := cp.classes<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>classes == <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"Java package '$name' not found"</span>, loc<span class='b'>)</span>
+
+    <span class='y'>// map package to JavaPod</span>
+    <span class='k'>return</span> JavaPod<span class='b'>(</span><span class='k'>this</span>, name, classes<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map class meta-data and Java members to Fantom slots</span>
+  <span class='z'>** for the specified JavaType.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='loadType'>loadType</span><span class='b'>(</span>JavaType type, Str:CSlot slots<span class='b'>)</span>
+  <span class='b'>{</span>
+    JavaReflect.loadType<span class='b'>(</span>type, slots<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Call Resolution</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resolve a construction call to a Java constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Expr <span id='resolveConstruction'>resolveConstruction</span><span class='b'>(</span>CallExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if the last argument is an it-block, then we know</span>
+    <span class='y'>// right away that we will not be passing it thru to Java,</span>
+    <span class='y'>// so strip it off to be appended as call to Obj.with</span>
+    itBlock := call.args.last <span class='k'>as</span> ClosureExpr
+    <span class='k'>if</span> <span class='b'>(</span>itBlock != <span class='k'>null</span> &amp;&amp; itBlock.isItBlock<span class='b'>)</span>
+      call.args.removeAt<span class='b'>(</span>-1<span class='b'>)</span>
+    <span class='k'>else</span>
+      itBlock = <span class='k'>null</span>
+
+    <span class='y'>// if this is an interop array like IntArray/int[] use make</span>
+    <span class='y'>// factory otherwise look for Java constructor called &lt;init&gt;</span>
+    JavaType base := call.target.ctype
+    <span class='k'>if</span> <span class='b'>(</span>base.isInteropArray<span class='b'>)</span>
+      call.method = base.method<span class='b'>(</span><span class='s'>"make"</span><span class='b'>)</span>
+    <span class='k'>else</span>
+      call.method = base.method<span class='b'>(</span><span class='s'>"&lt;init&gt;"</span><span class='b'>)</span>
+
+    <span class='y'>// call resolution to deal with overloading</span>
+    call = resolveCall<span class='b'>(</span>call<span class='b'>)</span>
+
+    <span class='y'>// we need to create an implicit target for the Java runtime</span>
+    <span class='y'>// to perform the new opcode to ensure it is on the stack</span>
+    <span class='y'>// before the args (we don't do this for interop Array classes)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!base.isInteropArray<span class='b'>)</span>
+    <span class='b'>{</span>
+      loc := call.loc
+      call.target = CallExpr.makeWithMethod<span class='b'>(</span>loc, <span class='k'>null</span>, base.newMethod<span class='b'>)</span> <span class='b'>{</span> synthetic=<span class='k'>true</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we stripped an it-block argument,</span>
+    <span class='y'>// add it as trailing call to Obj.with</span>
+    <span class='k'>if</span> <span class='b'>(</span>itBlock != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> itBlock.toWith<span class='b'>(</span>call<span class='b'>)</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resolve a construction chain call where a Fantom constructor</span>
+  <span class='z'>** calls the super-class constructor.  Type check the arguments</span>
+  <span class='z'>** and insert any conversions needed.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Expr <span id='resolveConstructorChain'>resolveConstructorChain</span><span class='b'>(</span>CallExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// we don't allow chaining to a this ctor for Java FFI</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.target.id !== ExprId.superExpr<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Must use super constructor call in Java FFI"</span>, call.loc<span class='b'>)</span>
+
+    <span class='y'>// route to a superclass constructor</span>
+    JavaType base := call.target.ctype.deref
+    call.method = base.method<span class='b'>(</span><span class='s'>"&lt;init&gt;"</span><span class='b'>)</span>
+
+    <span class='y'>// call resolution to deal with overloading</span>
+    <span class='k'>return</span> resolveCall<span class='b'>(</span>call<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Given a dot operator slot access on the given foreign</span>
+  <span class='z'>** base type, determine the appopriate slot to use based on</span>
+  <span class='z'>** whether parens were used</span>
+  <span class='z'>**   base.name    =&gt;  noParens = true</span>
+  <span class='z'>**   base.name()  =&gt;  noParens = false</span>
+  <span class='z'>**</span>
+  <span class='z'>** In Java a given name could be bound to both a field and</span>
+  <span class='z'>** a method.  In this case we only resolve the field if</span>
+  <span class='z'>** no parens are used.  We also handle the special case of</span>
+  <span class='z'>** Java annotations here because their element methods are</span>
+  <span class='z'>** also mapped as Fantom fields (instance based mixin field).</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> CSlot? <span id='resolveSlotAccess'>resolveSlotAccess</span><span class='b'>(</span>CType base, Str name, Bool noParens<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// first try to resolve as a field</span>
+    field := base.field<span class='b'>(</span>name<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>field != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// if no () we used and this isn't an annotation field</span>
+      <span class='k'>if</span> <span class='b'>(</span>noParens &amp;&amp; <span class='b'>(</span>field.isStatic || !base.isMixin<span class='b'>))</span>
+        <span class='k'>return</span> field
+
+      <span class='y'>// if we did find a field, then make sure we use that</span>
+      <span class='y'>// field's parent type to resolve a method (becuase the</span>
+      <span class='y'>// base type might be a sub-class of a Java type in which</span>
+      <span class='y'>// case it is unware of field/method overloads)</span>
+      <span class='k'>return</span> field.parent.method<span class='b'>(</span>name<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// lookup method</span>
+    <span class='k'>return</span> base.method<span class='b'>(</span>name<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resolve a method call: try to find the best match</span>
+  <span class='z'>** and apply any coercions needed.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> CallExpr <span id='resolveCall'>resolveCall</span><span class='b'>(</span>CallExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// try to match against all the overloaded methods</span>
+    matches := CallMatch<span class='b'>[</span>,<span class='b'>]</span>
+    CMethod? m := call.method
+    <span class='k'>while</span> <span class='b'>(</span>m != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      match := matchCall<span class='b'>(</span>call, m<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>match != <span class='k'>null</span><span class='b'>)</span> matches.add<span class='b'>(</span>match<span class='b'>)</span>
+      m = m <span class='k'>is</span> JavaMethod ? <span class='b'>((</span>JavaMethod<span class='b'>)</span>m<span class='b'>)</span>.next : <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we have exactly one match use then use that one</span>
+    <span class='k'>if</span> <span class='b'>(</span>matches.size == 1<span class='b'>)</span> <span class='k'>return</span> matches<span class='b'>[</span>0<span class='b'>]</span>.apply<span class='b'>(</span>call<span class='b'>)</span>
+
+    <span class='y'>// if we have multiple matches; resolve to</span>
+    <span class='y'>// most specific match according to JLS rules</span>
+    <span class='y'>// TODO: this does not correct resolve when using Fantom implicit casting</span>
+    <span class='k'>if</span> <span class='b'>(</span>matches.size &gt; 1<span class='b'>)</span>
+    <span class='b'>{</span>
+      best := resolveMostSpecific<span class='b'>(</span>matches<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>best != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> best.apply<span class='b'>(</span>call<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// zero or multiple ambiguous matches is a compiler error</span>
+    s := StrBuf<span class='b'>()</span>
+    s.add<span class='b'>(</span>matches.isEmpty ? <span class='s'>"Invalid args "</span> : <span class='s'>"Ambiguous call "</span><span class='b'>)</span>
+    s.add<span class='b'>(</span>call.name<span class='b'>)</span>.add<span class='b'>(</span><span class='s'>"("</span><span class='b'>)</span>
+    s.add<span class='b'>(</span>call.args.join<span class='b'>(</span><span class='s'>", "</span><span class='b'>)</span> |Expr arg-&gt;Str| <span class='b'>{</span> <span class='k'>return</span> arg.toTypeStr <span class='b'>})</span>
+    s.add<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+    <span class='k'>throw</span> err<span class='b'>(</span>s.toStr, call.loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Check if the call matches the specified overload method.</span>
+  <span class='z'>** If so return method and coerced args otherwise return null.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> CallMatch? <span id='matchCall'>matchCall</span><span class='b'>(</span>CallExpr call, CMethod m<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// first check if have matching numbers of args and params</span>
+    args := call.args
+    <span class='k'>if</span> <span class='b'>(</span>m.params.size &lt; args.size<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+
+    <span class='y'>// check if each argument is ok or can be coerced</span>
+    isErr := <span class='k'>false</span>
+    newArgs := args.dup
+    m.params.each |CParam p, Int i|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>i &gt;= args.size<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='y'>// param has a default value, then that is ok</span>
+        <span class='k'>if</span> <span class='b'>(</span>!p.hasDefault<span class='b'>)</span> isErr = <span class='k'>true</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='y'>// ensure arg fits parameter type (or auto-cast)</span>
+        newArgs<span class='b'>[</span>i<span class='b'>]</span> = coerce<span class='b'>(</span>args<span class='b'>[</span>i<span class='b'>]</span>, p.paramType<span class='b'>)</span> |-&gt;| <span class='b'>{</span> isErr = <span class='k'>true</span> <span class='b'>}</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>isErr<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> CallMatch <span class='b'>{</span> it.method = m; it.args = newArgs <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Given a list of overloaed methods find the most specific method</span>
+  <span class='z'>** according to Java Language Specification 15.11.2.2.  The "informal</span>
+  <span class='z'>** intuition" rule is that a method is more specific than another</span>
+  <span class='z'>** if the first could be could be passed onto the second one.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>static</span> CallMatch? <span id='resolveMostSpecific'>resolveMostSpecific</span><span class='b'>(</span>CallMatch<span class='b'>[]</span> matches<span class='b'>)</span>
+  <span class='b'>{</span>
+    CallMatch? best := matches<span class='b'>[</span>0<span class='b'>]</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=1; i&lt;matches.size; ++i<span class='b'>)</span>
+    <span class='b'>{</span>
+      x := matches<span class='b'>[</span>i<span class='b'>]</span>
+      <span class='k'>if</span> <span class='b'>(</span>isMoreSpecific<span class='b'>(</span>best, x<span class='b'>))</span> <span class='b'>{</span> <span class='k'>continue</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>isMoreSpecific<span class='b'>(</span>x, best<span class='b'>))</span> <span class='b'>{</span> best = x; <span class='k'>continue</span> <span class='b'>}</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> best
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is 'a' more specific than 'b' such that 'a' could be used</span>
+  <span class='z'>** passed to 'b' without a compile time error.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>static</span> Bool <span id='isMoreSpecific'>isMoreSpecific</span><span class='b'>(</span>CallMatch a, CallMatch b<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> a.method.params.all |CParam ap, Int i-&gt;Bool|
+    <span class='b'>{</span>
+      bp := b.method.params<span class='b'>[</span>i<span class='b'>]</span>
+      <span class='k'>return</span> ap.paramType.fits<span class='b'>(</span>bp.paramType<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Overrides</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Called during Inherit step when a Fantom slot overrides a FFI slot.</span>
+  <span class='z'>** Log and throw compiler error if there is a problem.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void <span id='checkOverride'>checkOverride</span><span class='b'>(</span>TypeDef t, CSlot base, SlotDef def<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// we don't allow Fantom to override Java methods with multiple</span>
+    <span class='y'>// overloaded versions since the Fantom type system can't actually</span>
+    <span class='y'>// override all the overloaded versions</span>
+    jslot := base <span class='k'>as</span> JavaSlot
+    <span class='k'>if</span> <span class='b'>(</span>jslot?.next != <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Cannot override Java overloaded method: '$jslot.name'"</span>, def.loc<span class='b'>)</span>
+
+    <span class='y'>// route to method override checking</span>
+    <span class='k'>if</span> <span class='b'>(</span>base <span class='k'>is</span> JavaMethod &amp;&amp; def <span class='k'>is</span> MethodDef<span class='b'>)</span>
+      checkMethodOverride<span class='b'>(</span>t, base, def<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Called on method/method overrides in the checkOverride callback.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='checkMethodOverride'>checkMethodOverride</span><span class='b'>(</span>TypeDef t, JavaMethod base, MethodDef def<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// bail early if we know things aren't going to work out</span>
+    <span class='k'>if</span> <span class='b'>(</span>base.params.size != def.params.size<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='y'>// if the return type is primitive or Java array and the</span>
+    <span class='y'>// Fantom declaration matches how it is inferred into the Fan</span>
+    <span class='y'>// type system, then just change the return type - the compiler</span>
+    <span class='y'>// will impliclty do all the return coercions</span>
+    <span class='k'>if</span> <span class='b'>(</span>isOverrideInferredType<span class='b'>(</span>base.returnType, def.returnType<span class='b'>))</span>
+    <span class='b'>{</span>
+      def.ret = def.inheritedRet = base.returnType
+    <span class='b'>}</span>
+
+    <span class='y'>// if any of the parameters is a primitive or Java array</span>
+    <span class='y'>// and the Fantom declaration matches how it is inferred into</span>
+    <span class='y'>// the Fantom type type, then change the parameter type to</span>
+    <span class='y'>// the Java override type and make the Fantom type a local</span>
+    <span class='y'>// variable:</span>
+    <span class='y'>//   Java:   void foo(int a) { ... }</span>
+    <span class='y'>//   Fantom: Void foo(Int a) { ... }</span>
+    <span class='y'>//   Result: Void foo(int a_$J) { Int a := a_$J; ... }</span>
+    <span class='y'>//</span>
+    base.params.eachr |CParam bp, Int i|
+    <span class='b'>{</span>
+      dp := def.paramDefs<span class='b'>[</span>i<span class='b'>]</span>
+      <span class='k'>if</span> <span class='b'>(</span>!isOverrideInferredType<span class='b'>(</span>bp.paramType, dp.paramType<span class='b'>))</span> <span class='k'>return</span>
+
+      <span class='y'>// add local variable: Int bar := bar_$J</span>
+      local := LocalDefStmt<span class='b'>(</span>def.loc<span class='b'>)</span>
+      local.ctype = dp.paramType
+      local.name  = dp.name
+      local.init  = UnknownVarExpr<span class='b'>(</span>def.loc, <span class='k'>null</span>, dp.name + <span class='s'>"_\$J"</span><span class='b'>)</span>
+      def.code.stmts.insert<span class='b'>(</span>0, local<span class='b'>)</span>
+
+      <span class='y'>// rename parameter Int bar -&gt; int bar_$J</span>
+      dp.name = dp.name + <span class='s'>"_\$J"</span>
+      dp.paramType = bp.paramType
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** When overriding a Java method check if the base type is</span>
+  <span class='z'>** is a Java primitive or array and the override definition is</span>
+  <span class='z'>** matches how the Java type is inferred in the Fantom type system.</span>
+  <span class='z'>** If we have a match return true and we'll swizzle things in</span>
+  <span class='z'>** checkMethodOverride.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> <span class='k'>private</span> Bool <span id='isOverrideInferredType'>isOverrideInferredType</span><span class='b'>(</span>CType base, CType def<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check if base class slot is a JavaType</span>
+    java := base.toNonNullable <span class='k'>as</span> JavaType
+    <span class='k'>if</span> <span class='b'>(</span>java != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// allow primitives is it matches the inferred type</span>
+      <span class='k'>if</span> <span class='b'>(</span>java.isPrimitive<span class='b'>)</span> <span class='k'>return</span> java.inferredAs == def
+
+      <span class='y'>// allow arrays if mapped as Foo[] -&gt; Foo?[]?</span>
+      <span class='k'>if</span> <span class='b'>(</span>java.isArray<span class='b'>)</span> <span class='k'>return</span> java.inferredAs == def.toNonNullable &amp;&amp; def.isNullable
+    <span class='b'>}</span>
+    <span class='k'>return</span> <span class='k'>false</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CheckErrors</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Called during CheckErrors step for a type which extends</span>
+  <span class='z'>** a FFI class or implements any FFI mixins.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void <span id='checkType'>checkType</span><span class='b'>(</span>TypeDef def<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// can't subclass a primitive array like ByteArray/byte[]</span>
+    <span class='k'>if</span> <span class='b'>(</span>def.base.deref <span class='k'>is</span> JavaType &amp;&amp; def.base.deref-&gt;isInteropArray<span class='b'>)</span>
+    <span class='b'>{</span>
+      err<span class='b'>(</span><span class='s'>"Cannot subclass from Java interop array: $def.base"</span>, def.loc<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// we don't allow deep inheritance of Java classes because</span>
+    <span class='y'>// the Fantom constructor and Java constructor model don't match</span>
+    <span class='y'>// up past one level of inheritance</span>
+    <span class='y'>// NOTE: that that when we remove this restriction we need to</span>
+    <span class='y'>// test how field initialization works because instance$init</span>
+    <span class='y'>// is almost certain to break with the current emit design</span>
+    javaBase := def.base
+    <span class='k'>while</span> <span class='b'>(</span>javaBase != <span class='k'>null</span> &amp;&amp; !javaBase.isForeign<span class='b'>)</span> javaBase = javaBase.base
+    <span class='k'>if</span> <span class='b'>(</span>javaBase != <span class='k'>null</span> &amp;&amp; javaBase !== def.base<span class='b'>)</span>
+    <span class='b'>{</span>
+      err<span class='b'>(</span><span class='s'>"Cannot subclass Java class more than one level: $javaBase"</span>, def.loc<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// ensure that when we map Fantom constructors to Java</span>
+    <span class='y'>// constructors that we don't have duplicate signatures</span>
+    ctors := def.ctorDefs
+    ctors.each |MethodDef a, Int i|
+    <span class='b'>{</span>
+      ctors.each |MethodDef b, Int j|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>i &gt; j &amp;&amp; areParamsSame<span class='b'>(</span>a, b<span class='b'>))</span>
+          err<span class='b'>(</span><span class='s'>"Duplicate Java FFI constructor signatures: '$b.name' and '$a.name'"</span>, a.loc<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Do the two methods have the exact same parameter types.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Bool <span id='areParamsSame'>areParamsSame</span><span class='b'>(</span>CMethod a, CMethod b<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>a.params.size != b.params.size<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;a.params.size; ++i<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>a.params<span class='b'>[</span>i<span class='b'>]</span>.paramType != b.params<span class='b'>[</span>i<span class='b'>]</span>.paramType<span class='b'>)</span>
+        <span class='k'>return</span> <span class='k'>false</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> <span class='k'>true</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Coercion</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if we can make the actual type fit the expected</span>
+  <span class='z'>** type, potentially using a coercion.</span>
+  <span class='z'>**</span>
+  Bool <span id='fits'>fits</span><span class='b'>(</span>CType actual, CType expected<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// use dummy expression and route to coerce code</span>
+    dummy := UnknownVarExpr<span class='b'>(</span>Loc<span class='b'>(</span><span class='s'>"dummy"</span><span class='b'>)</span>, <span class='k'>null</span>, <span class='s'>"dummy"</span><span class='b'>)</span> <span class='b'>{</span> ctype = actual <span class='b'>}</span>
+    fits := <span class='k'>true</span>
+    coerce<span class='b'>(</span>dummy, expected<span class='b'>)</span> |-&gt;| <span class='b'>{</span> fits=<span class='k'>false</span> <span class='b'>}</span>
+    <span class='k'>return</span> fits
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Coerce expression to expected type.  If not a type match</span>
+  <span class='z'>** then run the onErr function.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Expr <span id='coerce'>coerce</span><span class='b'>(</span>Expr expr, CType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// handle easy case</span>
+    actual := expr.ctype
+    expected = expected.deref
+    <span class='k'>if</span> <span class='b'>(</span>actual == expected<span class='b'>)</span> <span class='k'>return</span> expr
+
+    <span class='y'>// handle null literal</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr.id === ExprId.nullLiteral &amp;&amp; expected.isNullable<span class='b'>)</span>
+      <span class='k'>return</span> expr
+
+    <span class='y'>// handle Fantom to Java primitives</span>
+    <span class='k'>if</span> <span class='b'>(</span>expected.pod == primitives<span class='b'>)</span>
+      <span class='k'>return</span> coerceToPrimitive<span class='b'>(</span>expr, expected, onErr<span class='b'>)</span>
+
+    <span class='y'>// handle Java primitives to Fan</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.pod == primitives<span class='b'>)</span>
+      <span class='k'>return</span> coerceFromPrimitive<span class='b'>(</span>expr, expected, onErr<span class='b'>)</span>
+
+    <span class='y'>// handle Java array to Fantom list</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.name<span class='b'>[</span>0<span class='b'>]</span> == <span class='s'>'['</span><span class='b'>)</span>
+      <span class='k'>return</span> coerceFromArray<span class='b'>(</span>expr, expected, onErr<span class='b'>)</span>
+
+    <span class='y'>// handle Fantom list to Java array</span>
+    <span class='k'>if</span> <span class='b'>(</span>expected.name<span class='b'>[</span>0<span class='b'>]</span> == <span class='s'>'['</span><span class='b'>)</span>
+      <span class='k'>return</span> coerceToArray<span class='b'>(</span>expr, expected, onErr<span class='b'>)</span>
+
+    <span class='y'>// handle sys::Func -&gt; Java interface</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual <span class='k'>is</span> FuncType &amp;&amp; expected.isMixin &amp;&amp; expected.toNonNullable <span class='k'>is</span> JavaType<span class='b'>)</span>
+      <span class='k'>return</span> coerceFuncToInterface<span class='b'>(</span>expr, expected.toNonNullable, onErr<span class='b'>)</span>
+
+    <span class='y'>// handle special classes and interfaces for built-in Fantom</span>
+    <span class='y'>// classes which actually map directly to Java built-in types</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isBool    &amp;&amp; boolTypes.contains<span class='b'>(</span>expected.toNonNullable.signature<span class='b'>))</span> <span class='k'>return</span> box<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isInt     &amp;&amp; intTypes.contains<span class='b'>(</span>expected.toNonNullable.signature<span class='b'>))</span> <span class='k'>return</span> box<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isFloat   &amp;&amp; floatTypes.contains<span class='b'>(</span>expected.toNonNullable.signature<span class='b'>))</span> <span class='k'>return</span> box<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isDecimal &amp;&amp; decimalTypes.contains<span class='b'>(</span>expected.toNonNullable.signature<span class='b'>))</span> <span class='k'>return</span> expr
+    <span class='k'>if</span> <span class='b'>(</span>actual.isStr     &amp;&amp; strTypes.contains<span class='b'>(</span>expected.toNonNullable.signature<span class='b'>))</span> <span class='k'>return</span> expr
+
+     <span class='y'>// use normal Fantom coercion behavior</span>
+    <span class='k'>return</span> <span class='k'>super</span>.coerce<span class='b'>(</span>expr, expected, onErr<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Ensure value type is boxed.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='box'>box</span><span class='b'>(</span>Expr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr.ctype.isVal<span class='b'>)</span>
+      <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>expr, expr.ctype.toNullable<span class='b'>)</span>
+    <span class='k'>else</span>
+      <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Coerce a fan expression to a Java primitive (other</span>
+  <span class='z'>** than the ones we support natively)</span>
+  <span class='z'>**</span>
+  Expr <span id='coerceToPrimitive'>coerceToPrimitive</span><span class='b'>(</span>Expr expr, JavaType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    actual := expr.ctype
+
+    <span class='y'>// sys::Int (long) -&gt; int, short, byte</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isInt &amp;&amp; expected.isPrimitiveIntLike<span class='b'>)</span>
+      <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>expr, expected<span class='b'>)</span>
+
+    <span class='y'>// sys::Float (double) -&gt; float</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isFloat &amp;&amp; expected.isPrimitiveFloat<span class='b'>)</span>
+      <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>expr, expected<span class='b'>)</span>
+
+    <span class='y'>// no coercion - type error</span>
+    onErr<span class='b'>()</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Coerce a Java primitive to a Fantom type.</span>
+  <span class='z'>**</span>
+  Expr <span id='coerceFromPrimitive'>coerceFromPrimitive</span><span class='b'>(</span>Expr expr, CType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    actual := <span class='b'>(</span>JavaType<span class='b'>)</span>expr.ctype
+
+    <span class='y'>// int, short, byte -&gt; sys::Int (long)</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isPrimitiveIntLike<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>expected.isInt || expected.isObj<span class='b'>)</span>
+        <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>expr, expected<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// float -&gt; sys::Float (float)</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.isPrimitiveFloat<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>expected.isFloat || expected.isObj<span class='b'>)</span>
+        <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>expr, expected<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// no coercion - type error</span>
+    onErr<span class='b'>()</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Coerce a Java array to a Fantom list.</span>
+  <span class='z'>**</span>
+  Expr <span id='coerceFromArray'>coerceFromArray</span><span class='b'>(</span>Expr expr, CType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    actual := <span class='b'>(</span>JavaType<span class='b'>)</span>expr.ctype.toNonNullable
+
+    <span class='y'>// if expected is array type</span>
+    <span class='k'>if</span> <span class='b'>(</span>expected <span class='k'>is</span> JavaType &amp;&amp; <span class='b'>((</span>JavaType<span class='b'>)</span>expected<span class='b'>)</span>.isArray<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>actual.arrayOf.fits<span class='b'>(((</span>JavaType<span class='b'>)</span>expected<span class='b'>)</span>.arrayOf<span class='b'>))</span> <span class='k'>return</span> expr
+
+    <span class='y'>// if expected is Obj</span>
+    <span class='k'>if</span> <span class='b'>(</span>expected.isObj<span class='b'>)</span> <span class='k'>return</span> arrayToList<span class='b'>(</span>expr, actual.inferredArrayOf<span class='b'>)</span>
+
+    <span class='y'>// if expected is list type</span>
+    <span class='k'>if</span> <span class='b'>(</span>expected.toNonNullable <span class='k'>is</span> ListType<span class='b'>)</span>
+    <span class='b'>{</span>
+      expectedOf := <span class='b'>((</span>ListType<span class='b'>)</span>expected.toNonNullable<span class='b'>)</span>.v
+      <span class='k'>if</span> <span class='b'>(</span>actual.inferredArrayOf.fits<span class='b'>(</span>expectedOf<span class='b'>))</span> <span class='k'>return</span> arrayToList<span class='b'>(</span>expr, expectedOf<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// no coercion available</span>
+    onErr<span class='b'>()</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate List.make(of, expr) where expr is Object[]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='arrayToList'>arrayToList</span><span class='b'>(</span>Expr expr, CType of<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := expr.loc
+    ofExpr := LiteralExpr<span class='b'>(</span>loc, ExprId.typeLiteral, ns.typeType, of<span class='b'>)</span>
+    call := CallExpr.makeWithMethod<span class='b'>(</span>loc, <span class='k'>null</span>, listMakeFromArray, <span class='b'>[</span>ofExpr, expr<span class='b'>])</span>
+    call.synthetic = <span class='k'>true</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Coerce a Fantom list to Java array.</span>
+  <span class='z'>**</span>
+  Expr <span id='coerceToArray'>coerceToArray</span><span class='b'>(</span>Expr expr, CType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := expr.loc
+    expectedOf := <span class='b'>((</span>JavaType<span class='b'>)</span>expected.toNonNullable<span class='b'>)</span>.inferredArrayOf
+    actual := expr.ctype
+
+    <span class='y'>// if actual is list type</span>
+    <span class='k'>if</span> <span class='b'>(</span>actual.toNonNullable <span class='k'>is</span> ListType<span class='b'>)</span>
+    <span class='b'>{</span>
+      actualOf := <span class='b'>((</span>ListType<span class='b'>)</span>actual.toNonNullable<span class='b'>)</span>.v
+      <span class='k'>if</span> <span class='b'>(</span>actualOf.fits<span class='b'>(</span>expectedOf<span class='b'>))</span>
+      <span class='b'>{</span>
+        <span class='y'>// (Foo[])list.asArray(cls)</span>
+        clsLiteral := CallExpr.makeWithMethod<span class='b'>(</span>loc, <span class='k'>null</span>, JavaType.classLiteral<span class='b'>(</span><span class='k'>this</span>, expectedOf<span class='b'>))</span>
+        asArray := CallExpr.makeWithMethod<span class='b'>(</span>loc, expr, listAsArray, <span class='b'>[</span>clsLiteral<span class='b'>])</span>
+        <span class='k'>return</span> TypeCheckExpr.coerce<span class='b'>(</span>asArray, expected<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// no coercion available</span>
+    onErr<span class='b'>()</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to coerce a parameterized sys::Func expr to a Java</span>
+  <span class='z'>** interface if the interface supports exactly one matching method.</span>
+  <span class='z'>**</span>
+  Expr <span id='coerceFuncToInterface'>coerceFuncToInterface</span><span class='b'>(</span>Expr expr, JavaType expected, |-&gt;| onErr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check if we have exactly one abstract method in the expected type</span>
+    loc := expr.loc
+    abstracts := expected.methods.findAll |CMethod m-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> m.isAbstract <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>abstracts.size != 1<span class='b'>)</span> <span class='b'>{</span> onErr<span class='b'>()</span>; <span class='k'>return</span> expr <span class='b'>}</span>
+    method := abstracts.first
+
+    <span class='y'>// check if we have a match</span>
+    FuncType funcType := <span class='b'>(</span>FuncType<span class='b'>)</span>expr.ctype
+    <span class='k'>if</span> <span class='b'>(</span>!isFuncToInterfaceMatch<span class='b'>(</span>funcType, method<span class='b'>))</span> <span class='b'>{</span> onErr<span class='b'>()</span>; <span class='k'>return</span> expr <span class='b'>}</span>
+
+    <span class='y'>// check if we've already generated a wrapper for this combo</span>
+    key := <span class='s'>"${funcType.signature}+${method.qname}"</span>
+    ctor := funcWrappers<span class='b'>[</span>key<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>ctor == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      ctor = generateFuncToInterfaceWrapper<span class='b'>(</span>expr.loc, funcType, expected, method<span class='b'>)</span>
+      funcWrappers<span class='b'>[</span>key<span class='b'>]</span> = ctor
+    <span class='b'>}</span>
+
+    <span class='y'>// replace expr with FuncWrapperX(expr)</span>
+    call := CallExpr.makeWithMethod<span class='b'>(</span>loc, <span class='k'>null</span>, ctor, <span class='b'>[</span>expr<span class='b'>])</span>
+    call.synthetic = <span class='k'>true</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if the specified function type can be used to implement</span>
+  <span class='z'>** the specified interface method.</span>
+  <span class='z'>**</span>
+  Bool <span id='isFuncToInterfaceMatch'>isFuncToInterfaceMatch</span><span class='b'>(</span>FuncType funcType, CMethod method<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// sanity check to map to callX method - can't handle more than 8 args</span>
+    <span class='k'>if</span> <span class='b'>(</span>method.params.size &gt; 8<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// check if method is match for function; first check is that</span>
+    <span class='y'>// method must supply all the arguments required by the function</span>
+    <span class='k'>if</span> <span class='b'>(</span>funcType.params.size &gt; method.params.size<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// check that func return type fits method return</span>
+    retOk := method.returnType.isVoid || fits<span class='b'>(</span>funcType.ret, method.returnType<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!retOk<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='y'>// check all the method parameters fit the function parameters</span>
+    paramsOk := funcType.params.all |CType f, Int i-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> fits<span class='b'>(</span>f, method.params<span class='b'>[</span>i<span class='b'>]</span>.paramType<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>!paramsOk<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='k'>return</span> <span class='k'>true</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate the wrapper which implements the specified expected interface</span>
+  <span class='z'>** and overrides the specified method which calls the function.</span>
+  <span class='z'>**</span>
+  CMethod <span id='generateFuncToInterfaceWrapper'>generateFuncToInterfaceWrapper</span><span class='b'>(</span>Loc loc, FuncType funcType, CType expected, CMethod method<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>//   Fantom: func typed as |Str|</span>
+    <span class='y'>//   Java:   interface Foo { void bar(String) }</span>
+    <span class='y'>//   Result: FuncWrapperX(func)</span>
+    <span class='y'>//</span>
+    <span class='y'>//   class FuncWrapperX : Foo</span>
+    <span class='y'>//   {</span>
+    <span class='y'>//     new make(Func f) { _func = f }</span>
+    <span class='y'>//     override Void bar(Str a) { _func.call(a) }</span>
+    <span class='y'>//     Func _func</span>
+    <span class='y'>//   }</span>
+
+    <span class='y'>// generate FuncWrapper class</span>
+    name := <span class='s'>"FuncWrapper"</span> + funcWrappers.size
+    cls := TypeDef<span class='b'>(</span>ns, loc, compiler.types<span class='b'>[</span>0<span class='b'>]</span>.unit, name, FConst.Internal + FConst.Synthetic<span class='b'>)</span>
+    cls.base = ns.objType
+    cls.mixins = <span class='b'>[</span>expected<span class='b'>]</span>
+    addTypeDef<span class='b'>(</span>cls<span class='b'>)</span>
+
+    <span class='y'>// generate FuncWrapper._func field</span>
+    field := FieldDef<span class='b'>(</span>loc, cls<span class='b'>)</span>
+    <span class='b'>((</span>SlotDef<span class='b'>)</span>field<span class='b'>)</span>.name = <span class='s'>"_func"</span>
+    <span class='b'>((</span>DefNode<span class='b'>)</span>field<span class='b'>)</span>.flags = FConst.Private + FConst.Storage + FConst.Synthetic
+    field.fieldType = funcType
+    cls.addSlot<span class='b'>(</span>field<span class='b'>)</span>
+
+    <span class='y'>// generate FuncWrapper.make constructor</span>
+    ctor := MethodDef<span class='b'>(</span>loc, cls, <span class='s'>"make"</span>, FConst.Internal + FConst.Ctor + FConst.Synthetic<span class='b'>)</span>
+    ctor.ret  = ns.voidType
+    ctor.paramDefs = <span class='b'>[</span>ParamDef<span class='b'>(</span>loc, funcType, <span class='s'>"f"</span><span class='b'>)]</span>
+    ctor.code = Block.make<span class='b'>(</span>loc<span class='b'>)</span>
+    ctor.code.stmts.add<span class='b'>(</span>BinaryExpr.makeAssign<span class='b'>(</span>
+      FieldExpr<span class='b'>(</span>loc, ThisExpr<span class='b'>(</span>loc<span class='b'>)</span>, field<span class='b'>)</span>,
+      UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"f"</span><span class='b'>))</span>.toStmt<span class='b'>)</span>
+    ctor.code.stmts.add<span class='b'>(</span>ReturnStmt.make<span class='b'>(</span>loc<span class='b'>))</span>
+    cls.addSlot<span class='b'>(</span>ctor<span class='b'>)</span>
+
+    <span class='y'>// generate FuncWrapper override of abstract method</span>
+    over := MethodDef<span class='b'>(</span>loc, cls, method.name, FConst.Public + FConst.Override + FConst.Synthetic<span class='b'>)</span>
+    over.ret = method.returnType
+    over.paramDefs = ParamDef<span class='b'>[</span>,<span class='b'>]</span>
+    over.code = Block.make<span class='b'>(</span>loc<span class='b'>)</span>
+    callArity := <span class='s'>"call"</span>
+    call := CallExpr.makeWithMethod<span class='b'>(</span>loc, FieldExpr<span class='b'>(</span>loc, ThisExpr<span class='b'>(</span>loc<span class='b'>)</span>, field<span class='b'>)</span>, funcType.method<span class='b'>(</span>callArity<span class='b'>))</span>
+    method.params.each |CParam param, Int i|
+    <span class='b'>{</span>
+      paramName := <span class='s'>"p$i"</span>
+      over.params.add<span class='b'>(</span>ParamDef<span class='b'>(</span>loc, param.paramType, paramName<span class='b'>))</span>
+      <span class='k'>if</span> <span class='b'>(</span>i &lt; funcType.params.size<span class='b'>)</span>
+        call.args.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, paramName<span class='b'>))</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>method.returnType.isVoid<span class='b'>)</span>
+      over.code.stmts.add<span class='b'>(</span>call.toStmt<span class='b'>)</span>.add<span class='b'>(</span>ReturnStmt<span class='b'>(</span>loc<span class='b'>))</span>
+    <span class='k'>else</span>
+      over.code.stmts.add<span class='b'>(</span>ReturnStmt<span class='b'>(</span>loc, call<span class='b'>))</span>
+    cls.addSlot<span class='b'>(</span>over<span class='b'>)</span>
+
+    <span class='y'>// return the ctor which we use for coercion</span>
+    <span class='k'>return</span> ctor
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Reflection</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a CMethod representation for 'List.make(Type, Object[])'</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> CMethod <span id='listMakeFromArray'>listMakeFromArray</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> JavaMethod
+    <span class='b'>{</span>
+      parent = <span class='k'>this</span>.ns.listType
+      name = <span class='s'>"make"</span>
+      flags = FConst.Public + FConst.Static
+      returnType = <span class='k'>this</span>.ns.listType.toNullable
+      params =
+      <span class='b'>[</span>
+        JavaParam<span class='b'>(</span><span class='s'>"of"</span>, <span class='k'>this</span>.ns.typeType<span class='b'>)</span>,
+        JavaParam<span class='b'>(</span><span class='s'>"array"</span>, objectArrayType<span class='b'>)</span>
+      <span class='b'>]</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a CMethod representation for 'Object[] List.asArray()'</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> CMethod <span id='listAsArray'>listAsArray</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> JavaMethod
+    <span class='b'>{</span>
+      parent = <span class='k'>this</span>.ns.listType
+      name = <span class='s'>"asArray"</span>
+      flags = FConst.Public
+      returnType = objectArrayType
+      params = <span class='b'>[</span>JavaParam<span class='b'>(</span><span class='s'>"cls"</span>, classType<span class='b'>)]</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a CType representation for 'java.lang.Class'</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> JavaType <span id='classType'>classType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ns.resolveType<span class='b'>(</span><span class='s'>"[java]java.lang::Class"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a CType representation for 'java.lang.Object[]'</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> JavaType <span id='objectArrayType'>objectArrayType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ns.resolveType<span class='b'>(</span><span class='s'>"[java]java.lang::[Object"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>const</span> <span class='k'>static</span> Str<span class='b'>[]</span> <span id='boolTypes'>boolTypes</span> := Str<span class='b'>[</span>
+    <span class='s'>"[java]java.io::Serializable"</span>,
+    <span class='s'>"[java]java.lang::Comparable"</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>const</span> <span class='k'>static</span> Str<span class='b'>[]</span> <span id='intTypes'>intTypes</span> := Str<span class='b'>[</span>
+    <span class='s'>"[java]java.lang::Number"</span>,
+    <span class='s'>"[java]java.io::Serializable"</span>,
+    <span class='s'>"[java]java.lang::Comparable"</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>const</span> <span class='k'>static</span> Str<span class='b'>[]</span> <span id='floatTypes'>floatTypes</span> := Str<span class='b'>[</span>
+    <span class='s'>"[java]java.lang::Number"</span>,
+    <span class='s'>"[java]java.io::Serializable"</span>,
+    <span class='s'>"[java]java.lang::Comparable"</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>const</span> <span class='k'>static</span> Str<span class='b'>[]</span> <span id='decimalTypes'>decimalTypes</span> := Str<span class='b'>[</span>
+    <span class='s'>"[java]java.lang::Number"</span>,
+    <span class='s'>"[java]java.io::Serializable"</span>,
+    <span class='s'>"[java]java.lang::Comparable"</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>const</span> <span class='k'>static</span> Str<span class='b'>[]</span> <span id='strTypes'>strTypes</span> := Str<span class='b'>[</span>
+    <span class='s'>"[java]java.io::Serializable"</span>,
+    <span class='s'>"[java]java.lang::CharSequence"</span>,
+    <span class='s'>"[java]java.lang::Comparable"</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>readonly</span> JavaPrimitives <span id='primitives'>primitives</span> := JavaPrimitives<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='k'>readonly</span> ClassPath <span id='cp'>cp</span>
+  <span class='k'>private</span> Str:CMethod <span id='funcWrappers'>funcWrappers</span> := Str:CMethod<span class='b'>[</span>:<span class='b'>]</span>  <span class='y'>// funcType+method:ctor</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** CallMatch</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>class</span> CallMatch
+<span class='b'>{</span>
+  CallExpr apply<span class='b'>(</span>CallExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    call.args   = args
+    call.method = method
+    call.ctype  = method.isCtor ? method.parent : method.returnType
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> method.signature <span class='b'>}</span>
+
+  CMethod? method    <span class='y'>// matched method</span>
+  Expr<span class='b'>[]</span>? args       <span class='y'>// coerced arguments</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='JavaBridge.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#areParamsSame'>areParamsSame</a></li>
+  <li class='hidden' style='display: block;'><a href='#arrayToList'>arrayToList</a></li>
+  <li style='display: block;'><a href='#boolTypes'>boolTypes</a></li>
+  <li class='hidden' style='display: block;'><a href='#box'>box</a></li>
+  <li class='hidden' style='display: block;'><a href='#checkMethodOverride'>checkMethodOverride</a></li>
+  <li style='display: block;'><a href='#checkOverride'>checkOverride</a></li>
+  <li style='display: block;'><a href='#checkType'>checkType</a></li>
+  <li style='display: block;'><a href='#classType'>classType</a></li>
+  <li style='display: block;'><a href='#coerce'>coerce</a></li>
+  <li style='display: block;'><a href='#coerceFromArray'>coerceFromArray</a></li>
+  <li style='display: block;'><a href='#coerceFromPrimitive'>coerceFromPrimitive</a></li>
+  <li style='display: block;'><a href='#coerceFuncToInterface'>coerceFuncToInterface</a></li>
+  <li style='display: block;'><a href='#coerceToArray'>coerceToArray</a></li>
+  <li style='display: block;'><a href='#coerceToPrimitive'>coerceToPrimitive</a></li>
+  <li style='display: block;'><a href='#cp'>cp</a></li>
+  <li style='display: block;'><a href='#decimalTypes'>decimalTypes</a></li>
+  <li style='display: block;'><a href='#fits'>fits</a></li>
+  <li style='display: block;'><a href='#floatTypes'>floatTypes</a></li>
+  <li class='hidden' style='display: block;'><a href='#funcWrappers'>funcWrappers</a></li>
+  <li style='display: block;'><a href='#generateFuncToInterfaceWrapper'>generateFuncToInterfaceWrapper</a></li>
+  <li style='display: block;'><a href='#intTypes'>intTypes</a></li>
+  <li style='display: block;'><a href='#isFuncToInterfaceMatch'>isFuncToInterfaceMatch</a></li>
+  <li class='hidden' style='display: block;'><a href='#isMoreSpecific'>isMoreSpecific</a></li>
+  <li class='hidden' style='display: block;'><a href='#isOverrideInferredType'>isOverrideInferredType</a></li>
+  <li style='display: block;'><a href='#listAsArray'>listAsArray</a></li>
+  <li style='display: block;'><a href='#listMakeFromArray'>listMakeFromArray</a></li>
+  <li style='display: block;'><a href='#loadType'>loadType</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#matchCall'>matchCall</a></li>
+  <li style='display: block;'><a href='#objectArrayType'>objectArrayType</a></li>
+  <li style='display: block;'><a href='#primitives'>primitives</a></li>
+  <li style='display: block;'><a href='#resolveCall'>resolveCall</a></li>
+  <li style='display: block;'><a href='#resolveConstruction'>resolveConstruction</a></li>
+  <li style='display: block;'><a href='#resolveConstructorChain'>resolveConstructorChain</a></li>
+  <li class='hidden' style='display: block;'><a href='#resolveMostSpecific'>resolveMostSpecific</a></li>
+  <li style='display: block;'><a href='#resolvePod'>resolvePod</a></li>
+  <li style='display: block;'><a href='#resolveSlotAccess'>resolveSlotAccess</a></li>
+  <li style='display: block;'><a href='#strTypes'>strTypes</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compilerJava 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

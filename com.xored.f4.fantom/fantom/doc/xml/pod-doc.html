@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml PodDoc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='pod-doc.html'>xml PodDoc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+ <div class='overview'>
+  <h2>pod</h2>
+  <h1>xml</h1>
+ </div>
+</div>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The <a href='index.html'>xml</a> API provides the core APIs for working with XML:</p>
+
+<ol style='list-style-type:decimal'>
+<li><code><a href='XElem.html'>XElem</a></code>: Provides a standard representation of an XML element tree to be used in memory. It is similar to the W3's DOM, but Fantom centric.</li>
+
+<li><code><a href='XParser.html'>XParser</a></code>: is a non-validating XML parser. It may be used in two modes: to read an entire XML document into memory or as a pull-parser.</li>
+</ol>
+
+<p>The features supported by XParser:</p>
+
+<ul>
+<li>All element, attribute, processing instructions, and character data productions are supported</li>
+
+<li>CDATA sections are supported</li>
+
+<li>Namespaces are supported at both the element and attribute level</li>
+
+<li>Doctype declarations provide access to the public and system identifiers</li>
+
+<li>DTDs are ignored (as such you can't use internal or external entity declarations)</li>
+
+<li>No access to comments is provided by the XML parser</li>
+
+<li>Character data consisting only of whitespace is always ignored</li>
+</ul>
+
+<h1 id='dom'>DOM </h1>
+
+<p>XML documents are modeled in memory using the following classes:</p>
+
+<ul>
+<li><code><a href='XDoc.html'>XDoc</a></code>: models the entire document providing access to the root element, doctype, and processing instructions declared before the root element</li>
+
+<li><code><a href='XElem.html'>XElem</a></code>: models an element name, attributes, and children nodes</li>
+
+<li><code><a href='XText.html'>XText</a></code>: models character data in an element</li>
+
+<li><code><a href='XPi.html'>XPi</a></code>: models a processing instruction</li>
+
+<li><code><a href='XAttr.html'>XAttr</a></code>: models an attribute name/value pair</li>
+
+<li><code><a href='XNs.html'>XNs</a></code>: models the prefix and URI of a XML namespace</li>
+</ul>
+
+<p>XML documents are structured as a tree of nodes using the classes listed above.  Typically the tree is built by parsing a XML document from an input stream.  But you can construct a document in memory using the APIs and it-blocks:</p>
+
+<pre>doc := XDoc
+{
+  XElem("root")
+  {
+    XElem("a") { addAttr("flags", "0"); XText("blah"), },
+    XElem("b") { XElem("c"), },
+    XElem("m") { XText("I "), XElem("i") { XText("mean"), }, XText(" it!"), },
+  },
+}
+doc.write(Env.cur.out)
+
+// would print the following to the console
+&lt;?xml version='1.0' encoding='UTF-8'?>
+&lt;root>
+ &lt;a flags='0'>blah&lt;/a>
+ &lt;b>
+  &lt;c/>
+ &lt;/b>
+ &lt;m>I &lt;i>mean&lt;/i> it!&lt;/m>
+&lt;/root></pre>
+
+<h1 id='ns'>Namespaces </h1>
+
+<p>The <code><a href='XNs.html'>XNs</a></code> class is used model XML namespaces.  The default namespace is indicated with the prefix of "".  Both XElem and XAttr define a set of methods for working with qualified names:</p>
+
+<pre>ns := XNs("x", `urn:foo`)
+e := XElem("name", ns)
+
+e.ns      =>  ns
+e.prefix  =>  "x"
+e.uri     =>  `urn:foo`
+e.name    =>  "name"
+e.qname   =>  "x:name"</pre>
+
+<p>If you construct a document by hand, then you are responsible for creating each element with the correct XNs and ensuring that the appropriate namespace attributes are declared:</p>
+
+<pre>nsDef := XNs("", `http://foo/default`)
+nsBar := XNs("b", `http://foo/bar`)
+root := XElem("root", nsBar)
+{
+  XAttr.makeNs(nsDef),
+  XAttr.makeNs(nsBar),
+  XElem("elem", nsDef),
+  XElem("elem", nsBar),
+}
+root.write(Env.cur.out)
+
+// would print the following to the console
+&lt;b:root xmlns='http://foo/default' xmlns:b='http://foo/bar'>
+ &lt;elem/>
+ &lt;b:elem/>
+&lt;/b:root></pre>
+
+<h1 id='writing'>Writing </h1>
+
+<p>All the XML node classes support a <code>write</code> method which takes an <code>OutStream</code>.  During debugging it is often convenient to write to standard out:</p>
+
+<pre>node.write(Env.cur.out)
+Env.cur.out.flush</pre>
+
+<p>To write an XML document from memory to a file:</p>
+
+<pre>out := `test.xml`.toFile.out
+doc.write(out)
+out.close</pre>
+
+<p>If you are generating an XML document on the fly you might want to use <code>OutStream</code> directly.  It supports escaping XML control characters via the <code><a href='../sys/OutStream.html#writeXml'>writeXml</a></code> method:</p>
+
+<pre>// escape markup in text
+out.writeChars("&lt;text>").writeXml(text).writeChars("&lt;/text>")
+
+// escape markup and quotes
+out.writeChars("attr='").writeXml(attrVal, OutStream.xmlEscQuotes).writeChars("'")</pre>
+
+<p>You can use <code><a href='../sys/Str.html#toXml'>Str.toXml</a></code> to generate a string with XML markup escaped.  However, you should prefer OutStream when streaming which is more efficient.</p>
+
+<h1 id='parsing'>Parsing </h1>
+
+<p>The <code><a href='XParser.html'>XParser</a></code> class is used to parse XML input streams into XElems. The easiest way to do this is to parse the entire document into memory using the <code>parseDoc</code> method:</p>
+
+<pre>// parse and close input stream
+doc := XParser(in).parseDoc
+
+// parse a file
+doc := XParser(`test.xml`.toFile.in).parseDoc
+
+// parse a string
+doc := XParser(InStream.makeForStr("&lt;foo/>")).parseDoc</pre>
+
+<p>The code above parses the document entirely into memory. This tends to be easiest way to work with XML documents.  However it can create efficiency problems when parsing large documents, especially when mapping the XElems into other data structures. To support more efficient parsing of XML streams, XParser may also be used to read elements off the input stream one at a time.  This is similar to the SAX API, except you pull events instead of having them pushed to you.</p>
+
+<p>To perform pull parsing, use the <code>next</code> method to iterate through the document. This tokenizes the stream into XElem, XText, and XPi chunks. Each call to <code>next</code> advances to the next token and returns its node type.  You may also check the type of the current token using <code>nodeType</code>. You may access the current token using <code>elem</code>, <code>text</code>, or <code>pi</code>.</p>
+
+<p>XParser maintains a stack of XElems for you from the root element down to the current element. You may check the depth of the stack using the <code>depth</code> method. Get the current element at any position in the stack via <code>elemAt</code>.</p>
+
+<p>It is very important to understand the XElem at given depth is only valid until the parser returns <code>elemEnd</code> for that depth.  After that the element will be reused.  A XText instance is only valid until the next call to <code>next</code>.  You can make a safe copy of nodes using <code>copy</code>.  You can also use <code>parseElem</code> to read the current element and its is descendants into memory during pull-parsing.</p>
+
+<p>Example of pull parsing:</p>
+
+<pre>parser := XParser(InStream.makeForStr(
+  "&lt;root>
+     &lt;a>text&lt;/a>
+   &lt;/root>"))
+
+while (parser.next != null)
+  echo("$parser.nodeType $parser.depth $parser.elem")
+
+// prints the following to the console
+elemStart 0 &lt;root>
+elemStart 1 &lt;a>
+text      1 &lt;a>
+elemEnd   1 &lt;a>
+elemEnd   0 &lt;root></pre>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#dom'>DOM </a></li><li><a href='#ns'>Namespaces </a></li><li><a href='#writing'>Writing </a></li><li><a href='#parsing'>Parsing </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

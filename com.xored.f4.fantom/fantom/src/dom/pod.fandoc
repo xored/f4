@@ -1,0 +1,111 @@
+**************************************************************************
+** title:      Dom
+** author:     Andy Frank
+** created:    17 Apr 09
+** copyright:  Copyright (c) 2009, Brian Frank and Andy Frank
+** license:    Licensed under the Academic Free License version 3.0
+**************************************************************************
+
+Overview [#overview]
+********************
+**WARNING**: the dom API is still an early prototype, so will be going
+through many changes during development
+
+The [dom]`dom::index` pod provides a framework for interoperating with
+the browser DOM and related browser APIs.  For the most part, these map
+one-to-one:
+
+  Browser           Fantom
+  --------------    ---------------
+  Window            Win
+  Document          Doc
+  Element           Elem
+  Event             Event
+  XmlHttpRequest    HttpReq/HttpRes
+
+Win [#win]
+==========
+
+  // basics
+  win := Win.cur       // get current Win instance
+  win.alert("Hello!")  // display a modal dialog
+  win.uri              // the URI for this page
+  win.hyperlink(uri)   // hyperlink to new page
+  win.viewport         // get size of window viewport
+
+  // event handlers
+  win.onEvent("hashchange", false) |e| { Win.cur.alert("hashchanged!") }
+
+  // storage
+  win.localStorage["bar"]         // return value for bar from local storage
+  win.localStorage["foo"] = 25    // store foo:25 in local storage
+  win.localStorage.remove("foo")  // remove foo from local storage
+  win.localStorage.clear          // clear all contents from local storage
+
+Doc [#doc]
+==========
+
+  doc := Win.cur.doc      // get doc instance for this window
+  doc.elem("someId")      // return the Elem with id='someId'
+  doc.createElem("div")   // create a new <div> element
+
+Elem [#elem]
+============
+
+  // attributes
+  elem["alt"]               // get an attribute value
+  elem["alt"] = "Alt text"  // set an attribute value
+  elem.id                   // 'id' attribute
+  elem.name                 // 'name' attribute
+  elem.tagName              // tag name of this element
+
+  // CSS
+  elem.className                 // return the current class name(s)
+  elem.hasClassName("alpha")     // does this element have the given class name?
+  elem.addClassName("beta")      // add a new class name to any current class names
+  elem.removeClassName("gamma")  // remove a class name, leaving any others remaining
+
+  // tree
+  elem.parent             // parent element
+  elem.next               // next sibling
+  elem.prev               // prev sibling
+  elem.children           // List of child elements
+  elem.first              // first child, or null if no children
+  elem.add(child)         // add a new child element
+  elem.remove(child)      // remove a child element
+
+  // form conveniences
+  elem.val                // the 'value' attribute
+  elem.checked            // true/false for checkboxes
+
+  // position and size
+  elem.bounds             // pos and size of element
+
+  // event handlers
+  elem.onEvent("click", false) |e| { Win.cur.alert("$e.target clicked!") }
+
+  // find
+  elem.find |e| { e.tagName == "img" }     // find first <img> descendant
+  elem.findAll |e| { e.tagName == "img" }  // find all <img> descendants
+
+XmlHttpRequest [#xhr]
+=====================
+
+The [HttpReq]`dom::HttpReq` object is used to make background HTTP
+requests from the browser.  For both sync and async requests, the response
+is passed to you in the callback closure:
+
+  HttpReq { uri=`/foo` }.send("POST", "some content") |res|
+  {
+    Win.cur.alert(res.content)
+  }
+
+Convenience methods are availabe for the common request methods:
+
+  HttpReq { uri=`/foo` }.get |res| {...}
+  HttpReq { uri=`/foo` }.post("some content") |res| {...}
+  HttpReq { uri=`/foo` }.postForm(["name":"Barney Stinson"]) |res| {...}
+
+The [postForm]`dom::HttpReq.postForm` will automatically encode the
+request to look like a normal HTML form submission.
+

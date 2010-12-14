@@ -1,0 +1,290 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Grammar</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Grammar.html'>Grammar</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Conventions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Conventions.html'>Conventions</a></div>
+</div>
+<h1 class='title'>Grammar</h1>
+
+<h1 id='legend'>Legend </h1>
+
+<p>Legend for Fantom BNF Grammar:</p>
+
+<pre>:=      is defined as
+&lt;x>     non-terminal
+"x"     literal
+[x]     optional
+(x)     grouping
+x*      zero or more times
+x|x     or</pre>
+
+<h1 id='compilationUnit'>Compilation Unit </h1>
+
+<pre>&lt;compilationUnit> :=  &lt;using*> &lt;typeDef>* [&lt;doc>]
+&lt;using>           :=  &lt;usingPod> | &lt;usingType> | &lt;usingAs>
+&lt;usingPod>        :=  "using" &lt;podSpec> &lt;eos>
+&lt;usingType>       :=  "using" &lt;podSpec> "::" &lt;id> &lt;eos>
+&lt;usingAs>         :=  "using" &lt;podSpec> "::" &lt;id> "as" &lt;id> &lt;eos>
+&lt;podSpec>         :=  &lt;id> | &lt;str> | &lt;ffiPodSpec>
+&lt;ffiPodSpec>      := "[" &lt;id> "]" &lt;id> ("." &lt;id>)*</pre>
+
+<h1 id='typeDef'>Type Def </h1>
+
+<pre>&lt;typeDef>        :=  &lt;classDef> | &lt;mixinDef> | &lt;facetDef> | &lt;enumDef>
+
+&lt;classDef>       :=  &lt;typeHeader> "class" &lt;id> [&lt;inheritance>] "{" &lt;slotDefs> "}"
+&lt;mixinDef>       :=  &lt;typeHeader> "mixin" &lt;id> [&lt;inheritance>] "{" &lt;slotDefs> "}"
+&lt;facetDef>       :=  &lt;typeHeader> "facet" "class" &lt;id> [&lt;inheritance>] "{" &lt;slotDefs> "}"
+&lt;enumDef>        :=  &lt;typeHeader> "enum" "class" &lt;id> [&lt;inheritance>] "{" &lt;enumValDefs> &lt;slotDefs> "}"
+
+&lt;typeHeader>     :=  [&lt;doc>] &lt;facets> &lt;typeFlags>
+&lt;typeFlags>      :=  &lt;typeFlag>*
+&lt;typeFlag>       :=  &lt;protection> | "abstract" | "final" | "const" | "native"
+&lt;protection>     :=  "public" | "protected" | "private" | "internal"
+&lt;inheritance>    :=  ":" &lt;typeList></pre>
+
+<h1 id='slotDef'>Slot Def </h1>
+
+<pre>&lt;enumValDefs>    :=  &lt;enumValDef> ("," &lt;enumValDef>)* &lt;eos>
+&lt;enumValDef>     :=  &lt;id> ["(" &lt;args> ")"]
+
+&lt;slotDefs>       :=  &lt;slotDef>*
+&lt;slotDef>        :=  &lt;fieldDef> | &lt;methodDef> | &lt;ctorDef> | &lt;staticInit>
+
+&lt;fieldDef>       :=  &lt;facets> &lt;fieldFlags> &lt;type> &lt;id> [":=" &lt;expr>]
+                     [ "{" [&lt;fieldGetter>] [&lt;fieldSetter>] "}" ] &lt;eos>
+&lt;fieldFlags>     :=  &lt;fieldFlag>*
+&lt;fieldFlag>      :=  &lt;protection> | "abstract" | "const" | "final" | "native" |
+                     "override" | "readonly" | "static" | "virtual"
+&lt;fieldGetter>    :=  "get" (&lt;eos> | &lt;block>)
+&lt;fieldSetter>    :=  &lt;protection> "set" (&lt;eos> | &lt;block>)
+
+&lt;methodDef>      :=  &lt;facets> &lt;methodFlags> &lt;type> &lt;id> "(" &lt;params> ")" &lt;methodBody>
+&lt;methodFlags>    :=  &lt;methodFlag>*
+&lt;methodFlag>     :=  &lt;protection> | "abstract" | "native" | "once" |
+                     "override" | "static" | "virtual" | "final"
+&lt;params>         :=  [&lt;param> ("," &lt;param>)*]
+&lt;param>          :=  &lt;type> &lt;id> [":=" &lt;expr>]
+&lt;methodBody>     :=  &lt;eos> | ( "{" &lt;stmts> "}" )
+
+&lt;ctorDef>        :=  &lt;facets> &lt;ctorFlags> "new" &lt;id> "(" &lt;params> ")" [ctorChain] &lt;methodBody>
+&lt;ctorFlags>      :=  [&lt;protection>]
+&lt;ctorChain>      :=  ":" &lt;ctorChainThis> | &lt;ctorChainSuper>
+&lt;ctorChainThis>  :=  "this" "." &lt;id> "(" &lt;args> ")"
+&lt;ctorChainSuper> :=  "super" ["." &lt;id>] "(" &lt;args> ")"
+
+&lt;staticInit>     :=  "static" "{" &lt;stmts> "}"</pre>
+
+<h1 id='facets'>Facets </h1>
+
+<pre>&lt;facets>        := &lt;facet>*
+&lt;facet>         := "@" &lt;simpleType> [&lt;facetVals>]
+&lt;facetVals>     := "{" &lt;facetVal> (&lt;eos> &lt;facetVal>)* "}"
+&lt;facetVal>      := &lt;id> "=" &lt;expr></pre>
+
+<h1 id='stmt'>Stmt </h1>
+
+<pre>&lt;block>          :=  &lt;stmt> | ( "{" &lt;stmts> "}" )
+&lt;stmts>          :=  &lt;stmt>*
+&lt;stmt>           :=  &lt;break> | &lt;continue> | &lt;for> | &lt;if> | &lt;return> | &lt;switch> |
+                     &lt;throw> | &lt;while> | &lt;try> | &lt;exprStmt> | &lt;localDef> | &lt;itAdd>
+&lt;break>          :=  "break" &lt;eos>
+&lt;continue>       :=  "continue" &lt;eos>
+&lt;for>            :=  "for" "(" [&lt;forInit>] ";" [&lt;expr>] ";" [&lt;expr>] ")" &lt;block>
+&lt;forInit>        :=  &lt;expr> | &lt;localDef>
+&lt;if>             :=  "if" "(" &lt;expr> ")" &lt;block> [ "else" &lt;block> ]
+&lt;return>         :=  "return" [&lt;expr>] &lt;eos>
+&lt;throw>          :=  "throw" &lt;expr> &lt;eos>
+&lt;while>          :=  "while" "(" &lt;expr> ")" &lt;block>
+&lt;exprStmt>       :=  &lt;expr> &lt;eos>
+&lt;localDef>       :=  [&lt;type>] &lt;id> [":=" &lt;expr>] &lt;eos>
+&lt;itAdd>          :=  &lt;expr> ("," &lt;expr>)* [","] &lt;eos>
+
+&lt;try>            :=  "try" &lt;block> &lt;catch>* [&lt;finally>]
+&lt;catch>          :=  "catch" [&lt;catchDef>] &lt;block>
+&lt;catchDef>       :=  "(" &lt;type> &lt;id> ")"
+&lt;finally>        :=  "finally" &lt;block>
+
+&lt;switch>         :=  "switch" "(" &lt;expr> ")" "{" &lt;case>* [&lt;default>] "}"
+&lt;case>           :=  "case" &lt;expr> ":" &lt;stmts>
+&lt;default>        :=  "default" ":" &lt;stmts></pre>
+
+<h1 id='expr'>Expr </h1>
+
+<pre>&lt;expr>           :=  &lt;assignExpr>
+&lt;assignExpr>     :=  &lt;ifExpr> [&lt;assignOp> &lt;assignExpr>]
+&lt;assignOp>       :=  "=" | "*=" | "/=" | "%=" | "+=" | "-="
+
+&lt;ifExpr>         :=  &lt;ternaryExpr> | &lt;elvisExpr>
+&lt;ternaryExpr>    :=  &lt;condOrExpr> ["?" &lt;ifExprBody> ":" &lt;ifExprBody>]
+&lt;elvisExpr>      :=  &lt;condOrExpr> "?:" &lt;ifExprBody>
+&lt;ifExprBody>     :=  &lt;condOrExpr> | &lt;ifExprThrow>
+&lt;ifExprThrow>    :=  "throw" &lt;expr>
+
+&lt;condOrExpr>     :=  &lt;condAndExpr>  ("||" &lt;condAndExpr>)*
+&lt;condAndExpr>    :=  &lt;equalityExpr> ("&amp;&amp;" &lt;equalityExpr>)*
+&lt;equalityExpr>   :=  &lt;relationalExpr> [("==" | "!=" | "===" | "!==") &lt;relationalExpr>]
+&lt;relationalExpr> :=  &lt;typeCheckExpr> | &lt;compareExpr>
+&lt;typeCheckExpr>  :=  &lt;rangeExpr> [("is" | "as" | "isnot") &lt;type>]
+&lt;compareExpr>    :=  &lt;rangeExpr> [("&lt;" | "&lt;=" | ">" | ">=" | "&lt;=>") &lt;rangeExpr>]
+&lt;rangeExpr>      :=  &lt;addExpr> ((".." | "..&lt;") &lt;addExpr>)*
+&lt;addExpr>        :=  &lt;multExpr> (("+" | "-") &lt;multExpr>)*
+&lt;multExpr>       :=  &lt;parenExpr> (("*" | "/" | "%") &lt;parenExpr>)*
+&lt;parenExpr>      :=  &lt;unaryExpr> | &lt;castExpr> | &lt;groupedExpr>
+&lt;castExpr>       :=  "(" &lt;type> ")" &lt;parenExpr>
+&lt;groupedExpr>    :=  "(" &lt;expr> ")" &lt;termChain>*
+&lt;unaryExpr>      :=  &lt;prefixExpr> | &lt;termExpr> | &lt;postfixExpr>
+&lt;prefixExpr>     :=  ("!" | "+" | "-" | "++" | "--") &lt;parenExpr>
+&lt;postfixExpr>    :=  &lt;termExpr> ("++" | "--")
+
+&lt;termExpr>       :=  &lt;termBase> &lt;termChain>*
+&lt;termBase>       :=  &lt;literal> | &lt;idExpr> | &lt;typeBase>
+&lt;typeBase>       :=  &lt;typeLiteral> | &lt;slotLiteral> | &lt;namedSuper> | &lt;staticCall> |
+                     &lt;dsl> | &lt;closure> | &lt;simple> | &lt;ctorBlock>
+&lt;typeLiteral>    :=  &lt;type> "#"
+&lt;slotLiteral>    :=  [&lt;type>] "#" &lt;id>
+&lt;namedSuper>     :=  &lt;type> "." "super"
+&lt;staticCall>     :=  &lt;type> "." &lt;slotExpr>
+&lt;dsl>            :=  &lt;type> "&lt;|" &lt;anyChar>* "|>"
+&lt;simple>         :=  &lt;type> "(" &lt;expr> ")"
+&lt;ctorBlock>      :=  &lt;type> &lt;itBlock>
+&lt;termChain>      :=  &lt;dotCall> | &lt;dynCall> | &lt;safeDotCall> | &lt;safeDynCall> |
+                     &lt;indexExpr> | &lt;callOp> | &lt;itBlock>
+&lt;itBlock>        :=  "{" &lt;stmts> "}"
+&lt;dotCall>        :=  "." &lt;slotExpr>
+&lt;dynCall>        :=  "->" &lt;slotExpr>
+&lt;safeDotCall>    :=  "?." &lt;slotExpr>
+&lt;safeDynCall>    :=  "?->" &lt;slotExpr>
+&lt;idExpr>         :=  &lt;local> | &lt;slotExpr>
+&lt;slotExpr>       :=  &lt;field> | &lt;call>
+&lt;local>          :=  &lt;id>
+&lt;field>          :=  ["&amp;"] &lt;id>
+&lt;call>           :=  &lt;id> ["(" &lt;args> ")"] [&lt;closure>]
+&lt;args>           :=  [&lt;expr> ("," &lt;expr>)*]
+&lt;indexExpr>      :=  "[" &lt;expr> "]"
+&lt;callOp>         :=  "(" &lt;args> ")" [&lt;closure>]
+
+&lt;literal>        :=  "null" | "this" | "super" | "it" |
+                     &lt;bool> | &lt;int> | &lt;float> | &lt;decimal> | &lt;str> |
+                     &lt;duration> | &lt;uri> | &lt;list> | &lt;map> | &lt;uri>
+&lt;list>           :=  [&lt;type>] "[" &lt;listItems> [","] "]"
+&lt;listItems>      :=  "," | (&lt;expr> ("," &lt;expr>)*)
+&lt;map>            :=  [&lt;mapType>] "[" &lt;mapItems> [","] "]"
+&lt;mapItems>       :=  ":" | (&lt;mapPair> ("," &lt;mapPair>)*)
+&lt;mapPair>        :=  &lt;expr> ":" &lt;expr>
+
+&lt;closure>        :=  &lt;closureSig> "{" &lt;stmts> "}"
+&lt;closureSig>     :=  "|" &lt;closureParams> ["->" &lt;type>] "|"
+&lt;closureParams>  :=  [&lt;closureParam> ("," &lt;closureParam>)*]
+&lt;closureParam>   :=  &lt;formal> | &lt;id></pre>
+
+<p>See <a href='Literals.html'>Literals</a> for grammar of the literal tokens.</p>
+
+<h1 id='type'>Type </h1>
+
+<pre>&lt;type>           :=  &lt;nullType> | &lt;nonNullType>
+&lt;nullType>       :=  &lt;nonNullType> "?"
+&lt;nonNullType>    :=  &lt;simpleType> | &lt;listType> | &lt;mapType> | &lt;funcType>
+&lt;typeList>       :=  &lt;type> ("," &lt;type>)*
+&lt;simpleType>     :=  &lt;id> ["::" &lt;id>]
+&lt;listType>       :=  &lt;type> "[]"
+&lt;mapType>        :=  ["["] &lt;type> ":" &lt;type> ["]"]
+&lt;funcType>       :=  "|" [formals] ["->" &lt;type>] "|"
+&lt;formals>        :=  [&lt;formal> ("," &lt;formal>)*]
+&lt;formal>         :=  &lt;formalFull> | &lt;formalInferred> | &lt;formalTypeOnly>
+&lt;formalFull>     :=  &lt;type> &lt;id>
+&lt;formalInferred> :=  &lt;id>
+&lt;formalTypeOnly> :=  &lt;type></pre>
+
+<h1 id='misc'>Misc </h1>
+
+<pre>&lt;id>             := &lt;idStart> (idChar)*
+&lt;idStart>        := A-Z | a-z | _
+&lt;idChar>         := A-Z | a-z | _ | 0-9
+&lt;eos>            := ; | \n | }</pre>
+
+<h1 id='keywords'>Keywords </h1>
+
+<pre>abstract       foreach        return
+as             if             static
+assert         internal       super
+break          is             switch
+case           isnot          this
+catch          it             throw
+class          mixin          true
+const          native         try
+continue       new            using
+default        null           virtual
+do             once           volatile
+else           override       void
+false          private        while
+final          protected
+finally        public
+for            readonly</pre>
+
+<h1 id='posKeywords'>Position Keyword </h1>
+
+<pre>enum
+facet</pre>
+<div class='prevNext'>
+<div class='prev'><a href='Conventions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Conventions.html'>Conventions</a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#legend'>Legend </a></li><li><a href='#compilationUnit'>Compilation Unit </a></li><li><a href='#typeDef'>Type Def </a></li><li><a href='#slotDef'>Slot Def </a></li><li><a href='#facets'>Facets </a></li><li><a href='#stmt'>Stmt </a></li><li><a href='#expr'>Expr </a></li><li><a href='#type'>Type </a></li><li><a href='#misc'>Misc </a></li><li><a href='#keywords'>Keywords </a></li><li><a href='#posKeywords'>Position Keyword </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

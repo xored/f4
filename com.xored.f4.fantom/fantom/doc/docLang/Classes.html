@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Classes</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Classes.html'>Classes</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Pods.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Pods.html'>Pods</a></div>
+<div class='next'><a href='Mixins.html'>Mixins</a> <a href='Mixins.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Classes</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Classes are the most basic kind of <a href='TypeSystem.html#types'>type</a>:</p>
+
+<ul>
+<li>Classes are scoped within a pod and globally identified with the qualified name <code>podName::ClassName</code></li>
+
+<li>Classes contain zero or more uniquely named slots</li>
+
+<li>Classes always inherit from exactly one super class ('sys::Obj' is the sole exception to this rule)</li>
+
+<li>Classes may inherit zero or more mixins</li>
+</ul>
+
+<p>Classes are declared using the <code>class</code> keyword:</p>
+
+<pre>class MyNewClass {}</pre>
+
+<h1 id='modifiers'>Class Modifiers </h1>
+
+<p>Classes may be annotated with the following modifiers:</p>
+
+<ul>
+<li><code>public</code></li>
+
+<li><code>internal</code></li>
+
+<li><code>abstract</code></li>
+
+<li><code>final</code></li>
+
+<li><code>const</code></li>
+</ul>
+
+<p>For example to declare an internal abstract class:</p>
+
+<pre>internal abstract class Foo {}</pre>
+
+<h2 id='protection'>Protection </h2>
+
+<p>The <code>public</code> and <code>internal</code> keywords define the visibility of the class.  A <code>public</code> class may be used by everyone in the system. An <code>internal</code> class is visible only to types within the declaring pod.  If no protection keyword is specified, the class defaults to public.</p>
+
+<h2 id='abstract'>Abstract Classes </h2>
+
+<p>Abstract classes are classes designed never to be instantiated directly.  It is a compiler error to call the constructor of an abstract class.  However abstract classes do have constructors for use by their subclasses.</p>
+
+<p>Abstract classes may or may not contain <a href='Methods.html#abstract'>abstract methods</a>. Although all classes which contain abstract methods, must be declared abstract.</p>
+
+<p>The opposite of an abstract class is called a concrete class.</p>
+
+<h2 id='final'>Final Classes </h2>
+
+<p>Final classes cannot be subclassed.  Any attempt to extend from a final class will result in a compiler error.</p>
+
+<h2 id='const'>Const Classes </h2>
+
+<p>Const classes are immutable - once created, an instance is guaranteed to have no state changes.  The following rules must be observed with const classes:</p>
+
+<ul>
+<li>A const class can contain only <a href='Fields.html#const'>const fields</a> or fields with no storage:
+<ol style='list-style-type:lower-alpha'>
+<li><a href='Fields.html#abstract'>abstract fields</a></li>
+
+<li><a href='Natives.html#fields'>native fields</a> (native code must ensure thread safety)</li>
+
+<li><a href='Fields.html#calculated'>calculated fields</a></li>
+</ol>
+</li>
+
+<li>A const class cannot contain any <a href='Methods.html#once'>once methods</a></li>
+
+<li>A const class must inherit from a const class or <code>sys::Obj</code></li>
+
+<li>A non-const class cannot inherit from a const class</li>
+</ul>
+
+<p>Many fundamental primitive classes are const including <code>Bool</code>, <code>Int</code>, <code>Float</code>, and <code>Str</code>.  Const classes and immutability play an import role in <a href='Concurrency.html#immutability'>thread safety</a>.</p>
+
+<h1 id='obj'>Obj </h1>
+
+<p>The root of all classes is the <code><a href='../sys/Obj.html'>sys::Obj</a></code> class.  <code>Obj</code> is the only class which doesn't have a superclass itself.</p>
+
+<h1 id='instances'>Instances </h1>
+
+<p>Fantom uses a <a href='TypeSystem.html#pureOO'>pure object oriented</a> type system. This means that all variables are an object which is an instance of exactly one class.</p>
+
+<h1 id='reflection'>Reflection </h1>
+
+<p>The <code><a href='../sys/Type.html'>sys::Type</a></code> class is used to represent a class at runtime.  You can always get the class type of an object using the <code><a href='../sys/Type.html#of'>sys::Type.of</a></code> method:</p>
+
+<pre>Type t := Type.of(obj)</pre>
+
+<p>Since all objects are instances of a class, this <code>Type</code> object will always represent a class.  Given a <code>Type</code> which represents a concrete class, you can create new instances reflectively:</p>
+
+<pre>t.make                   // use default make constructor
+t.make(args)             // use make constructor with arguments
+t.method("makeX").call   // lookup and use a named constructor</pre>
+<div class='prevNext'>
+<div class='prev'><a href='Pods.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Pods.html'>Pods</a></div>
+<div class='next'><a href='Mixins.html'>Mixins</a> <a href='Mixins.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#modifiers'>Class Modifiers </a><ul>
+<li><a href='#protection'>Protection </a></li><li><a href='#abstract'>Abstract Classes </a></li><li><a href='#final'>Final Classes </a></li><li><a href='#const'>Const Classes </a></li></ul>
+</li><li><a href='#obj'>Obj </a></li><li><a href='#instances'>Instances </a></li><li><a href='#reflection'>Reflection </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

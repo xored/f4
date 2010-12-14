@@ -1,0 +1,482 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::RichTextModel</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='RichTextModel.html'>RichTextModel</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>fwt::RichTextModel</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  fwt::RichTextModel</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   28 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** RichText is used to view and edit text styled with</span>
+<span class='z'>** different fonts and colors.</span>
+<span class='z'>**</span>
+@Js
+@Serializable
+<span class='k'>class</span> RichText : TextWidget
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> make<span class='b'>(</span>|This|? f := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>f != <span class='k'>null</span><span class='b'>)</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when the text is modified.  This event occurs</span>
+  <span class='z'>** after the modification.  See `onVerify` to trap changes</span>
+  <span class='z'>** before they occur.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.modified`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.data`: the `TextChange` instance.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners onModify := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback before the text is modified.  This gives listeners</span>
+  <span class='z'>** a chance to intercept modifications and potentially modify</span>
+  <span class='z'>** the inserted text.  This event occurs before the modification.</span>
+  <span class='z'>** See `onModify` to trap changes after they occur.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.verify`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.data`: a `TextChange` instance where 'newText'</span>
+  <span class='z'>**     specifies the proposed text being inserted.  The callback</span>
+  <span class='z'>**     can update 'newText' with the actual text to be inserted</span>
+  <span class='z'>**     or set to null to cancel the modification.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners onVerify := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback before a key event is processed.  This gives listeners</span>
+  <span class='z'>** a chance to trap the key event and [consume]`Event.consume`</span>
+  <span class='z'>** it before it is processed by the editor.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.verifyKey`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.keyChar`: unicode character represented by key event</span>
+  <span class='z'>**   - `Event.key`: key code including the modifiers</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners onVerifyKey := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when the selection is modified.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.select`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.offset`: the starting offset</span>
+  <span class='z'>**   - `Event.size`:   the number of chars selected</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners onSelect := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback when the caret position is modified.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.caret`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.offset`: the new caret offset</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners onCaret := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Horizontal scroll bar.</span>
+  <span class='z'>**</span>
+  @Transient ScrollBar hbar := ScrollBar<span class='b'>()</span> <span class='b'>{</span> <span class='k'>private</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Vertical scroll bar.</span>
+  <span class='z'>**</span>
+  @Transient ScrollBar vbar := ScrollBar<span class='b'>()</span> <span class='b'>{</span> <span class='k'>private</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Backing data model of text document.</span>
+  <span class='z'>** The model cannot be changed once the widget has been</span>
+  <span class='z'>** been mounted into an open window.</span>
+  <span class='z'>**</span>
+  RichTextModel? model
+  <span class='b'>{</span>
+    set
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>attached<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Cannot change model once widget is attached"</span><span class='b'>)</span>
+      old := <span class='k'>this</span>.&amp;model
+      <span class='k'>if</span> <span class='b'>(</span>old != <span class='k'>null</span><span class='b'>)</span> old.onModify.remove<span class='b'>(</span>onModelModifyFunc<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>it != <span class='k'>null</span><span class='b'>)</span> it.onModify.add<span class='b'>(</span>onModelModifyFunc<span class='b'>)</span>
+      <span class='k'>this</span>.&amp;model = it
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> |Event| onModelModifyFunc := |e| <span class='b'>{</span> onModelModify<span class='b'>(</span>e<span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>internal</span> <span class='k'>native</span> Void onModelModify<span class='b'>(</span>Event event<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Tab width measured in space characters.  Default is 2.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Int tabSpacing
+
+  <span class='z'>**</span>
+  <span class='z'>** The zero based line index which is currently at the</span>
+  <span class='z'>** top of the scrolling viewport.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Int topLine
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for 'model.text' (model must be installed).</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str text
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> model.text <span class='b'>}</span>
+    set <span class='b'>{</span> model.text = it <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map a coordinate on the widget to an offset in the text,</span>
+  <span class='z'>** or return null if no mapping at specified point.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Int? offsetAtPos<span class='b'>(</span>Int x, Int y<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `RichTextModel.modify`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void modify<span class='b'>(</span>Int start, Int replaceLen, Str newText<span class='b'>)</span>
+  <span class='b'>{</span>
+    model.modify<span class='b'>(</span>start, replaceLen, newText<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Painting</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Repaint the line specified by the zero based line index.</span>
+  <span class='z'>**</span>
+  Void repaintLine<span class='b'>(</span>Int lineIndex<span class='b'>)</span>
+  <span class='b'>{</span>
+    repaintRange<span class='b'>(</span>model.offsetAtLine<span class='b'>(</span>lineIndex<span class='b'>)</span>, model.line<span class='b'>(</span>lineIndex<span class='b'>)</span>.size<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Repaint the specified text range.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Void repaintRange<span class='b'>(</span>Int offset, Int len<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Ensure the editor is scrolled such that the specified line is visible.</span>
+  <span class='z'>**</span>
+  <span class='k'>native</span> Void showLine<span class='b'>(</span>Int lineIndex<span class='b'>)</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** RichTextModel</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** RichTextModel models the document and styling of a `RichText` document.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>abstract</span> <span class='k'>class</span> RichTextModel
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Callback model generated when the text is modified.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event id fired:</span>
+  <span class='z'>**   - `EventId.modified`</span>
+  <span class='z'>**</span>
+  <span class='z'>** Event fields:</span>
+  <span class='z'>**   - `Event.data`: the `TextChange`.</span>
+  <span class='z'>**</span>
+  @Transient <span class='k'>readonly</span> EventListeners <span id='onModify'>onModify</span> := EventListeners<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get or set the entire text document.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str <span id='text'>text</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the number of characters in the content.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='charCount'>charCount</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the number of lines.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='lineCount'>lineCount</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the line at the given zero based line index without delimiters.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str <span id='line'>line</span><span class='b'>(</span>Int lineIndex<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the zero based line index at the given character offset.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='lineAtOffset'>lineAtOffset</span><span class='b'>(</span>Int offset<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the character offset of the first character of the</span>
+  <span class='z'>** given zero based line index.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='offsetAtLine'>offsetAtLine</span><span class='b'>(</span>Int lineIndex<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the line delimiter that should be used when inserting</span>
+  <span class='z'>** new lines. The default is "\n".</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str <span id='lineDelimiter'>lineDelimiter</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"\n"</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Returns a string representing the content at the given range.</span>
+  <span class='z'>** The default implementation of textRange is optimized to assume</span>
+  <span class='z'>** the backing store is based on lines.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str <span id='textRange'>textRange</span><span class='b'>(</span>Int start, Int len<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// map offsets to line, if the offset is the line's</span>
+    <span class='y'>// delimiter itself, then offsetInLine will be negative</span>
+    lineIndex := lineAtOffset<span class='b'>(</span>start<span class='b'>)</span>
+    lineOffset := offsetAtLine<span class='b'>(</span>lineIndex<span class='b'>)</span>
+    lineText := line<span class='b'>(</span>lineIndex<span class='b'>)</span>
+    offsetInLine := start-lineOffset
+
+    <span class='y'>// if this is a range within a single line, then use normal Str slice</span>
+    <span class='k'>if</span> <span class='b'>(</span>offsetInLine+len &lt;= lineText.size<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> lineText<span class='b'>[</span>offsetInLine..&lt;offsetInLine+len<span class='b'>]</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// the range spans multiple lines</span>
+    buf := StrBuf<span class='b'>(</span>len<span class='b'>)</span>
+    n := len
+
+    <span class='y'>// if the start offset is in the delimiter, then make sure</span>
+    <span class='y'>// we start at next line, otherwise add the slice of the</span>
+    <span class='y'>// first line to our buffer</span>
+    <span class='k'>if</span> <span class='b'>(</span>offsetInLine &gt;= 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      buf.add<span class='b'>(</span>lineText<span class='b'>[</span>offsetInLine..-1<span class='b'>])</span>
+      n -= buf.size
+    <span class='b'>}</span>
+
+    <span class='y'>// add delimiter of first line</span>
+    delimiter := lineDelimiter
+    <span class='k'>if</span> <span class='b'>(</span>n &gt; 0<span class='b'>)</span> <span class='b'>{</span> buf.add<span class='b'>(</span>delimiter<span class='b'>)</span>;  n -= delimiter.size <span class='b'>}</span>
+
+    <span class='y'>// keep adding lines until we've gotten the full len</span>
+    <span class='k'>while</span> <span class='b'>(</span>n &gt; 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      lineText = line<span class='b'>(</span>++lineIndex<span class='b'>)</span>
+      <span class='y'>// full line (and maybe its delimiter)</span>
+      <span class='k'>if</span> <span class='b'>(</span>n &gt;= lineText.size<span class='b'>)</span>
+      <span class='b'>{</span>
+        buf.add<span class='b'>(</span>lineText<span class='b'>)</span>
+        n -= lineText.size
+        <span class='k'>if</span> <span class='b'>(</span>n &gt; 0<span class='b'>)</span> <span class='b'>{</span> buf.add<span class='b'>(</span>delimiter<span class='b'>)</span>;  n -= delimiter.size <span class='b'>}</span>
+      <span class='b'>}</span>
+      <span class='y'>// partial line</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        buf.add<span class='b'>(</span>lineText<span class='b'>[</span>0..&lt;n<span class='b'>])</span>
+        <span class='k'>break</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> buf.toStr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Replace the text with 'newText' starting at position 'start'</span>
+  <span class='z'>** for a length of 'replaceLen'.  The model implementation must</span>
+  <span class='z'>** fire the `onModify` event.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='modify'>modify</span><span class='b'>(</span>Int start, Int replaceLen, Str newText<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the styled segments for the given zero based line index.</span>
+  <span class='z'>** The result is a list of Int/RichTextStyle pairs where the Int</span>
+  <span class='z'>** specifies a zero based char offset of the line using a pattern</span>
+  <span class='z'>** such as:</span>
+  <span class='z'>**</span>
+  <span class='z'>**   [Int, RichTextStyle, Int, RichTextStyle, ...]</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Obj<span class='b'>[]</span>? <span id='lineStyling'>lineStyling</span><span class='b'>(</span>Int lineIndex<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the color to use for the specified line's background.</span>
+  <span class='z'>** Normal lineStyling backgrounds only cover the width of the text.</span>
+  <span class='z'>** However, the lineBackground covers the width of the entire</span>
+  <span class='z'>** edit area.  Return null for no special background.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Color? <span id='lineBackground'>lineBackground</span><span class='b'>(</span>Int lineIndex<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** RichTextStyle</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Defines the font and color styling of a text</span>
+<span class='z'>** segment in a `RichTextModel`.</span>
+<span class='z'>**</span>
+@Js
+@Serializable
+<span class='k'>const</span> <span class='k'>class</span> RichTextStyle
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> make<span class='b'>(</span>|This|? f := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>f != <span class='k'>null</span><span class='b'>)</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Foreground color</span>
+  <span class='k'>const</span> Color? fg
+
+  <span class='z'>** Background color or null</span>
+  <span class='k'>const</span> Color? bg
+
+  <span class='z'>** Font of text segment</span>
+  <span class='k'>const</span> Font? font
+
+  <span class='z'>** Underline color, if null then use fg color.</span>
+  <span class='k'>const</span> Color? underlineColor
+
+  <span class='z'>** Underline style or none for no underline.</span>
+  <span class='k'>const</span> RichTextUnderline underline := RichTextUnderline.none
+
+  <span class='k'>override</span> Str toStr<span class='b'>()</span>
+  <span class='b'>{</span>
+    s := StrBuf<span class='b'>()</span>
+    <span class='k'>if</span> <span class='b'>(</span>fg != <span class='k'>null</span><span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>"fg=$fg"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>bg != <span class='k'>null</span><span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>" bg=$bg"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>font != <span class='k'>null</span><span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>" font=$font"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>underline != RichTextUnderline.none<span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>" underline=$underline"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>underlineColor != <span class='k'>null</span><span class='b'>)</span> s.add<span class='b'>(</span><span class='s'>" underlineColor=$underlineColor"</span><span class='b'>)</span>
+    <span class='k'>return</span> s.toStr.trim
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** RichTextUnderline</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Defines how to paint the underline of a RichText segment.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>enum</span> <span class='k'>class</span> RichTextUnderline
+<span class='b'>{</span>
+  none,
+  single,
+  squiggle
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='RichTextModel.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#charCount'>charCount</a></li>
+  <li style='display: block;'><a href='#line'>line</a></li>
+  <li style='display: block;'><a href='#lineAtOffset'>lineAtOffset</a></li>
+  <li style='display: block;'><a href='#lineBackground'>lineBackground</a></li>
+  <li style='display: block;'><a href='#lineCount'>lineCount</a></li>
+  <li style='display: block;'><a href='#lineDelimiter'>lineDelimiter</a></li>
+  <li style='display: block;'><a href='#lineStyling'>lineStyling</a></li>
+  <li style='display: block;'><a href='#modify'>modify</a></li>
+  <li style='display: block;'><a href='#offsetAtLine'>offsetAtLine</a></li>
+  <li style='display: block;'><a href='#onModify'>onModify</a></li>
+  <li style='display: block;'><a href='#text'>text</a></li>
+  <li style='display: block;'><a href='#textRange'>textRange</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

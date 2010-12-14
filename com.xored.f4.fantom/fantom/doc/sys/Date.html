@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Date</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Date.html'>Date</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final class</h2>
+<h1>sys::Date</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Date</pre>
+</div>
+<p><code class='sig'>@<a href='Serializable.html'>Serializable</a> {
+simple=true
+collection=false
+}<br/>
+</code></p>
+<div class='detail'>
+
+<p>Date represents a day in time independent of a timezone.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='compare' class='method'>compare<a href='Date_src.html#compare'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Int.html'>Int</a> compare(<a href='Obj.html'>Obj</a> obj)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#compare'>sys::Obj.compare</a></p>
+</div>
+
+<p>Compare based on year, month, and day.</p>
+</dd>
+<dt id='day' class='method'>day<a href='Date_src.html#day'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> day()</code></p>
+
+<p>Get the day of the month as a number between 1 and 31.</p>
+</dd>
+<dt id='dayOfYear' class='method'>dayOfYear<a href='Date_src.html#dayOfYear'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> dayOfYear()</code></p>
+
+<p>Return the day of the year as a number between 1 and 365 (or 1 to 366 if a leap year).</p>
+</dd>
+<dt id='defVal' class='field'>defVal<a href='Date_src.html#defVal'>Source</a></dt>
+<dd>
+<p><code class='sig'>const static <a href='Date.html'>Date</a> defVal</code></p>
+
+<p>Default value is "2000-01-01".</p>
+</dd>
+<dt id='equals' class='method'>equals<a href='Date_src.html#equals'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Bool.html'>Bool</a> equals(<a href='Obj.html'>Obj</a>? that)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#equals'>sys::Obj.equals</a></p>
+</div>
+
+<p>Two dates are equal if have the same year, month, and day.</p>
+</dd>
+<dt id='firstOfMonth' class='method'>firstOfMonth<a href='Date_src.html#firstOfMonth'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Date.html'>Date</a> firstOfMonth()</code></p>
+
+<p>Get the first day of this Date's current month.</p>
+
+<p>Example:</p>
+
+<pre>Date("2009-10-28").firstOfMonth  =>  2009-10-01</pre>
+</dd>
+<dt id='fromIso' class='method'>fromIso<a href='Date_src.html#fromIso'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Date.html'>Date</a>? fromIso(<a href='Str.html'>Str</a> s, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Parse an ISO 8601 date.  If invalid format and checked is false return null, otherwise throw ParseErr.  The following format is supported:</p>
+
+<pre>YYYY-MM-DD</pre>
+
+<p>Also see <a href='Date.html#toIso'>toIso</a> and <a href='Date.html#fromStr'>fromStr</a>.</p>
+</dd>
+<dt id='fromLocale' class='method'>fromLocale<a href='Date_src.html#fromLocale'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Date.html'>Date</a>? fromLocale(<a href='Str.html'>Str</a> str, <a href='Str.html'>Str</a> pattern, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Parse a string into a Date using the given pattern.  If string is not a valid format then return null or raise ParseErr based on checked flag.  See <a href='Date.html#toLocale'>toLocale</a> for pattern syntax.</p>
+</dd>
+<dt id='fromStr' class='method'>fromStr<a href='Date_src.html#fromStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Date.html'>Date</a>? fromStr(<a href='Str.html'>Str</a> s, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Parse the string into a Date from the programmatic encoding defined by <a href='Date.html#toStr'>toStr</a>.  If the string cannot be parsed into a valid Date and checked is false then return null, otherwise throw ParseErr.</p>
+</dd>
+<dt id='hash' class='method'>hash<a href='Date_src.html#hash'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Int.html'>Int</a> hash()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#hash'>sys::Obj.hash</a></p>
+</div>
+
+<p>Return hash of year, month, and day.</p>
+</dd>
+<dt id='isToday' class='method'>isToday<a href='Date_src.html#isToday'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isToday()</code></p>
+
+<p>Return is this date equal to <a href='Date.html#today'>today</a>.</p>
+</dd>
+<dt id='isTomorrow' class='method'>isTomorrow<a href='Date_src.html#isTomorrow'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isTomorrow()</code></p>
+
+<p>Return is this date equal to <a href='Date.html#today'>today</a> + 1day.</p>
+</dd>
+<dt id='isYesterday' class='method'>isYesterday<a href='Date_src.html#isYesterday'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isYesterday()</code></p>
+
+<p>Return is this date equal to <a href='Date.html#today'>today</a> - 1day.</p>
+</dd>
+<dt id='lastOfMonth' class='method'>lastOfMonth<a href='Date_src.html#lastOfMonth'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Date.html'>Date</a> lastOfMonth()</code></p>
+
+<p>Get the last day of this Date's current month.</p>
+
+<p>Example:</p>
+
+<pre>Date("2009-10-28").lastOfMonth  =>  2009-10-31</pre>
+</dd>
+<dt id='make' class='method'>make<a href='Date_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Date.html'>Date</a> make(<a href='Int.html'>Int</a> year, <a href='Month.html'>Month</a> month, <a href='Int.html'>Int</a> day)</code></p>
+
+<p>Make for the specified date values:</p>
+
+<ul>
+<li>year:  no restriction (although only 1901-2099 maps to DateTime)</li>
+
+<li>month: Month enumeration</li>
+
+<li>day:   1-31</li>
+</ul>
+
+<p>Throw ArgErr is any of the parameters are out of range.</p>
+</dd>
+<dt id='midnight' class='method'>midnight<a href='Date_src.html#midnight'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='DateTime.html'>DateTime</a> midnight(<a href='TimeZone.html'>TimeZone</a> tz := TimeZone.cur())</code></p>
+
+<p>Return a DateTime for the beginning of the this day at midnight.</p>
+</dd>
+<dt id='minus' class='method'>minus<a href='Date_src.html#minus'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='Date.html'>Date</a> minus(<a href='Duration.html'>Duration</a> days)</code></p>
+
+<p>Subtract the specified number of days to this date to get a date in the past.  Throw ArgErr if <code>days</code> parameter it not an even number of days.</p>
+
+<p>Example:</p>
+
+<pre>Date(2008, Month.feb, 28) - 2day  =>  2008-02-26</pre>
+</dd>
+<dt id='minusDate' class='method'>minusDate<a href='Date_src.html#minusDate'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='Duration.html'>Duration</a> minusDate(<a href='Date.html'>Date</a> days)</code></p>
+
+<p>Return the delta between this and the given date.  The result is always an exact multiple of 24 hour days.</p>
+
+<p>Example:</p>
+
+<pre>Date(2009, Month.jan, 5) - Date(2009, Month.jan, 2)  =>  3day</pre>
+</dd>
+<dt id='month' class='method'>month<a href='Date_src.html#month'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Month.html'>Month</a> month()</code></p>
+
+<p>Get the month of this date.</p>
+</dd>
+<dt id='plus' class='method'>plus<a href='Date_src.html#plus'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='Date.html'>Date</a> plus(<a href='Duration.html'>Duration</a> days)</code></p>
+
+<p>Add the specified number of days to this date to get a date in the future.  Throw ArgErr if <code>days</code> parameter it not an even number of days.</p>
+
+<p>Example:</p>
+
+<pre>Date(2008, Month.feb, 28) + 2day  =>  2008-03-01</pre>
+</dd>
+<dt id='privateMake' class='method hidden'>privateMake<a href='Date_src.html#privateMake'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new privateMake()</code></p>
+
+<p>Private constructor.</p>
+</dd>
+<dt id='toCode' class='method'>toCode<a href='Date_src.html#toCode'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> toCode()</code></p>
+
+<p>Get this Date as a Fantom expression suitable for code generation.</p>
+</dd>
+<dt id='toDateTime' class='method'>toDateTime<a href='Date_src.html#toDateTime'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='DateTime.html'>DateTime</a> toDateTime(<a href='Time.html'>Time</a> t, <a href='TimeZone.html'>TimeZone</a> tz := TimeZone.cur())</code></p>
+
+<p>Combine this Date with the given Time to return a DateTime.</p>
+</dd>
+<dt id='toIso' class='method'>toIso<a href='Date_src.html#toIso'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> toIso()</code></p>
+
+<p>Format this instance according to ISO 8601 using the pattern:</p>
+
+<pre>YYYY-MM-DD</pre>
+
+<p>Also see <a href='Date.html#fromIso'>fromIso</a> and <a href='Date.html#toStr'>toStr</a>.</p>
+</dd>
+<dt id='toLocale' class='method'>toLocale<a href='Date_src.html#toLocale'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> toLocale(<a href='Str.html'>Str</a>? pattern := null)</code></p>
+
+<p>Format this date according to the specified pattern.  If pattern is null, then a localized default is used.  The pattern format is the same as <code><a href='DateTime.html#toLocale'>DateTime.toLocale</a></code>:</p>
+
+<pre>YY     Two digit year             07
+YYYY   Four digit year            2007
+M      One/two digit month        6, 11
+MM     Two digit month            06, 11
+MMM    Three letter abbr month    Jun, Nov
+MMMM   Full month                 June, November
+D      One/two digit day          5, 28
+DD     Two digit day              05, 28
+DDD    Day with suffix            1st, 2nd, 3rd, 24th
+WWW    Three letter abbr weekday  Tue
+WWWW   Full weekday               Tuesday
+'xyz'  Literal characters</pre>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Date_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return programmatic ISO 8601 string encoding formatted as follows:</p>
+
+<pre>YYYY-MM-DD
+2009-01-10</pre>
+
+<p>Also <a href='Date.html#fromStr'>fromStr</a>, <a href='Date.html#toIso'>toIso</a>, and <a href='Date.html#toLocale'>toLocale</a>.</p>
+</dd>
+<dt id='today' class='method'>today<a href='Date_src.html#today'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Date.html'>Date</a> today(<a href='TimeZone.html'>TimeZone</a> tz := TimeZone.cur())</code></p>
+
+<p>Get today's Date using specified timezone.</p>
+</dd>
+<dt id='weekday' class='method'>weekday<a href='Date_src.html#weekday'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Weekday.html'>Weekday</a> weekday()</code></p>
+
+<p>Get the day of the week for this date.</p>
+</dd>
+<dt id='year' class='method'>year<a href='Date_src.html#year'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> year()</code></p>
+
+<p>Get the year as a number such as 2009.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Date_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#compare'>compare</a></li>
+  <li><a href='#day'>day</a></li>
+  <li><a href='#dayOfYear'>dayOfYear</a></li>
+  <li><a href='#defVal'>defVal</a></li>
+  <li><a href='#equals'>equals</a></li>
+  <li><a href='#firstOfMonth'>firstOfMonth</a></li>
+  <li><a href='#fromIso'>fromIso</a></li>
+  <li><a href='#fromLocale'>fromLocale</a></li>
+  <li><a href='#fromStr'>fromStr</a></li>
+  <li><a href='#hash'>hash</a></li>
+  <li><a href='#isToday'>isToday</a></li>
+  <li><a href='#isTomorrow'>isTomorrow</a></li>
+  <li><a href='#isYesterday'>isYesterday</a></li>
+  <li><a href='#lastOfMonth'>lastOfMonth</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#midnight'>midnight</a></li>
+  <li><a href='#minus'>minus</a></li>
+  <li><a href='#minusDate'>minusDate</a></li>
+  <li><a href='#month'>month</a></li>
+  <li><a href='#plus'>plus</a></li>
+  <li class='hidden'><a href='#privateMake'>privateMake</a></li>
+  <li><a href='#toCode'>toCode</a></li>
+  <li><a href='#toDateTime'>toDateTime</a></li>
+  <li><a href='#toIso'>toIso</a></li>
+  <li><a href='#toLocale'>toLocale</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#today'>today</a></li>
+  <li><a href='#weekday'>weekday</a></li>
+  <li><a href='#year'>year</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:15AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

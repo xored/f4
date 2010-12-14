@@ -1,0 +1,492 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fandoc::Doc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fandoc</a></li>
+  <li>&gt;</li>
+  <li><a href='Doc.html'>Doc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fandoc::Doc</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='DocNode.html'>fandoc::DocNode</a>
+    <a href='DocElem.html'>fandoc::DocElem</a>
+      fandoc::Doc</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   17 Feb 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** DocNodeId</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>enum</span> <span class='k'>class</span> DocNodeId
+<span class='b'>{</span>
+  text,
+  doc,
+  heading,
+  para,
+  pre,
+  blockQuote,
+  orderedList,
+  unorderedList,
+  listItem,
+  emphasis,
+  strong,
+  code,
+  link,
+  image
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Node</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** DocNode is the base class for nodes in a fandoc model.</span>
+<span class='z'>** There are two type of nodes:  DocElem and DocText.</span>
+<span class='z'>**</span>
+<span class='z'>** See [pod doc]`pod-doc#api` for usage.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> DocNode
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get node id for node type.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> DocNodeId id<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write this node to the specified DocWriter.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void write<span class='b'>(</span>DocWriter out<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Debug dump to output stream.</span>
+  <span class='z'>**</span>
+  Void dump<span class='b'>(</span>OutStream out := Env.cur.out<span class='b'>)</span>
+  <span class='b'>{</span>
+    html := HtmlDocWriter<span class='b'>(</span>out<span class='b'>)</span>
+    write<span class='b'>(</span>html<span class='b'>)</span>
+    html.out.flush
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** DocText</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** DocText segment.</span>
+<span class='z'>**</span>
+<span class='z'>** See [pod doc]`pod-doc#api` for usage.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> DocText : DocNode
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Str str<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.str = str <span class='b'>}</span>
+
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.text <span class='b'>}</span>
+
+  <span class='k'>override</span> Void write<span class='b'>(</span>DocWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.text<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> str <span class='b'>}</span>
+
+  Str str
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** DocElem</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** DocElem is a container node which models a branch of the doc tree.</span>
+<span class='z'>**</span>
+<span class='z'>** See [pod doc]`pod-doc#api` for usage.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> DocElem : DocNode
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Get the HTML element name to use for this element.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str htmlName<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is this an inline versus a block element.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Bool isInline<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is this a block element versus an inline element.</span>
+  <span class='z'>**</span>
+  Bool isBlock<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> !isInline <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write this element and its children to the specified DocWriter.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>DocWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.elemStart<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    writeChildren<span class='b'>(</span>out<span class='b'>)</span>
+    out.elemEnd<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write this element's children to the specified DocWriter.</span>
+  <span class='z'>**</span>
+  Void writeChildren<span class='b'>(</span>DocWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    children.each |DocNode child| <span class='b'>{</span> child.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a child to this node.  If adding a text node</span>
+  <span class='z'>** it is automatically merged with the trailing text</span>
+  <span class='z'>** node (if applicable).  Return this.</span>
+  <span class='z'>**</span>
+  This addChild<span class='b'>(</span>DocNode node<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!children.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      last := children.last
+
+      <span class='y'>// if adding two text nodes, then merge them</span>
+      <span class='k'>if</span> <span class='b'>(</span>node.id === DocNodeId.text &amp;&amp; last.id === DocNodeId.text<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='b'>((</span>DocText<span class='b'>)</span>children.last<span class='b'>)</span>.str += <span class='b'>((</span>DocText<span class='b'>)</span>node<span class='b'>)</span>.str
+        <span class='k'>return</span> <span class='k'>this</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// two consecutive blockquotes get merged</span>
+      <span class='k'>if</span> <span class='b'>(</span>node.id === DocNodeId.blockQuote &amp;&amp; last.id == DocNodeId.blockQuote<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='b'>((</span>DocElem<span class='b'>)</span>last<span class='b'>)</span>.children.addAll<span class='b'>(((</span>DocElem<span class='b'>)</span>node<span class='b'>)</span>.children<span class='b'>)</span>
+        <span class='k'>return</span> <span class='k'>this</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    children.add<span class='b'>(</span>node<span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  DocNode<span class='b'>[]</span> children := DocNode<span class='b'>[</span>,<span class='b'>]</span>
+  Str? anchorId
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Doc</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Doc models the top level node of a fandoc document.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Doc : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId <span id='id'>id</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.doc <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='htmlName'>htmlName</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"body"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isInline'>isInline</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Void <span id='write'>write</span><span class='b'>(</span>DocWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.docStart<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>super</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.docEnd<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Str:Str <span id='meta'>meta</span> := Str:Str<span class='b'>[</span>:<span class='b'>]</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Heading</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Heading</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Heading : DocElem
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Int level<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.level = level <span class='b'>}</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.heading <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"h$level"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>const</span> Int level
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Para</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Para models a paragraph of text.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Para : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.para <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"p"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  Str? admonition   <span class='y'>// WARNING, NOTE, TODO, etc</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Pre</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Pre models a pre-formated code block.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Pre : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.pre <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"pre"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** BlockQuote</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** BlockQuote models a block of quoted text.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> BlockQuote : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.blockQuote <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"blockquote"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** OrderedList</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** OrderedList models a numbered list</span>
+<span class='z'>**</span>
+<span class='k'>class</span> OrderedList : DocElem
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>OrderedListStyle style<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.style = style <span class='b'>}</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.orderedList <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"ol"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  OrderedListStyle style
+<span class='b'>}</span>
+
+<span class='z'>**</span>
+<span class='z'>** OrderedListStyle</span>
+<span class='z'>**</span>
+<span class='k'>enum</span> <span class='k'>class</span> OrderedListStyle
+<span class='b'>{</span>
+  number,       <span class='y'>// 1, 2, 3, 4</span>
+  upperAlpha,   <span class='y'>// A, B, C, D</span>
+  lowerAlpha,   <span class='y'>// a, b, c, d</span>
+  upperRoman,   <span class='y'>// I, II, III, IV</span>
+  lowerRoman    <span class='y'>// i, ii, iii, iv</span>
+
+  Str htmlType<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> number:     <span class='k'>return</span> <span class='s'>"decimal"</span>
+      <span class='k'>case</span> upperAlpha: <span class='k'>return</span> <span class='s'>"upper-alpha"</span>
+      <span class='k'>case</span> lowerAlpha: <span class='k'>return</span> <span class='s'>"lower-alpha"</span>
+      <span class='k'>case</span> upperRoman: <span class='k'>return</span> <span class='s'>"upper-roman"</span>
+      <span class='k'>case</span> lowerRoman: <span class='k'>return</span> <span class='s'>"lower-roman"</span>
+      <span class='k'>default</span>: <span class='k'>throw</span> Err<span class='b'>(</span>toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> OrderedListStyle fromFirstChar<span class='b'>(</span>Int ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>ch == <span class='s'>'I'</span><span class='b'>)</span> <span class='k'>return</span> upperRoman
+    <span class='k'>if</span> <span class='b'>(</span>ch == <span class='s'>'i'</span><span class='b'>)</span> <span class='k'>return</span> lowerRoman
+    <span class='k'>if</span> <span class='b'>(</span>ch.isUpper<span class='b'>)</span> <span class='k'>return</span> upperAlpha
+    <span class='k'>if</span> <span class='b'>(</span>ch.isLower<span class='b'>)</span> <span class='k'>return</span> lowerAlpha
+    <span class='k'>return</span> number
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** UnorderedList</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** UnorderedList models a bullet list</span>
+<span class='z'>**</span>
+<span class='k'>class</span> UnorderedList : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.unorderedList <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"ul"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ListItem</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** ListItem is an item in an OrderedList and UnorderedList.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> ListItem : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.listItem <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"li"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Emphasis</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Emphasis is italic text</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Emphasis : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.emphasis <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"em"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Strong</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Strong is bold text</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Strong : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.strong <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"strong"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Code</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Code is inline code</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Code : DocElem
+<span class='b'>{</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.code <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"code"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Link</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Link is a hyperlink.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Link : DocElem
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Str uri<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.uri = uri <span class='b'>}</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.link <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"a"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+  Bool isCode := <span class='k'>false</span>  <span class='y'>// when uri resolves to a type or slot</span>
+  Str uri
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Image</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Image is a reference to an image file</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Image : DocElem
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Str uri, Str alt<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.uri = uri; <span class='k'>this</span>.alt = alt  <span class='b'>}</span>
+  <span class='k'>override</span> DocNodeId id<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> DocNodeId.image <span class='b'>}</span>
+  <span class='k'>override</span> Str htmlName<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"img"</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool isInline<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+  Str uri
+  Str alt
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Doc.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#htmlName'>htmlName</a></li>
+  <li style='display: block;'><a href='#id'>id</a></li>
+  <li style='display: block;'><a href='#isInline'>isInline</a></li>
+  <li style='display: block;'><a href='#meta'>meta</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fandoc 1.0.56
+[11-Nov-2010 Thu 10:08:22AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

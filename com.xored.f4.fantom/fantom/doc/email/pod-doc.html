@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>email PodDoc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>email</a></li>
+  <li>&gt;</li>
+  <li><a href='pod-doc.html'>email PodDoc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+ <div class='overview'>
+  <h2>pod</h2>
+  <h1>email</h1>
+ </div>
+</div>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The <a href='index.html'>email</a> pod provides APIs for working with electronic mail.  The following features are supported:</p>
+
+<ul>
+<li><code><a href='Email.html'>Email</a></code> is used to model MIME multipart messages</li>
+
+<li><code><a href='SmtpClient.html'>SmtpClient</a></code> implements the client side of the Simple Mail Tranfer Protocol</li>
+</ul>
+
+<p>Note: at the current time there is no support for incoming email such as POP3 or IMAP.  If you need this functionality, please let us know.</p>
+
+<p>See <a href='../examples/email-sending.html'>examples</a> for sample code.</p>
+
+<h1 id='smtp'>SMTP </h1>
+
+<p>The <code><a href='SmtpClient.html'>SmtpClient</a></code> class lets you relay mail to a SMTP server.  An instance of SmtpClient is configured with a host (and port if not using 25).  If you wish to use SMTP authentication you will also need to configure the username and password:</p>
+
+<pre>mailer := SmtpClient { host = "mail.foo.com"; username = "bob"; password = "pw" }</pre>
+
+<p>The following authentication mechanisms are currently supported: CRAM-MD5, LOGIN, and PLAIN.  If you need another auth mechanism please let us know.</p>
+
+<p>Once the SmtpClient is configured you can open a session, send emails, and then close the session:</p>
+
+<pre>mailer.open
+try
+{
+  emails.each |Email email| { mailer.send(email) }
+}
+finally
+{
+  mailer.close
+}</pre>
+
+<p>If you just have one email to send, the <code>send</code> method will automatically open and close the session for you:</p>
+
+<pre>mailer.send(email)</pre>
+
+<p>If you run into trouble, you can turn on tracing:</p>
+
+<pre>mailer.log.level = LogLevel.trace</pre>
+
+<h1 id='email'>Email </h1>
+
+<p>The <code><a href='Email.html'>Email</a></code> class is used to model a MIME message.  Typical use is to construct a Email instance using <a href='../docLang/Closures.html#itBlocks'>it-blocks</a>:</p>
+
+<pre>email := Email
+{
+  to = ["foo@somewhere.com"]
+  from = "bob@foo.com"
+  subject = "hi"
+  body = TextPart { text = "hello world" }
+}</pre>
+
+<p>The email recipients are configured in the <code><a href='Email.html#to'>to</a></code>, <code><a href='Email.html#cc'>cc</a></code>, <code><a href='Email.html#bcc'>bcc</a></code> fields which are a list of Str email addresses.</p>
+
+<p>The <code><a href='Email.html#body'>body</a></code> can be a simple part such as <code><a href='TextPart.html'>TextPart</a></code> or can be a multipart via <code><a href='MultiPart.html'>MultiPart</a></code>.  All email parts have a set of <code><a href='EmailPart.html#headers'>headers</a></code> which define how they are encoded. The <code><a href='EmailPart.html#validate'>validate</a></code> method is called before sending an email which checks that headers are correctly configured and performs header normalization.</p>
+
+<h1 id='textPart'>TextPart </h1>
+
+<p>The <code><a href='TextPart.html'>TextPart</a></code> is used to represent text via a Str. By default a TextPart defaults to "text/plain":</p>
+
+<pre>TextPart { text = "some text" }</pre>
+
+<p>Override the "Content-Type" header to specify another MIME type:</p>
+
+<pre>TextPart
+{
+  headers["Content-Type"] = "text/html; charset=utf-8"
+  text = "this is &lt;b>bold&lt;/b> and &lt;i>italics&lt;/i>!"
+}</pre>
+
+<p>By default a TextPart is encoded using an 8bit transfer encoding and the UTF-8 charset.  If a charset is not explicitly defined it defaults to UTF-8 in the <code><a href='TextPart.html#validate'>validate</a></code> method.  Or you can define an explicit charset yourself in the "Content-Type" header:</p>
+
+<pre>TextPart
+{
+  headers["Content-Type"] = "text/plain; charset=us-ascii"
+  text = "hello world"
+}</pre>
+
+<h1 id='multiPart'>MultiPart </h1>
+
+<p>The <code><a href='MultiPart.html'>MultiPart</a></code> class is used to encode MIME multiparts. By default the "Content-Type" defaults "multipart/mixed".  Mixed is typically used with file attachments.  The "multipart/alternative" is used when sending HTML email and you wish you provide a plain text fallback. The multipart boundary is automatically generated in the <code><a href='MultiPart.html#validate'>validate</a></code> method.</p>
+
+<h1 id='filePart'>FilePart </h1>
+
+<p>The <code><a href='FilePart.html'>FilePart</a></code> class is used to encode a binary attachment from a File instance.  If you don't provide a "Content-Type", it will automatically default to <code><a href='../sys/File.html#mimeType'>File.mimeType</a></code>.  If you don't specify a name parameter and the file name is ASCII, then a name parameter will be automatically defined:</p>
+
+<pre>part := FilePart { file = `image.jpg`.toFile }
+part.validate
+part.headers["Content-Type"]  =>  "image/jpeg; name="image.jpg"</pre>
+
+<p>FileParts are transfered as base64 - you may not override the "Content-Transfer-Encoding" header.</p>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#smtp'>SMTP </a></li><li><a href='#email'>Email </a></li><li><a href='#textPart'>TextPart </a></li><li><a href='#multiPart'>MultiPart </a></li><li><a href='#filePart'>FilePart </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+email 1.0.56
+[11-Nov-2010 Thu 10:08:24AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

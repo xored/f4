@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::FileResource</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='FileResource.html'>FileResource</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>flux::FileResource</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Resource.html'>flux::Resource</a>
+    flux::FileResource</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   21 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+<span class='k'>using</span> fwt
+
+<span class='z'>**</span>
+<span class='z'>** FileResource models a `sys::File` as a Flux resource.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FileResource : Resource
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make a resource for the specified file.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Uri uri, File file<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.uri  = uri
+    <span class='k'>this</span>.file = file
+    <span class='k'>this</span>.name = file.name
+    <span class='k'>this</span>.icon = fileToIcon<span class='b'>(</span>file<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make from file using file's uri - the file must be normalized.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>new</span> <span id='makeFile'>makeFile</span><span class='b'>(</span>File file<span class='b'>)</span> : <span class='k'>this</span>.make<span class='b'>(</span>file.uri, file<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The target file.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> File <span id='file'>file</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The absolute file uri</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Uri <span id='uri'>uri</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the file name.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='name'>name</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The icon is based on mime type.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Image <span id='icon'>icon</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If we haven't loaded the children yet, then return</span>
+  <span class='z'>** true for directories and false for normal files.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='hasChildren'>hasChildren</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>kids != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> !kids.isEmpty
+    <span class='k'>return</span> file.isDir
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the navigation children of the resource.  Return an</span>
+  <span class='z'>** empty list or null to indicate no children.  Default</span>
+  <span class='z'>** returns null.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> FileResource<span class='b'>[]</span>? <span id='children'>children</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>kids != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> kids
+
+    files := sortFiles<span class='b'>(</span>file.list<span class='b'>)</span>
+    kids = files.map |File f-&gt;FileResource| <span class='b'>{</span> makeFile<span class='b'>(</span>f.normalize<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>return</span> kids
+  <span class='b'>}</span>
+  <span class='k'>private</span> FileResource<span class='b'>[]</span>? <span id='kids'>kids</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** View types are based on mime type.  Register a file view</span>
+  <span class='z'>** using the facet "fluxViewMimeType" with a Str value for the</span>
+  <span class='z'>** MIME type such as "image/png".  You can also register with</span>
+  <span class='z'>** just the media type, for example use "image" to register a</span>
+  <span class='z'>** view on any image file.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Type<span class='b'>[]</span> <span id='views'>views</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    mime := file.mimeType ?: MimeType.fromStr<span class='b'>(</span><span class='s'>"text/plain"</span><span class='b'>)</span>
+
+    <span class='y'>// first try exact mime type matching</span>
+    acc := Type<span class='b'>[</span>,<span class='b'>]</span>
+    acc.addAll<span class='b'>(</span>Flux.qnamesToTypes<span class='b'>(</span>Env.cur.index<span class='b'>(</span><span class='s'>"flux.view.mime.${mime.toStr}"</span><span class='b'>)))</span>
+
+    <span class='y'>// then match by just media type</span>
+    acc.addAll<span class='b'>(</span>Flux.qnamesToTypes<span class='b'>(</span>Env.cur.index<span class='b'>(</span><span class='s'>"flux.view.mime.${mime.mediaType}"</span><span class='b'>)))</span>
+
+    <span class='y'>// filter out abstract</span>
+    acc = acc.exclude |Type t-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> t.isAbstract <span class='b'>}</span>
+
+    <span class='k'>return</span> acc
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add command specific Files.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Menu? <span id='popup'>popup</span><span class='b'>(</span>Frame? frame, Event? event<span class='b'>)</span>
+  <span class='b'>{</span>
+    menu := <span class='k'>super</span>.popup<span class='b'>(</span>frame, event<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>file.isDir<span class='b'>)</span>
+    <span class='b'>{</span>
+      menu.addCommand<span class='b'>(</span>Command.makeLocale<span class='b'>(</span>Pod.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>, <span class='s'>"openIn"</span><span class='b'>)</span> <span class='b'>{</span> openIn<span class='b'>(</span>file<span class='b'>)</span> <span class='b'>})</span>
+      menu.addCommand<span class='b'>(</span>Command.makeLocale<span class='b'>(</span>Pod.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>, CommandId.findInFiles, |-&gt;| <span class='b'>{</span> findInFiles<span class='b'>(</span>frame, file<span class='b'>)</span> <span class='b'>})</span> <span class='b'>{</span> accelerator = <span class='k'>null</span> <span class='b'>})</span>
+      menu.addSep
+      menu.addCommand<span class='b'>(</span>Command.makeLocale<span class='b'>(</span>Pod.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>, <span class='s'>"newDir"</span><span class='b'>)</span> <span class='b'>{</span> newDir<span class='b'>(</span>frame,file<span class='b'>)</span> <span class='b'>})</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> menu.addSep
+    menu.addCommand<span class='b'>(</span>Command.makeLocale<span class='b'>(</span>Pod.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>, <span class='s'>"duplicate"</span><span class='b'>)</span> <span class='b'>{</span> duplicate<span class='b'>(</span>frame,file<span class='b'>)</span> <span class='b'>})</span>
+    menu.addCommand<span class='b'>(</span>Command.makeLocale<span class='b'>(</span>Pod.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>, <span class='s'>"rename"</span><span class='b'>)</span> <span class='b'>{</span> rename<span class='b'>(</span>frame,file<span class='b'>)</span> <span class='b'>})</span>
+    <span class='k'>return</span> menu
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Invoke the find-in-files command on the specified directory</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='findInFiles'>findInFiles</span><span class='b'>(</span>Frame? frame, File dir<span class='b'>)</span>
+  <span class='b'>{</span>
+    FindHistory.load.pushDir<span class='b'>(</span>dir.uri<span class='b'>)</span>
+    frame?.command<span class='b'>(</span>CommandId.findInFiles<span class='b'>)</span>?.invoke<span class='b'>(</span><span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Open the given directory using the OS specific directory</span>
+  <span class='z'>** browser (i.e. Windows Explorer or Mac Finder)</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='openIn'>openIn</span><span class='b'>(</span>File dir<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!dir.isDir<span class='b'>)</span> <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"Not a directory: $dir"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>Desktop.isWindows<span class='b'>)</span>  Process<span class='b'>([</span><span class='s'>"explorer"</span>, dir.osPath<span class='b'>])</span>.run
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>Desktop.isMac<span class='b'>)</span> Process<span class='b'>([</span><span class='s'>"open"</span>, dir.osPath<span class='b'>])</span>.run
+    <span class='k'>else</span> echo<span class='b'>(</span><span class='s'>"Not yet implemented"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a new diretory under the current directory.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='newDir'>newDir</span><span class='b'>(</span>Frame frame, File dir<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!dir.isDir<span class='b'>)</span> <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"Not a directory: $dir"</span><span class='b'>)</span>
+    newDir := promptFileName<span class='b'>(</span>frame, Flux.locale<span class='b'>(</span><span class='s'>"newDir.name"</span><span class='b'>)</span>, dir, <span class='s'>""</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>newDir == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+    uri := dir.uri + <span class='s'>"$newDir/"</span>.toUri
+    File<span class='b'>(</span>uri<span class='b'>)</span>.create
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Duplicate the given file.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='duplicate'>duplicate</span><span class='b'>(</span>Frame frame, File src<span class='b'>)</span>
+  <span class='b'>{</span>
+    name := promptFileName<span class='b'>(</span>frame, Flux.locale<span class='b'>(</span><span class='s'>"duplicate.name"</span><span class='b'>)</span>, src.parent, src.name<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>name == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+    target := src.parent + <span class='b'>(</span>src.isDir ? <span class='s'>"$name/"</span>.toUri : name.toUri<span class='b'>)</span>
+    src.copyTo<span class='b'>(</span>target<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Rename the given file.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='rename'>rename</span><span class='b'>(</span>Frame frame, File src<span class='b'>)</span>
+  <span class='b'>{</span>
+    name := promptFileName<span class='b'>(</span>frame, Flux.locale<span class='b'>(</span><span class='s'>"rename.name"</span><span class='b'>)</span>, src.parent, src.name<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>name == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+    src.rename<span class='b'>(</span>name<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Prompt the user for a new valid filename, returns the new</span>
+  <span class='z'>** filename, or null if the dialog was canceled.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Str? <span id='promptFileName'>promptFileName</span><span class='b'>(</span>Frame frame, Str label, File dir, Str oldName<span class='b'>)</span>
+  <span class='b'>{</span>
+    Str? newName := oldName
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      newName = Dialog.openPromptStr<span class='b'>(</span>frame, label, newName<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>newName == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+      <span class='k'>try</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>!Uri.isName<span class='b'>(</span>newName<span class='b'>))</span>
+        <span class='b'>{</span>
+          Dialog.openErr<span class='b'>(</span>frame, <span class='s'>"Invalid name: $newName"</span><span class='b'>)</span>
+          <span class='k'>continue</span>
+        <span class='b'>}</span>
+        <span class='k'>try</span>
+        <span class='b'>{</span>
+          <span class='y'>// TODO - need to clean up sys::File to make this easier;</span>
+          <span class='y'>// if file exists as a dir, this throws an exception b/c</span>
+          <span class='y'>// the uri is missing a trailing slash</span>
+          <span class='k'>if</span> <span class='b'>((</span>dir+newName.toUri<span class='b'>)</span>.exists<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>()</span>
+        <span class='b'>}</span>
+        <span class='k'>catch</span> <span class='b'>(</span>Err err<span class='b'>)</span>
+        <span class='b'>{</span>
+          Dialog.openErr<span class='b'>(</span>frame, <span class='s'>"File already exists: $newName"</span><span class='b'>)</span>
+          <span class='k'>continue</span>
+        <span class='b'>}</span>
+        <span class='k'>return</span> newName
+      <span class='b'>}</span>
+      <span class='k'>catch</span> <span class='b'>(</span>Err err<span class='b'>)</span> <span class='b'>{</span> Dialog.openErr<span class='b'>(</span>frame, <span class='s'>"Error"</span>, err<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Given a file size in bytes return a suitable string</span>
+  <span class='z'>** representation for display.  If size is null return "".</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str <span id='sizeToStr'>sizeToStr</span><span class='b'>(</span>Int? size<span class='b'>)</span>
+  <span class='b'>{</span>
+    size == <span class='k'>null</span> ? <span class='s'>""</span> : size.toLocale<span class='b'>(</span><span class='s'>"B"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Int <span id='kb'>kb</span> := 1024
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Int <span id='mb'>mb</span> := 1024*1024
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Int <span id='gb'>gb</span> := 1024*1024*1024
+
+  <span class='z'>**</span>
+  <span class='z'>** Sort files in-place for display.  Directories are always</span>
+  <span class='z'>** sorted before normal files using locale name comparison.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> File<span class='b'>[]</span> <span id='sortFiles'>sortFiles</span><span class='b'>(</span>File<span class='b'>[]</span> files<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> files.sort |File a, File b-&gt;Int|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>a.isDir != b.isDir<span class='b'>)</span> <span class='k'>return</span> a.isDir ? -1 : 1
+      <span class='k'>return</span> a.name.localeCompare<span class='b'>(</span>b.name<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the icon for the specified file based on its mime type.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Image <span id='fileToIcon'>fileToIcon</span><span class='b'>(</span>File f<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>f.isDir<span class='b'>)</span> <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/folder.png`</span><span class='b'>)</span>
+
+    mimeType := f.mimeType
+    <span class='k'>if</span> <span class='b'>(</span>mimeType == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/file.png`</span><span class='b'>)</span>
+
+    <span class='y'>// look for explicit match based off ext</span>
+    <span class='k'>try</span> <span class='b'>{</span> <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='s'>"/x16/file${f.ext.capitalize}.png"</span>.toUri<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>mimeType.mediaType == <span class='s'>"text"</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>switch</span> <span class='b'>(</span>mimeType.subType<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='y'>//case "html": return Flux.icon(`/x16/fileHtml.png`)</span>
+        <span class='k'>default</span>:     <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/file.png`</span><span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='k'>switch</span> <span class='b'>(</span>mimeType.mediaType<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>//case "audio": return Flux.icon(`/x16/audio-x-generic.png`)</span>
+      <span class='k'>case</span> <span class='s'>"image"</span>: <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/fileImage.png`</span><span class='b'>)</span>
+      <span class='y'>//case "video": return Flux.icon(`/x16/video-x-generic.png`)</span>
+      <span class='k'>default</span>:      <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/file.png`</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FileResource.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#children'>children</a></li>
+  <li class='hidden' style='display: block;'><a href='#duplicate'>duplicate</a></li>
+  <li style='display: block;'><a href='#file'>file</a></li>
+  <li style='display: block;'><a href='#fileToIcon'>fileToIcon</a></li>
+  <li class='hidden' style='display: block;'><a href='#findInFiles'>findInFiles</a></li>
+  <li class='hidden' style='display: block;'><a href='#gb'>gb</a></li>
+  <li style='display: block;'><a href='#hasChildren'>hasChildren</a></li>
+  <li style='display: block;'><a href='#icon'>icon</a></li>
+  <li class='hidden' style='display: block;'><a href='#kb'>kb</a></li>
+  <li class='hidden' style='display: block;'><a href='#kids'>kids</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#makeFile'>makeFile</a></li>
+  <li class='hidden' style='display: block;'><a href='#mb'>mb</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li class='hidden' style='display: block;'><a href='#newDir'>newDir</a></li>
+  <li class='hidden' style='display: block;'><a href='#openIn'>openIn</a></li>
+  <li style='display: block;'><a href='#popup'>popup</a></li>
+  <li class='hidden' style='display: block;'><a href='#promptFileName'>promptFileName</a></li>
+  <li class='hidden' style='display: block;'><a href='#rename'>rename</a></li>
+  <li style='display: block;'><a href='#sizeToStr'>sizeToStr</a></li>
+  <li style='display: block;'><a href='#sortFiles'>sortFiles</a></li>
+  <li style='display: block;'><a href='#uri'>uri</a></li>
+  <li style='display: block;'><a href='#views'>views</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

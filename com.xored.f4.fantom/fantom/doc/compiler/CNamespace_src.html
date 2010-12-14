@@ -1,0 +1,521 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CNamespace</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CNamespace.html'>CNamespace</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>compiler::CNamespace</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::CNamespace</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   15 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//   29 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** CNamespace is responsible for providing a unified view pods, types,</span>
+<span class='z'>** and slots between the entities currently being compiled and the</span>
+<span class='z'>** entities being imported from pre-compiled pods.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> CNamespace
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Initialization</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Once the sub class is initialized, it must call this</span>
+  <span class='z'>** method to initialize our all predefined values.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> Void <span id='init'>init</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// sys pod</span>
+    sysPod = resolvePod<span class='b'>(</span><span class='s'>"sys"</span>, <span class='k'>null</span><span class='b'>)</span>
+
+    <span class='y'>// error placeholder type</span>
+    error = GenericParameterType<span class='b'>(</span><span class='k'>this</span>, <span class='s'>"Error"</span><span class='b'>)</span>
+
+    <span class='y'>// nothing placeholder type</span>
+    nothingType = GenericParameterType<span class='b'>(</span><span class='k'>this</span>, <span class='s'>"Nothing"</span><span class='b'>)</span>
+
+    <span class='y'>// generic parameter types</span>
+    genericParams =
+    <span class='b'>[</span>
+      <span class='s'>"A"</span>: genericParam<span class='b'>(</span><span class='s'>"A"</span><span class='b'>)</span>,
+      <span class='s'>"B"</span>: genericParam<span class='b'>(</span><span class='s'>"B"</span><span class='b'>)</span>,
+      <span class='s'>"C"</span>: genericParam<span class='b'>(</span><span class='s'>"C"</span><span class='b'>)</span>,
+      <span class='s'>"D"</span>: genericParam<span class='b'>(</span><span class='s'>"D"</span><span class='b'>)</span>,
+      <span class='s'>"E"</span>: genericParam<span class='b'>(</span><span class='s'>"E"</span><span class='b'>)</span>,
+      <span class='s'>"F"</span>: genericParam<span class='b'>(</span><span class='s'>"F"</span><span class='b'>)</span>,
+      <span class='s'>"G"</span>: genericParam<span class='b'>(</span><span class='s'>"G"</span><span class='b'>)</span>,
+      <span class='s'>"H"</span>: genericParam<span class='b'>(</span><span class='s'>"H"</span><span class='b'>)</span>,
+      <span class='s'>"K"</span>: genericParam<span class='b'>(</span><span class='s'>"K"</span><span class='b'>)</span>,
+      <span class='s'>"L"</span>: genericParam<span class='b'>(</span><span class='s'>"L"</span><span class='b'>)</span>,
+      <span class='s'>"M"</span>: genericParam<span class='b'>(</span><span class='s'>"M"</span><span class='b'>)</span>,
+      <span class='s'>"R"</span>: genericParam<span class='b'>(</span><span class='s'>"R"</span><span class='b'>)</span>,
+      <span class='s'>"V"</span>: genericParam<span class='b'>(</span><span class='s'>"V"</span><span class='b'>)</span>,
+    <span class='b'>]</span>.ro<span class='b'>()</span>
+
+    <span class='y'>// types</span>
+    objType      = sysType<span class='b'>(</span><span class='s'>"Obj"</span><span class='b'>)</span>
+    boolType     = sysType<span class='b'>(</span><span class='s'>"Bool"</span><span class='b'>)</span>
+    enumType     = sysType<span class='b'>(</span><span class='s'>"Enum"</span><span class='b'>)</span>
+    facetType    = sysType<span class='b'>(</span><span class='s'>"Facet"</span><span class='b'>)</span>
+    intType      = sysType<span class='b'>(</span><span class='s'>"Int"</span><span class='b'>)</span>
+    floatType    = sysType<span class='b'>(</span><span class='s'>"Float"</span><span class='b'>)</span>
+    decimalType  = sysType<span class='b'>(</span><span class='s'>"Decimal"</span><span class='b'>)</span>
+    strType      = sysType<span class='b'>(</span><span class='s'>"Str"</span><span class='b'>)</span>
+    strBufType   = sysType<span class='b'>(</span><span class='s'>"StrBuf"</span><span class='b'>)</span>
+    durationType = sysType<span class='b'>(</span><span class='s'>"Duration"</span><span class='b'>)</span>
+    listType     = sysType<span class='b'>(</span><span class='s'>"List"</span><span class='b'>)</span>
+    mapType      = sysType<span class='b'>(</span><span class='s'>"Map"</span><span class='b'>)</span>
+    funcType     = sysType<span class='b'>(</span><span class='s'>"Func"</span><span class='b'>)</span>
+    errType      = sysType<span class='b'>(</span><span class='s'>"Err"</span><span class='b'>)</span>
+    podType      = sysType<span class='b'>(</span><span class='s'>"Pod"</span><span class='b'>)</span>
+    typeType     = sysType<span class='b'>(</span><span class='s'>"Type"</span><span class='b'>)</span>
+    slotType     = sysType<span class='b'>(</span><span class='s'>"Slot"</span><span class='b'>)</span>
+    fieldType    = sysType<span class='b'>(</span><span class='s'>"Field"</span><span class='b'>)</span>
+    methodType   = sysType<span class='b'>(</span><span class='s'>"Method"</span><span class='b'>)</span>
+    rangeType    = sysType<span class='b'>(</span><span class='s'>"Range"</span><span class='b'>)</span>
+    uriType      = sysType<span class='b'>(</span><span class='s'>"Uri"</span><span class='b'>)</span>
+    voidType     = sysType<span class='b'>(</span><span class='s'>"Void"</span><span class='b'>)</span>
+    fieldNotSetErrType = sysType<span class='b'>(</span><span class='s'>"FieldNotSetErr"</span><span class='b'>)</span>
+
+    <span class='y'>// methods</span>
+    objTrap            = sysMethod<span class='b'>(</span>objType,    <span class='s'>"trap"</span><span class='b'>)</span>
+    objWith            = sysMethod<span class='b'>(</span>objType,    <span class='s'>"with"</span><span class='b'>)</span>
+    objToImmutable     = sysMethod<span class='b'>(</span>objType,    <span class='s'>"toImmutable"</span><span class='b'>)</span>
+    boolNot            = sysMethod<span class='b'>(</span>boolType,   <span class='s'>"not"</span><span class='b'>)</span>
+    intIncrement       = sysMethod<span class='b'>(</span>intType,    <span class='s'>"increment"</span><span class='b'>)</span>
+    intDecrement       = sysMethod<span class='b'>(</span>intType,    <span class='s'>"decrement"</span><span class='b'>)</span>
+    intPlus            = sysMethod<span class='b'>(</span>intType,    <span class='s'>"plus"</span><span class='b'>)</span>
+    floatPlus          = sysMethod<span class='b'>(</span>floatType,  <span class='s'>"plus"</span><span class='b'>)</span>
+    floatMinus         = sysMethod<span class='b'>(</span>floatType,  <span class='s'>"minus"</span><span class='b'>)</span>
+    strPlus            = sysMethod<span class='b'>(</span>strType,    <span class='s'>"plus"</span><span class='b'>)</span>
+    strBufMake         = sysMethod<span class='b'>(</span>strBufType, <span class='s'>"make"</span><span class='b'>)</span>
+    strBufAdd          = sysMethod<span class='b'>(</span>strBufType, <span class='s'>"add"</span><span class='b'>)</span>
+    strBufToStr        = sysMethod<span class='b'>(</span>strBufType, <span class='s'>"toStr"</span><span class='b'>)</span>
+    listMake           = sysMethod<span class='b'>(</span>listType,   <span class='s'>"make"</span><span class='b'>)</span>
+    listMakeObj        = sysMethod<span class='b'>(</span>listType,   <span class='s'>"makeObj"</span><span class='b'>)</span>
+    listAdd            = sysMethod<span class='b'>(</span>listType,   <span class='s'>"add"</span><span class='b'>)</span>
+    mapMake            = sysMethod<span class='b'>(</span>mapType,    <span class='s'>"make"</span><span class='b'>)</span>
+    mapSet             = sysMethod<span class='b'>(</span>mapType,    <span class='s'>"set"</span><span class='b'>)</span>
+    enumOrdinal        = sysMethod<span class='b'>(</span>enumType,   <span class='s'>"ordinal"</span><span class='b'>)</span>
+    funcBind           = sysMethod<span class='b'>(</span>funcType,   <span class='s'>"bind"</span><span class='b'>)</span>
+    rangeMakeInclusive = sysMethod<span class='b'>(</span>rangeType,  <span class='s'>"makeInclusive"</span><span class='b'>)</span>
+    rangeMakeExclusive = sysMethod<span class='b'>(</span>rangeType,  <span class='s'>"makeExclusive"</span><span class='b'>)</span>
+    slotFindMethod     = sysMethod<span class='b'>(</span>slotType,   <span class='s'>"findMethod"</span><span class='b'>)</span>
+    slotFindFunc       = sysMethod<span class='b'>(</span>slotType,   <span class='s'>"findFunc"</span><span class='b'>)</span>
+    podFind            = sysMethod<span class='b'>(</span>podType,    <span class='s'>"find"</span><span class='b'>)</span>
+    podLocale          = sysMethod<span class='b'>(</span>podType,    <span class='s'>"locale"</span><span class='b'>)</span>
+    typePod            = sysMethod<span class='b'>(</span>typeType,   <span class='s'>"pod"</span><span class='b'>)</span>
+    typeField          = sysMethod<span class='b'>(</span>typeType,   <span class='s'>"field"</span><span class='b'>)</span>
+    typeMethod         = sysMethod<span class='b'>(</span>typeType,   <span class='s'>"method"</span><span class='b'>)</span>
+    funcCall           = sysMethod<span class='b'>(</span>funcType,   <span class='s'>"call"</span><span class='b'>)</span>
+    fieldNotSetErrMake = sysMethod<span class='b'>(</span>fieldNotSetErrType, <span class='s'>"make"</span><span class='b'>)</span>
+
+    <span class='y'>// mock methods</span>
+    mockFlags := FConst.Public + FConst.Virtual
+    funcEnterCtor   = MockMethod<span class='b'>(</span>funcType, <span class='s'>"enterCtor"</span>,   mockFlags, voidType, <span class='b'>[</span>objType<span class='b'>])</span>
+    funcExitCtor    = MockMethod<span class='b'>(</span>funcType, <span class='s'>"exitCtor"</span>,    mockFlags, voidType, CType<span class='b'>[</span>,<span class='b'>])</span>
+    funcCheckInCtor = MockMethod<span class='b'>(</span>funcType, <span class='s'>"checkInCtor"</span>, mockFlags, voidType, <span class='b'>[</span>objType<span class='b'>])</span>
+
+    itBlockType = FuncType.makeItBlock<span class='b'>(</span>objType.toNullable<span class='b'>)</span>
+    itBlockType.inferredSignature = <span class='k'>true</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CType <span id='genericParam'>genericParam</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    t := GenericParameterType<span class='b'>(</span><span class='k'>this</span>, name<span class='b'>)</span>
+    n := t.toNullable
+    typeCache<span class='b'>[</span>t.signature<span class='b'>]</span> = t
+    typeCache<span class='b'>[</span>n.signature<span class='b'>]</span> = n
+    <span class='k'>return</span> t
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CType <span id='sysType'>sysType</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> sysPod.resolveType<span class='b'>(</span>name, <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CMethod <span id='sysMethod'>sysMethod</span><span class='b'>(</span>CType t, Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    m := t.method<span class='b'>(</span>name<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>m == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Cannot resolve '${t.qname}.$name' method in namespace"</span><span class='b'>)</span>
+    <span class='k'>return</span> m
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Resolution</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resolve to foreign function interface bridge.</span>
+  <span class='z'>** Bridges are loaded once for each compiler session.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CBridge <span id='resolveBridge'>resolveBridge</span><span class='b'>(</span>Str name, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check cache</span>
+    bridge := bridgeCache<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>bridge != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> bridge
+
+    <span class='y'>// delegate to findBridge</span>
+    bridge = findBridge<span class='b'>(</span>compiler, name, loc<span class='b'>)</span>
+
+    <span class='y'>// put into cache</span>
+    bridgeCache<span class='b'>[</span>name<span class='b'>]</span> = bridge
+    <span class='k'>return</span> bridge
+  <span class='b'>}</span>
+  <span class='k'>private</span> Str:CBridge <span id='bridgeCache'>bridgeCache</span> := Str:CBridge<span class='b'>[</span>:<span class='b'>]</span>  <span class='y'>// keyed by pod name</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Subclass hook to resolve a FFI name to a CBridge implementation.</span>
+  <span class='z'>** Throw CompilerErr if there is a problem resolving the bridge.</span>
+  <span class='z'>** The default implementation attempts to resolve the indexed</span>
+  <span class='z'>** property "compiler.bridge.$name" to a Type qname.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>virtual</span> CBridge <span id='findBridge'>findBridge</span><span class='b'>(</span>Compiler compiler, Str name, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// resolve the compiler bridge using indexed props</span>
+    t := Env.cur.index<span class='b'>(</span><span class='s'>"compiler.bridge.${name}"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.size &gt; 1<span class='b'>)</span>
+      <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"Multiple FFI bridges available for '$name': $t"</span>, loc<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.size == 0<span class='b'>)</span>
+      <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"No FFI bridge available for '$name'"</span>, loc<span class='b'>)</span>
+
+    <span class='y'>// construct bridge instance</span>
+    <span class='k'>try</span>
+      <span class='k'>return</span> Type.find<span class='b'>(</span>t.first<span class='b'>)</span>.make<span class='b'>([</span>compiler<span class='b'>])</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+      <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"Cannot construct FFI bridge '$t.first'"</span>, loc, e<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to import the specified pod name against our</span>
+  <span class='z'>** dependency library.  If not found then throw CompilerErr.</span>
+  <span class='z'>**</span>
+  CPod <span id='resolvePod'>resolvePod</span><span class='b'>(</span>Str podName, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check cache</span>
+    pod := podCache<span class='b'>[</span>podName<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>pod != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> pod
+
+    <span class='k'>if</span> <span class='b'>(</span>podName<span class='b'>[</span>0<span class='b'>]</span> == <span class='s'>'['</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// we have a FFI, route to bridge</span>
+      sep := podName.index<span class='b'>(</span><span class='s'>"]"</span><span class='b'>)</span>
+      ffi := podName<span class='b'>[</span>1..&lt;sep<span class='b'>]</span>
+      package := podName<span class='b'>[</span>sep+1..-1<span class='b'>]</span>
+      pod = resolveBridge<span class='b'>(</span>ffi, loc<span class='b'>)</span>.resolvePod<span class='b'>(</span>package, loc<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// let namespace resolve it</span>
+      pod = findPod<span class='b'>(</span>podName<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>pod == <span class='k'>null</span><span class='b'>)</span>
+        <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"Pod not found '$podName'"</span>, loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// stash in the cache and return</span>
+    podCache<span class='b'>[</span>podName<span class='b'>]</span> = pod
+    <span class='k'>return</span> pod
+  <span class='b'>}</span>
+  <span class='k'>private</span> Str:CPod <span id='podCache'>podCache</span> := Str:CPod<span class='b'>[</span>:<span class='b'>]</span>  <span class='y'>// keyed by pod name</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Subclass hook to resolve a pod name to a CPod implementation.</span>
+  <span class='z'>** Return null if not found.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>abstract</span> CPod? <span id='findPod'>findPod</span><span class='b'>(</span>Str podName<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt resolve a signature against our dependency</span>
+  <span class='z'>** library.  If not a valid signature or it can't be</span>
+  <span class='z'>** resolved, then throw Err.</span>
+  <span class='z'>**</span>
+  CType <span id='resolveType'>resolveType</span><span class='b'>(</span>Str sig<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check our cache first</span>
+    t := typeCache<span class='b'>[</span>sig<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>t != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> t
+
+    <span class='y'>// parse it into a CType</span>
+    t = TypeParser.resolve<span class='b'>(</span><span class='k'>this</span>, sig<span class='b'>)</span>
+    typeCache<span class='b'>[</span>sig<span class='b'>]</span> = t
+    <span class='k'>return</span> t
+  <span class='b'>}</span>
+  <span class='k'>internal</span> Str:CType <span id='typeCache'>typeCache</span> := Str:CType<span class='b'>[</span>:<span class='b'>]</span>   <span class='y'>// keyed by signature</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt resolve a slot against our dependency</span>
+  <span class='z'>** library.  If can't be resolved, then throw Err.</span>
+  <span class='z'>**</span>
+  CSlot <span id='resolveSlot'>resolveSlot</span><span class='b'>(</span>Str qname<span class='b'>)</span>
+  <span class='b'>{</span>
+    dot := qname.indexr<span class='b'>(</span><span class='s'>"."</span><span class='b'>)</span>
+    slot := resolveType<span class='b'>(</span>qname<span class='b'>[</span>0..&lt;dot<span class='b'>])</span>.slot<span class='b'>(</span>qname<span class='b'>[</span>dot+1..-1<span class='b'>])</span>
+    <span class='k'>if</span> <span class='b'>(</span>slot == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Cannot resolve slot: $qname"</span><span class='b'>)</span>
+    <span class='k'>return</span> slot
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map one of the generic parameter types such as "sys::V" into a CType</span>
+  <span class='z'>**</span>
+  CType <span id='genericParameter'>genericParameter</span><span class='b'>(</span>Str id<span class='b'>)</span>
+  <span class='b'>{</span>
+    t := genericParams<span class='b'>[</span>id<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>t == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> UnknownTypeErr<span class='b'>(</span><span class='s'>"sys::$id"</span><span class='b'>)</span>
+    <span class='k'>return</span> t
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Compiler</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** Used for resolveBridge only</span>
+  <span class='k'>internal</span> Compiler <span id='compiler'>compiler</span><span class='b'>()</span> <span class='b'>{</span> c ?: <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Compiler not associated with CNamespace"</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>internal</span> Compiler? <span id='c'>c</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Dependencies</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map of dependencies keyed by pod name set in ResolveDepends.</span>
+  <span class='z'>**</span>
+  <span class='b'>[</span>Str:Depend<span class='b'>]</span>? <span id='depends'>depends</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Predefined</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>readonly</span> CPod? <span id='sysPod'>sysPod</span>
+
+  <span class='y'>// generic parameters like sys::K, sys::V</span>
+  <span class='k'>readonly</span> <span class='b'>[</span>Str:CType<span class='b'>]</span>? <span id='genericParams'>genericParams</span>
+
+  <span class='y'>// place holder type used for resolve errors</span>
+  <span class='k'>readonly</span> CType? <span id='error'>error</span>
+
+  <span class='y'>// place holder type used to indicate nothing (like throw expr)</span>
+  <span class='k'>readonly</span> CType? <span id='nothingType'>nothingType</span>
+
+  <span class='y'>// generic type for it block until we can infer type</span>
+  <span class='k'>readonly</span> FuncType? <span id='itBlockType'>itBlockType</span>
+
+  <span class='k'>readonly</span> CType? <span id='objType'>objType</span>
+  <span class='k'>readonly</span> CType? <span id='boolType'>boolType</span>
+  <span class='k'>readonly</span> CType? <span id='enumType'>enumType</span>
+  <span class='k'>readonly</span> CType? <span id='facetType'>facetType</span>
+  <span class='k'>readonly</span> CType? <span id='intType'>intType</span>
+  <span class='k'>readonly</span> CType? <span id='floatType'>floatType</span>
+  <span class='k'>readonly</span> CType? <span id='decimalType'>decimalType</span>
+  <span class='k'>readonly</span> CType? <span id='strType'>strType</span>
+  <span class='k'>readonly</span> CType? <span id='strBufType'>strBufType</span>
+  <span class='k'>readonly</span> CType? <span id='durationType'>durationType</span>
+  <span class='k'>readonly</span> CType? <span id='listType'>listType</span>
+  <span class='k'>readonly</span> CType? <span id='mapType'>mapType</span>
+  <span class='k'>readonly</span> CType? <span id='funcType'>funcType</span>
+  <span class='k'>readonly</span> CType? <span id='errType'>errType</span>
+  <span class='k'>readonly</span> CType? <span id='podType'>podType</span>
+  <span class='k'>readonly</span> CType? <span id='typeType'>typeType</span>
+  <span class='k'>readonly</span> CType? <span id='slotType'>slotType</span>
+  <span class='k'>readonly</span> CType? <span id='fieldType'>fieldType</span>
+  <span class='k'>readonly</span> CType? <span id='methodType'>methodType</span>
+  <span class='k'>readonly</span> CType? <span id='rangeType'>rangeType</span>
+  <span class='k'>readonly</span> CType? <span id='uriType'>uriType</span>
+  <span class='k'>readonly</span> CType? <span id='voidType'>voidType</span>
+  <span class='k'>readonly</span> CType? <span id='fieldNotSetErrType'>fieldNotSetErrType</span>
+
+  <span class='k'>readonly</span> CMethod? <span id='objTrap'>objTrap</span>
+  <span class='k'>readonly</span> CMethod? <span id='objWith'>objWith</span>
+  <span class='k'>readonly</span> CMethod? <span id='objToImmutable'>objToImmutable</span>
+  <span class='k'>readonly</span> CMethod? <span id='boolNot'>boolNot</span>
+  <span class='k'>readonly</span> CMethod? <span id='intIncrement'>intIncrement</span>
+  <span class='k'>readonly</span> CMethod? <span id='intDecrement'>intDecrement</span>
+  <span class='k'>readonly</span> CMethod? <span id='intPlus'>intPlus</span>
+  <span class='k'>readonly</span> CMethod? <span id='floatPlus'>floatPlus</span>
+  <span class='k'>readonly</span> CMethod? <span id='floatMinus'>floatMinus</span>
+  <span class='k'>readonly</span> CMethod? <span id='strPlus'>strPlus</span>
+  <span class='k'>readonly</span> CMethod? <span id='strBufMake'>strBufMake</span>
+  <span class='k'>readonly</span> CMethod? <span id='strBufAdd'>strBufAdd</span>
+  <span class='k'>readonly</span> CMethod? <span id='strBufToStr'>strBufToStr</span>
+  <span class='k'>readonly</span> CMethod? <span id='listMake'>listMake</span>
+  <span class='k'>readonly</span> CMethod? <span id='listMakeObj'>listMakeObj</span>
+  <span class='k'>readonly</span> CMethod? <span id='listAdd'>listAdd</span>
+  <span class='k'>readonly</span> CMethod? <span id='mapMake'>mapMake</span>
+  <span class='k'>readonly</span> CMethod? <span id='mapSet'>mapSet</span>
+  <span class='k'>readonly</span> CMethod? <span id='enumOrdinal'>enumOrdinal</span>
+  <span class='k'>readonly</span> CMethod? <span id='funcBind'>funcBind</span>
+  <span class='k'>readonly</span> CMethod? <span id='rangeMakeInclusive'>rangeMakeInclusive</span>
+  <span class='k'>readonly</span> CMethod? <span id='rangeMakeExclusive'>rangeMakeExclusive</span>
+  <span class='k'>readonly</span> CMethod? <span id='slotFindMethod'>slotFindMethod</span>
+  <span class='k'>readonly</span> CMethod? <span id='slotFindFunc'>slotFindFunc</span>
+  <span class='k'>readonly</span> CMethod? <span id='podFind'>podFind</span>
+  <span class='k'>readonly</span> CMethod? <span id='podLocale'>podLocale</span>
+  <span class='k'>readonly</span> CMethod? <span id='typePod'>typePod</span>
+  <span class='k'>readonly</span> CMethod? <span id='typeField'>typeField</span>
+  <span class='k'>readonly</span> CMethod? <span id='typeMethod'>typeMethod</span>
+  <span class='k'>readonly</span> CMethod? <span id='funcEnterCtor'>funcEnterCtor</span>
+  <span class='k'>readonly</span> CMethod? <span id='funcExitCtor'>funcExitCtor</span>
+  <span class='k'>readonly</span> CMethod? <span id='funcCheckInCtor'>funcCheckInCtor</span>
+  <span class='k'>readonly</span> CMethod? <span id='funcCall'>funcCall</span>
+  <span class='k'>readonly</span> CMethod? <span id='fieldNotSetErrMake'>fieldNotSetErrMake</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='CNamespace.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#boolNot'>boolNot</a></li>
+  <li style='display: block;'><a href='#boolType'>boolType</a></li>
+  <li class='hidden' style='display: block;'><a href='#bridgeCache'>bridgeCache</a></li>
+  <li class='hidden' style='display: block;'><a href='#c'>c</a></li>
+  <li class='hidden' style='display: block;'><a href='#compiler'>compiler</a></li>
+  <li style='display: block;'><a href='#decimalType'>decimalType</a></li>
+  <li style='display: block;'><a href='#depends'>depends</a></li>
+  <li style='display: block;'><a href='#durationType'>durationType</a></li>
+  <li style='display: block;'><a href='#enumOrdinal'>enumOrdinal</a></li>
+  <li style='display: block;'><a href='#enumType'>enumType</a></li>
+  <li style='display: block;'><a href='#errType'>errType</a></li>
+  <li style='display: block;'><a href='#error'>error</a></li>
+  <li style='display: block;'><a href='#facetType'>facetType</a></li>
+  <li style='display: block;'><a href='#fieldNotSetErrMake'>fieldNotSetErrMake</a></li>
+  <li style='display: block;'><a href='#fieldNotSetErrType'>fieldNotSetErrType</a></li>
+  <li style='display: block;'><a href='#fieldType'>fieldType</a></li>
+  <li style='display: block;'><a href='#findBridge'>findBridge</a></li>
+  <li style='display: block;'><a href='#findPod'>findPod</a></li>
+  <li style='display: block;'><a href='#floatMinus'>floatMinus</a></li>
+  <li style='display: block;'><a href='#floatPlus'>floatPlus</a></li>
+  <li style='display: block;'><a href='#floatType'>floatType</a></li>
+  <li style='display: block;'><a href='#funcBind'>funcBind</a></li>
+  <li style='display: block;'><a href='#funcCall'>funcCall</a></li>
+  <li style='display: block;'><a href='#funcCheckInCtor'>funcCheckInCtor</a></li>
+  <li style='display: block;'><a href='#funcEnterCtor'>funcEnterCtor</a></li>
+  <li style='display: block;'><a href='#funcExitCtor'>funcExitCtor</a></li>
+  <li style='display: block;'><a href='#funcType'>funcType</a></li>
+  <li class='hidden' style='display: block;'><a href='#genericParam'>genericParam</a></li>
+  <li style='display: block;'><a href='#genericParameter'>genericParameter</a></li>
+  <li style='display: block;'><a href='#genericParams'>genericParams</a></li>
+  <li style='display: block;'><a href='#init'>init</a></li>
+  <li style='display: block;'><a href='#intDecrement'>intDecrement</a></li>
+  <li style='display: block;'><a href='#intIncrement'>intIncrement</a></li>
+  <li style='display: block;'><a href='#intPlus'>intPlus</a></li>
+  <li style='display: block;'><a href='#intType'>intType</a></li>
+  <li style='display: block;'><a href='#itBlockType'>itBlockType</a></li>
+  <li style='display: block;'><a href='#listAdd'>listAdd</a></li>
+  <li style='display: block;'><a href='#listMake'>listMake</a></li>
+  <li style='display: block;'><a href='#listMakeObj'>listMakeObj</a></li>
+  <li style='display: block;'><a href='#listType'>listType</a></li>
+  <li style='display: block;'><a href='#mapMake'>mapMake</a></li>
+  <li style='display: block;'><a href='#mapSet'>mapSet</a></li>
+  <li style='display: block;'><a href='#mapType'>mapType</a></li>
+  <li style='display: block;'><a href='#methodType'>methodType</a></li>
+  <li style='display: block;'><a href='#nothingType'>nothingType</a></li>
+  <li style='display: block;'><a href='#objToImmutable'>objToImmutable</a></li>
+  <li style='display: block;'><a href='#objTrap'>objTrap</a></li>
+  <li style='display: block;'><a href='#objType'>objType</a></li>
+  <li style='display: block;'><a href='#objWith'>objWith</a></li>
+  <li class='hidden' style='display: block;'><a href='#podCache'>podCache</a></li>
+  <li style='display: block;'><a href='#podFind'>podFind</a></li>
+  <li style='display: block;'><a href='#podLocale'>podLocale</a></li>
+  <li style='display: block;'><a href='#podType'>podType</a></li>
+  <li style='display: block;'><a href='#rangeMakeExclusive'>rangeMakeExclusive</a></li>
+  <li style='display: block;'><a href='#rangeMakeInclusive'>rangeMakeInclusive</a></li>
+  <li style='display: block;'><a href='#rangeType'>rangeType</a></li>
+  <li class='hidden' style='display: block;'><a href='#resolveBridge'>resolveBridge</a></li>
+  <li style='display: block;'><a href='#resolvePod'>resolvePod</a></li>
+  <li style='display: block;'><a href='#resolveSlot'>resolveSlot</a></li>
+  <li style='display: block;'><a href='#resolveType'>resolveType</a></li>
+  <li style='display: block;'><a href='#slotFindFunc'>slotFindFunc</a></li>
+  <li style='display: block;'><a href='#slotFindMethod'>slotFindMethod</a></li>
+  <li style='display: block;'><a href='#slotType'>slotType</a></li>
+  <li style='display: block;'><a href='#strBufAdd'>strBufAdd</a></li>
+  <li style='display: block;'><a href='#strBufMake'>strBufMake</a></li>
+  <li style='display: block;'><a href='#strBufToStr'>strBufToStr</a></li>
+  <li style='display: block;'><a href='#strBufType'>strBufType</a></li>
+  <li style='display: block;'><a href='#strPlus'>strPlus</a></li>
+  <li style='display: block;'><a href='#strType'>strType</a></li>
+  <li class='hidden' style='display: block;'><a href='#sysMethod'>sysMethod</a></li>
+  <li style='display: block;'><a href='#sysPod'>sysPod</a></li>
+  <li class='hidden' style='display: block;'><a href='#sysType'>sysType</a></li>
+  <li class='hidden' style='display: block;'><a href='#typeCache'>typeCache</a></li>
+  <li style='display: block;'><a href='#typeField'>typeField</a></li>
+  <li style='display: block;'><a href='#typeMethod'>typeMethod</a></li>
+  <li style='display: block;'><a href='#typePod'>typePod</a></li>
+  <li style='display: block;'><a href='#typeType'>typeType</a></li>
+  <li style='display: block;'><a href='#uriType'>uriType</a></li>
+  <li style='display: block;'><a href='#voidType'>voidType</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

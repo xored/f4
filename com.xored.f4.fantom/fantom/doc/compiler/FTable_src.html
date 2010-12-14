@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::FTable</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FTable.html'>FTable</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::FTable</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::FTable</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   26 Dec 05  Brian Frank  Creation</span>
+<span class='y'>//   19 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** FTable is a 16-bit indexed lookup table for pod constants.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FTable
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Factories</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>static</span> FTable <span id='makeStrs'>makeStrs</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> out.writeUtf<span class='b'>((</span>Str<span class='b'>)</span>obj<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> in.readUtf.intern <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeTypeRefs'>makeTypeRefs</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> <span class='b'>((</span>FTypeRef<span class='b'>)</span>obj<span class='b'>)</span>.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> FTypeRef.read<span class='b'>(</span>in<span class='b'>)</span> <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeFieldRefs'>makeFieldRefs</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> <span class='b'>((</span>FFieldRef<span class='b'>)</span>obj<span class='b'>)</span>.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> FFieldRef.read<span class='b'>(</span>in<span class='b'>)</span> <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeMethodRefs'>makeMethodRefs</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> <span class='b'>((</span>FMethodRef<span class='b'>)</span>obj<span class='b'>)</span>.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> FMethodRef.read<span class='b'>(</span>in<span class='b'>)</span> <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeInts'>makeInts</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> out.writeI8<span class='b'>((</span>Int<span class='b'>)</span>obj<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> in.readS8 <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeFloats'>makeFloats</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> out.writeF8<span class='b'>((</span>Float<span class='b'>)</span>obj<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> in.readF8 <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeDecimals'>makeDecimals</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> out.writeDecimal<span class='b'>((</span>Decimal<span class='b'>)</span>obj<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> in.readDecimal <span class='b'>})</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> FTable <span id='makeDurations'>makeDurations</span><span class='b'>(</span>FPod pod<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> make<span class='b'>(</span>pod,
+      |OutStream out, Obj obj| <span class='b'>{</span> out.writeI8<span class='b'>(((</span>Duration<span class='b'>)</span>obj<span class='b'>)</span>.ticks<span class='b'>)</span> <span class='b'>}</span>,
+      |InStream in-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> Duration<span class='b'>(</span>in.readS8<span class='b'>)</span> <span class='b'>})</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>FPod pod, |OutStream out, Obj obj| writer, |InStream in-&gt;Obj| reader<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pod     = pod
+    <span class='k'>this</span>.writer  = writer
+    <span class='k'>this</span>.reader  = reader
+    <span class='k'>this</span>.table   = <span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>this</span>.reverse = Obj:Int<span class='b'>[</span>:<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this table is empty</span>
+  <span class='z'>**</span>
+  Bool <span id='isEmpty'>isEmpty</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> table.isEmpty
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the object identified by the specified 16-bit index.</span>
+  <span class='z'>**</span>
+  @Operator Obj <span id='get'>get</span><span class='b'>(</span>Int index<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> table<span class='b'>[</span>index<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Perform a reverse lookup to map a value to it's index (only</span>
+  <span class='z'>** available at compile time).  If the value isn't in the table</span>
+  <span class='z'>** yet, then add it.</span>
+  <span class='z'>**</span>
+  Int <span id='add'>add</span><span class='b'>(</span>Obj val<span class='b'>)</span>
+  <span class='b'>{</span>
+    index := reverse<span class='b'>[</span>val<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>index == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      index = table.size
+      table.add<span class='b'>(</span>val<span class='b'>)</span>
+      reverse<span class='b'>[</span>val<span class='b'>]</span> = index
+    <span class='b'>}</span>
+    <span class='k'>return</span> index
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Serialize.</span>
+  <span class='z'>**</span>
+  FTable <span id='read'>read</span><span class='b'>(</span>InStream? in<span class='b'>)</span>
+  <span class='b'>{</span>
+    table = <span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>in == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>this</span>
+    in.readU2.times <span class='b'>{</span> table.add<span class='b'>(</span>reader.call<span class='b'>(</span>in<span class='b'>))</span> <span class='b'>}</span>
+    in.close
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Deserialize.</span>
+  <span class='z'>**</span>
+  Void <span id='write'>write</span><span class='b'>(</span>OutStream out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.writeI2<span class='b'>(</span>table.size<span class='b'>)</span>
+    table.each |Obj obj| <span class='b'>{</span> writer.call<span class='b'>(</span>out, obj<span class='b'>)</span> <span class='b'>}</span>
+    out.close
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  FPod <span id='pod'>pod</span>
+  Obj<span class='b'>[]</span> <span id='table'>table</span>
+  Obj:Int <span id='reverse'>reverse</span>
+  |OutStream out, Obj obj| <span id='writer'>writer</span>
+  |InStream in-&gt;Obj| <span id='reader'>reader</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FTable.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#add'>add</a></li>
+  <li style='display: block;'><a href='#get'>get</a></li>
+  <li style='display: block;'><a href='#isEmpty'>isEmpty</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#makeDecimals'>makeDecimals</a></li>
+  <li style='display: block;'><a href='#makeDurations'>makeDurations</a></li>
+  <li style='display: block;'><a href='#makeFieldRefs'>makeFieldRefs</a></li>
+  <li style='display: block;'><a href='#makeFloats'>makeFloats</a></li>
+  <li style='display: block;'><a href='#makeInts'>makeInts</a></li>
+  <li style='display: block;'><a href='#makeMethodRefs'>makeMethodRefs</a></li>
+  <li style='display: block;'><a href='#makeStrs'>makeStrs</a></li>
+  <li style='display: block;'><a href='#makeTypeRefs'>makeTypeRefs</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#read'>read</a></li>
+  <li style='display: block;'><a href='#reader'>reader</a></li>
+  <li style='display: block;'><a href='#reverse'>reverse</a></li>
+  <li style='display: block;'><a href='#table'>table</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+  <li style='display: block;'><a href='#writer'>writer</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

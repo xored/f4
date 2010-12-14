@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Why Fantom</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docIntro</a></li>
+  <li>&gt;</li>
+  <li><a href='WhyFantom.html'>Why Fantom</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Tour.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Tour.html'>Tour</a></div>
+<div class='next'><a href='HelloWorld.html'>Hello World</a> <a href='HelloWorld.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Why Fantom</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Do we really need another programming language?  Well obviously we thought so, or we wouldn't have built Fantom!  Fantom is designed as a practical programming language to make it easy and fun to get real work done.  It is not an academic language to explore bleeding edge theories, but based on solid real world experience.  During its design we set out to solve what we perceived were some real problems with Java and C#.  Our background is heavily Java, but many of Java's problems are shared by C# and .NET also.</p>
+
+<h1 id='portability'>Portability </h1>
+
+<p>The primary reason we created Fantom is to write software that can seamlessly run on both the Java VM and the .NET CLR.  The reality is that many software organizations are committed to one or the other of these platforms.  Even dynamic languages like Python and Ruby are getting hosted on one of these VMs. Whether your business is in-house software or building software components to sell to other companies, you tend to pick one camp or the other.</p>
+
+<p>We built Fantom from the ground up to tackle portability between these VMs. Fantom's source language compiles into fcode - a bytecode representation that can be translated into both Java bytecode and IL easily.  This translation is typically done at runtime, which enables you to deploy Fantom modules as a single file and have them run on either VM.</p>
+
+<p>But getting a language to run on both Java and .NET is the easy part - in fact there are many solutions to this problem.  The hard part is getting portable APIs.  Fantom provides a set of APIs which abstract away the Java and .NET APIs.  We actually consider this one of Fantom's primary benefits, because it gives us a chance to develop a suite of system APIs that are elegant and easy to use compared to the Java and .NET counter parts.</p>
+
+<p>But portability means much more than just Java or .NET.  We also support compiling Fantom to JavaScript for use in browsers, including support for many of the standard libraries.</p>
+
+<p>Because Fantom is designed from the ground up to be portable, targeting new platforms is reasonably easy.  Future targets might include Objective-C for the iPhone, the <a href='http://llvm.org/'>LLVM</a>, or <a href='http://www.parrotcode.org/'>Parrot</a>.</p>
+
+<h1 id='elegantApis'>Elegant APIs </h1>
+
+<p>Beauty is in the eye of the beholder - but we are obsessed with making the Fantom APIs beautiful.  The Java and .NET APIs have developed over the years into a somewhat tangled mess.  Some APIs are just plain bad - Java's <code>Calendar</code> class is the poster child for APIs which are just miserable to use.  You have to use all of their weird C like constants for access, months are freaking zero based, but weekdays are one based!</p>
+
+<p>Some of this is normal cruft setting in, but much of it is a general philosophy in both Java and .NET API design.  Both platforms tend toward APIs using a proliferation of small classes that are over abstracted and under powered. Fantom follows a very different philosophy - we believe in a very few, but powerful classes.  A good example is the <code>java.io</code> package which contains over 60 classes and interfaces.  To do anything useful requires three of four classes, and if you forget to use <a href='http://www.tbray.org/ongoing/When/200x/2005/09/13/Buffering'>buffered streams</a>, then performance goes to hell.  And even with all of these classes, it is still a lot of work to do basic things like parse a file into lines of text. Fantom collapses most of the <code>java.io</code> functionality into four classes: <code><a href='../sys/File.html'>sys::File</a></code>, <code><a href='../sys/Buf.html'>sys::Buf</a></code>, <code><a href='../sys/InStream.html'>sys::InStream</a></code>, and <code><a href='../sys/OutStream.html'>sys::OutStream</a></code>.  The IO streams classes are buffered by default, support both binary and text, and have lots of conveniences built right in.</p>
+
+<h1 id='typing'>Strong versus Dynamic Typing </h1>
+
+<p>The industry has developed a schism between proponents of strong typing and those of dynamic typing.  Frankly we find both sides too extreme for our taste, so Fantom takes a middle of the road, moderate approach to its type system.</p>
+
+<p>On the strong typing side, Fantom requires you to annotate field and method signatures with types.  We think this is a good thing. Programming is about constructing well defined contracts between software components - type systems aren't perfect, but they do a pretty good job for documenting and defining these contracts. If I want to write a method which expects a Str and returns an Int, then that should be captured right in the code.</p>
+
+<p>Beyond annotating field and method signatures with types, Fantom takes a laissez faire attitude towards type declaration.  Type inference is often used for local variables and collection literals.</p>
+
+<p>Sometimes you just really need dynamic typing.  One of Fantom's pivotal features is the ability to call a method using strong or dynamic typing.  If you call a method via the "." operator, the call is type checked by the compiler and compiled into an efficient opcode. But you can also use the "->" operator to call a method dynamically. This operator skips type checking, and can be used to implement <a href='http://en.wikipedia.org/wiki/Duck_typing'>duck typing</a>.  The "->" operator actually routes to the <code>Obj.trap</code> method which can be overridden to build all sorts of nifty dynamic designs.</p>
+
+<h1 id='generic'>Generics </h1>
+
+<p>Interestingly enough while Fantom is trying to make programs less strongly typed, the Java and C# languages are moving to be more strongly typed.  Generic types illustrate this trend - a feature added to both Java and C# in the not so distant past.  A fully parameterized type system introduces a great deal of complexity, but we do not believe that the extra complexity is justified.</p>
+
+<p>Fantom takes a limited approach to generics.  There is no support for user defined generics.  However, three built-in classes <code>List</code>, <code>Map</code>, and <code>Func</code> can be parameterized using a special syntax.  For example a list of <code>Ints</code> in Fantom is declared as <code>Int[]</code> using the familiar array type syntax of Java and C#.  This trade-off seems to hit the sweet spot where generics make sense without complicating the overall type system.</p>
+
+<h1 id='mixins'>Mixins </h1>
+
+<p>Building software is often a modeling problem - figuring out how to map a domain model into code.  In an object oriented language, this typically means modeling via classes and interfaces.  Both Java and C# use a similar approach: classes support single inheritance of both type and implementation.  Interfaces support multiple inheritance of type, but do not support inheritance of implementation.</p>
+
+<p>Anyone who has worked in Java or C# knows that choosing between a class or an interface is often a decision that haunts you.  Because once you choose a class you've burned your only chance for implementation inheritance.  If you have a complicated domain model, then interfaces become a necessary burden - but often end up resulting in a lot of busy work if you need them to have common implementation code. Interfaces are also fraught with peril when it comes to versioning because you can't add a method without breaking all of the implementing code.</p>
+
+<p>There are plenty of good reasons why Java and C# ended up using the class/interface model.  Multiple inheritance offers lots of power, but comes at the expense of complexity and some pretty nasty pitfalls.  Fantom takes a middle of the road approach called mixins. Mixins are essentially Java or C# interfaces that can have method implementations.  To avoid some of the pitfalls of true multiple inheritance, mixins restrict features such as fields which store state.  Mixins are a very nice feature in the Fantom toolbox when it comes to designing your object oriented models.</p>
+
+<h1 id='modularity'>Modularity </h1>
+
+<p>Designing software to be modular is one of those things you learn in CS 101 - it is fundamental to good design.  Modular software should let you easily divide your programs up into reusable chunks which are easy to version, ship around, and combine with other modules via clear dependencies.</p>
+
+<p>What passes for module management in Java is the JAR file - which is basically to say Java really doesn't have any module management. There is a new JSR which might solve this problem, but for the last decade we've lived with classpath hell.  Java also suffers from some misguided marketing decisions which have resulted in a monolith J2SE that as of 1.6 weighs in at 44MB.  The process to subset this monolithic monstrosity into J2ME moves at a glacial pace.  Considering the brilliance in much of the core original Java technology, it is hard to understand why something as fundamental as modularity is lacking.</p>
+
+<p>The .NET design was pretty serious about modularity, and at the high level it has a great design for versioning, GAC, etc.  However when it comes to the details, .NET leaves a lot to be desired. Where Java chose ZIP as a simple, flexible way to package up files, .NET uses opaque DLLs with all sorts of Window's specific cruft that makes .NET module files difficult to work with.  And to require a separate, undocumented debug pdb file to get meaningful stack traces is just plain wrong.</p>
+
+<p>Everything in Fantom is designed around modular units called pods. Pods are the unit of versioning and deployment.  They are combined together using clear dependencies.  Like Java they are just ZIP files which can be easily examined.</p>
+
+<h1 id='namespace'>Namespace versus Deployment </h1>
+
+<p>Java and .NET to a lesser degree separate the concepts of namespace and deployment.  For example in Java packages are used to organize code into a namespace, but JAR files are used to organize code for deployment.  The problem is there isn't any correspondence between these concepts.  This only exacerbates classpath hell - you have a missing class, but the class name doesn't give you a clue as to what JAR file the class might live in.</p>
+
+<p>This whole notion of type namespaces versus deployment namespaces does offer flexibility, but also seems like unnecessary complexity. Fantom takes a simple approach to managing the namespace using a fixed three level hierarchy "pod::type.slot".  The first level of the namespace is always the pod name which also happens to be the unit of deployment and versioning.  This consistency becomes important when building large systems through the assembly of pods and their types.  For example, given a serialized type "acme::Foo", it is easy to figure out what pod you need.</p>
+
+<h1 id='oo'>Object Oriented </h1>
+
+<p>One of the most important trade-offs made in the design of Java was primitive types.  Since primitives aren't really Objects, they become an anomaly which results in all sorts of ugly special cases.  On the other hand, primitives are important in achieving C like performance - especially for numeric applications.  Java has since put a band-aid on primitives with auto-boxing - but the type system remains fractured.</p>
+
+<p>.NET tackles the problem quite elegantly with value types.  These are special types which have the performance of primitives, but they still cleanly subclass from <code>System.Object</code>.</p>
+
+<p>Fantom follows the .NET model of value types.  The three special types <code>Bool</code>, <code>Int</code>, and <code>Float</code> are value types which are implemented as primitives in Java and value types in .NET.  These types have all the same performance characteristics of using <code>boolean</code>, <code>long</code>, and <code>double</code> in Java or C#.  Unlike Java these types cleanly subclass from <code>Obj</code> to create a unified class hierarchy.  The compiler automatically implements boxing and unboxing when necessary.</p>
+
+<h1 id='functional'>Functional Programming </h1>
+
+<p>Both Java and .NET originally provided little support for functional programming.  At least .NET provided delegates, but functions in Java were limited to interfaces and quasi-closure support via inner classes.  Both languages seem to be moving towards true closure support and first class functions.  But they leave a huge legacy of APIs and code designed without functional programming in mind.</p>
+
+<p>Fantom was designed from the ground up to support functions as first class objects.  Closures are a key feature of the language, and all the APIs are written to use functions and closures where appropriate.</p>
+
+<h1 id='declarative'>Declarative Programming </h1>
+
+<p>Quite often we need to declare data structures in our code.  Common examples include declaring a list or map.  In Java and C# these simple tasks include mostly noise which makes for very ugly, verbose declarative programming.  For this reason, you often find the declarative parts of a Java or C# application shoved off into XML files.</p>
+
+<p>Fantom incorporates declarative programming right into the language.  Fantom supports a literal syntax for lists, maps, ranges, uris, and durations. Fantom also includes a text serialization syntax which is human readable and writable.  The serialization syntax is a clean subset of the programming language - so you can paste a serialization file right into your source code as an expression.</p>
+
+<h1 id='concurrency'>Concurrency </h1>
+
+<p>Most main stream languages today use a shared state model - all threads share the same memory space, and programmers must be diligent about locking memory in order to prevent race conditions.  If locks are used incorrectly, then deadlocks can occur.  This is a fairly low level approach to managing concurrency.  It also makes it quite difficult to create composable software components.</p>
+
+<p>Fantom tackles concurrency using a couple techniques:</p>
+
+<ul>
+<li>Immutability is built into the language (thread safe classes)</li>
+
+<li>Static fields must be immutable (no shared mutable state)</li>
+
+<li>Actors model for message passing (Erlang style concurrency)</li>
+</ul>
+
+<h1 id='littleThings'>Little Things </h1>
+
+<p>The beauty of a new language is that it gives you a clean slate to fix all the little things that aggravate you (we built Fantom to scratch our own itches).  Other little things we included in Fantom which we found frustrating about Java:</p>
+
+<ul>
+<li><strong>Default parameters</strong>: methods can have default arguments - no more writing boiler plate code for convenience methods</li>
+
+<li><strong>Type Inference</strong>: local variables use type inference to avoid all the noise that obscures typical Java code</li>
+
+<li><strong>Field Accessors</strong>: field accessors are defined implicitly - another area where idiomatic Java code has a low signal to noise ratio</li>
+
+<li><strong>Nullable Types</strong>: declare your intention in code whether null is a legal value for a parameter or return type instead of relying on documentation</li>
+
+<li><strong>Checked Exceptions</strong>: checked exceptions are evil syntax salt. Checked exceptions don't scale, don't version, and don't allow composable systems - all the reasons why <a href='http://www.artima.com/intv/handcuffs.html'>Anders Hejlsberg</a> didn't include checked exceptions in C#.</li>
+
+<li><strong>Numeric Precision</strong>:  Fantom doesn't include support for 32-bit, 16-bit, and 8-bit integers and floats.  There is only a 64-bit Int and a 64-bit Float.  This eliminates a lot of complexity associated with precision problems such as file lengths, Unicode characters, or very large lists. Although much of the Java and C# implementation is 16-bit chars and 32-bit ints under the covers, the Fantom APIs themselves are future proof.</li>
+</ul>
+<div class='prevNext'>
+<div class='prev'><a href='Tour.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Tour.html'>Tour</a></div>
+<div class='next'><a href='HelloWorld.html'>Hello World</a> <a href='HelloWorld.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#portability'>Portability </a></li><li><a href='#elegantApis'>Elegant APIs </a></li><li><a href='#typing'>Strong versus Dynamic Typing </a></li><li><a href='#generic'>Generics </a></li><li><a href='#mixins'>Mixins </a></li><li><a href='#modularity'>Modularity </a></li><li><a href='#namespace'>Namespace versus Deployment </a></li><li><a href='#oo'>Object Oriented </a></li><li><a href='#functional'>Functional Programming </a></li><li><a href='#declarative'>Declarative Programming </a></li><li><a href='#concurrency'>Concurrency </a></li><li><a href='#littleThings'>Little Things </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docIntro 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

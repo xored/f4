@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CallResolver</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CallResolver.html'>CallResolver</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::CallResolver</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    compiler::CallResolver</pre>
+</div>
+<div class='detail'>
+
+<p>CallResolver handles the process of resolving a CallExpr or UnknownVarExpr to a method call or a field access.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='args' class='field'>args<a href='CallResolver_src.html#args'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a>[] args</code></p>
+</dd>
+<dt id='base' class='field'>base<a href='CallResolver_src.html#base'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CType.html'>CType</a>? base</code></p>
+</dd>
+<dt id='baseIt' class='field'>baseIt<a href='CallResolver_src.html#baseIt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CType.html'>CType</a>? baseIt</code></p>
+</dd>
+<dt id='castForThisType' class='method hidden'>castForThisType<a href='CallResolver_src.html#castForThisType'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> castForThisType()</code></p>
+
+<p>If the epxression is a call which returns sys::This, then we need to insert an implicit cast.</p>
+</dd>
+<dt id='constantFolding' class='method hidden'>constantFolding<a href='CallResolver_src.html#constantFolding'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> constantFolding()</code></p>
+
+<p>If the epxression is a call, check for constant folding.</p>
+</dd>
+<dt id='curMethod' class='field'>curMethod<a href='CallResolver_src.html#curMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='MethodDef.html'>MethodDef</a>? curMethod</code></p>
+</dd>
+<dt id='curType' class='field'>curType<a href='CallResolver_src.html#curType'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='TypeDef.html'>TypeDef</a>? curType</code></p>
+</dd>
+<dt id='errSig' class='method hidden'>errSig<a href='CallResolver_src.html#errSig'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a> errSig()</code></p>
+</dd>
+<dt id='expr' class='field'>expr<a href='CallResolver_src.html#expr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='NameExpr.html'>NameExpr</a> expr</code></p>
+</dd>
+<dt id='ffiCoercion' class='method hidden'>ffiCoercion<a href='CallResolver_src.html#ffiCoercion'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> ffiCoercion()</code></p>
+
+<p>If this field access or method call returns a type which isn't directly represented in the Fantom type system, then implicitly coerce it</p>
+</dd>
+<dt id='find' class='method'>find<a href='CallResolver_src.html#find'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> find()</code></p>
+
+<p>Find the method or field with the specified name.</p>
+</dd>
+<dt id='findOn' class='method hidden'>findOn<a href='CallResolver_src.html#findOn'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='CSlot.html'>CSlot</a>? findOn(<a href='CType.html'>CType</a> base)</code></p>
+</dd>
+<dt id='found' class='field'>found<a href='CallResolver_src.html#found'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CSlot.html'>CSlot</a>? found</code></p>
+</dd>
+<dt id='foundOnIt' class='field'>foundOnIt<a href='CallResolver_src.html#foundOnIt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> foundOnIt</code></p>
+</dd>
+<dt id='inferClosureType' class='method hidden'>inferClosureType<a href='CallResolver_src.html#inferClosureType'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> inferClosureType()</code></p>
+
+<p>If the last argument to the resolved call is a closure, then use the method to infer the function type</p>
+</dd>
+<dt id='inferClosureTypeFromCall' class='method'>inferClosureTypeFromCall<a href='CallResolver_src.html#inferClosureTypeFromCall'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Expr.html'>Expr</a> inferClosureTypeFromCall(<a href='CompilerSupport.html'>CompilerSupport</a> support, <a href='CallExpr.html'>CallExpr</a> call, <a href='CType.html'>CType</a> base)</code></p>
+
+<p>If the last argument to the resolved call is a closure, then use the method to infer the function type.  If the last arg is a closure, but the call doesn't take a closure, then translate into an implicit call to Obj.with</p>
+</dd>
+<dt id='insertImplicitThisOrIt' class='method hidden'>insertImplicitThisOrIt<a href='CallResolver_src.html#insertImplicitThisOrIt'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> insertImplicitThisOrIt()</code></p>
+
+<p>If the call has no explicit target, and is a instance field or method, then we need to insert an implicit this or it.</p>
+</dd>
+<dt id='isAmbiguous' class='method hidden'>isAmbiguous<a href='CallResolver_src.html#isAmbiguous'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Bool.html'>Bool</a> isAmbiguous(<a href='CSlot.html'>CSlot</a>? onBase, <a href='CSlot.html'>CSlot</a>? onIt)</code></p>
+</dd>
+<dt id='isFuncFieldCall' class='field'>isFuncFieldCall<a href='CallResolver_src.html#isFuncFieldCall'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isFuncFieldCall</code></p>
+</dd>
+<dt id='isStaticLiteral' class='method'>isStaticLiteral<a href='CallResolver_src.html#isStaticLiteral'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isStaticLiteral()</code></p>
+
+<p>If this is a standalone name without a base target such as "Foo" and the name maps to a type name, then this is a type literal.</p>
+</dd>
+<dt id='isVar' class='field'>isVar<a href='CallResolver_src.html#isVar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isVar</code></p>
+</dd>
+<dt id='loc' class='field'>loc<a href='CallResolver_src.html#loc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Loc.html'>Loc</a> loc</code></p>
+</dd>
+<dt id='make' class='method'>make<a href='CallResolver_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='Compiler.html'>Compiler</a> compiler, <a href='TypeDef.html'>TypeDef</a>? curType, <a href='MethodDef.html'>MethodDef</a>? curMethod, <a href='NameExpr.html'>NameExpr</a> expr)</code></p>
+
+<p>Construct with NameExpr (base class of CallExpr and UnknownVarExpr)</p>
+</dd>
+<dt id='name' class='field'>name<a href='CallResolver_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> name</code></p>
+</dd>
+<dt id='resolve' class='method'>resolve<a href='CallResolver_src.html#resolve'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a> resolve()</code></p>
+
+<p>Resolve into a method call or field access</p>
+</dd>
+<dt id='resolveBase' class='method'>resolveBase<a href='CallResolver_src.html#resolveBase'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> resolveBase()</code></p>
+
+<p>Resolve the base type which defines the slot we are calling.</p>
+</dd>
+<dt id='resolveForeign' class='method hidden'>resolveForeign<a href='CallResolver_src.html#resolveForeign'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> resolveForeign()</code></p>
+
+<p>If we have a FFI call, then give the foreign bridge a chance to resolve the method and deal with method overloading.  Note at this point we've already resolved the call by name to <em>some</em> method (in the find step).  But this callback gives the bridge a chance to resolve to the <em>correct</em> overloaded method.  We need to this during ResolveExpr in order to infer local variables correctly.</p>
+</dd>
+<dt id='resolveToCallExpr' class='method hidden'>resolveToCallExpr<a href='CallResolver_src.html#resolveToCallExpr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='CallExpr.html'>CallExpr</a> resolveToCallExpr()</code></p>
+</dd>
+<dt id='resolveToExpr' class='method hidden'>resolveToExpr<a href='CallResolver_src.html#resolveToExpr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> resolveToExpr()</code></p>
+
+<p>Compute the expression type the call itself (what gets left on the stack).</p>
+</dd>
+<dt id='resolveToFieldExpr' class='method hidden'>resolveToFieldExpr<a href='CallResolver_src.html#resolveToFieldExpr'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='FieldExpr.html'>FieldExpr</a> resolveToFieldExpr()</code></p>
+</dd>
+<dt id='result' class='field'>result<a href='CallResolver_src.html#result'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a>? result</code></p>
+</dd>
+<dt id='safeToNullable' class='method hidden'>safeToNullable<a href='CallResolver_src.html#safeToNullable'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> safeToNullable()</code></p>
+
+<p>If the epxression is a safe call using "?.", then the resulting expression type is nullable.</p>
+</dd>
+<dt id='target' class='field'>target<a href='CallResolver_src.html#target'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Expr.html'>Expr</a>? target</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='CallResolver_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#args'>args</a></li>
+  <li><a href='#base'>base</a></li>
+  <li><a href='#baseIt'>baseIt</a></li>
+  <li class='hidden'><a href='#castForThisType'>castForThisType</a></li>
+  <li class='hidden'><a href='#constantFolding'>constantFolding</a></li>
+  <li><a href='#curMethod'>curMethod</a></li>
+  <li><a href='#curType'>curType</a></li>
+  <li class='hidden'><a href='#errSig'>errSig</a></li>
+  <li><a href='#expr'>expr</a></li>
+  <li class='hidden'><a href='#ffiCoercion'>ffiCoercion</a></li>
+  <li><a href='#find'>find</a></li>
+  <li class='hidden'><a href='#findOn'>findOn</a></li>
+  <li><a href='#found'>found</a></li>
+  <li><a href='#foundOnIt'>foundOnIt</a></li>
+  <li class='hidden'><a href='#inferClosureType'>inferClosureType</a></li>
+  <li><a href='#inferClosureTypeFromCall'>inferClosureTypeFromCall</a></li>
+  <li class='hidden'><a href='#insertImplicitThisOrIt'>insertImplicitThisOrIt</a></li>
+  <li class='hidden'><a href='#isAmbiguous'>isAmbiguous</a></li>
+  <li><a href='#isFuncFieldCall'>isFuncFieldCall</a></li>
+  <li><a href='#isStaticLiteral'>isStaticLiteral</a></li>
+  <li><a href='#isVar'>isVar</a></li>
+  <li><a href='#loc'>loc</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#resolve'>resolve</a></li>
+  <li><a href='#resolveBase'>resolveBase</a></li>
+  <li class='hidden'><a href='#resolveForeign'>resolveForeign</a></li>
+  <li class='hidden'><a href='#resolveToCallExpr'>resolveToCallExpr</a></li>
+  <li class='hidden'><a href='#resolveToExpr'>resolveToExpr</a></li>
+  <li class='hidden'><a href='#resolveToFieldExpr'>resolveToFieldExpr</a></li>
+  <li><a href='#result'>result</a></li>
+  <li class='hidden'><a href='#safeToNullable'>safeToNullable</a></li>
+  <li><a href='#target'>target</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

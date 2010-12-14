@@ -1,0 +1,789 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Str</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Str.html'>Str</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final class</h2>
+<h1>sys::Str</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Str</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   4 Dec 05  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Str represents a sequence of Unicode characters.</span>
+<span class='z'>**</span>
+<span class='k'>const</span> <span class='k'>final</span> <span class='k'>class</span> Str
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Private constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>new</span> <span id='privateMake'>privateMake</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default value is "".</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> <span class='k'>static</span> Str <span id='defVal'>defVal</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct a string from a list of unicode code points.</span>
+  <span class='z'>** Also see `chars`.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str <span id='fromChars'>fromChars</span><span class='b'>(</span>Int<span class='b'>[]</span> chars<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Obj Overrides</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if a Str with exact same char sequence.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? obj<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for 'compareIgnoreCase(s) == 0'.</span>
+  <span class='z'>** Only ASCII character case is taken into account.</span>
+  <span class='z'>** See `localeCompare` for localized case insensitive</span>
+  <span class='z'>** comparisions.</span>
+  <span class='z'>**</span>
+  Bool <span id='equalsIgnoreCase'>equalsIgnoreCase</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare based on Unicode character values.  Case is not</span>
+  <span class='z'>** not taken into account - also see `compareIgnoreCase`</span>
+  <span class='z'>** and `localeCompare`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "a".compare("b")    =&gt;  -1</span>
+  <span class='z'>**   "hi".compare("hi")  =&gt;  0</span>
+  <span class='z'>**   "hi".compare("HI")  =&gt;  1</span>
+  <span class='z'>**   "b".compare("a")    =&gt;  1</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='compare'>compare</span><span class='b'>(</span>Obj obj<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare two strings without regard to case and return -1, 0, or 1</span>
+  <span class='z'>** if this string is less than, equal to, or greater than the specified</span>
+  <span class='z'>** string.  Only ASCII character case is taken into account.</span>
+  <span class='z'>** See `localeCompare` for localized case insensitive comparisions.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "a".compareIgnoreCase("b")    =&gt;  -1</span>
+  <span class='z'>**   "hi".compareIgnoreCase("HI")  =&gt;  0</span>
+  <span class='z'>**   "b".compareIgnoreCase("a")    =&gt;  1</span>
+  <span class='z'>**</span>
+  Int <span id='compareIgnoreCase'>compareIgnoreCase</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The hash for a Str is platform dependent.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this.  This method is used to enable 'toLocale' to</span>
+  <span class='z'>** be used with duck typing across most built-in types.</span>
+  <span class='z'>**</span>
+  Str <span id='toLocale'>toLocale</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Identity</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if 'size() == 0'.</span>
+  <span class='z'>**</span>
+  Bool <span id='isEmpty'>isEmpty</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return number of characters in this string.</span>
+  <span class='z'>**</span>
+  Int <span id='size'>size</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Internalize this Str such that two strings which are equal</span>
+  <span class='z'>** via the '==' operator will have the same reference such that</span>
+  <span class='z'>** '===' will be true.</span>
+  <span class='z'>**</span>
+  Str <span id='intern'>intern</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this Str starts with the specified Str.</span>
+  <span class='z'>**</span>
+  Bool <span id='startsWith'>startsWith</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this Str ends with the specified Str.</span>
+  <span class='z'>**</span>
+  Bool <span id='endsWith'>endsWith</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the first occurance of the specified substring searching</span>
+  <span class='z'>** forward, starting at the specified offset index.  A negative offset</span>
+  <span class='z'>** may be used to access from the end of string.  Return null if no</span>
+  <span class='z'>** occurences are found.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "abcabc".index("b")     =&gt; 1</span>
+  <span class='z'>**   "abcabc".index("b", 1)  =&gt; 1</span>
+  <span class='z'>**   "abcabc".index("b", 3)  =&gt; 4</span>
+  <span class='z'>**   "abcabc".index("b", -3) =&gt; 4</span>
+  <span class='z'>**   "abcabc".index("x")     =&gt; null</span>
+  <span class='z'>**</span>
+  Int? <span id='index'>index</span><span class='b'>(</span>Str s, Int offset := 0<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Reverse index - return the first occurance of the specified</span>
+  <span class='z'>** substring searching backward, starting at the specified offset</span>
+  <span class='z'>** index.  A negative offset may be used to access from the end</span>
+  <span class='z'>** of string.  Return null if no occurences are found.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "abcabc".indexr("b")     =&gt; 4</span>
+  <span class='z'>**   "abcabc".indexr("b", -3) =&gt; 1</span>
+  <span class='z'>**   "abcabc".indexr("b", 0)  =&gt; null</span>
+  <span class='z'>**</span>
+  Int? <span id='indexr'>indexr</span><span class='b'>(</span>Str s, Int offset := -1<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find the index just like `index`, but ignoring case for</span>
+  <span class='z'>** ASCII chars only.</span>
+  <span class='z'>**</span>
+  Int? <span id='indexIgnoreCase'>indexIgnoreCase</span><span class='b'>(</span>Str s, Int offset := 0<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find the index just like `indexr`, but ignoring case for</span>
+  <span class='z'>** ASCII chars only.</span>
+  <span class='z'>**</span>
+  Int? <span id='indexrIgnoreCase'>indexrIgnoreCase</span><span class='b'>(</span>Str s, Int offset := -1<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this string contains the specified string.</span>
+  <span class='z'>** Convenience for index(s) != null</span>
+  <span class='z'>**</span>
+  Bool <span id='contains'>contains</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this string contains the specified character.</span>
+  <span class='z'>**</span>
+  Bool <span id='containsChar'>containsChar</span><span class='b'>(</span>Int ch<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Operators</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the character at the zero based index as a Unicode code point.</span>
+  <span class='z'>** Negative indexes may be used to access from the end of the string.</span>
+  <span class='z'>** This method is accessed via the [] operator.  Throw IndexErr if the</span>
+  <span class='z'>** index is out of range.</span>
+  <span class='z'>**</span>
+  @Operator Int <span id='get'>get</span><span class='b'>(</span>Int index<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the character at the zero based index as a Unicode code point.</span>
+  <span class='z'>** Negative indexes may be used to access from the end of the string.</span>
+  <span class='z'>** Unlike `get`, this method does not throw IndexErr when the index</span>
+  <span class='z'>** is out or range, instead it returns 'def'.</span>
+  <span class='z'>**</span>
+  Int <span id='getSafe'>getSafe</span><span class='b'>(</span>Int index, Int def := 0<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return a substring based on the specified range.  Negative indexes</span>
+  <span class='z'>** may be used to access from the end of the string.  This method</span>
+  <span class='z'>** is accessed via the [] operator.  Throw IndexErr if range illegal.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "abcd"[0..2]   =&gt; "abc"</span>
+  <span class='z'>**   "abcd"[3..3]   =&gt; "d"</span>
+  <span class='z'>**   "abcd"[-2..-1] =&gt; "cd"</span>
+  <span class='z'>**   "abcd"[0..&lt;2]  =&gt; "ab"</span>
+  <span class='z'>**   "abcd"[1..-2]  =&gt; "bc"</span>
+  <span class='z'>**   "abcd"[4..-1]  =&gt; ""</span>
+  <span class='z'>**</span>
+  @Operator Str <span id='getRange'>getRange</span><span class='b'>(</span>Range range<span class='b'>)</span>
+
+  <span class='z'>** TODO: use `getRange`</span>
+  @Deprecated Str <span id='slice'>slice</span><span class='b'>(</span>Range range<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Concat the value of obj.toStr</span>
+  <span class='z'>**</span>
+  @Operator Str <span id='plus'>plus</span><span class='b'>(</span>Obj? obj<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Iterators</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the characters in this string as a list of integer code points.</span>
+  <span class='z'>** Also see `fromChars`.</span>
+  <span class='z'>**</span>
+  Int<span class='b'>[]</span> <span id='chars'>chars</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Call the specified function for every char in the starting</span>
+  <span class='z'>** with index 0 and incrementing up to size-1.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "abc".each |Int c| { echo(c.toChar) }</span>
+  <span class='z'>**</span>
+  Void <span id='each'>each</span><span class='b'>(</span>|Int ch, Int index| c<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Reverse each - call the specified function for every char in</span>
+  <span class='z'>** the string starting with index size-1 and decrementing down</span>
+  <span class='z'>** to 0.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "abc".eachr |Int c| { echo(c.toChar) }</span>
+  <span class='z'>**</span>
+  Void <span id='eachr'>eachr</span><span class='b'>(</span>|Int ch, Int index| c<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if c returns true for any of the characters in</span>
+  <span class='z'>** this string.  If this string is empty, return false.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "Foo".any |Int c-&gt;Bool| { return c.isUpper } =&gt; true</span>
+  <span class='z'>**   "foo".any |Int c-&gt;Bool| { return c.isUpper } =&gt; false</span>
+  <span class='z'>**</span>
+  Bool <span id='any'>any</span><span class='b'>(</span>|Int ch, Int index-&gt;Bool| c<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if c returns true for all of the characters in</span>
+  <span class='z'>** this string.  If this string is empty, return true.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "Bar".all |Int c-&gt;Bool| { return c.isUpper } =&gt; false</span>
+  <span class='z'>**   "BAR".any |Int c-&gt;Bool| { return c.isUpper } =&gt; true</span>
+  <span class='z'>**</span>
+  Bool <span id='all'>all</span><span class='b'>(</span>|Int ch, Int index-&gt;Bool| c<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the a Str containing the specified number of spaces.  Also</span>
+  <span class='z'>** see `justl` and `justr` to justify an existing string.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   Str.spaces(1)  =&gt;  " "</span>
+  <span class='z'>**   Str.spaces(2)  =&gt;  "  "</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str <span id='spaces'>spaces</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with all uppercase characters replaced</span>
+  <span class='z'>** to lowercase.  The case conversion is for ASCII only.</span>
+  <span class='z'>** Also see `upper`, `localeLower`, `Int.lower`, `Int.localeLower`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "Apple".lower =&gt; "apple"</span>
+  <span class='z'>**</span>
+  Str <span id='lower'>lower</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with all lowercase characters replaced</span>
+  <span class='z'>** to uppercase.  The case conversion is for ASCII only.</span>
+  <span class='z'>** Also see `lower`, `localeUpper`, `Int.upper`, `Int.localeUpper`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "Foo Bar".upper =&gt; "FOO BAR"</span>
+  <span class='z'>**</span>
+  Str <span id='upper'>upper</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with the first character converted</span>
+  <span class='z'>** uppercase.  The case conversion is for ASCII only.</span>
+  <span class='z'>** Also see `decapitalize` and `localeCapitalize`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "foo".capitalize =&gt; "Foo"</span>
+  <span class='z'>**</span>
+  Str <span id='capitalize'>capitalize</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with the first character converted</span>
+  <span class='z'>** lowercase.  The case conversion is for ASCII only.</span>
+  <span class='z'>** Also see `capitalize` and `localeDecapitalize`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "Foo".decapitalize =&gt; "foo"</span>
+  <span class='z'>**</span>
+  Str <span id='decapitalize'>decapitalize</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Translate a programmer name like "fooBar" to "Foo Bar".</span>
+  <span class='z'>** This method capitalizes the first letter, then walks</span>
+  <span class='z'>** the string looking for ASCII capital letters and inserting</span>
+  <span class='z'>** a space.  Any underbars are replaced with a space.  Also</span>
+  <span class='z'>** see `fromDisplayName`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "foo".toDisplayName       -&gt;  "Foo</span>
+  <span class='z'>**   "fooBar".toDisplayName    -&gt;  "Foo Bar"</span>
+  <span class='z'>**   "fooBarBaz".toDisplayName -&gt;  "Foo Bar Baz"</span>
+  <span class='z'>**   "foo33".toDisplayName     -&gt;  "Foo 33"</span>
+  <span class='z'>**   "fooXML".toDisplayName    -&gt;  "Foo XML"</span>
+  <span class='z'>**   "Foo".toDisplayName       -&gt;  "Foo"</span>
+  <span class='z'>**   "foo_bar".toDisplayName   -&gt;  "Foo Bar"</span>
+  <span class='z'>**</span>
+  Str <span id='toDisplayName'>toDisplayName</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Translate a display name like "Foo Bar" to a programmatic</span>
+  <span class='z'>** name "fooBar".  This method decapitalizes the first letter,</span>
+  <span class='z'>** then walks the string removing spaces.  Also see `toDisplayName`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "Foo".fromDisplayName         -&gt;  "foo"</span>
+  <span class='z'>**   "Foo Bar".fromDisplayName     -&gt;  "fooBar"</span>
+  <span class='z'>**   "Foo Bar Baz".fromDisplayName -&gt;  "fooBarBaz"</span>
+  <span class='z'>**   "Foo 33 Bar".fromDisplayName  -&gt;  "foo33Bar"</span>
+  <span class='z'>**   "Foo XML".fromDisplayName     -&gt;  "fooXML"</span>
+  <span class='z'>**   "foo bar".fromDisplayName     -&gt;  "fooBar"</span>
+  <span class='z'>**</span>
+  Str <span id='fromDisplayName'>fromDisplayName</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If size is less than width, then add spaces to the right</span>
+  <span class='z'>** to create a left justified string.  Also see `padr`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "xyz".justl(2) =&gt; "xyz"</span>
+  <span class='z'>**   "xyz".justl(4) =&gt; "xyz "</span>
+  <span class='z'>**</span>
+  Str <span id='justl'>justl</span><span class='b'>(</span>Int width<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If size is less than width, then add spaces to the left</span>
+  <span class='z'>** to create a right justified string.  Also see `padl`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "xyz".justr(2) =&gt; "xyz"</span>
+  <span class='z'>**   "xyz".justr(4) =&gt; " xyz"</span>
+  <span class='z'>**</span>
+  Str <span id='justr'>justr</span><span class='b'>(</span>Int width<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If size is less than width, then add the given char to the</span>
+  <span class='z'>** left to achieve the specified width.  Also see `justr`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "3".padl(3, '0') =&gt; "003"</span>
+  <span class='z'>**   "123".padl(2, '0') =&gt; "123"</span>
+  <span class='z'>**</span>
+  Str <span id='padl'>padl</span><span class='b'>(</span>Int width, Int char := <span class='s'>' '</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If size is less than width, then add the given char to</span>
+  <span class='z'>** the left to acheive the specified with.  Also see `justl`.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "xyz".padr(2, '.') =&gt; "xyz"</span>
+  <span class='z'>**   "xyz".padr(5, '-') =&gt; "xyz--"</span>
+  <span class='z'>**</span>
+  Str <span id='padr'>padr</span><span class='b'>(</span>Int width, Int char := <span class='s'>' '</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Reverse the contents of this string.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   "stressed".reverse =&gt; "desserts"</span>
+  <span class='z'>**</span>
+  Str <span id='reverse'>reverse</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Trim whitespace from the beginning and end of the string.  For the purposes</span>
+  <span class='z'>** of this method, whitespace is defined as any character equal to or less</span>
+  <span class='z'>** than the 0x20 space character (including ' ', '\r', '\n', and '\t').</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**    "foo".trim      =&gt;  "foo"</span>
+  <span class='z'>**    "  foo".trim    =&gt;  "foo"</span>
+  <span class='z'>**    " foo ".trim    =&gt;  "foo"</span>
+  <span class='z'>**    "  foo\n".trim  =&gt;  "foo"</span>
+  <span class='z'>**    "   ".trim      =&gt;  ""</span>
+  <span class='z'>**</span>
+  Str <span id='trim'>trim</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Trim whitespace only from the beginning of the string.</span>
+  <span class='z'>** See `trim` for definition of whitespace.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**    "foo".trim    =&gt;  "foo"</span>
+  <span class='z'>**    " foo ".trim  =&gt;  "foo "</span>
+  <span class='z'>**</span>
+  Str <span id='trimStart'>trimStart</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Trim whitespace only from the end of the string.</span>
+  <span class='z'>** See `trim` for definition of whitespace.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**    "foo".trim    =&gt;  "foo"</span>
+  <span class='z'>**    " foo ".trim  =&gt;  " foo"</span>
+  <span class='z'>**</span>
+  Str <span id='trimEnd'>trimEnd</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Split a string into a list of substrings using the</span>
+  <span class='z'>** given separator character.  If there are contiguous separators,</span>
+  <span class='z'>** then they are split into empty strings.  If trim is true,</span>
+  <span class='z'>** then whitespace is trimmed from the beginning and end of</span>
+  <span class='z'>** the results.</span>
+  <span class='z'>**</span>
+  <span class='z'>** If separator is null, then the string is split according</span>
+  <span class='z'>** to any sequence of whitespace characters (any character equal</span>
+  <span class='z'>** to or less than the 0x20 space character including ' ', '\r', '\n',</span>
+  <span class='z'>** and '\t').</span>
+  <span class='z'>**</span>
+  <span class='z'>** If this is the empty string or there are no splits return a</span>
+  <span class='z'>** list of one item.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   // split on whitespace</span>
+  <span class='z'>**   "".split                   =&gt;  [""]</span>
+  <span class='z'>**   "x".split                  =&gt;  ["x"]</span>
+  <span class='z'>**   "x y".split                =&gt;  ["x", "y"]</span>
+  <span class='z'>**   " x y ".split              =&gt;  ["x", "y"]</span>
+  <span class='z'>**   " x \n y \n z ".split      =&gt;  ["x", "y", "z"]</span>
+  <span class='z'>**</span>
+  <span class='z'>**   // split on sep with trim</span>
+  <span class='z'>**   "".split('|')              =&gt;  [""]</span>
+  <span class='z'>**   "22".split(';')            =&gt;  ["22"]</span>
+  <span class='z'>**   "22;33".split(';')         =&gt;  ["22","33"]</span>
+  <span class='z'>**   "22, 33".split(',')        =&gt;  ["22","33"]</span>
+  <span class='z'>**   " 22 ; 33 ".split(';')     =&gt;  ["22","33"]</span>
+  <span class='z'>**</span>
+  <span class='z'>**   // split on sep with no trim</span>
+  <span class='z'>**   "22#33".split('#', false)  =&gt;  ["22","33"]</span>
+  <span class='z'>**   " x ; y".split(';', false) =&gt;  [" x "," y"]</span>
+  <span class='z'>**</span>
+  Str<span class='b'>[]</span> <span id='split'>split</span><span class='b'>(</span>Int? separator := <span class='k'>null</span>, Bool trim := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Split this string into individual lines where lines are</span>
+  <span class='z'>** terminated by \n, \r\n, or \r.  The returned strings</span>
+  <span class='z'>** do not contain the newline character.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "x\ny".splitLines  =&gt; ["x", "y"]</span>
+  <span class='z'>**   "".splitLines      =&gt; [""]</span>
+  <span class='z'>**   "x".splitLines     =&gt; ["x"]</span>
+  <span class='z'>**   "\r\n".splitLines  =&gt; ["", ""]</span>
+  <span class='z'>**   "x\n".splitLines   =&gt; ["x", ""]</span>
+  <span class='z'>**</span>
+  Str<span class='b'>[]</span> <span id='splitLines'>splitLines</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Replace all occurrences of 'from' with 'to'.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   "hello".replace("hell", "t")  =&gt;  "to"</span>
+  <span class='z'>**   "aababa".replace("ab", "-")   =&gt;  "a--a"</span>
+  <span class='z'>**</span>
+  Str <span id='replace'>replace</span><span class='b'>(</span>Str from, Str to<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Count the number of newline combinations: "\n", "\r", or "\r\n".</span>
+  <span class='z'>**</span>
+  Int <span id='numNewlines'>numNewlines</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every character in this Str is a US-ASCII character</span>
+  <span class='z'>** less than 128.</span>
+  <span class='z'>**</span>
+  Bool <span id='isAscii'>isAscii</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every character in this Str is whitespace: space \t \n \r \f</span>
+  <span class='z'>**</span>
+  Bool <span id='isSpace'>isSpace</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every character in this Str is ASCII uppercase: 'A'-'Z'.</span>
+  <span class='z'>**</span>
+  Bool <span id='isUpper'>isUpper</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every character in this Str is ASCII lowercase: 'a'-'z'.</span>
+  <span class='z'>**</span>
+  Bool <span id='isLower'>isLower</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every char is an ASCII [letter]`Int.isAlpha`.</span>
+  <span class='z'>**</span>
+  Bool <span id='isAlpha'>isAlpha</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if every char is an ASCII [alpha-numeric]`Int.isAlphaNum`.</span>
+  <span class='z'>**</span>
+  Bool <span id='isAlphaNum'>isAlphaNum</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Locale</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare two strings without regard to case according to the</span>
+  <span class='z'>** current locale.  Return -1, 0, or 1 if this string is less</span>
+  <span class='z'>** than, equal to, or greater than the specified string.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples (assuming English locale):</span>
+  <span class='z'>**   "a".localeCompare("b")   =&gt;  -1</span>
+  <span class='z'>**   "hi".localeCompare("HI") =&gt;  0</span>
+  <span class='z'>**   "b".localeCompare("A")   =&gt;  1</span>
+  <span class='z'>**</span>
+  Int <span id='localeCompare'>localeCompare</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with all uppercase characters</span>
+  <span class='z'>** replaced to lowercase using the current locale.</span>
+  <span class='z'>** Also see `localeUpper`, `lower`, and `Int.localeLower`.</span>
+  <span class='z'>**</span>
+  Str <span id='localeLower'>localeLower</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with all lowercase characters</span>
+  <span class='z'>** replaced to uppercase using the current locale.</span>
+  <span class='z'>** Also see `localeLower`, `upper`, and `Int.localeUpper`.</span>
+  <span class='z'>**</span>
+  Str <span id='localeUpper'>localeUpper</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with the first character</span>
+  <span class='z'>** converted to uppercase using the current locale.</span>
+  <span class='z'>** Also see `localeDecapitalize` and `capitalize`.</span>
+  <span class='z'>**</span>
+  Str <span id='localeCapitalize'>localeCapitalize</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string with the first character</span>
+  <span class='z'>** converted to lowercase using the current locale.</span>
+  <span class='z'>** Also see `localeCapitalize` and `decapitalize`.</span>
+  <span class='z'>**</span>
+  Str <span id='localeDecapitalize'>localeDecapitalize</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Coersions</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `Bool.fromStr` using this string.</span>
+  <span class='z'>**</span>
+  Bool? <span id='toBool'>toBool</span><span class='b'>(</span>Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `Int.fromStr` using this string.</span>
+  <span class='z'>**</span>
+  Int? <span id='toInt'>toInt</span><span class='b'>(</span>Int radix := 10, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `Float.fromStr` using this string.</span>
+  <span class='z'>**</span>
+  Float? <span id='toFloat'>toFloat</span><span class='b'>(</span>Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `Decimal.fromStr` using this string.</span>
+  <span class='z'>**</span>
+  Decimal? <span id='toDecimal'>toDecimal</span><span class='b'>(</span>Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string as its Fantom source code and serialization</span>
+  <span class='z'>** representation surrounded by the specified quote character (which</span>
+  <span class='z'>** defaults to '"').  If quote is null then the return is unquoted.</span>
+  <span class='z'>** This method will backslash escape the following characters:</span>
+  <span class='z'>** '\n \r \f \t \\ $'.  If the quote character is the double quote,</span>
+  <span class='z'>** single quote, or backtick then it is escaped too.  If 'escapeUnicode'</span>
+  <span class='z'>** is true then any character over 127 is also escaped as '\uXXXX'.</span>
+  <span class='z'>**</span>
+  Str <span id='toCode'>toCode</span><span class='b'>(</span>Int? quote := <span class='s'>'"'</span>, Bool escapeUnicode := <span class='k'>false</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return this string as valid XML text.  The special control</span>
+  <span class='z'>** characters amp, lt, apos and quot are always escaped.  The</span>
+  <span class='z'>** gt char is escaped only if it is the first char or if preceeded</span>
+  <span class='z'>** by the ']' char.  Also see `OutStream.writeXml` which is more</span>
+  <span class='z'>** efficient if streaming.</span>
+  <span class='z'>**</span>
+  Str <span id='toXml'>toXml</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for `Uri.fromStr` using this string.</span>
+  <span class='z'>**</span>
+  Uri <span id='toUri'>toUri</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create an input stream to read characters from the this string.</span>
+  <span class='z'>** If binary reads are made from the string, then each character</span>
+  <span class='z'>** is read as a one byte ASCII char.</span>
+  <span class='z'>**</span>
+  InStream <span id='in'>in</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get this string encoded into a buffer of bytes.</span>
+  <span class='z'>**</span>
+  Buf <span id='toBuf'>toBuf</span><span class='b'>(</span>Charset charset := Charset.utf8<span class='b'>)</span>
+
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Str.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#all'>all</a></li>
+  <li style='display: block;'><a href='#any'>any</a></li>
+  <li style='display: block;'><a href='#capitalize'>capitalize</a></li>
+  <li style='display: block;'><a href='#chars'>chars</a></li>
+  <li style='display: block;'><a href='#compare'>compare</a></li>
+  <li style='display: block;'><a href='#compareIgnoreCase'>compareIgnoreCase</a></li>
+  <li style='display: block;'><a href='#contains'>contains</a></li>
+  <li style='display: block;'><a href='#containsChar'>containsChar</a></li>
+  <li style='display: block;'><a href='#decapitalize'>decapitalize</a></li>
+  <li style='display: block;'><a href='#defVal'>defVal</a></li>
+  <li style='display: block;'><a href='#each'>each</a></li>
+  <li style='display: block;'><a href='#eachr'>eachr</a></li>
+  <li style='display: block;'><a href='#endsWith'>endsWith</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#equalsIgnoreCase'>equalsIgnoreCase</a></li>
+  <li style='display: block;'><a href='#fromChars'>fromChars</a></li>
+  <li style='display: block;'><a href='#fromDisplayName'>fromDisplayName</a></li>
+  <li style='display: block;'><a href='#get'>get</a></li>
+  <li style='display: block;'><a href='#getRange'>getRange</a></li>
+  <li style='display: block;'><a href='#getSafe'>getSafe</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#in'>in</a></li>
+  <li style='display: block;'><a href='#index'>index</a></li>
+  <li style='display: block;'><a href='#indexIgnoreCase'>indexIgnoreCase</a></li>
+  <li style='display: block;'><a href='#indexr'>indexr</a></li>
+  <li style='display: block;'><a href='#indexrIgnoreCase'>indexrIgnoreCase</a></li>
+  <li style='display: block;'><a href='#intern'>intern</a></li>
+  <li style='display: block;'><a href='#isAlpha'>isAlpha</a></li>
+  <li style='display: block;'><a href='#isAlphaNum'>isAlphaNum</a></li>
+  <li style='display: block;'><a href='#isAscii'>isAscii</a></li>
+  <li style='display: block;'><a href='#isEmpty'>isEmpty</a></li>
+  <li style='display: block;'><a href='#isLower'>isLower</a></li>
+  <li style='display: block;'><a href='#isSpace'>isSpace</a></li>
+  <li style='display: block;'><a href='#isUpper'>isUpper</a></li>
+  <li style='display: block;'><a href='#justl'>justl</a></li>
+  <li style='display: block;'><a href='#justr'>justr</a></li>
+  <li style='display: block;'><a href='#localeCapitalize'>localeCapitalize</a></li>
+  <li style='display: block;'><a href='#localeCompare'>localeCompare</a></li>
+  <li style='display: block;'><a href='#localeDecapitalize'>localeDecapitalize</a></li>
+  <li style='display: block;'><a href='#localeLower'>localeLower</a></li>
+  <li style='display: block;'><a href='#localeUpper'>localeUpper</a></li>
+  <li style='display: block;'><a href='#lower'>lower</a></li>
+  <li style='display: block;'><a href='#numNewlines'>numNewlines</a></li>
+  <li style='display: block;'><a href='#padl'>padl</a></li>
+  <li style='display: block;'><a href='#padr'>padr</a></li>
+  <li style='display: block;'><a href='#plus'>plus</a></li>
+  <li class='hidden' style='display: block;'><a href='#privateMake'>privateMake</a></li>
+  <li style='display: block;'><a href='#replace'>replace</a></li>
+  <li style='display: block;'><a href='#reverse'>reverse</a></li>
+  <li style='display: block;'><a href='#size'>size</a></li>
+  <li style='display: block;'><a href='#slice'>slice</a></li>
+  <li style='display: block;'><a href='#spaces'>spaces</a></li>
+  <li style='display: block;'><a href='#split'>split</a></li>
+  <li style='display: block;'><a href='#splitLines'>splitLines</a></li>
+  <li style='display: block;'><a href='#startsWith'>startsWith</a></li>
+  <li style='display: block;'><a href='#toBool'>toBool</a></li>
+  <li style='display: block;'><a href='#toBuf'>toBuf</a></li>
+  <li style='display: block;'><a href='#toCode'>toCode</a></li>
+  <li style='display: block;'><a href='#toDecimal'>toDecimal</a></li>
+  <li style='display: block;'><a href='#toDisplayName'>toDisplayName</a></li>
+  <li style='display: block;'><a href='#toFloat'>toFloat</a></li>
+  <li style='display: block;'><a href='#toInt'>toInt</a></li>
+  <li style='display: block;'><a href='#toLocale'>toLocale</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#toUri'>toUri</a></li>
+  <li style='display: block;'><a href='#toXml'>toXml</a></li>
+  <li style='display: block;'><a href='#trim'>trim</a></li>
+  <li style='display: block;'><a href='#trimEnd'>trimEnd</a></li>
+  <li style='display: block;'><a href='#trimStart'>trimStart</a></li>
+  <li style='display: block;'><a href='#upper'>upper</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sending_16::Sending</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>examples</a></li>
+  <li>&gt;</li>
+  <li><a href='Sending.html'>email-sending.html</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='src'>
+<pre>
+<span>#! /usr/bin/env fan
+</span><span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 May 08  Brian Frank  Creation</span>
+<span class='y'>//   08 Sep 09  Brian Frank  Rework fandoc -&gt; example</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> email
+
+<span class='z'>**</span>
+<span class='z'>** Sending email via SMTP</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Sending
+<span class='b'>{</span>
+  <span class='y'>// configure with your real SMTP host and account info</span>
+  Str <span id='testHost'>testHost</span>   := <span class='s'>"smtp.acme.com"</span>
+  Str <span id='testUser'>testUser</span>   := <span class='s'>"user"</span>
+  Str <span id='testPass'>testPass</span>   := <span class='s'>"pass"</span>
+  Str <span id='testTo'>testTo</span>     := <span class='s'>"to@acme.com"</span>
+  Str <span id='testFrom'>testFrom</span>   := <span class='s'>"from@acme.com"</span>
+  Bool <span id='debug'>debug</span>     := <span class='k'>true</span>
+
+  SmtpClient <span id='makeClient'>makeClient</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    c := SmtpClient
+    <span class='b'>{</span>
+      host     = testHost
+      username = testUser
+      password = testPass
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>debug<span class='b'>)</span> c.log.level = LogLevel.debug
+    <span class='k'>return</span> c
+  <span class='b'>}</span>
+
+  Void <span id='main'>main</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    simpleSend
+    batchSend
+    htmlMultiPart
+    fileAttachments
+    toCcBcc
+  <span class='b'>}</span>
+
+  Void <span id='simpleSend'>simpleSend</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// create simple plain text email</span>
+    email := Email
+    <span class='b'>{</span>
+      to = <span class='b'>[</span>testTo<span class='b'>]</span>
+      from = testFrom
+      subject = <span class='s'>"hi"</span>
+      body = TextPart <span class='b'>{</span> text = <span class='s'>"hello world"</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// configure smtp mailer and send email</span>
+    makeClient.send<span class='b'>(</span>email<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='batchSend'>batchSend</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// open a session, send multiple emails, and guarantee close</span>
+    mailer := makeClient
+    mailer.open
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      3.times |i|
+      <span class='b'>{</span>
+        email := Email
+        <span class='b'>{</span>
+          to=<span class='b'>[</span>testTo<span class='b'>]</span>
+          from=testFrom
+          subject=<span class='s'>"Batch #$i"</span>
+          body=TextPart <span class='b'>{</span> text = <span class='s'>"Batch body #i"</span> <span class='b'>}</span>
+        <span class='b'>}</span>
+        mailer.send<span class='b'>(</span>email<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>finally</span> mailer.close
+  <span class='b'>}</span>
+
+  Void <span id='htmlMultiPart'>htmlMultiPart</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    email := Email
+    <span class='b'>{</span>
+      to = <span class='b'>[</span>testTo<span class='b'>]</span>
+      from = testFrom
+      subject = <span class='s'>"html/plain alternative"</span>
+      body = MultiPart
+      <span class='b'>{</span>
+        headers<span class='b'>[</span><span class='s'>"Content-Type"</span><span class='b'>]</span> = <span class='s'>"multipart/alternative"</span>
+        parts =
+        <span class='b'>[</span>
+          <span class='y'>// put plain text first as backup</span>
+          TextPart
+          <span class='b'>{</span>
+            text = <span class='s'>"this is bold and italics!"</span>
+          <span class='b'>}</span>,
+
+          <span class='y'>// put html part last as best alternative</span>
+          TextPart
+          <span class='b'>{</span>
+            headers<span class='b'>[</span><span class='s'>"Content-Type"</span><span class='b'>]</span> = <span class='s'>"text/html"</span>
+            text = <span class='s'>"this is &lt;b&gt;bold&lt;/b&gt; and &lt;i&gt;italics&lt;/i&gt;!"</span>
+          <span class='b'>}</span>
+        <span class='b'>]</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    makeClient.send<span class='b'>(</span>email<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='fileAttachments'>fileAttachments</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    icons := Pod.find<span class='b'>(</span><span class='s'>"icons"</span><span class='b'>)</span>
+    email := Email
+    <span class='b'>{</span>
+      to = <span class='b'>[</span>testTo<span class='b'>]</span>
+      from = testFrom
+      subject = <span class='s'>"file attachments"</span>
+      body = MultiPart
+      <span class='b'>{</span>
+        parts =
+        <span class='b'>[</span>
+          <span class='y'>// put body first</span>
+          TextPart
+          <span class='b'>{</span>
+            text = <span class='s'>"\u00A1Hola Se\u00F1or! This is the body!"</span>
+          <span class='b'>}</span>,
+
+          <span class='y'>// attachment 1</span>
+          FilePart
+          <span class='b'>{</span>
+            headers<span class='b'>[</span><span class='s'>"Content-Disposition"</span><span class='b'>]</span> = <span class='s'>"inline"</span>
+            file = icons.file<span class='b'>(</span><span class='u'>`/x16/sun.png`</span><span class='b'>)</span>
+          <span class='b'>}</span>,
+
+          <span class='y'>// attachment 2</span>
+          FilePart
+          <span class='b'>{</span>
+            headers<span class='b'>[</span><span class='s'>"Content-Disposition"</span><span class='b'>]</span> = <span class='s'>"attachment; filename=image2.jpg"</span>
+            file = icons.file<span class='b'>(</span><span class='u'>`/x16/moon.png`</span><span class='b'>)</span>
+          <span class='b'>}</span>
+        <span class='b'>]</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    makeClient.send<span class='b'>(</span>email<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='toCcBcc'>toCcBcc</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    email := Email
+    <span class='b'>{</span>
+      to = <span class='b'>[</span><span class='s'>"alice@foo.com"</span>, <span class='s'>"charlie@foo.com"</span><span class='b'>]</span>
+      cc = <span class='b'>[</span><span class='s'>"theboss@foo.com"</span>, <span class='s'>"bob@foo.com"</span><span class='b'>]</span>
+      bcc = <span class='b'>[</span><span class='s'>"zack@foo.com"</span><span class='b'>]</span>
+      from = <span class='s'>"bob@foo.com"</span>
+      subject = <span class='s'>"hi"</span>
+      body = TextPart <span class='b'>{</span> text = <span class='s'>"hello world"</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// dump email to standard out</span>
+    echo<span class='b'>(</span><span class='s'>"--- To, CC, BCC ---"</span><span class='b'>)</span>
+    email.encode<span class='b'>(</span>Env.cur.out<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span>
+
+
+
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#batchSend'>batchSend</a></li>
+  <li style='display: block;'><a href='#debug'>debug</a></li>
+  <li style='display: block;'><a href='#fileAttachments'>fileAttachments</a></li>
+  <li style='display: block;'><a href='#htmlMultiPart'>htmlMultiPart</a></li>
+  <li style='display: block;'><a href='#main'>main</a></li>
+  <li style='display: block;'><a href='#makeClient'>makeClient</a></li>
+  <li style='display: block;'><a href='#simpleSend'>simpleSend</a></li>
+  <li style='display: block;'><a href='#testFrom'>testFrom</a></li>
+  <li style='display: block;'><a href='#testHost'>testHost</a></li>
+  <li style='display: block;'><a href='#testPass'>testPass</a></li>
+  <li style='display: block;'><a href='#testTo'>testTo</a></li>
+  <li style='display: block;'><a href='#testUser'>testUser</a></li>
+  <li style='display: block;'><a href='#toCcBcc'>toCcBcc</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+[11-Nov-2010 Thu 10:09:02AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

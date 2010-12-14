@@ -1,0 +1,730 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Buf</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Buf.html'>Buf</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>sys::Buf</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Buf</pre>
+</div>
+<div class='detail'>
+
+<p>Buf is used to model a block of bytes with random access.  Buf is typically backed by a block of memory, but can also be backed by a file:</p>
+
+<ul>
+<li><code><a href='Buf.html#make'>Buf.make</a></code>: backed by RAM</li>
+
+<li><code><a href='File.html#open'>File.open</a></code>: backed by random access file</li>
+
+<li><code><a href='File.html#mmap'>File.mmap</a></code>: backed by memory mapped file</li>
+</ul>
+
+<p>Buf provides an <code><a href='InStream.html'>InStream</a></code> and <code><a href='OutStream.html'>OutStream</a></code> to read and write into the buffer using a configurable position accessed via <code><a href='Buf.html#pos'>Buf.pos</a></code> and <code><a href='Buf.html#seek'>Buf.seek</a></code>.</p>
+
+<p>When using an InStream, bytes are read starting at pos where pos is advanced after each read.  The end of stream is reached when pos reaches size.  When using the OutStream, bytes are written starting at pos with pos advanced after each write.  If pos is less then size then the existing bytes are rewritten and size is not advanced, otherwise the buffer is automatically grown and size is advanced as bytes are appended.  It is common to write bytes into the buffer using the OutStream, then call <code><a href='Buf.html#flip'>Buf.flip</a></code> to prepare the buffer to be used for reading.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='capacity' class='field'>capacity<a href='Buf_src.html#capacity'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> capacity</code></p>
+
+<p>The number of bytes this buffer can hold without allocating more memory.  Capacity is always greater or equal to size.  If adding a large number of bytes, it may be more efficient to manually set capacity.  See the <a href='Buf.html#trim'>trim</a> method to automatically set capacity to size.  Throw ArgErr if attempting to set capacity less than size. This method is ignored on a file buffer, and unsupported on mmap.</p>
+</dd>
+<dt id='charset' class='field'>charset<a href='Buf_src.html#charset'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Charset.html'>Charset</a> charset</code></p>
+
+<p>Character set for both the OutStream and InStream.</p>
+</dd>
+<dt id='clear' class='method'>clear<a href='Buf_src.html#clear'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> clear()</code></p>
+
+<p>Read the buffer for a fresh read by reseting the buffer's pos and size to zero.  The buffer's capacity remains the same. Return this.</p>
+</dd>
+<dt id='close' class='method'>close<a href='Buf_src.html#close'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> close()</code></p>
+
+<p>If this buffer is backed by a file, then close it.  If a memory buffer then do nothing.  This method is guaranteed to never throw an IOErr.  Return true if the buffer was closed successfully or false if closed abnormally.</p>
+</dd>
+<dt id='dup' class='method'>dup<a href='Buf_src.html#dup'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Buf.html'>Buf</a> dup()</code></p>
+
+<p>Create a new buffer in memory which deeply clones this buffer.</p>
+</dd>
+<dt id='eachLine' class='method'>eachLine<a href='Buf_src.html#eachLine'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> eachLine(|<a href='Str.html'>Str</a>| f)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#eachLine'>in.eachLine</a></code></p>
+</dd>
+<dt id='endian' class='field'>endian<a href='Buf_src.html#endian'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Endian.html'>Endian</a> endian</code></p>
+
+<p>Byte order mode for both OutStream and InStream. Default is <code><a href='Endian.html#big'>Endian.big</a></code> (network byte order).</p>
+</dd>
+<dt id='equals' class='method'>equals<a href='Buf_src.html#equals'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Bool.html'>Bool</a> equals(<a href='Obj.html'>Obj</a>? that)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#equals'>sys::Obj.equals</a></p>
+</div>
+
+<p>Buf equality is based on reference equality using the === operator.</p>
+</dd>
+<dt id='fill' class='method'>fill<a href='Buf_src.html#fill'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> fill(<a href='Int.html'>Int</a> byte, <a href='Int.html'>Int</a> times)</code></p>
+
+<p>Write the specified byte to the end of the buffer using given count.</p>
+
+<p>Examples:</p>
+
+<pre>Buf().fill(0xff, 4)  =>  0xffffffff</pre>
+</dd>
+<dt id='flip' class='method'>flip<a href='Buf_src.html#flip'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> flip()</code></p>
+
+<p>Flip a buffer from write-mode to read-mode.  This method sets total size to current position, and position to 0.  Return this.</p>
+</dd>
+<dt id='flush' class='method'>flush<a href='Buf_src.html#flush'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> flush()</code></p>
+
+<p>If this Buf is backed by a file, then force all changes to the storage device.  Throw IOErr on error.  Return this.</p>
+</dd>
+<dt id='fromBase64' class='method'>fromBase64<a href='Buf_src.html#fromBase64'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Buf.html'>Buf</a> fromBase64(<a href='Str.html'>Str</a> s)</code></p>
+
+<p>Decode the specified Base64 string into its binary contents as defined by MIME RFC 2045.  Any characters which are not included in the Base64 character set are safely ignored.</p>
+
+<p>Example:</p>
+
+<pre>Buf.make.print("Fan").toBase64    => "RmFu"
+Buf.fromBase64("RmFu").readAllStr => "Fan"</pre>
+</dd>
+<dt id='fromHex' class='method'>fromHex<a href='Buf_src.html#fromHex'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Buf.html'>Buf</a> fromHex(<a href='Str.html'>Str</a> s)</code></p>
+
+<p>Decode the specified hexadecimal string into its binary contents.  Any characters which are not included in the set "0-9, a-f, A-F" are ignored as long as they appear between bytes (hi and lo nibbles must be contiguous).</p>
+
+<p>Example:</p>
+
+<pre>Buf.make.print("\r\n").toHex   => "0d0a"
+Buf.fromHex("0d0a").readAllStr => "\r\n"</pre>
+</dd>
+<dt id='get' class='method'>get<a href='Buf_src.html#get'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='Int.html'>Int</a> get(<a href='Int.html'>Int</a> index)</code></p>
+
+<p>Get the byte at the specified absolute index.  A negative index may be used to access from the end of the buffer.  For example get(-1)  is translated into get(size()-1).  This method accesses the buffer absolutely independent of current position.  The get method is accessed via the [] shortcut operator.  Throw IndexErr if index out of range.</p>
+</dd>
+<dt id='getRange' class='method'>getRange<a href='Buf_src.html#getRange'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='Buf.html'>Buf</a> getRange(<a href='Range.html'>Range</a> range)</code></p>
+
+<p>Return a new buffer containing the bytes in the specified absolute range.  Negative indexes may be used to access from the end of the buf.  This method accesses the buffer absolutely independent of current position.  This method is accessed via the [] operator. Throw IndexErr if range illegal.</p>
+
+<p>Examples:</p>
+
+<pre>buf := Buf.make
+buf.write(0xaa).write(0xbb).write(0xcc).write(0xdd)
+buf[0..2]   => 0x[aabbcc]
+buf[3..3]   => 0x[dd]
+buf[-2..-1] => 0x[ccdd]
+buf[0..&lt;2]  => 0x[aabb]
+buf[1..-2]  => 0x[bbcc]</pre>
+</dd>
+<dt id='hmac' class='method'>hmac<a href='Buf_src.html#hmac'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Buf.html'>Buf</a> hmac(<a href='Str.html'>Str</a> algorithm, <a href='Buf.html'>Buf</a> key)</code></p>
+
+<p>Generate an HMAC message authentication as specified by RFC 2104. This buffer is the data input, <code>algorithm</code> specifies the hash digest, and <code>key</code> represents the secret key:</p>
+
+<ul>
+<li><code>H</code>: specified by algorthim parameter - "MD5" or "SHA1"</li>
+
+<li><code>K</code>: secret key specified by key parameter</li>
+
+<li><code>B</code>: fixed at 64</li>
+
+<li><code>text</code>: this instance</li>
+</ul>
+
+<p>The HMAC is computed using:</p>
+
+<pre>ipad = the byte 0x36 repeated B times
+opad = the byte 0x5C repeated B times
+H(K XOR opad, H(K XOR ipad, text))</pre>
+
+<p>Throw ArgErr if the algorithm is not available.  This method is only supported for memory buffers.</p>
+
+<p>Examples:</p>
+
+<pre>"hi there".toBuf.hmac("MD5", "secret".toBuf)</pre>
+</dd>
+<dt id='in' class='method'>in<a href='Buf_src.html#in'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='InStream.html'>InStream</a> in()</code></p>
+
+<p>Get the InStream which reads from this buffer. This method always returns the same instance. If this buffer is backed by a file, then <code>in.close</code> will not close the file - you must use <code><a href='Buf.html#close'>Buf.close</a></code>.</p>
+</dd>
+<dt id='internalMake' class='method hidden'>internalMake<a href='Buf_src.html#internalMake'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new internalMake()</code></p>
+
+<p>Buf cannot be subclassed outside of sys since we do much optimization under the covers in Java and C#.</p>
+</dd>
+<dt id='isEmpty' class='method'>isEmpty<a href='Buf_src.html#isEmpty'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> isEmpty()</code></p>
+
+<p>Return if size() == 0.</p>
+</dd>
+<dt id='make' class='method'>make<a href='Buf_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Buf.html'>Buf</a> make(<a href='Int.html'>Int</a> capacity := 1024)</code></p>
+
+<p>Allocate a byte buffer in RAM with the initial given capacity.</p>
+</dd>
+<dt id='more' class='method'>more<a href='Buf_src.html#more'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> more()</code></p>
+
+<p>Return if more bytes are available to read: remaining() > 0.</p>
+</dd>
+<dt id='out' class='method'>out<a href='Buf_src.html#out'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='OutStream.html'>OutStream</a> out()</code></p>
+
+<p>Get the OutStream which writes to this buffer. This method always returns the same instance. If this buffer is backed by a file, then <code>out.close</code> will not close the file - you must use <code><a href='Buf.html#close'>Buf.close</a></code>.</p>
+</dd>
+<dt id='peek' class='method'>peek<a href='Buf_src.html#peek'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a>? peek()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#peek'>in.peek</a></code></p>
+</dd>
+<dt id='peekChar' class='method'>peekChar<a href='Buf_src.html#peekChar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a>? peekChar()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#peekChar'>in.peekChar</a></code></p>
+</dd>
+<dt id='pos' class='method'>pos<a href='Buf_src.html#pos'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> pos()</code></p>
+
+<p>Return the current position for the next read or write.  The position is always between 0 and <a href='Buf.html#size'>size</a>.  If pos is less then size then future writes will rewrite the existing bytes without growing size.  Change the position with <a href='Buf.html#seek'>seek</a>.</p>
+</dd>
+<dt id='print' class='method'>print<a href='Buf_src.html#print'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> print(<a href='Obj.html'>Obj</a>? s)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#print'>out.print</a></code> Return this.</p>
+</dd>
+<dt id='printLine' class='method'>printLine<a href='Buf_src.html#printLine'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> printLine(<a href='Obj.html'>Obj</a>? obj := "")</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#printLine'>out.printLine</a></code> Return this.</p>
+</dd>
+<dt id='random' class='method'>random<a href='Buf_src.html#random'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Buf.html'>Buf</a> random(<a href='Int.html'>Int</a> size)</code></p>
+
+<p>Generate a random series of bytes.</p>
+
+<p>Example:</p>
+
+<pre>Buf.random(8).toHex  => "d548b54989028b90"</pre>
+</dd>
+<dt id='read' class='method'>read<a href='Buf_src.html#read'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a>? read()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#read'>in.read</a></code></p>
+</dd>
+<dt id='readAllBuf' class='method'>readAllBuf<a href='Buf_src.html#readAllBuf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Buf.html'>Buf</a> readAllBuf()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readAllBuf'>in.readAllBuf</a></code></p>
+</dd>
+<dt id='readAllLines' class='method'>readAllLines<a href='Buf_src.html#readAllLines'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>[] readAllLines()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readAllLines'>in.readAllLines</a></code></p>
+</dd>
+<dt id='readAllStr' class='method'>readAllStr<a href='Buf_src.html#readAllStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> readAllStr(<a href='Bool.html'>Bool</a> normalizeNewlines := true)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readAllStr'>in.readAllStr</a></code></p>
+</dd>
+<dt id='readBool' class='method'>readBool<a href='Buf_src.html#readBool'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Bool.html'>Bool</a> readBool()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readBool'>in.readBool</a></code></p>
+</dd>
+<dt id='readBuf' class='method'>readBuf<a href='Buf_src.html#readBuf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a>? readBuf(<a href='Buf.html'>Buf</a> buf, <a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readBuf'>in.readBuf</a></code></p>
+</dd>
+<dt id='readBufFully' class='method'>readBufFully<a href='Buf_src.html#readBufFully'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Buf.html'>Buf</a> readBufFully(<a href='Buf.html'>Buf</a>? buf, <a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readBufFully'>in.readBufFully</a></code></p>
+</dd>
+<dt id='readChar' class='method'>readChar<a href='Buf_src.html#readChar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a>? readChar()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readChar'>in.readChar</a></code></p>
+</dd>
+<dt id='readChars' class='method'>readChars<a href='Buf_src.html#readChars'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> readChars(<a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readChars'>in.readChars</a></code></p>
+</dd>
+<dt id='readDecimal' class='method'>readDecimal<a href='Buf_src.html#readDecimal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Decimal.html'>Decimal</a> readDecimal()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readDecimal'>in.readDecimal</a></code></p>
+</dd>
+<dt id='readF4' class='method'>readF4<a href='Buf_src.html#readF4'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Float.html'>Float</a> readF4()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readF4'>in.readF4</a></code></p>
+</dd>
+<dt id='readF8' class='method'>readF8<a href='Buf_src.html#readF8'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Float.html'>Float</a> readF8()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readF8'>in.readF8</a></code></p>
+</dd>
+<dt id='readLine' class='method'>readLine<a href='Buf_src.html#readLine'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? readLine(<a href='Int.html'>Int</a>? max := (Int?)4096)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readLine'>in.readLine</a></code></p>
+</dd>
+<dt id='readObj' class='method'>readObj<a href='Buf_src.html#readObj'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Obj.html'>Obj</a>? readObj([<a href='Str.html'>Str</a>:<a href='Obj.html'>Obj</a>]? options := null)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readObj'>in.readObj</a></code></p>
+</dd>
+<dt id='readProps' class='method'>readProps<a href='Buf_src.html#readProps'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>:<a href='Str.html'>Str</a> readProps()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readProps'>in.readProps</a></code></p>
+</dd>
+<dt id='readS1' class='method'>readS1<a href='Buf_src.html#readS1'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readS1()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readS1'>in.readS1</a></code></p>
+</dd>
+<dt id='readS2' class='method'>readS2<a href='Buf_src.html#readS2'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readS2()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readS2'>in.readS2</a></code></p>
+</dd>
+<dt id='readS4' class='method'>readS4<a href='Buf_src.html#readS4'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readS4()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readS4'>in.readS4</a></code></p>
+</dd>
+<dt id='readS8' class='method'>readS8<a href='Buf_src.html#readS8'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readS8()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readS8'>in.readS8</a></code></p>
+</dd>
+<dt id='readStrToken' class='method'>readStrToken<a href='Buf_src.html#readStrToken'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? readStrToken(<a href='Int.html'>Int</a>? max := (Int?)4096, |<a href='Int.html'>Int</a> -> <a href='Bool.html'>Bool</a>|? c := null)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readStrToken'>in.readStrToken</a></code></p>
+</dd>
+<dt id='readU1' class='method'>readU1<a href='Buf_src.html#readU1'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readU1()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readU1'>in.readU1</a></code></p>
+</dd>
+<dt id='readU2' class='method'>readU2<a href='Buf_src.html#readU2'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readU2()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readU2'>in.readU2</a></code></p>
+</dd>
+<dt id='readU4' class='method'>readU4<a href='Buf_src.html#readU4'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> readU4()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readU4'>in.readU4</a></code></p>
+</dd>
+<dt id='readUtf' class='method'>readUtf<a href='Buf_src.html#readUtf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> readUtf()</code></p>
+
+<p>Convenience for <code><a href='InStream.html#readUtf'>in.readUtf</a></code></p>
+</dd>
+<dt id='remaining' class='method'>remaining<a href='Buf_src.html#remaining'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> remaining()</code></p>
+
+<p>Return the remaining number of bytes to read: size-pos.</p>
+</dd>
+<dt id='seek' class='method'>seek<a href='Buf_src.html#seek'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> seek(<a href='Int.html'>Int</a> pos)</code></p>
+
+<p>Set the current position to the specified byte offset.  A negative index may be used to access from the end of the buffer. For example seek(-1) is translated into seek(size-1). Return this.</p>
+</dd>
+<dt id='set' class='method'>set<a href='Buf_src.html#set'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Operator.html'>Operator</a> <br/>
+<a href='This.html'>This</a> set(<a href='Int.html'>Int</a> index, <a href='Int.html'>Int</a> byte)</code></p>
+
+<p>Set is used to overwrite the byte at the specified the index.  A negative index may be used to access an index from the end of the buffer.  The set method is accessed via the []= shortcut operator. Return this.  Throw IndexErr if index is out of range.</p>
+</dd>
+<dt id='size' class='field'>size<a href='Buf_src.html#size'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Int.html'>Int</a> size</code></p>
+
+<p>Return the total number of bytes in the buffer.  If the size is set greater than capacity then the buffer's capacity is automatically grown, otherwise capacity remains the same.  Setting size does not actually change any bytes in the buffer.  A mmap buffer can never be increased from its initial size.</p>
+</dd>
+<dt id='slice' class='method'>slice<a href='Buf_src.html#slice'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='Deprecated.html'>Deprecated</a> <br/>
+<a href='Buf.html'>Buf</a> slice(<a href='Range.html'>Range</a> range)</code></p>
+
+<p class='TODO'>TODO: use <a href='Buf.html#getRange'>getRange</a></p>
+</dd>
+<dt id='toBase64' class='method'>toBase64<a href='Buf_src.html#toBase64'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> toBase64()</code></p>
+
+<p>Encode the buffer contents from 0 to size to a Base64 string as defined by MIME RFC 2045.  No line breaks are added.  This method is only supported by memory backed buffers, file backed buffers will throw UnsupportedErr.</p>
+
+<p>Example:</p>
+
+<pre>Buf.make.print("Fan").toBase64    => "RmFu"
+Buf.fromBase64("RmFu").readAllStr => "Fan"</pre>
+</dd>
+<dt id='toDigest' class='method'>toDigest<a href='Buf_src.html#toDigest'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Buf.html'>Buf</a> toDigest(<a href='Str.html'>Str</a> algorithm)</code></p>
+
+<p>Apply the specified message digest algorthm to this buffer's contents from 0 to size and return the resulting hash.  Digests are secure one-way hash functions which input an arbitrary sized buffer and return a fixed sized buffer.  Common algorithms include: "MD5", "SHA-1", and "SHA-256"; the full list supported is platform dependent.  On the Java VM, the algorithm maps to those avaialble via the <code>java.security.MessageDigest</code> API.  Throw ArgErr if the algorithm is not available.  This method is unsupported for mmap buffers.</p>
+
+<p>Example:</p>
+
+<pre>Buf.make.print("password").print("salt").toDigest("MD5").toHex
+ =>  "b305cadbb3bce54f3aa59c64fec00dea"</pre>
+</dd>
+<dt id='toHex' class='method'>toHex<a href='Buf_src.html#toHex'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> toHex()</code></p>
+
+<p>Encode the buffer contents from 0 to size into a hexadecimal string.  This method is unsupported for mmap buffers.</p>
+
+<p>Example:</p>
+
+<pre>Buf.make.print("\r\n").toHex   => "0d0a"
+Buf.fromHex("0d0a").readAllStr => "\r\n"</pre>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Buf_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return string summary of the buffer.</p>
+</dd>
+<dt id='trim' class='method'>trim<a href='Buf_src.html#trim'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> trim()</code></p>
+
+<p>Trim the capacity such that the underlying storage is optimized for the current size.  Return this.</p>
+</dd>
+<dt id='unread' class='method'>unread<a href='Buf_src.html#unread'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> unread(<a href='Int.html'>Int</a> b)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#unread'>in.unread</a></code> Memory backed buffers support a stack based pushback model like IO streams.  File backed buffers will simply rewrite the last position in the file.  Return this.</p>
+</dd>
+<dt id='unreadChar' class='method'>unreadChar<a href='Buf_src.html#unreadChar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> unreadChar(<a href='Int.html'>Int</a> b)</code></p>
+
+<p>Convenience for <code><a href='InStream.html#unreadChar'>in.unreadChar</a></code> Memory backed buffers support a stack based pushback model like IO streams.  File backed buffers will simply rewrite the last position in the file.  Return this.</p>
+</dd>
+<dt id='write' class='method'>write<a href='Buf_src.html#write'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> write(<a href='Int.html'>Int</a> byte)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#write'>out.write</a></code> Return this.</p>
+</dd>
+<dt id='writeBool' class='method'>writeBool<a href='Buf_src.html#writeBool'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeBool(<a href='Bool.html'>Bool</a> b)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeBool'>out.writeBool</a></code> Return this.</p>
+</dd>
+<dt id='writeBuf' class='method'>writeBuf<a href='Buf_src.html#writeBuf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeBuf(<a href='Buf.html'>Buf</a> buf, <a href='Int.html'>Int</a> n := buf.remaining())</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeBuf'>out.writeBuf</a></code> Return this.</p>
+</dd>
+<dt id='writeChar' class='method'>writeChar<a href='Buf_src.html#writeChar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeChar(<a href='Int.html'>Int</a> char)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeChar'>out.writeChar</a></code> Return this.</p>
+</dd>
+<dt id='writeChars' class='method'>writeChars<a href='Buf_src.html#writeChars'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeChars(<a href='Str.html'>Str</a> str, <a href='Int.html'>Int</a> off := 0, <a href='Int.html'>Int</a> len := str.size() - off)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeChars'>out.writeChars</a></code> Return this.</p>
+</dd>
+<dt id='writeDecimal' class='method'>writeDecimal<a href='Buf_src.html#writeDecimal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeDecimal(<a href='Decimal.html'>Decimal</a> d)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeDecimal'>out.writeDecimal</a></code> Return this.</p>
+</dd>
+<dt id='writeF4' class='method'>writeF4<a href='Buf_src.html#writeF4'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeF4(<a href='Float.html'>Float</a> r)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeF4'>out.writeF4</a></code> Return this.</p>
+</dd>
+<dt id='writeF8' class='method'>writeF8<a href='Buf_src.html#writeF8'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeF8(<a href='Float.html'>Float</a> r)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeF8'>out.writeF8</a></code> Return this.</p>
+</dd>
+<dt id='writeI2' class='method'>writeI2<a href='Buf_src.html#writeI2'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeI2(<a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeI2'>out.writeI2</a></code> Return this.</p>
+</dd>
+<dt id='writeI4' class='method'>writeI4<a href='Buf_src.html#writeI4'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeI4(<a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeI4'>out.writeI4</a></code> Return this.</p>
+</dd>
+<dt id='writeI8' class='method'>writeI8<a href='Buf_src.html#writeI8'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeI8(<a href='Int.html'>Int</a> n)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeI8'>out.writeI8</a></code> Return this.</p>
+</dd>
+<dt id='writeObj' class='method'>writeObj<a href='Buf_src.html#writeObj'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeObj(<a href='Obj.html'>Obj</a>? obj, [<a href='Str.html'>Str</a>:<a href='Obj.html'>Obj</a>]? options := null)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeObj'>out.writeObj</a></code> Return this.</p>
+</dd>
+<dt id='writeProps' class='method'>writeProps<a href='Buf_src.html#writeProps'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeProps(<a href='Str.html'>Str</a>:<a href='Str.html'>Str</a> props)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeProps'>out.writeProps</a></code> Return this.</p>
+</dd>
+<dt id='writeUtf' class='method'>writeUtf<a href='Buf_src.html#writeUtf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeUtf(<a href='Str.html'>Str</a> s)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeUtf'>out.writeUtf</a></code> Return this.</p>
+</dd>
+<dt id='writeXml' class='method'>writeXml<a href='Buf_src.html#writeXml'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='This.html'>This</a> writeXml(<a href='Str.html'>Str</a> s, <a href='Int.html'>Int</a> flags := 0)</code></p>
+
+<p>Convenience for <code><a href='OutStream.html#writeXml'>out.writeXml</a></code> Return this.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Buf_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#capacity'>capacity</a></li>
+  <li><a href='#charset'>charset</a></li>
+  <li><a href='#clear'>clear</a></li>
+  <li><a href='#close'>close</a></li>
+  <li><a href='#dup'>dup</a></li>
+  <li><a href='#eachLine'>eachLine</a></li>
+  <li><a href='#endian'>endian</a></li>
+  <li><a href='#equals'>equals</a></li>
+  <li><a href='#fill'>fill</a></li>
+  <li><a href='#flip'>flip</a></li>
+  <li><a href='#flush'>flush</a></li>
+  <li><a href='#fromBase64'>fromBase64</a></li>
+  <li><a href='#fromHex'>fromHex</a></li>
+  <li><a href='#get'>get</a></li>
+  <li><a href='#getRange'>getRange</a></li>
+  <li><a href='#hmac'>hmac</a></li>
+  <li><a href='#in'>in</a></li>
+  <li class='hidden'><a href='#internalMake'>internalMake</a></li>
+  <li><a href='#isEmpty'>isEmpty</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#more'>more</a></li>
+  <li><a href='#out'>out</a></li>
+  <li><a href='#peek'>peek</a></li>
+  <li><a href='#peekChar'>peekChar</a></li>
+  <li><a href='#pos'>pos</a></li>
+  <li><a href='#print'>print</a></li>
+  <li><a href='#printLine'>printLine</a></li>
+  <li><a href='#random'>random</a></li>
+  <li><a href='#read'>read</a></li>
+  <li><a href='#readAllBuf'>readAllBuf</a></li>
+  <li><a href='#readAllLines'>readAllLines</a></li>
+  <li><a href='#readAllStr'>readAllStr</a></li>
+  <li><a href='#readBool'>readBool</a></li>
+  <li><a href='#readBuf'>readBuf</a></li>
+  <li><a href='#readBufFully'>readBufFully</a></li>
+  <li><a href='#readChar'>readChar</a></li>
+  <li><a href='#readChars'>readChars</a></li>
+  <li><a href='#readDecimal'>readDecimal</a></li>
+  <li><a href='#readF4'>readF4</a></li>
+  <li><a href='#readF8'>readF8</a></li>
+  <li><a href='#readLine'>readLine</a></li>
+  <li><a href='#readObj'>readObj</a></li>
+  <li><a href='#readProps'>readProps</a></li>
+  <li><a href='#readS1'>readS1</a></li>
+  <li><a href='#readS2'>readS2</a></li>
+  <li><a href='#readS4'>readS4</a></li>
+  <li><a href='#readS8'>readS8</a></li>
+  <li><a href='#readStrToken'>readStrToken</a></li>
+  <li><a href='#readU1'>readU1</a></li>
+  <li><a href='#readU2'>readU2</a></li>
+  <li><a href='#readU4'>readU4</a></li>
+  <li><a href='#readUtf'>readUtf</a></li>
+  <li><a href='#remaining'>remaining</a></li>
+  <li><a href='#seek'>seek</a></li>
+  <li><a href='#set'>set</a></li>
+  <li><a href='#size'>size</a></li>
+  <li><a href='#slice'>slice</a></li>
+  <li><a href='#toBase64'>toBase64</a></li>
+  <li><a href='#toDigest'>toDigest</a></li>
+  <li><a href='#toHex'>toHex</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#trim'>trim</a></li>
+  <li><a href='#unread'>unread</a></li>
+  <li><a href='#unreadChar'>unreadChar</a></li>
+  <li><a href='#write'>write</a></li>
+  <li><a href='#writeBool'>writeBool</a></li>
+  <li><a href='#writeBuf'>writeBuf</a></li>
+  <li><a href='#writeChar'>writeChar</a></li>
+  <li><a href='#writeChars'>writeChars</a></li>
+  <li><a href='#writeDecimal'>writeDecimal</a></li>
+  <li><a href='#writeF4'>writeF4</a></li>
+  <li><a href='#writeF8'>writeF8</a></li>
+  <li><a href='#writeI2'>writeI2</a></li>
+  <li><a href='#writeI4'>writeI4</a></li>
+  <li><a href='#writeI8'>writeI8</a></li>
+  <li><a href='#writeObj'>writeObj</a></li>
+  <li><a href='#writeProps'>writeProps</a></li>
+  <li><a href='#writeUtf'>writeUtf</a></li>
+  <li><a href='#writeXml'>writeXml</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:15AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

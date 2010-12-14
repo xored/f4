@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Exceptions</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Exceptions.html'>Exceptions</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Statements.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Statements.html'>Statements</a></div>
+<div class='next'><a href='TypeSystem.html'>Type System</a> <a href='TypeSystem.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Exceptions</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Fantom uses exceptions as the standard mechanism for error handling. An exception is a normal object which subclasses from <code><a href='../sys/Err.html'>sys::Err</a></code>. Exceptions are <em>thrown</em> or <em>raised</em> to indicate an error condition. When an exception is raised, normal program execution is disrupted and the call stack is unwound until an <em>exception handler</em> is found to handle the exception.</p>
+
+<p>Fantom does not use Java styled <a href='http://www.artima.com/intv/handcuffs.html'>checked exceptions</a> where a method must declare the exceptions it throws.  In our experience checked exceptions are syntax salt which don't scale to large projects. For example in Java the real exception is often wrapped dozens of times to make the compiler happy as independent subsystems are integrated.</p>
+
+<h1 id='err'>Err Class </h1>
+
+<p>All exceptions in Fantom subclass from <code><a href='../sys/Err.html'>sys::Err</a></code>.  Many APIs declare their own <code>Err</code> classes for modeling specific error conditions.  The type hierarchy is the primary mechanism used to classify exceptions and is used to match exceptions to <a href='#try'>exception handlers</a>.</p>
+
+<p>All <code>Errs</code> also have a <em>message</em> and a <em>cause</em>.  Message is a human readable <code>Str</code> to describe the error condition.  Cause is another <code>Err</code> instance which is the root cause of the exception.  Cause is often <code>null</code> if there is no root cause.</p>
+
+<p>Fantom convention requires all exception classes end with <code>Err</code> and declare a constructor called <code>make</code> which takes at least a <code>Str</code> message as the first parameter and an <code>Err</code> cause as the last parameter.  Typically both of these parameters have a default argument of <code>null</code>.</p>
+
+<p>When an exception is thrown, the runtime captures the call stack of and stores it with the <code>Err</code> instance.  You can dump the call stack of an exception using the <code>trace</code> method:</p>
+
+<pre>err.trace       // dumps to Env.cur.out
+err.trace(log)  // dumps to log output stream</pre>
+
+<h1 id='throw'>Throw Statement </h1>
+
+<p>The <code>throw</code> statement is used to raise an exception via the following syntax:</p>
+
+<pre>// syntax
+throw &lt;expr>
+
+// example
+throw IndexErr("index $i > $len")</pre>
+
+<p>The expression used with the <code>throw</code> keyword must be evaluate to a <code>sys::Err</code> type.  When the <code>throw</code> statement is executed, the exception is raised and program execution unwinds itself to the first matching exception handler.</p>
+
+<h1 id='try'>Try-Catch Statement </h1>
+
+<p>Fantom uses the <code>try-catch-finally</code> syntax of Java and C# for exception handling:</p>
+
+<pre>try
+{
+  &lt;block>
+}
+catch (&lt;type> &lt;identifier>)
+{
+  &lt;block>
+}
+catch
+{
+  &lt;block>
+}
+finally
+{
+  &lt;block>
+}</pre>
+
+<p>A list of catch blocks is used to specify exception handlers based on exception type.  A catch block for a given type will catch all raised exceptions of that type plus its subclasses.  If an exception is raised inside a catch block with no matching catch blocks, then the exception continues to unwind the call stack (although if a <code>finally</code> block is specified it will be executed).</p>
+
+<p>The blocks of code in a <code>try</code> can be either a <code>{}</code> block or a single statement.  The identifier of each catch block is used to access the exception caught - this variable is scoped within the catch block itself.</p>
+
+<p>You can have as many <code>catch</code> blocks as you like, however the type of a catch block cannot repeat a type used previously.  For example:</p>
+
+<pre>// this is legal
+try {...}
+catch (CastErr e) {...}
+catch (NullErr e) {...}
+catch (Err e) {...}
+
+// this is illegal
+try {...}
+catch (Err e) {...}
+catch (NullErr e) {...}</pre>
+
+<p>In the first block of code we first declare a catch handler for <code>CastErr</code> and <code>NullErr</code> which will catch any exception of those types.  We catch <code>Err</code> last which will catch anything else which is not a <code>CastErr</code> or <code>NullErr</code>.  However the second block of code will not compile because the <code>NullErr</code> catch comes after the <code>Err</code> catch block (which includes <code>NullErrs</code>).</p>
+
+<p>If you don't need to access the exception caught, you can also use a <em>catch all</em> block to catch all exceptions using the following shorthand syntax:</p>
+
+<pre>try
+{
+  return doSomethingDangerous
+}
+catch
+{
+  return null
+}</pre>
+
+<h1 id='finally'>Finally Blocks </h1>
+
+<p>We use a <code>finally</code> block when we want to execute some code which runs regardless of how or if an exception is handled.  A <code>finally</code> block always executes when a <code>try</code> block exits.  Finally is often used to ensure that resources are cleaned up properly no matter what exceptions might occur.  For example the following code guarantees that the input stream is closed no matter what might go wrong inside the <code>try</code> block:</p>
+
+<pre>void load(InStream in)
+{
+  try
+  {
+    // read input stream
+  }
+  finally
+  {
+    in.close
+  }
+}</pre>
+
+<p>Finally blocks have similar restrictions to C#. You cannot exit a <code>finally</code> block directly using a <code>return</code>, <code>break</code>, or <code>continue</code> statement.</p>
+<div class='prevNext'>
+<div class='prev'><a href='Statements.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Statements.html'>Statements</a></div>
+<div class='next'><a href='TypeSystem.html'>Type System</a> <a href='TypeSystem.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#err'>Err Class </a></li><li><a href='#throw'>Throw Statement </a></li><li><a href='#try'>Try-Catch Statement </a></li><li><a href='#finally'>Finally Blocks </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

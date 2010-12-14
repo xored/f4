@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CompilerInput</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CompilerInput.html'>CompilerInput</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::CompilerInput</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::CompilerInput</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   4 Nov 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** CompilerInput encapsulates all the input needed run the compiler.</span>
+<span class='z'>** The compiler can be run in one of two modes - file or str.  In</span>
+<span class='z'>** file mode the source code and resource files are read from the</span>
+<span class='z'>** file system.  In str mode we compile a single source file from</span>
+<span class='z'>** an in-memory string.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> CompilerInput
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Location to use for reporting errors associated with the input</span>
+  <span class='z'>** itself - typically this is mapped to the build script.</span>
+  <span class='z'>**</span>
+  Loc <span id='inputLoc'>inputLoc</span> := Loc<span class='b'>(</span><span class='s'>"CompilerInput"</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Name of output pod - required in all modes.</span>
+  <span class='z'>**</span>
+  Str? <span id='podName'>podName</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Flag to indicate if we are are compiling a script.  Scripts</span>
+  <span class='z'>** don't require explicit depends and can import any type via the</span>
+  <span class='z'>** using statement or with qualified type names.</span>
+  <span class='z'>**</span>
+  Bool <span id='isScript'>isScript</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Version to include in ouput pod's manifest.</span>
+  <span class='z'>**</span>
+  Version? <span id='version'>version</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Summary description for pod</span>
+  <span class='z'>**</span>
+  Str? <span id='summary'>summary</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List of this pod's dependencies used for both the</span>
+  <span class='z'>** compiler checking and output in the pod's manifest.</span>
+  <span class='z'>**</span>
+  Depend<span class='b'>[]</span> <span id='depends'>depends</span> := Depend<span class='b'>[</span>,<span class='b'>]</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Namespace used to resolve dependency pods/types.</span>
+  <span class='z'>** Default implementation uses reflection of the compiler's VM.</span>
+  <span class='z'>**</span>
+  CNamespace <span id='ns'>ns</span> := ReflectNamespace<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pod meta-data name/value pairs</span>
+  <span class='z'>**</span>
+  Str:Str <span id='meta'>meta</span> := Str:Str<span class='b'>[</span>:<span class='b'>]</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pod indexing name/value pairs.  The index values can be</span>
+  <span class='z'>** a single Str or a Str[] if there are multiple values</span>
+  <span class='z'>** mapped to one key.</span>
+  <span class='z'>**</span>
+  Str:Obj <span id='index'>index</span> := Str:Obj<span class='b'>[</span>:<span class='b'>]</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** What type of output should be generated - the compiler</span>
+  <span class='z'>** can be used to generate a transient in-memory pod, write a</span>
+  <span class='z'>** pod zip file to disk, or generate JavaScript code.</span>
+  <span class='z'>**</span>
+  CompilerOutputMode? <span id='output'>output</span> := <span class='k'>null</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Log used for reporting compile status</span>
+  <span class='z'>**</span>
+  CompilerLog <span id='log'>log</span> := CompilerLog.make
+
+  <span class='z'>**</span>
+  <span class='z'>** Output directory to write pod to, defaults to the</span>
+  <span class='z'>** current environment's working lib directory</span>
+  <span class='z'>**</span>
+  File <span id='outDir'>outDir</span> := Env.cur.workDir + <span class='u'>`lib/fan/`</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Include fandoc in output pod, default is false</span>
+  <span class='z'>**</span>
+  Bool <span id='includeDoc'>includeDoc</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is this compile process being run inside a test, default is false</span>
+  <span class='z'>**</span>
+  Bool <span id='isTest'>isTest</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If set to true, then disassembled fcode is dumped to 'log.out'.</span>
+  <span class='z'>**</span>
+  Bool <span id='fcodeDump'>fcodeDump</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** This mode determines whether the source code is input</span>
+  <span class='z'>** from the file system or from an in-memory string.</span>
+  <span class='z'>**</span>
+  CompilerInputMode? <span id='mode'>mode</span> := <span class='k'>null</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CompilerInputMode.file</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Base directory of source tree - this directory is used to create</span>
+  <span class='z'>** the relative paths of the source and resource files in the pod zip.</span>
+  <span class='z'>**</span>
+  File? <span id='baseDir'>baseDir</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List of Fantom source files or directories containing Fantom</span>
+  <span class='z'>** source files to compile.  Uris are relative to `baseDir`.  This</span>
+  <span class='z'>** field is used only in file mode.</span>
+  <span class='z'>**</span>
+  Uri<span class='b'>[]</span>? <span id='srcFiles'>srcFiles</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List of resource files or directories containing resource files</span>
+  <span class='z'>** to include in the pod zip.  Uris are relative to `baseDir`.</span>
+  <span class='z'>** This field is used only in file mode.</span>
+  <span class='z'>**</span>
+  Uri<span class='b'>[]</span>? <span id='resFiles'>resFiles</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List of JavaScript files or directories containing JavaScript files</span>
+  <span class='z'>** to include in the JavaScript output.  Uris are relative to `baseDir`.</span>
+  <span class='z'>** This field is used only in file mode.</span>
+  <span class='z'>**</span>
+  Uri<span class='b'>[]</span>? <span id='jsFiles'>jsFiles</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CompilerInputMode.str</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Fantom source code to compile (str mode only)</span>
+  <span class='z'>**</span>
+  Str? <span id='srcStr'>srcStr</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Location to use for SourceFile facet (str mode only)</span>
+  <span class='z'>**</span>
+  Loc? <span id='srcStrLoc'>srcStrLoc</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Validation</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Validate the CompilerInput is correctly</span>
+  <span class='z'>** configured, throw CompilerErr is not.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> Void <span id='validate'>validate</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    validateReqField<span class='b'>(</span><span class='s'>"podName"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"version"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"summary"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"output"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"outDir"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"includeDoc"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"isTest"</span><span class='b'>)</span>
+    validateReqField<span class='b'>(</span><span class='s'>"mode"</span><span class='b'>)</span>
+    <span class='k'>switch</span> <span class='b'>(</span>mode<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> CompilerInputMode.file:
+        validateReqField<span class='b'>(</span><span class='s'>"baseDir"</span><span class='b'>)</span>
+      <span class='k'>case</span> CompilerInputMode.str:
+        validateReqField<span class='b'>(</span><span class='s'>"srcStr"</span><span class='b'>)</span>
+        validateReqField<span class='b'>(</span><span class='s'>"srcStrLoc"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Check that the specified field is non-null, if not</span>
+  <span class='z'>** then log an error and return false.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='validateReqField'>validateReqField</span><span class='b'>(</span>Str field<span class='b'>)</span>
+  <span class='b'>{</span>
+    val := typeof.field<span class='b'>(</span>field<span class='b'>)</span>.get<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>val == <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"CompilerInput.${field} not set"</span>, <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** CompilerInputMode</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Input source from the file system</span>
+<span class='z'>**</span>
+<span class='k'>enum</span> <span class='k'>class</span> CompilerInputMode
+<span class='b'>{</span>
+  file,
+  str
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='CompilerInput.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#baseDir'>baseDir</a></li>
+  <li style='display: block;'><a href='#depends'>depends</a></li>
+  <li style='display: block;'><a href='#fcodeDump'>fcodeDump</a></li>
+  <li style='display: block;'><a href='#includeDoc'>includeDoc</a></li>
+  <li style='display: block;'><a href='#index'>index</a></li>
+  <li style='display: block;'><a href='#inputLoc'>inputLoc</a></li>
+  <li style='display: block;'><a href='#isScript'>isScript</a></li>
+  <li style='display: block;'><a href='#isTest'>isTest</a></li>
+  <li style='display: block;'><a href='#jsFiles'>jsFiles</a></li>
+  <li style='display: block;'><a href='#log'>log</a></li>
+  <li style='display: block;'><a href='#meta'>meta</a></li>
+  <li style='display: block;'><a href='#mode'>mode</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#outDir'>outDir</a></li>
+  <li style='display: block;'><a href='#output'>output</a></li>
+  <li style='display: block;'><a href='#podName'>podName</a></li>
+  <li style='display: block;'><a href='#resFiles'>resFiles</a></li>
+  <li style='display: block;'><a href='#srcFiles'>srcFiles</a></li>
+  <li style='display: block;'><a href='#srcStr'>srcStr</a></li>
+  <li style='display: block;'><a href='#srcStrLoc'>srcStrLoc</a></li>
+  <li style='display: block;'><a href='#summary'>summary</a></li>
+  <li class='hidden' style='display: block;'><a href='#validate'>validate</a></li>
+  <li class='hidden' style='display: block;'><a href='#validateReqField'>validateReqField</a></li>
+  <li style='display: block;'><a href='#version'>version</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

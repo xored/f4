@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Method</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Method.html'>Method</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>sys::Method</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  <a href='Slot.html'>sys::Slot</a>
+    sys::Method</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   6 Jan 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Method models a function with a formal parameter list and</span>
+<span class='z'>** return value (or Void if no return).</span>
+<span class='z'>**</span>
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Method : Slot
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Private constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>new</span> <span id='privateMake'>privateMake</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Signature</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Type returned by the method or sys::Void if no return value.</span>
+  <span class='z'>** Convenience for 'func.returns'.</span>
+  <span class='z'>**</span>
+  Type <span id='returns'>returns</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the parameters of the method.</span>
+  <span class='z'>** Convenience for 'func.params'.</span>
+  <span class='z'>**</span>
+  Param<span class='b'>[]</span> <span id='params'>params</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the function body of this method.</span>
+  <span class='z'>**</span>
+  Func <span id='func'>func</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Call Conveniences</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** Convenience for 'func.callList'</span>
+  Obj? <span id='callList'>callList</span><span class='b'>(</span>Obj?<span class='b'>[]</span>? args<span class='b'>)</span>
+
+  <span class='z'>** Convenience for 'func.callOn'</span>
+  Obj? <span id='callOn'>callOn</span><span class='b'>(</span>Obj? target, Obj?<span class='b'>[]</span>? args<span class='b'>)</span>
+
+  <span class='z'>** Convenience for 'func.call'</span>
+  Obj? <span id='call'>call</span><span class='b'>(</span>Obj? a := <span class='k'>null</span>, Obj? b := <span class='k'>null</span>, Obj? c := <span class='k'>null</span>, Obj? d := <span class='k'>null</span>,
+            Obj? e := <span class='k'>null</span>, Obj? f := <span class='k'>null</span>, Obj? g := <span class='k'>null</span>, Obj? h := <span class='k'>null</span><span class='b'>)</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Method.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#call'>call</a></li>
+  <li style='display: block;'><a href='#callList'>callList</a></li>
+  <li style='display: block;'><a href='#callOn'>callOn</a></li>
+  <li style='display: block;'><a href='#func'>func</a></li>
+  <li style='display: block;'><a href='#params'>params</a></li>
+  <li class='hidden' style='display: block;'><a href='#privateMake'>privateMake</a></li>
+  <li style='display: block;'><a href='#returns'>returns</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

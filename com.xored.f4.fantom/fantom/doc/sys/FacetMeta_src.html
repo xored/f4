@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::FacetMeta</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='FacetMeta.html'>FacetMeta</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final class</h2>
+<h1>sys::FacetMeta</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::FacetMeta : <a href='Facet.html'>sys::Facet</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2009, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   14 Jul 09  Brian Frank  Creation</span>
+<span class='y'>//   04 Feb 10  Brian Frank  Rework from old Symbol design</span>
+<span class='y'>//</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Serializable</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Serializable is a facet used to annotate types which can be serialized.</span>
+<span class='z'>** Objects are serialized via `sys::OutStream.writeObj` and deserialized</span>
+<span class='z'>** via `sys::InStream.readObj`.</span>
+<span class='z'>**</span>
+<span class='z'>** See the [Serialization Doc]`docLang::Serialization` for details.</span>
+<span class='z'>**</span>
+@FacetMeta <span class='b'>{</span> inherited = <span class='k'>true</span> <span class='b'>}</span>
+facet <span class='k'>class</span> Serializable
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Simples are serialized atomically via a customized string representation</span>
+  <span class='z'>** using the following rules:</span>
+  <span class='z'>**   - Override `sys::Obj.toStr` to return a suitable string representation</span>
+  <span class='z'>**     of the object.</span>
+  <span class='z'>**   - Must declare a static method called 'fromStr' which takes one 'Str'</span>
+  <span class='z'>**     parameter and returns an instance of the declaring type.  The 'fromStr'</span>
+  <span class='z'>**     method may contain additional parameters if they declare defaults.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool simple := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Collections are serializabled with a collection of child objects</span>
+  <span class='z'>** using the following  rules where 'Item' is the item type:</span>
+  <span class='z'>**   - Provide an 'add(Item)' method to add child items during 'readObj'</span>
+  <span class='z'>**   - Provide an 'each(|Item| f)' method to iterate children item</span>
+  <span class='z'>**     during 'writeObj'</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool collection := <span class='k'>false</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Transient</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Transient is a facet used to annotate fields which</span>
+<span class='z'>** should be serialized inside a `Serializable` type.</span>
+<span class='z'>** See the [Serialization Doc]`docLang::Serialization` for</span>
+<span class='z'>** details.</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> Transient <span class='b'>{}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Js</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Used to annoate types which should be compiled into JavaScript.</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> Js <span class='b'>{}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** NoDoc</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** This facet is used on public types and slots to indicate they should</span>
+<span class='z'>** not be documented with automated tools such as [Fandoc]`fandoc::pod-doc`.</span>
+<span class='z'>** As a developer you should avoid using these types and slots since they</span>
+<span class='z'>** are explicitly marked as not part of the public API.</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> NoDoc <span class='b'>{}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Deprecated</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Indicates that a type or slot is obsolete</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> Deprecated
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Message for compiler output when deprecated type or slot is used.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Str msg := <span class='s'>""</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Operator</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Used on methods to indicate method may be used an operator.</span>
+<span class='z'>** The operator symbol is determined by the method name:</span>
+<span class='z'>**</span>
+<span class='z'>**   prefix     symbol    degree</span>
+<span class='z'>**   ------     ------    ------</span>
+<span class='z'>**   negate     -a        unary</span>
+<span class='z'>**   increment  ++a       unary</span>
+<span class='z'>**   decrement  --a       unary</span>
+<span class='z'>**   plus       a + b     binary</span>
+<span class='z'>**   minus      a - b     binary</span>
+<span class='z'>**   mult       a * b     binary</span>
+<span class='z'>**   div        a / b     binary</span>
+<span class='z'>**   mod        a % b     binary</span>
+<span class='z'>**   get        a[b]      binary</span>
+<span class='z'>**   set        a[b] = c  ternary</span>
+<span class='z'>**</span>
+<span class='z'>** In the case of binary operators multiple methods may</span>
+<span class='z'>** be declared for a given symbol as long as every method starts</span>
+<span class='z'>** with correct name, for example "plus" and "plusInt".  For</span>
+<span class='z'>** unary/ternary operators there can only be one method and it must</span>
+<span class='z'>** be named exactly "negate", "increment", "decrement", or "set".</span>
+<span class='z'>**</span>
+<span class='z'>** See [docLang]`docLang::Methods#operators` for additional details.</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> Operator <span class='b'>{}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** FacetUsage</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Facet meta-data applied to facet classes.</span>
+<span class='z'>**</span>
+facet <span class='k'>class</span> FacetMeta
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Indicates whether the facet is inherited by sub-types.</span>
+  <span class='z'>** See [docLang]`docLang::Facets#inheritance` for additional details.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='inherited'>inherited</span> := <span class='k'>false</span>
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FacetMeta.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#inherited'>inherited</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

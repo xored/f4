@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::ErrResource</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='ErrResource.html'>ErrResource</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>flux::ErrResource</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Resource.html'>flux::Resource</a>
+    flux::ErrResource</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   21 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+<span class='k'>using</span> fwt
+
+<span class='z'>**</span>
+<span class='z'>** Resource represents the objects a user navigates, views, and</span>
+<span class='z'>** edits in a flux application.  Resources are mapped to objects</span>
+<span class='z'>** via the indexed prop 'flux.resource.{target}={resource}', where</span>
+<span class='z'>** both "target" and "resource" are qualied type names.  Subclasses</span>
+<span class='z'>** must define a 'make(Uri, Obj)' constructor.</span>
+<span class='z'>**</span>
+<span class='z'>** See [pod doc]`pod-doc#resources` for details.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> Resource
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the root resources.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Resource<span class='b'>[]</span> roots<span class='b'>()</span>
+  <span class='b'>{</span>
+    File.osRoots.map |File f-&gt;Resource| <span class='b'>{</span> FileResource.makeFile<span class='b'>(</span>f<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resolve a uri into a resource:</span>
+  <span class='z'>**   1.  Resolve uri to obj via `sys::Uri.get`</span>
+  <span class='z'>**   2.  If obj is Resource, return it</span>
+  <span class='z'>**   3.  Resolve to obj type to resource type via 'flux.resource.{qname}'</span>
+  <span class='z'>**       indexed property for type hierarchy</span>
+  <span class='z'>**</span>
+  <span class='z'>** Throw UnresolvedErr if the uri can't be resolved, and UnsupportedErr</span>
+  <span class='z'>** if resource can't be mapped to a resource.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Resource resolve<span class='b'>(</span>Uri uri<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// 1. resolve uri</span>
+    obj := uri.get
+
+    <span class='y'>// 2. if already resource return it</span>
+    <span class='k'>if</span> <span class='b'>(</span>obj <span class='k'>is</span> Resource<span class='b'>)</span> <span class='k'>return</span> obj
+
+    <span class='y'>// 3. map via fluxResource facet</span>
+    rtype := Flux.indexForInheritance<span class='b'>(</span><span class='s'>"flux.resource."</span>, obj.typeof<span class='b'>)</span>.first
+    <span class='k'>if</span> <span class='b'>(</span>rtype == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> UnsupportedErr<span class='b'>(</span><span class='s'>"No resource mapping for $obj.typeof"</span><span class='b'>)</span>
+    <span class='k'>return</span> rtype.make<span class='b'>([</span>uri, obj<span class='b'>])</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the absolute Uri of this resource.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Uri uri<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the display name of the resource.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str name<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a 16x16 icon for the resource.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Image icon<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/file.png`</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this resource has or might have children.  This</span>
+  <span class='z'>** is an optimization to display the expansion control in a tree</span>
+  <span class='z'>** without loading all the children.  The default calls 'children'.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Bool hasChildren<span class='b'>()</span>
+  <span class='b'>{</span>
+    c := children
+    <span class='k'>return</span> c != <span class='k'>null</span> ? !c.isEmpty : <span class='k'>false</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the navigation children of the resource.  Return an</span>
+  <span class='z'>** empty list or null to indicate no children.  Default</span>
+  <span class='z'>** returns null.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Resource<span class='b'>[]</span>? children<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>null</span><span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the list of available `View` types for the resource.</span>
+  <span class='z'>** The first view should be the default view.  The default</span>
+  <span class='z'>** implementation searches the type database index props formatted</span>
+  <span class='z'>** as "flux.view.{target}={view}", where "target" is this type (and</span>
+  <span class='z'>** its inherited classes, and "view" is view type qname.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Type<span class='b'>[]</span> views<span class='b'>()</span>
+  <span class='b'>{</span>
+    Flux.indexForInheritance<span class='b'>(</span><span class='s'>"flux.view."</span>, typeof<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make a popup menu for this resource or return null.</span>
+  <span class='z'>** The default popup menu returns the `viewsMenu`.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Menu? popup<span class='b'>(</span>Frame? frame, Event? event<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> Menu <span class='b'>{</span> add<span class='b'>(</span>viewsMenu<span class='b'>(</span>frame, event<span class='b'>))</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return a menu to hyperlink to the views supported</span>
+  <span class='z'>** by this resource.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Menu? viewsMenu<span class='b'>(</span>Frame? frame, Event? event<span class='b'>)</span>
+  <span class='b'>{</span>
+    menu := Menu <span class='b'>{</span> text = Flux.locale<span class='b'>(</span><span class='s'>"views.name"</span><span class='b'>)</span> <span class='b'>}</span>
+    views.each |Type v, Int i|
+    <span class='b'>{</span>
+      viewUri := i == 0 ? uri : uri.plusQuery<span class='b'>([</span><span class='s'>"view"</span>:v.qname<span class='b'>])</span>
+      c := Command<span class='b'>(</span>v.name, <span class='k'>null</span><span class='b'>)</span> <span class='b'>{</span> frame.load<span class='b'>(</span>viewUri, LoadMode<span class='b'>(</span>event<span class='b'>))</span> <span class='b'>}</span>
+      menu.add<span class='b'>(</span>MenuItem <span class='b'>{</span> command = c <span class='b'>})</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> menu
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return `uri`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> uri.toStr <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ErrResource</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** ErrResource models a resource that cannot be resolved.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> ErrResource : Resource
+<span class='b'>{</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Uri uri<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.uri = uri <span class='b'>}</span>
+
+  <span class='k'>override</span> Uri <span id='uri'>uri</span>
+
+  <span class='k'>override</span> Str <span id='name'>name</span><span class='b'>()</span> <span class='b'>{</span> n := uri.name; <span class='k'>return</span> n.isEmpty ? uri.toStr : n <span class='b'>}</span>
+
+  <span class='k'>override</span> Image <span id='icon'>icon</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> Flux.icon<span class='b'>(</span><span class='u'>`/x16/err.png`</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Type<span class='b'>[]</span> <span id='views'>views</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> Type<span class='b'>[</span>,<span class='b'>]</span> <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='ErrResource.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#icon'>icon</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#uri'>uri</a></li>
+  <li style='display: block;'><a href='#views'>views</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

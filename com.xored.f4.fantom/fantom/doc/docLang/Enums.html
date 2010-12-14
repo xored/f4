@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Enums</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Enums.html'>Enums</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Mixins.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Mixins.html'>Mixins</a></div>
+<div class='next'><a href='Slots.html'>Slots</a> <a href='Slots.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Enums</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Enums are a special type of class that define a discrete range of possible values:</p>
+
+<ul>
+<li>Enums are normal <a href='Classes.html'>classes</a> with all associated characteristics</li>
+
+<li>Enums are implied const</li>
+
+<li>Enums are implied final</li>
+
+<li>Enums have a fixed range of instances</li>
+
+<li>Enums can contain declare zero or more uniquely named slots</li>
+
+<li>Enums always always inherit from <code><a href='../sys/Enum.html'>sys::Enum</a></code></li>
+
+<li>Enums may inherit zero or more mixins</li>
+
+<li>Enums must have private constructors</li>
+</ul>
+
+<p>Enums are declared using the <code>enum</code> positional keyword and must declare their range of values before any other slot declarations:</p>
+
+<pre>enum class Color { red, blue, green }</pre>
+
+<h1 id='range'>Range </h1>
+
+<p>The <em>range</em> of an enum is its discrete set of instances.  Each instance of the range has the following characteristics:</p>
+
+<ul>
+<li>is identified by a unique zero based ordinal</li>
+
+<li>is identified by a unique name</li>
+
+<li>is accessed via a static const field by its name</li>
+
+<li>is an instance of the declaring enum class</li>
+
+<li>is immutable (enums are implied const)</li>
+</ul>
+
+<p>The compiler automatically generates two helper slots:</p>
+
+<ul>
+<li><code>vals</code> is a list of all the values in the range indexed by ordinal</li>
+
+<li><code>fromStr</code> is used to resolve by name</li>
+</ul>
+
+<p>Consider this example to illustrate what happens under the covers:</p>
+
+<pre>// what you write
+enum class Color { red, blue, green }
+
+// what the compiler generates
+class Color : Enum
+{
+  static const Color red   = make(0, "red")
+  static const Color blue  = make(1, "blue")
+  static const Color green = make(2, "green")
+
+  static const Color[] vals = [red, blue, green].toImmutable
+
+  static Color? fromStr(Str s) { ... }
+
+  private new make(Int ord, Str name) : super(ord, name) {}
+}</pre>
+
+<h1 id='ctor'>Enum Constructors </h1>
+
+<p>Enums can declare their own constructor to initialize additional fields.  Remember that an enum is const, which means that all its fields must also be const.  This in turn means that all fields must be initialized in the constructor.  Enum constructors must be private.  The following syntax is used to declare and call an enum constructor:</p>
+
+<pre>enum class Suits
+{
+  clubs("black"),
+  diamonds("red"),
+  hearts("red"),
+  spades("black")
+
+  private new make(Str color) { this.color = color; }
+
+  const Str color;
+}</pre>
+
+<p>Note that the declaring class doesn't actually manage its own ordinals and names, this is always done by the compiler.</p>
+
+<h1 id='modifiers'>Enum Modifiers </h1>
+
+<p>Enums can be annotated with the <code>public</code> or <code>internal</code> modifiers just like <a href='Classes.html#protection'>classes</a>.  It is a compile time error to use the <code>abstract</code>, <code>final</code>, or <code>const</code> modifiers with a enum - <code>final</code> and <code>const</code> are implied.</p>
+
+<h1 id='reflection'>Reflection </h1>
+
+<p>Enums are keyed by both an zero based integer ordinal and a string name.  The following summarizes slots often used to work with enums (using <code>Month</code> as an example):</p>
+
+<ul>
+<li><code><a href='../sys/Enum.html#ordinal'>sys::Enum.ordinal</a></code>: the <code>Int</code> ordinal key</li>
+
+<li><code><a href='../sys/Enum.html#name'>sys::Enum.name</a></code>: the <code>Str</code> name key</li>
+
+<li><code><a href='../sys/Month.html#vals'>sys::Month.vals</a></code>: lookup instance by ordinal</li>
+
+<li><code><a href='../sys/Month.html#fromStr'>sys::Month.fromStr</a></code>: lookup instance by name</li>
+</ul>
+
+<p>Example code:</p>
+
+<pre>apr := Month.apr              // direct access
+jun := Month.vals[5]          // lookup by ordinal
+aug := Month.fromStr("aug")   // lookup by name
+Month.fromStr("bad")          // throws ParseErr
+Month.fromStr("bad", false)   // returns null</pre>
+<div class='prevNext'>
+<div class='prev'><a href='Mixins.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Mixins.html'>Mixins</a></div>
+<div class='next'><a href='Slots.html'>Slots</a> <a href='Slots.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#range'>Range </a></li><li><a href='#ctor'>Enum Constructors </a></li><li><a href='#modifiers'>Enum Modifiers </a></li><li><a href='#reflection'>Reflection </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Zip</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Zip.html'>Zip</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>final class</h2>
+<h1>sys::Zip</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Zip</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   18 Aug 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Zip is used to read/write compressed zip files and streams.  Zip may be</span>
+<span class='z'>** used in three modes:</span>
+<span class='z'>**</span>
+<span class='z'>**   1. `Zip.open` is used to read a random access file and provides</span>
+<span class='z'>**      access to the entire contents with the ability to read select</span>
+<span class='z'>**      entries</span>
+<span class='z'>**   2. `Zip.read` is used to read a zip file from an input stream.</span>
+<span class='z'>**      Each entry is pulled off the stream using `readNext`</span>
+<span class='z'>**   3. `Zip.write` is used to write a zip file to an output stream.</span>
+<span class='z'>**      Each entry must is written to the stream using `writeNext`</span>
+<span class='z'>**</span>
+<span class='k'>final</span> <span class='k'>class</span> Zip
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Open the specified file as a zip file for reading.  If the specified</span>
+  <span class='z'>** file does not exist, is not a valid file, or does not support random</span>
+  <span class='z'>** access then throw IOErr.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   zip := Zip.open(File(`test.zip`))</span>
+  <span class='z'>**   txt := zip.contents[`/notice.txt`].readAllStr</span>
+  <span class='z'>**   zip.close</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Zip <span id='open'>open</span><span class='b'>(</span>File file<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a Zip used to read a zip file from the specified input stream.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   zip := Zip.read(File(`test.zip`).in)</span>
+  <span class='z'>**   File entry</span>
+  <span class='z'>**   while ((entry = zip.readNext()) != null)</span>
+  <span class='z'>**   {</span>
+  <span class='z'>**     data := entry.readAllBuf</span>
+  <span class='z'>**     echo("$entry size=$data.size")</span>
+  <span class='z'>**   }</span>
+  <span class='z'>**   zip.close</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Zip <span id='read'>read</span><span class='b'>(</span>InStream out<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a Zip used to write a zip file to the specified output stream.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   zip := Zip.write(File(`test.zip`).out)</span>
+  <span class='z'>**   out := zip.writeNext(`/path/hello.txt`)</span>
+  <span class='z'>**   out.writeLine("hello zip")</span>
+  <span class='z'>**   out.close</span>
+  <span class='z'>**   zip.close</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Zip <span id='write'>write</span><span class='b'>(</span>OutStream out<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Private constructor</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>new</span> <span id='init'>init</span><span class='b'>(</span>Uri uri<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the underlying file or null if using streams.</span>
+  <span class='z'>**</span>
+  File? <span id='file'>file</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the contents of this zip as a map of Files.  The Uri</span>
+  <span class='z'>** keys will start with a slash and be relative to this zip file.</span>
+  <span class='z'>** Return null if using streams.</span>
+  <span class='z'>**</span>
+  <span class='b'>[</span>Uri:File<span class='b'>]</span>? <span id='contents'>contents</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next entry in the zip.  Use the File's input stream to read the</span>
+  <span class='z'>** file contents.  Some file meta-data such as size may not be available.</span>
+  <span class='z'>** Return null if at end of zip file.  Throw UnsupportedErr if not reading</span>
+  <span class='z'>** from an input stream.</span>
+  <span class='z'>**</span>
+  File? <span id='readNext'>readNext</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Append a new file to the end of this zip file and return an OutStream</span>
+  <span class='z'>** which may be used to write the file contents.  The Uri must not contain</span>
+  <span class='z'>** a query or fragment; it may optionally start with a slash.  Closing the</span>
+  <span class='z'>** OutStream will close only this file entry - use Zip.close() when finished</span>
+  <span class='z'>** writing the entire zip file.  Throw UnsupportedErr if zip is not writing</span>
+  <span class='z'>** to an output stream.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Examples:</span>
+  <span class='z'>**   out := zip.writeNext(`/docs/test.txt`)</span>
+  <span class='z'>**   out.writeLine("test")</span>
+  <span class='z'>**   out.close</span>
+  <span class='z'>**</span>
+  OutStream <span id='writeNext'>writeNext</span><span class='b'>(</span>Uri path, DateTime modifyTime := DateTime.now<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Finish writing the contents of this zip file, but leave the underlying</span>
+  <span class='z'>** OutStream open.  This method is guaranteed to never throw an IOErr.</span>
+  <span class='z'>** Return true if the stream was finished successfully or false if the</span>
+  <span class='z'>** an error occurred.  Throw UnsupportedErr if zip is not not writing to</span>
+  <span class='z'>** an output stream.</span>
+  <span class='z'>**</span>
+  Bool <span id='finish'>finish</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Close this zip file for reading and writing.  If this zip file is</span>
+  <span class='z'>** reading or writing an stream, then the underlying stream is also</span>
+  <span class='z'>** closed.  This method is guaranteed to never throw an IOErr.  Return</span>
+  <span class='z'>** true if the close was successful or false if the an error occurred.</span>
+  <span class='z'>**</span>
+  Bool <span id='close'>close</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If file is not null then return file.toStr, otherwise return</span>
+  <span class='z'>** a suitable string representation.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Zip.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#close'>close</a></li>
+  <li style='display: block;'><a href='#contents'>contents</a></li>
+  <li style='display: block;'><a href='#file'>file</a></li>
+  <li style='display: block;'><a href='#finish'>finish</a></li>
+  <li class='hidden' style='display: block;'><a href='#init'>init</a></li>
+  <li style='display: block;'><a href='#open'>open</a></li>
+  <li style='display: block;'><a href='#read'>read</a></li>
+  <li style='display: block;'><a href='#readNext'>readNext</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+  <li style='display: block;'><a href='#writeNext'>writeNext</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::EdgePane</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='EdgePane.html'>EdgePane</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fwt::EdgePane</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Widget.html'>fwt::Widget</a>
+    <a href='Pane.html'>fwt::Pane</a>
+      fwt::EdgePane</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   19 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** EdgePane is a container which lays out four children along</span>
+<span class='z'>** the four edges and one child in the center.  The top and</span>
+<span class='z'>** bottom edges are laid out with their preferred height.  Children</span>
+<span class='z'>** on the left or right edges are laid out with with their preferred</span>
+<span class='z'>** width.  Any remaining space is given to the center component.</span>
+<span class='z'>**</span>
+@Js
+@Serializable
+<span class='k'>class</span> EdgePane : Pane
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Children</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Top widget is laid out with preferred height.</span>
+  <span class='z'>**</span>
+  Widget? <span id='top'>top</span> <span class='b'>{</span> set <span class='b'>{</span> remove<span class='b'>(</span>&amp;top<span class='b'>)</span>.add<span class='b'>(</span>it<span class='b'>)</span>; &amp;top = it <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Bottom widget is laid out with preferred height.</span>
+  <span class='z'>**</span>
+  Widget? <span id='bottom'>bottom</span> <span class='b'>{</span> set <span class='b'>{</span> remove<span class='b'>(</span>&amp;bottom<span class='b'>)</span>.add<span class='b'>(</span>it<span class='b'>)</span>; &amp;bottom = it <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Left widget is laid out with preferred width.</span>
+  <span class='z'>**</span>
+  Widget? <span id='left'>left</span>  <span class='b'>{</span> set <span class='b'>{</span> remove<span class='b'>(</span>&amp;left<span class='b'>)</span>.add<span class='b'>(</span>it<span class='b'>)</span>; &amp;left = it <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Right widget is laid out with preferred width.</span>
+  <span class='z'>**</span>
+  Widget? <span id='right'>right</span> <span class='b'>{</span> set <span class='b'>{</span> remove<span class='b'>(</span>&amp;right<span class='b'>)</span>.add<span class='b'>(</span>it<span class='b'>)</span>; &amp;right = it <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Center widget gets any remaining space in the center.</span>
+  <span class='z'>**</span>
+  Widget? <span id='center'>center</span> <span class='b'>{</span> set <span class='b'>{</span> remove<span class='b'>(</span>&amp;center<span class='b'>)</span>.add<span class='b'>(</span>it<span class='b'>)</span>; &amp;center = it <span class='b'>}</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Layout</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Size <span id='prefSize'>prefSize</span><span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span>
+  <span class='b'>{</span>
+    top    := pref<span class='b'>(</span><span class='k'>this</span>.top<span class='b'>)</span>
+    bottom := pref<span class='b'>(</span><span class='k'>this</span>.bottom<span class='b'>)</span>
+    left   := pref<span class='b'>(</span><span class='k'>this</span>.left<span class='b'>)</span>
+    right  := pref<span class='b'>(</span><span class='k'>this</span>.right<span class='b'>)</span>
+    center := pref<span class='b'>(</span><span class='k'>this</span>.center<span class='b'>)</span>
+
+    w := <span class='b'>(</span>left.w + center.w + right.w<span class='b'>)</span>.max<span class='b'>(</span>top.w<span class='b'>)</span>.max<span class='b'>(</span>bottom.w<span class='b'>)</span>
+    h := top.h + bottom.h + <span class='b'>(</span>left.h.max<span class='b'>(</span>center.h<span class='b'>)</span>.max<span class='b'>(</span>right.h<span class='b'>))</span>
+    <span class='k'>return</span> Size<span class='b'>(</span>w, h<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Size <span id='pref'>pref</span><span class='b'>(</span>Widget? w<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> w == <span class='k'>null</span> || !w.visible ? Size.defVal : w.prefSize<span class='b'>(</span>Hints.defVal<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void <span id='onLayout'>onLayout</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    s := size
+    x := 0; y := 0; w := s.w; h := s.h
+
+    top := <span class='k'>this</span>.top
+    <span class='k'>if</span> <span class='b'>(</span>top != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      prefh := top.prefSize<span class='b'>(</span>Hints<span class='b'>(</span>w, <span class='k'>null</span><span class='b'>))</span>.h
+      top.bounds = Rect<span class='b'>(</span>x, y, w, prefh<span class='b'>)</span>
+      y += prefh; h -= prefh
+    <span class='b'>}</span>
+
+    bottom := <span class='k'>this</span>.bottom
+    <span class='k'>if</span> <span class='b'>(</span>bottom != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      prefh := bottom.prefSize<span class='b'>(</span>Hints<span class='b'>(</span>w, <span class='k'>null</span><span class='b'>))</span>.h
+      bottom.bounds = Rect<span class='b'>(</span>x, y+h-prefh, w, prefh<span class='b'>)</span>
+      h -= prefh
+    <span class='b'>}</span>
+
+    left := <span class='k'>this</span>.left
+    <span class='k'>if</span> <span class='b'>(</span>left != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      prefw := left.prefSize<span class='b'>(</span>Hints<span class='b'>(</span><span class='k'>null</span>, h<span class='b'>))</span>.w
+      left.bounds = Rect<span class='b'>(</span>x, y, prefw, h<span class='b'>)</span>
+      x += prefw; w -= prefw
+    <span class='b'>}</span>
+
+    right := <span class='k'>this</span>.right
+    <span class='k'>if</span> <span class='b'>(</span>right != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      prefw := right.prefSize<span class='b'>(</span>Hints<span class='b'>(</span><span class='k'>null</span>, h<span class='b'>))</span>.w
+      right.bounds = Rect<span class='b'>(</span>x+w-prefw, y, prefw, h<span class='b'>)</span>
+      w -= prefw
+    <span class='b'>}</span>
+
+    center := <span class='k'>this</span>.center
+    <span class='k'>if</span> <span class='b'>(</span>center != <span class='k'>null</span><span class='b'>)</span>
+      center.bounds = Rect<span class='b'>(</span>x, y, w, h<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='EdgePane.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#bottom'>bottom</a></li>
+  <li style='display: block;'><a href='#center'>center</a></li>
+  <li style='display: block;'><a href='#left'>left</a></li>
+  <li style='display: block;'><a href='#onLayout'>onLayout</a></li>
+  <li class='hidden' style='display: block;'><a href='#pref'>pref</a></li>
+  <li style='display: block;'><a href='#prefSize'>prefSize</a></li>
+  <li style='display: block;'><a href='#right'>right</a></li>
+  <li style='display: block;'><a href='#top'>top</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

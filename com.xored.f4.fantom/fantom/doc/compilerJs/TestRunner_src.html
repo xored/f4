@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compilerJs::TestRunner</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compilerJs</a></li>
+  <li>&gt;</li>
+  <li><a href='TestRunner.html'>TestRunner</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compilerJs::TestRunner</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compilerJs::TestRunner</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   10 Dec 08  Andy Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> <span class='b'>[</span>java<span class='b'>]</span> java.lang
+<span class='k'>using</span> <span class='b'>[</span>java<span class='b'>]</span> javax.script
+
+<span class='z'>**</span>
+<span class='z'>** TestRunner is the command line tool to run Fantom unit tests</span>
+<span class='z'>** against their JavaScript implementations.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> TestRunner
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Main</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='main'>main</span><span class='b'>(</span>Str<span class='b'>[]</span> args := Env.cur.args<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>args.size != 1<span class='b'>)</span>
+    <span class='b'>{</span>
+      help
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// get args</span>
+    arg    := args.first
+    pod    := arg
+    type   := <span class='s'>"*"</span>
+    method := <span class='s'>"*"</span>
+
+    <span class='y'>// check for type</span>
+    <span class='k'>if</span> <span class='b'>(</span>pod.contains<span class='b'>(</span><span class='s'>"::"</span><span class='b'>))</span>
+    <span class='b'>{</span>
+      i := pod.index<span class='b'>(</span><span class='s'>"::"</span><span class='b'>)</span>
+      type = pod<span class='b'>[</span>i+2..-1<span class='b'>]</span>
+      pod  = pod<span class='b'>[</span>0..i-1<span class='b'>]</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for method</span>
+    <span class='k'>if</span> <span class='b'>(</span>type.contains<span class='b'>(</span><span class='s'>"."</span><span class='b'>))</span>
+    <span class='b'>{</span>
+      i := type.index<span class='b'>(</span><span class='s'>"."</span><span class='b'>)</span>
+      method = type<span class='b'>[</span>i+1..-1<span class='b'>]</span>
+      type   = type<span class='b'>[</span>0..i-1<span class='b'>]</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// create engine and eval pods</span>
+    p := Pod.find<span class='b'>(</span>pod<span class='b'>)</span>
+    evalPod<span class='b'>(</span>p<span class='b'>)</span>
+
+    <span class='y'>// run tests</span>
+    t1 := Duration.now
+    <span class='k'>if</span> <span class='b'>(</span>type != <span class='s'>"*"</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      runTests<span class='b'>(</span>Type.find<span class='b'>(</span><span class='s'>"$pod::$type"</span><span class='b'>)</span>, method<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>pod != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      p.types.each |t| <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>t.fits<span class='b'>(</span>Test#<span class='b'>)</span> &amp;&amp; t.hasFacet<span class='b'>(</span>Js#<span class='b'>))</span> runTests<span class='b'>(</span>t, <span class='s'>"*"</span><span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Pattern not supported: $arg"</span><span class='b'>)</span>
+    t2 := Duration.now
+
+    echo<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+    echo<span class='b'>(</span><span class='s'>"Time: ${(t2-t1).toMillis}ms"</span><span class='b'>)</span>
+    echo<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+    results
+  <span class='b'>}</span>
+
+  Void <span id='evalPod'>evalPod</span><span class='b'>(</span>Pod p<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>engine == <span class='k'>null</span><span class='b'>)</span> engine = ScriptEngineManager<span class='b'>()</span>.getEngineByName<span class='b'>(</span><span class='s'>"js"</span><span class='b'>)</span>;
+    Runner.evalPodScript<span class='b'>(</span>engine, p<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>p.name == <span class='s'>"testSys"</span><span class='b'>)</span> evalTestSys<span class='b'>(</span>p<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='evalTestSys'>evalTestSys</span><span class='b'>(</span>Pod p<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>p.name != <span class='s'>"testSys"</span><span class='b'>)</span> <span class='k'>return</span>
+      buf := StrBuf<span class='b'>()</span>
+      out := buf.out
+
+      <span class='y'>// index</span>
+      JsIndexedProps<span class='b'>()</span>.write<span class='b'>(</span>out, <span class='b'>[</span>Pod.find<span class='b'>(</span><span class='s'>"testSys"</span><span class='b'>)])</span>
+
+      <span class='y'>// locales</span>
+      JsProps.writeProps<span class='b'>(</span>p, <span class='u'>`locale/en-US.props`</span>, out<span class='b'>)</span>
+      JsProps.writeProps<span class='b'>(</span>p, <span class='u'>`locale/es.props`</span>, out<span class='b'>)</span>
+      JsProps.writeProps<span class='b'>(</span>p, <span class='u'>`locale/es-MX.props`</span>, out<span class='b'>)</span>
+
+      <span class='y'>// timezones</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"London"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Amsterdam"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Kiev"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Sao_Paulo"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Sydney"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Riga"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Jerusalem"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"St_Johns"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Godthab"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+      JsTimeZone<span class='b'>(</span>TimeZone<span class='b'>(</span><span class='s'>"Taipei"</span><span class='b'>))</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+
+      <span class='y'>// unit db</span>
+      JsUnitDatabase<span class='b'>()</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+
+      engine.eval<span class='b'>(</span>buf.toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Locale eval failed: $p.name"</span>, e<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='results'>results</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>failureNames.size &gt; 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      echo<span class='b'>(</span><span class='s'>"Failed:"</span><span class='b'>)</span>
+      failureNames.each |Str s| <span class='b'>{</span> echo<span class='b'>(</span><span class='s'>"  $s"</span><span class='b'>)</span> <span class='b'>}</span>
+      echo<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    echo<span class='b'>(</span><span class='s'>"***"</span><span class='b'>)</span>
+    echo<span class='b'>(</span><span class='s'>"*** "</span> +
+      <span class='b'>(</span>failures == 0 ? <span class='s'>"All tests passed!"</span> : <span class='s'>"$failures  FAILURES"</span><span class='b'>)</span> +
+      <span class='s'>" [$testCount tests, $methodCount methods, $totalVerifyCount verifies]"</span><span class='b'>)</span>
+    echo<span class='b'>(</span><span class='s'>"***"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='runTests'>runTests</span><span class='b'>(</span>Type type, Str methodName := <span class='s'>"*"</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>//if (skip(type, methodName)) return</span>
+
+    echo<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+    methods := methods<span class='b'>(</span>type, methodName<span class='b'>)</span>
+    methods.each |Method m|
+    <span class='b'>{</span>
+      echo<span class='b'>(</span><span class='s'>"-- Run: ${m}..."</span><span class='b'>)</span>
+      verifyCount := runTest<span class='b'>(</span>m<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>verifyCount &lt; 0<span class='b'>)</span>
+      <span class='b'>{</span>
+        failures++
+        failureNames.add<span class='b'>(</span>m.qname<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        echo<span class='b'>(</span><span class='s'>"   Pass: $m  [$verifyCount]"</span><span class='b'>)</span>;
+        methodCount++
+        totalVerifyCount += verifyCount;
+      <span class='b'>}</span>
+      testCount++
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Method<span class='b'>[]</span> <span id='methods'>methods</span><span class='b'>(</span>Type type, Str methodName<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> type.methods.findAll |Method m-&gt;Bool|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.isAbstract<span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.name.startsWith<span class='b'>(</span><span class='s'>"test"</span><span class='b'>))</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>methodName == <span class='s'>"*"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+        <span class='k'>return</span> methodName == m.name
+      <span class='b'>}</span>
+      <span class='k'>return</span> <span class='k'>false</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Int <span id='runTest'>runTest</span><span class='b'>(</span>Method m<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='y'>// env dirs</span>
+      homeDir := Env.cur.homeDir
+      workDir := Env.cur.workDir
+      tempDir := Env.cur.tempDir
+
+      <span class='y'>// TODO - setup/teardown</span>
+      js  := <span class='s'>"fan.${m.parent.pod}.${m.parent.name}"</span>
+      ret := engine.eval<span class='b'>(</span>
+       <span class='s'>"var testRunner = function()
+        {
+          try
+          {
+            fan.sys.Env.cur().m_homeDir = fan.sys.File.os($homeDir.osPath.toCode);
+            fan.sys.Env.cur().m_workDir = fan.sys.File.os($workDir.osPath.toCode);
+            fan.sys.Env.cur().m_tempDir = fan.sys.File.os($tempDir.osPath.toCode);
+
+            var test = ${js}.make();
+            test.${m.name}();
+            return test.verifyCount;
+          }
+          catch (err)
+          {
+            if (err == undefined) println('Undefined error');
+            else if (err.trace) err.trace();
+            else
+            {
+              var file = err.fileName;   if (file == null) file = 'Unknown';
+              var line = err.lineNumber; if (line == null) line = 'Unknown';
+              println(err + ' (' + file + ':' + line + ')');
+            }
+            return -1;
+          }
+        }
+        testRunner();"</span><span class='b'>)</span>
+      <span class='k'>return</span> ret-&gt;toInt
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      echo<span class='b'>(</span><span class='s'>""</span><span class='b'>)</span>
+      echo<span class='b'>(</span><span class='s'>"TEST FAILED"</span><span class='b'>)</span>
+      e.trace
+      <span class='k'>return</span> -1
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='help'>help</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    echo<span class='b'>(</span><span class='s'>"Fantom Test"</span><span class='b'>)</span>;
+    echo<span class='b'>(</span><span class='s'>"Usage:"</span><span class='b'>)</span>;
+    <span class='y'>//echo("  fant [options] -all");</span>
+    <span class='y'>//echo("  fant [options] &lt;pod&gt; [pod]*");</span>
+    echo<span class='b'>(</span><span class='s'>"  fant [options] &lt;pod&gt;"</span><span class='b'>)</span>;
+    echo<span class='b'>(</span><span class='s'>"  fant [options] &lt;pod&gt;::&lt;test&gt;"</span><span class='b'>)</span>;
+    echo<span class='b'>(</span><span class='s'>"  fant [options] &lt;pod&gt;::&lt;test&gt;.&lt;method&gt;"</span><span class='b'>)</span>;
+    <span class='y'>//echo("Note:");</span>
+    <span class='y'>//echo("  You can use * to indicate wildcard for all pods");</span>
+    <span class='y'>//echo("Options:");</span>
+    <span class='y'>//echo("  -help, -h, -?  print usage help");</span>
+    <span class='y'>//echo("  -version       print version");</span>
+    <span class='y'>//echo("  -v             verbose mode");</span>
+    <span class='y'>//echo("  -all           test all pods");</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  ScriptEngine? <span id='engine'>engine</span>
+  Int <span id='testCount'>testCount</span>        := 0
+  Int <span id='methodCount'>methodCount</span>      := 0
+  Int <span id='totalVerifyCount'>totalVerifyCount</span> := 0
+  Int <span id='failures'>failures</span>         := 0
+  Str<span class='b'>[]</span> <span id='failureNames'>failureNames</span>   := <span class='b'>[</span>,<span class='b'>]</span>
+
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='TestRunner.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#engine'>engine</a></li>
+  <li style='display: block;'><a href='#evalPod'>evalPod</a></li>
+  <li class='hidden' style='display: block;'><a href='#evalTestSys'>evalTestSys</a></li>
+  <li style='display: block;'><a href='#failureNames'>failureNames</a></li>
+  <li style='display: block;'><a href='#failures'>failures</a></li>
+  <li style='display: block;'><a href='#help'>help</a></li>
+  <li style='display: block;'><a href='#main'>main</a></li>
+  <li style='display: block;'><a href='#methodCount'>methodCount</a></li>
+  <li style='display: block;'><a href='#methods'>methods</a></li>
+  <li style='display: block;'><a href='#results'>results</a></li>
+  <li style='display: block;'><a href='#runTest'>runTest</a></li>
+  <li style='display: block;'><a href='#runTests'>runTests</a></li>
+  <li style='display: block;'><a href='#testCount'>testCount</a></li>
+  <li style='display: block;'><a href='#totalVerifyCount'>totalVerifyCount</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compilerJs 1.0.56
+[11-Nov-2010 Thu 10:08:19AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

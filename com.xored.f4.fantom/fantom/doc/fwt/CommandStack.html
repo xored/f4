@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::CommandStack</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='CommandStack.html'>CommandStack</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>final class</h2>
+<h1>fwt::CommandStack</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  fwt::CommandStack</pre>
+</div>
+<div class='detail'>
+
+<p>Manages a stack of commands for undo/redo.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='clear' class='method'>clear<a href='CommandStack_src.html#clear'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CommandStack.html'>CommandStack</a> clear()</code></p>
+
+<p>Clear the undo/redo stacks.  Return this.</p>
+</dd>
+<dt id='dup' class='method'>dup<a href='CommandStack_src.html#dup'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> dup()</code></p>
+
+<p>Create a shallow copy of the undo and redo stacks.  The copy maintains references to the original command instances.</p>
+</dd>
+<dt id='fireModified' class='method hidden'>fireModified<a href='CommandStack_src.html#fireModified'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> fireModified()</code></p>
+</dd>
+<dt id='hasRedo' class='method'>hasRedo<a href='CommandStack_src.html#hasRedo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> hasRedo()</code></p>
+
+<p>Are any commands available for redo.</p>
+</dd>
+<dt id='hasUndo' class='method'>hasUndo<a href='CommandStack_src.html#hasUndo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> hasUndo()</code></p>
+
+<p>Are any commands available for undo.</p>
+</dd>
+<dt id='isEmpty' class='method'>isEmpty<a href='CommandStack_src.html#isEmpty'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isEmpty()</code></p>
+
+<p>Return is both the undo and redo lists are empty.</p>
+</dd>
+<dt id='limit' class='field'>limit<a href='CommandStack_src.html#limit'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a> limit := 1000</code></p>
+
+<p>Max number of undo commands stored in the stack.</p>
+</dd>
+<dt id='listRedo' class='method'>listRedo<a href='CommandStack_src.html#listRedo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Command.html'>Command</a>[] listRedo()</code></p>
+
+<p>List all the redo commands in the stack.</p>
+</dd>
+<dt id='listUndo' class='method'>listUndo<a href='CommandStack_src.html#listUndo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Command.html'>Command</a>[] listUndo()</code></p>
+
+<p>List all the undo commands in the stack.</p>
+</dd>
+<dt id='onModify' class='field'>onModify<a href='CommandStack_src.html#onModify'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='../sys/Transient.html'>Transient</a> <br/>
+readonly <a href='EventListeners.html'>EventListeners</a> onModify := EventListeners()</code></p>
+
+<p>Callback when command stack is modified.</p>
+</dd>
+<dt id='push' class='method'>push<a href='CommandStack_src.html#push'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CommandStack.html'>CommandStack</a> push(<a href='Command.html'>Command</a>? c)</code></p>
+
+<p>Push a command onto the undo stack.  This clears the redo stack.  If c is null or returns false for <code><a href='Command.html#undoable'>Command.undoable</a></code> then ignore this call. Return this.</p>
+</dd>
+<dt id='redo' class='method'>redo<a href='CommandStack_src.html#redo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Command.html'>Command</a>? redo()</code></p>
+
+<p>Call <code><a href='Command.html#redo'>Command.redo</a></code> on the last redo command and then push it onto the undo stack.  If the redo stack is empty, then ignore this call.  Return command redone.</p>
+</dd>
+<dt id='redoStack' class='field hidden'>redoStack<a href='CommandStack_src.html#redoStack'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='Command.html'>Command</a>[] redoStack := Command[,]</code></p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='CommandStack_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return debug string representation.</p>
+</dd>
+<dt id='undo' class='method'>undo<a href='CommandStack_src.html#undo'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Command.html'>Command</a>? undo()</code></p>
+
+<p>Call <code><a href='Command.html#undo'>Command.undo</a></code> on the last undo command and then push it onto the redo stack.  If the undo stack is empty, then ignore this call.  Return command undone.</p>
+</dd>
+<dt id='undoStack' class='field hidden'>undoStack<a href='CommandStack_src.html#undoStack'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='Command.html'>Command</a>[] undoStack := Command[,]</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='CommandStack_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#clear'>clear</a></li>
+  <li><a href='#dup'>dup</a></li>
+  <li class='hidden'><a href='#fireModified'>fireModified</a></li>
+  <li><a href='#hasRedo'>hasRedo</a></li>
+  <li><a href='#hasUndo'>hasUndo</a></li>
+  <li><a href='#isEmpty'>isEmpty</a></li>
+  <li><a href='#limit'>limit</a></li>
+  <li><a href='#listRedo'>listRedo</a></li>
+  <li><a href='#listUndo'>listUndo</a></li>
+  <li><a href='#onModify'>onModify</a></li>
+  <li><a href='#push'>push</a></li>
+  <li><a href='#redo'>redo</a></li>
+  <li class='hidden'><a href='#redoStack'>redoStack</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#undo'>undo</a></li>
+  <li class='hidden'><a href='#undoStack'>undoStack</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

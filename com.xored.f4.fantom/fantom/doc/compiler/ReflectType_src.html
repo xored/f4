@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::ReflectType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='ReflectType.html'>ReflectType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::ReflectType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::ReflectType : <a href='CType.html'>compiler::CType</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   6 Jun 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** ReflectType is the implementation of CType for a type imported</span>
+<span class='z'>** from a precompiled pod (as opposed to a TypeDef within the compilation</span>
+<span class='z'>** units being compiled).</span>
+<span class='z'>**</span>
+<span class='k'>class</span> ReflectType : CType
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with loaded Type.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>ReflectNamespace ns, Type t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pod     = ns.importPod<span class='b'>(</span>t.pod<span class='b'>)</span>
+    <span class='k'>this</span>.t       = t
+    <span class='k'>this</span>.base    = ns.importType<span class='b'>(</span>t.base<span class='b'>)</span>
+    <span class='k'>this</span>.mixins  = ns.importTypes<span class='b'>(</span>t.mixins<span class='b'>)</span>
+    <span class='k'>this</span>.isVal   = t.isVal
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CType</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> ReflectNamespace <span id='ns'>ns</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> pod.ns <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='name'>name</span><span class='b'>()</span>      <span class='b'>{</span> <span class='k'>return</span> t.name <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='qname'>qname</span><span class='b'>()</span>     <span class='b'>{</span> <span class='k'>return</span> t.qname <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='signature'>signature</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> t.signature <span class='b'>}</span>
+  <span class='k'>override</span> Int <span id='flags'>flags</span><span class='b'>()</span>     <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>t-&gt;flags <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> Bool <span id='isVal'>isVal</span>
+
+  <span class='k'>override</span> Bool <span id='isNullable'>isNullable</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toNullable'>toNullable</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> NullableType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isGeneric'>isGeneric</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> t.isGeneric <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isParameterized'>isParameterized</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> !t.params.isEmpty <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isGenericParameter'>isGenericParameter</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> pod === ns.sysPod &amp;&amp; name.size == 1 <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toListOf'>toListOf</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ListType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CFacet? <span id='facet'>facet</span><span class='b'>(</span>Str qname<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+      <span class='k'>return</span> ReflectFacet.map<span class='b'>(</span>ns, t.facet<span class='b'>(</span>Type.find<span class='b'>(</span>qname<span class='b'>)</span>, <span class='k'>false</span><span class='b'>))</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+      e.trace
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Str:CSlot <span id='slots'>slots</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!slotsLoaded<span class='b'>)</span>
+    <span class='b'>{</span>
+      slotsLoaded = <span class='k'>true</span>
+      <span class='k'>if</span> <span class='b'>(</span>!isGenericParameter<span class='b'>)</span>
+      <span class='b'>{</span>
+        t.slots.each |Slot s|
+        <span class='b'>{</span>
+          <span class='k'>if</span> <span class='b'>(</span>slotMap<span class='b'>[</span>s.name<span class='b'>]</span> == <span class='k'>null</span><span class='b'>)</span>
+            slotMap<span class='b'>[</span>s.name<span class='b'>]</span> = ns.importSlot<span class='b'>(</span>s<span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> slotMap
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> COperators <span id='operators'>operators</span><span class='b'>()</span> <span class='b'>{</span> COperators<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CSlot? <span id='slot'>slot</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    cs := slotMap<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>cs == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      s := t.slot<span class='b'>(</span>name, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>s != <span class='k'>null</span><span class='b'>)</span>
+        slotMap<span class='b'>[</span>name<span class='b'>]</span> = cs = ns.importSlot<span class='b'>(</span>s<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> cs
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>readonly</span> Type <span id='t'>t</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> ReflectPod <span id='pod'>pod</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> CType? <span id='base'>base</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> CType<span class='b'>[]</span> <span id='mixins'>mixins</span>
+  <span class='k'>private</span> Str:CSlot <span id='slotMap'>slotMap</span> := Str:CSlot<span class='b'>[</span>:<span class='b'>]</span>
+  <span class='k'>private</span> Bool <span id='slotsLoaded'>slotsLoaded</span> := <span class='k'>false</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='ReflectType.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#base'>base</a></li>
+  <li style='display: block;'><a href='#facet'>facet</a></li>
+  <li style='display: block;'><a href='#flags'>flags</a></li>
+  <li style='display: block;'><a href='#isGeneric'>isGeneric</a></li>
+  <li style='display: block;'><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li style='display: block;'><a href='#isNullable'>isNullable</a></li>
+  <li style='display: block;'><a href='#isParameterized'>isParameterized</a></li>
+  <li style='display: block;'><a href='#isVal'>isVal</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#mixins'>mixins</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#operators'>operators</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#qname'>qname</a></li>
+  <li style='display: block;'><a href='#signature'>signature</a></li>
+  <li style='display: block;'><a href='#slot'>slot</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotMap'>slotMap</a></li>
+  <li style='display: block;'><a href='#slots'>slots</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotsLoaded'>slotsLoaded</a></li>
+  <li style='display: block;'><a href='#t'>t</a></li>
+  <li style='display: block;'><a href='#toListOf'>toListOf</a></li>
+  <li style='display: block;'><a href='#toNullable'>toNullable</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

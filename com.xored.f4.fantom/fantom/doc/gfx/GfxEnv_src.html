@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>gfx::GfxEnv</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>gfx</a></li>
+  <li>&gt;</li>
+  <li><a href='GfxEnv.html'>GfxEnv</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract const class</h2>
+<h1>gfx::GfxEnv</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  gfx::GfxEnv</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2009, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   30 Apr 09  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> concurrent
+
+<span class='z'>**</span>
+<span class='z'>** GfxEnv models an implementation of the gfx graphics API.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>abstract</span> <span class='k'>const</span> <span class='k'>class</span> GfxEnv
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the current thread's graphics environment.  If no</span>
+  <span class='z'>** environment is active then throw Err or return null based</span>
+  <span class='z'>** on checked flag.  The current environment is configured</span>
+  <span class='z'>** with the "gfx.env" Actor local.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> GfxEnv? <span id='cur'>cur</span><span class='b'>(</span>Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    GfxEnv? env := Actor.locals<span class='b'>[</span><span class='s'>"gfx.env"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>env != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> env
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"No GfxEnv is active"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Image Support</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the size of the image or 0,0 if not loaded yet for</span>
+  <span class='z'>** this environment.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Size <span id='imageSize'>imageSize</span><span class='b'>(</span>Image img<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Resize this image into a new image for this environment.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Image <span id='imageResize'>imageResize</span><span class='b'>(</span>Image img, Size size<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Font Support</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get height of this font for this environment.  The height</span>
+  <span class='z'>** is the pixels is the sum of ascent, descent, and leading.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='fontHeight'>fontHeight</span><span class='b'>(</span>Font f<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get ascent of this font for this environment.  The ascent</span>
+  <span class='z'>** is the distance in pixels from baseline to top of chars, not</span>
+  <span class='z'>** including any leading area.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='fontAscent'>fontAscent</span><span class='b'>(</span>Font f<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get descent of this font for this environment.  The descent</span>
+  <span class='z'>** is the distance in pixels from baseline to bottom of chars, not</span>
+  <span class='z'>** including any leading area.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='fontDescent'>fontDescent</span><span class='b'>(</span>Font f<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get leading of this font for this environment.  The leading</span>
+  <span class='z'>** area is the distance in pixels above the ascent which may include</span>
+  <span class='z'>** accents and other marks.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='fontLeading'>fontLeading</span><span class='b'>(</span>Font f<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the width of the string in pixels when painted</span>
+  <span class='z'>** with this font for this environment.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='fontWidth'>fontWidth</span><span class='b'>(</span>Font f, Str s<span class='b'>)</span>
+
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='GfxEnv.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#cur'>cur</a></li>
+  <li style='display: block;'><a href='#fontAscent'>fontAscent</a></li>
+  <li style='display: block;'><a href='#fontDescent'>fontDescent</a></li>
+  <li style='display: block;'><a href='#fontHeight'>fontHeight</a></li>
+  <li style='display: block;'><a href='#fontLeading'>fontLeading</a></li>
+  <li style='display: block;'><a href='#fontWidth'>fontWidth</a></li>
+  <li style='display: block;'><a href='#imageResize'>imageResize</a></li>
+  <li style='display: block;'><a href='#imageSize'>imageSize</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+gfx 1.0.56
+[11-Nov-2010 Thu 10:08:24AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

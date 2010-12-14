@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::WritePod</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='WritePod.html'>WritePod</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::WritePod</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    <a href='CompilerStep.html'>compiler::CompilerStep</a>
+      compiler::WritePod</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   3 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//   7 Oct 06  Brian Frank  Port from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** WritePod writes the FPod to a zip file.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> WritePod : CompilerStep
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Run</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Not used, use write instead</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void <span id='run'>run</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>throw</span> UnsupportedErr.make <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Run the step and return pod file written</span>
+  <span class='z'>**</span>
+  File <span id='write'>write</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    dir  := compiler.input.outDir
+    fpod := compiler.fpod
+    podName := fpod.name
+    podFile := dir + <span class='s'>"${podName}.pod"</span>.toUri
+    loc = Loc.makeFile<span class='b'>(</span>podFile<span class='b'>)</span>
+
+    log.info<span class='b'>(</span><span class='s'>"WritePod [${podFile.toStr}]"</span><span class='b'>)</span>
+
+    <span class='y'>// create output directory</span>
+    dir.create
+
+    Zip? zip := <span class='k'>null</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='y'>// open zip store</span>
+      zip = Zip.write<span class='b'>(</span>podFile.out<span class='b'>)</span>
+
+      <span class='y'>// write fpod data structures into zip file</span>
+      fpod.write<span class='b'>(</span>zip<span class='b'>)</span>
+
+      <span class='y'>// write javascript</span>
+      <span class='k'>if</span> <span class='b'>(</span>compiler.js != <span class='k'>null</span><span class='b'>)</span>
+        writeStr<span class='b'>(</span>zip, <span class='u'>`${podName}.js`</span>, compiler.js<span class='b'>)</span>
+
+      <span class='y'>// if explicit locale props</span>
+      <span class='k'>if</span> <span class='b'>(</span>compiler.localeProps != <span class='k'>null</span><span class='b'>)</span>
+        writeStr<span class='b'>(</span>zip, <span class='u'>`locale/en.props`</span>, compiler.localeProps<span class='b'>)</span>
+
+      <span class='y'>// write resource files</span>
+      compiler.resFiles.each |File f| <span class='b'>{</span> writeRes<span class='b'>(</span>zip, f<span class='b'>)</span> <span class='b'>}</span>
+
+      <span class='y'>// if including fandoc write it out too</span>
+      <span class='k'>if</span> <span class='b'>(</span>compiler.input.includeDoc<span class='b'>)</span> writeDocs<span class='b'>(</span>zip<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> e
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      e.trace
+      <span class='k'>throw</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot write"</span>, loc, e<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// close file</span>
+    <span class='k'>if</span> <span class='b'>(</span>zip != <span class='k'>null</span><span class='b'>)</span> zip.close
+    <span class='k'>return</span> podFile
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// JavaScript</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='writeStr'>writeStr</span><span class='b'>(</span>Zip zip, Uri path, Str content<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+      zip.writeNext<span class='b'>(</span>path, DateTime.now<span class='b'>)</span>.print<span class='b'>(</span>content<span class='b'>)</span>.close
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+      <span class='k'>throw</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot write resource '$path'"</span>, loc, e<span class='b'>))</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Resource</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='writeRes'>writeRes</span><span class='b'>(</span>Zip zip, File file, Uri? path := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    input := compiler.input
+    <span class='k'>if</span> <span class='b'>(</span>path == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      path = file.uri
+      path = path.relTo<span class='b'>(</span>input.baseDir.uri<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if locale/en.props and we have explicit definition</span>
+    <span class='y'>// from LocaleProps then skip it</span>
+    <span class='k'>if</span> <span class='b'>(</span>path == <span class='u'>`locale/en.props`</span> &amp;&amp; compiler.localeProps != <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>return</span>
+
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      out := zip.writeNext<span class='b'>(</span>path, file.modified<span class='b'>)</span>
+      file.in.pipe<span class='b'>(</span>out<span class='b'>)</span>
+      out.close
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot write resource file '$path'"</span>, loc, e<span class='b'>))</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Doc</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='writeDocs'>writeDocs</span><span class='b'>(</span>Zip zip<span class='b'>)</span>
+  <span class='b'>{</span>
+    writePodDoc<span class='b'>(</span>zip<span class='b'>)</span>
+    compiler.types.each |TypeDef t|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>!t.isSynthetic<span class='b'>)</span> writeTypeDoc<span class='b'>(</span>zip, t<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If there is a pod.fandoc as peer to build.fan then</span>
+  <span class='z'>** copy it into doc/pod.fandoc</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='writePodDoc'>writePodDoc</span><span class='b'>(</span>Zip zip<span class='b'>)</span>
+  <span class='b'>{</span>
+    podDoc := compiler.input.baseDir + <span class='u'>`pod.fandoc`</span>
+    <span class='k'>if</span> <span class='b'>(</span>!podDoc.exists<span class='b'>)</span> <span class='k'>return</span>
+    writeRes<span class='b'>(</span>zip, podDoc, <span class='u'>`doc/pod.fandoc`</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** FDoc is used to read/write a fandoc text file.  The fandoc file</span>
+  <span class='z'>** format is an extremely simple plan text format with left justified</span>
+  <span class='z'>** type/slot qnames, followed by the fandoc content indented two spaces.</span>
+  <span class='z'>** Addiontal type/slot meta-data is prefixed as "@name=value" lines.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='writeTypeDoc'>writeTypeDoc</span><span class='b'>(</span>Zip zip, TypeDef t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      out := zip.writeNext<span class='b'>(</span><span class='s'>"doc/${t.name}.apidoc"</span>.toUri<span class='b'>)</span>
+      writeDoc<span class='b'>(</span>out, t.qname, t<span class='b'>)</span>
+      t.slotDefs.each |SlotDef s|
+      <span class='b'>{</span>
+        writeDoc<span class='b'>(</span>out, s.qname, s<span class='b'>)</span>
+      <span class='b'>}</span>
+      out.close
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Cannot write fandoc '$t.name'"</span>, t.loc, e<span class='b'>))</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> Void <span id='writeDoc'>writeDoc</span><span class='b'>(</span>OutStream out, Str key, DefNode node<span class='b'>)</span>
+  <span class='b'>{</span>
+    doc := node.doc
+    meta := node.docMeta
+    <span class='k'>if</span> <span class='b'>(</span>doc == <span class='k'>null</span> &amp;&amp; <span class='b'>(</span>meta == <span class='k'>null</span> || meta.isEmpty<span class='b'>))</span> <span class='k'>return</span>
+    out.printLine<span class='b'>(</span>key<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>meta != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      meta.each|Str val, Str name|
+      <span class='b'>{</span>
+        val = val.replace<span class='b'>(</span><span class='s'>"\n"</span>, <span class='s'>" "</span><span class='b'>)</span>.replace<span class='b'>(</span><span class='s'>"\r"</span>, <span class='s'>" "</span><span class='b'>)</span>
+        out.printLine<span class='b'>(</span><span class='s'>"  @$name=$val"</span><span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>doc != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      doc.each |Str line| <span class='b'>{</span> out.print<span class='b'>(</span><span class='s'>"  "</span><span class='b'>)</span>.printLine<span class='b'>(</span>line<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    out.printLine
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Loc? <span id='loc'>loc</span>
+  <span class='k'>private</span> FacetDef<span class='b'>[]</span> <span id='noFacets'>noFacets</span> := FacetDef<span class='b'>[</span>,<span class='b'>]</span>.ro
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='WritePod.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden' style='display: block;'><a href='#loc'>loc</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#noFacets'>noFacets</a></li>
+  <li style='display: block;'><a href='#run'>run</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeDoc'>writeDoc</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeDocs'>writeDocs</a></li>
+  <li class='hidden' style='display: block;'><a href='#writePodDoc'>writePodDoc</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeRes'>writeRes</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeStr'>writeStr</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeTypeDoc'>writeTypeDoc</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

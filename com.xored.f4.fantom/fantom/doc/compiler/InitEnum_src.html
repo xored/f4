@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::InitEnum</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='InitEnum.html'>InitEnum</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::InitEnum</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    <a href='CompilerStep.html'>compiler::CompilerStep</a>
+      compiler::InitEnum</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Apr 06  Brian Frank  Creation</span>
+<span class='y'>//   22 Sep 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** InitEnum is used to auto-generate EnumDefs into abstract</span>
+<span class='z'>** syntax tree representation of the fields and method.</span>
+<span class='z'>**</span>
+<span class='z'>**</span>
+<span class='k'>class</span> InitEnum : CompilerStep
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Run</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Void <span id='run'>run</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    log.debug<span class='b'>(</span><span class='s'>"InitEnum"</span><span class='b'>)</span>
+    walk<span class='b'>(</span>compiler, VisitDepth.typeDef<span class='b'>)</span>
+    bombIfErr
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void <span id='visitTypeDef'>visitTypeDef</span><span class='b'>(</span>TypeDef t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!t.isEnum<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      addCtor
+      addFromStr
+      t.addFacet<span class='b'>(</span><span class='k'>this</span>, ns.sysPod.resolveType<span class='b'>(</span><span class='s'>"Serializable"</span>, <span class='k'>true</span><span class='b'>)</span>, <span class='b'>[</span><span class='s'>"simple"</span>:<span class='k'>true</span><span class='b'>])</span>
+
+      fields := FieldDef<span class='b'>[</span>,<span class='b'>]</span>
+      t.enumDefs.each |EnumDef e| <span class='b'>{</span> fields.add<span class='b'>(</span>makeField<span class='b'>(</span>e<span class='b'>))</span> <span class='b'>}</span>
+      fields.add<span class='b'>(</span>makeValsField<span class='b'>)</span>
+
+      <span class='y'>// add enum fields to beginning of type</span>
+      fields.each |FieldDef f, Int i| <span class='b'>{</span> t.addSlot<span class='b'>(</span>f, i<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Make Ctor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add constructor or enhance existing constructor.</span>
+  <span class='z'>**</span>
+  Void <span id='addCtor'>addCtor</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// our constructor definition</span>
+    MethodDef? m :=  <span class='k'>null</span>
+
+    <span class='y'>// check if there are any existing constructors - there</span>
+    <span class='y'>// can only be zero or one called make</span>
+    ctors := curType.methodDefs.findAll |MethodDef x-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> x.isCtor <span class='b'>}</span>
+    ctors.each |MethodDef ctor|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>ctor.name == <span class='s'>"make"</span><span class='b'>)</span>
+        m = ctor
+      <span class='k'>else</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Enum constructor must be named 'make'"</span>, ctor.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we found an existing constructor, then error check it</span>
+    <span class='k'>if</span> <span class='b'>(</span>m != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>!m.isPrivate<span class='b'>)</span>
+        err<span class='b'>(</span><span class='s'>"Enum constructor must be private"</span>, m.loc<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>m.ctorChain != <span class='k'>null</span><span class='b'>)</span>
+        err<span class='b'>(</span><span class='s'>"Enum constructor cannot call super constructor"</span>, m.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we didn't find an existing constructor, then</span>
+    <span class='y'>// add a synthetic one</span>
+    <span class='k'>if</span> <span class='b'>(</span>m == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      m = MethodDef<span class='b'>(</span>curType.loc, curType<span class='b'>)</span>
+      m.name = <span class='s'>"make"</span>
+      m.flags = FConst.Ctor + FConst.Private + FConst.Synthetic
+      m.ret = TypeRef<span class='b'>(</span>curType.loc, ns.voidType<span class='b'>)</span>
+      m.code = Block<span class='b'>(</span>curType.loc<span class='b'>)</span>
+      m.code.stmts.add<span class='b'>(</span>ReturnStmt.makeSynthetic<span class='b'>(</span>curType.loc<span class='b'>))</span>
+      curType.addSlot<span class='b'>(</span>m<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// Enum.make call</span>
+    loc := m.loc
+    m.ctorChain = CallExpr<span class='b'>(</span>loc, SuperExpr<span class='b'>(</span>loc<span class='b'>)</span>, <span class='s'>"make"</span><span class='b'>)</span>
+    m.ctorChain.isCtorChain = <span class='k'>true</span>
+    m.ctorChain.args.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"\$ordinal"</span><span class='b'>))</span>
+    m.ctorChain.args.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"\$name"</span><span class='b'>))</span>
+
+    <span class='y'>// insert ordinal, name params</span>
+    m.params.insert<span class='b'>(</span>0, ParamDef<span class='b'>(</span>loc, ns.intType, <span class='s'>"\$ordinal"</span><span class='b'>))</span>
+    m.params.insert<span class='b'>(</span>1, ParamDef<span class='b'>(</span>loc, ns.strType, <span class='s'>"\$name"</span><span class='b'>))</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Make FromStr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add fromStr method.</span>
+  <span class='z'>**</span>
+  Void <span id='addFromStr'>addFromStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// static CurType fromStr(Str name, Bool checked := true)</span>
+    loc := curType.loc
+    m := MethodDef<span class='b'>(</span>loc, curType<span class='b'>)</span>
+    m.name = <span class='s'>"fromStr"</span>
+    m.flags = FConst.Public + FConst.Static
+    m.params.add<span class='b'>(</span>ParamDef<span class='b'>(</span>loc, ns.strType, <span class='s'>"name"</span><span class='b'>))</span>
+    m.params.add<span class='b'>(</span>ParamDef<span class='b'>(</span>loc, ns.boolType, <span class='s'>"checked"</span>, LiteralExpr<span class='b'>(</span>loc, ExprId.trueLiteral, ns.boolType, <span class='k'>true</span><span class='b'>)))</span>
+    m.ret = TypeRef<span class='b'>(</span>loc, curType.toNullable<span class='b'>)</span>
+    m.code = Block<span class='b'>(</span>loc<span class='b'>)</span>
+    m.doc  = <span class='b'>[</span><span class='s'>"Return the $curType.name instance for the specified name.  If not a"</span>,
+              <span class='s'>"valid name and checked is false return null, otherwise throw ParseErr."</span><span class='b'>]</span>
+    curType.addSlot<span class='b'>(</span>m<span class='b'>)</span>
+
+    <span class='y'>// return (CurType)doParse(name, checked)</span>
+    doFromStr := CallExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"doFromStr"</span><span class='b'>)</span>
+    doFromStr.args.add<span class='b'>(</span>LiteralExpr<span class='b'>(</span>loc, ExprId.typeLiteral, ns.typeType, curType<span class='b'>))</span>
+    doFromStr.args.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"name"</span><span class='b'>))</span>
+    doFromStr.args.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"checked"</span><span class='b'>))</span>
+    cast := TypeCheckExpr<span class='b'>(</span>loc, ExprId.coerce, doFromStr, curType.toNullable<span class='b'>)</span>
+    m.code.stmts.add<span class='b'>(</span>ReturnStmt.makeSynthetic<span class='b'>(</span>loc, cast<span class='b'>))</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Make Field</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make enum value field:  public static final Foo name = make(ord, name)</span>
+  <span class='z'>**</span>
+  FieldDef <span id='makeField'>makeField</span><span class='b'>(</span>EnumDef def<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// ensure there isn't already a slot with same name</span>
+    dup := curType.slot<span class='b'>(</span>def.name<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>dup != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>dup.parent === curType<span class='b'>)</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Enum '$def.name' conflicts with slot"</span>, <span class='b'>(</span>Loc<span class='b'>)</span>dup-&gt;loc<span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Enum '$def.name' conflicts with inherited slot '$dup.qname'"</span>, def.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    loc := def.loc
+
+    <span class='y'>// initializer</span>
+    init := CallExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"make"</span><span class='b'>)</span>
+    init.args.add<span class='b'>(</span>LiteralExpr<span class='b'>(</span>loc, ExprId.intLiteral, ns.intType, def.ordinal<span class='b'>))</span>
+    init.args.add<span class='b'>(</span>LiteralExpr<span class='b'>(</span>loc, ExprId.strLiteral, ns.strType, def.name<span class='b'>))</span>
+    init.args.addAll<span class='b'>(</span>def.ctorArgs<span class='b'>)</span>
+
+    <span class='y'>// static field</span>
+    f := FieldDef<span class='b'>(</span>loc, curType<span class='b'>)</span>
+    f.doc       = def.doc
+    f.flags     = FConst.Public + FConst.Static + FConst.Const + FConst.Storage + FConst.Enum
+    f.name      = def.name
+    f.fieldType = curType
+    f.init      = init
+    f.enumDef   = def
+    <span class='k'>return</span> f
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make vals field: List of Enum values</span>
+  <span class='z'>**</span>
+  FieldDef <span id='makeValsField'>makeValsField</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// ensure there isn't already a slot with same name</span>
+    dup := curType.slot<span class='b'>(</span><span class='s'>"vals"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>dup != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>dup.parent == curType<span class='b'>)</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Enum 'vals' conflicts with slot"</span>, <span class='b'>(</span>Loc<span class='b'>)</span>dup-&gt;loc<span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Enum 'vals' conflicts with inherited slot '$dup.qname'"</span>, curType.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    loc := curType.loc
+
+    <span class='y'>// initializer</span>
+    listType := curType.toListOf
+    init := ListLiteralExpr<span class='b'>(</span>loc, listType<span class='b'>)</span>
+    curType.enumDefs.each |EnumDef e|
+    <span class='b'>{</span>
+      target := StaticTargetExpr<span class='b'>(</span>loc, curType<span class='b'>)</span>
+      init.vals.add<span class='b'>(</span>UnknownVarExpr<span class='b'>(</span>loc, target, e.name<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// static field</span>
+    f := FieldDef<span class='b'>(</span>loc, curType<span class='b'>)</span>
+    f.flags     = FConst.Public + FConst.Static + FConst.Const + FConst.Storage
+    f.name      = <span class='s'>"vals"</span>
+    f.fieldType = listType
+    f.init      = init
+    f.doc       = <span class='b'>[</span><span class='s'>"List of $curType.name values indexed by ordinal"</span><span class='b'>]</span>
+    <span class='k'>return</span> f
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='InitEnum.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#addCtor'>addCtor</a></li>
+  <li style='display: block;'><a href='#addFromStr'>addFromStr</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#makeField'>makeField</a></li>
+  <li style='display: block;'><a href='#makeValsField'>makeValsField</a></li>
+  <li style='display: block;'><a href='#run'>run</a></li>
+  <li style='display: block;'><a href='#visitTypeDef'>visitTypeDef</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

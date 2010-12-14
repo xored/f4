@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Slot</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Slot.html'>Slot</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract const class</h2>
+<h1>sys::Slot</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Slot</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   4 Jan 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Slot represents a member field or method on a Type.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>const</span> <span class='k'>class</span> Slot
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Management</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find a Slot by it's qualified name "pod::Type.slot".  If the slot</span>
+  <span class='z'>** doesn't exist and checked is false then return null, otherwise</span>
+  <span class='z'>** throw UnknownSlotErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Slot? <span id='find'>find</span><span class='b'>(</span>Str qname, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for '(Method)find(qname, checked)'</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Method? <span id='findMethod'>findMethod</span><span class='b'>(</span>Str qname, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for '(Field)find(qname, checked)'</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Field? <span id='findField'>findField</span><span class='b'>(</span>Str qname, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for 'findMethod(qname, checked).func'</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Func? <span id='findFunc'>findFunc</span><span class='b'>(</span>Str qname, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Internal constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>new</span> <span id='make'>make</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Naming</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parent type which defines this slot.</span>
+  <span class='z'>**</span>
+  Type <span id='parent'>parent</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Simple name of the slot such as "size".</span>
+  <span class='z'>**</span>
+  Str <span id='name'>name</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Qualified name such as "sys:Str.size".</span>
+  <span class='z'>**</span>
+  Str <span id='qname'>qname</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if this is an instance of Field.</span>
+  <span class='z'>**</span>
+  Bool <span id='isField'>isField</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if this is an instance of Method.</span>
+  <span class='z'>**</span>
+  Bool <span id='isMethod'>isMethod</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Flags</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is abstract (no implementation provided).</span>
+  <span class='z'>**</span>
+  Bool <span id='isAbstract'>isAbstract</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is constant and thread safe.  A constant field</span>
+  <span class='z'>** is explicitly marked with the const modifier and guaranteed</span>
+  <span class='z'>** to always reference the same immutable object for the life of</span>
+  <span class='z'>** the VM.  A const method is guaranteed to not capture any</span>
+  <span class='z'>** state from its thread, and is safe to execute on other threads.</span>
+  <span class='z'>** The compiler marks methods as const based on the following</span>
+  <span class='z'>** analysis:</span>
+  <span class='z'>**   - static methods are always automatically const</span>
+  <span class='z'>**   - instance methods are never const</span>
+  <span class='z'>**   - closures which don't capture any variables from their</span>
+  <span class='z'>**     scope are automatically const</span>
+  <span class='z'>**   - partional apply methods which only capture const variables</span>
+  <span class='z'>**     from their scope are automatically const</span>
+  <span class='z'>**</span>
+  Bool <span id='isConst'>isConst</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is constructor method.</span>
+  <span class='z'>**</span>
+  Bool <span id='isCtor'>isCtor</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot has internal protection scope.</span>
+  <span class='z'>**</span>
+  Bool <span id='isInternal'>isInternal</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is native.</span>
+  <span class='z'>**</span>
+  Bool <span id='isNative'>isNative</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is an override (of parent's virtual method).</span>
+  <span class='z'>**</span>
+  Bool <span id='isOverride'>isOverride</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot has private protection scope.</span>
+  <span class='z'>**</span>
+  Bool <span id='isPrivate'>isPrivate</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot has protected protection scope.</span>
+  <span class='z'>**</span>
+  Bool <span id='isProtected'>isProtected</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot has public protection scope.</span>
+  <span class='z'>**</span>
+  Bool <span id='isPublic'>isPublic</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is static (class based, rather than instance).</span>
+  <span class='z'>**</span>
+  Bool <span id='isStatic'>isStatic</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this slot was generated by the compiler.</span>
+  <span class='z'>**</span>
+  Bool <span id='isSynthetic'>isSynthetic</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if slot is virtual (may be overridden in subclasses).</span>
+  <span class='z'>**</span>
+  Bool <span id='isVirtual'>isVirtual</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Facets</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the list of facets defined on this slot or return an empty</span>
+  <span class='z'>** list if no facets are defined. If looking up a facet by type, then</span>
+  <span class='z'>** use the `facet` method which will provide better performance.</span>
+  <span class='z'>** See [Facets Doc]`docLang::Facets` for details.</span>
+  <span class='z'>**</span>
+  Facet<span class='b'>[]</span> <span id='facets'>facets</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a facet by its type.  If not found on this slot then</span>
+  <span class='z'>** return null or throw UnknownFacetErr based on check flag.</span>
+  <span class='z'>** See [Facets Doc]`docLang::Facets` for details.</span>
+  <span class='z'>**</span>
+  Facet? <span id='facet'>facet</span><span class='b'>(</span>Type type, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this type has the specified facet defined.</span>
+  <span class='z'>**</span>
+  Bool <span id='hasFacet'>hasFacet</span><span class='b'>(</span>Type type<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Documentation</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the raw fandoc for this slot or null if not available.</span>
+  <span class='z'>** If there is additional documentation meta-data available it is</span>
+  <span class='z'>** included an the start of the string as a series of "@name=value"</span>
+  <span class='z'>** lines.</span>
+  <span class='z'>**</span>
+  Str? <span id='doc'>doc</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Conversion</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Always return qname().</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return a string representation of the Fantom code signature.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str <span id='signature'>signature</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Slot.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#doc'>doc</a></li>
+  <li style='display: block;'><a href='#facet'>facet</a></li>
+  <li style='display: block;'><a href='#facets'>facets</a></li>
+  <li style='display: block;'><a href='#find'>find</a></li>
+  <li style='display: block;'><a href='#findField'>findField</a></li>
+  <li style='display: block;'><a href='#findFunc'>findFunc</a></li>
+  <li style='display: block;'><a href='#findMethod'>findMethod</a></li>
+  <li style='display: block;'><a href='#hasFacet'>hasFacet</a></li>
+  <li style='display: block;'><a href='#isAbstract'>isAbstract</a></li>
+  <li style='display: block;'><a href='#isConst'>isConst</a></li>
+  <li style='display: block;'><a href='#isCtor'>isCtor</a></li>
+  <li style='display: block;'><a href='#isField'>isField</a></li>
+  <li style='display: block;'><a href='#isInternal'>isInternal</a></li>
+  <li style='display: block;'><a href='#isMethod'>isMethod</a></li>
+  <li style='display: block;'><a href='#isNative'>isNative</a></li>
+  <li style='display: block;'><a href='#isOverride'>isOverride</a></li>
+  <li style='display: block;'><a href='#isPrivate'>isPrivate</a></li>
+  <li style='display: block;'><a href='#isProtected'>isProtected</a></li>
+  <li style='display: block;'><a href='#isPublic'>isPublic</a></li>
+  <li style='display: block;'><a href='#isStatic'>isStatic</a></li>
+  <li style='display: block;'><a href='#isSynthetic'>isSynthetic</a></li>
+  <li style='display: block;'><a href='#isVirtual'>isVirtual</a></li>
+  <li class='hidden' style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#parent'>parent</a></li>
+  <li style='display: block;'><a href='#qname'>qname</a></li>
+  <li style='display: block;'><a href='#signature'>signature</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

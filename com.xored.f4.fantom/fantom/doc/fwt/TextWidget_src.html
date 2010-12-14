@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::TextWidget</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='TextWidget.html'>TextWidget</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>fwt::TextWidget</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Widget.html'>fwt::Widget</a>
+    fwt::TextWidget</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   27 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** TextWidget is the base class for `Text` and `RichText`.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>abstract</span> <span class='k'>class</span> TextWidget : Widget
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a border around the text field.  Default is true.  This</span>
+  <span class='z'>** field cannot be changed once the widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='border'>border</span> := <span class='k'>true</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** False for text fields and true for multiline text areas.</span>
+  <span class='z'>** Default is false for `Text` widgets and true for `RichText`</span>
+  <span class='z'>** widgets.  This field cannot be changed once the widget</span>
+  <span class='z'>** is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='multiLine'>multiLine</span> := <span class='k'>this</span> <span class='k'>is</span> RichText
+
+  <span class='z'>**</span>
+  <span class='z'>** False to make the text widget read only.  Default is true.</span>
+  <span class='z'>** This field cannot be changed once the widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='editable'>editable</span> := <span class='k'>true</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** True to make wrap the text of a multiLine text widget.</span>
+  <span class='z'>** Default is false.  This field cannot be changed once the</span>
+  <span class='z'>** widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='wrap'>wrap</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** True use a horizontal scrollbar for multiLine text widget.</span>
+  <span class='z'>** Default is true.  This field cannot be changed once the</span>
+  <span class='z'>** widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='hscroll'>hscroll</span> := <span class='k'>true</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** True use a vertical scrollbar for multiLine text widget.</span>
+  <span class='z'>** Default is true.  This field cannot be changed once the</span>
+  <span class='z'>** widget is constructed.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Bool <span id='vscroll'>vscroll</span> := <span class='k'>true</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The widget's current text</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str <span id='text'>text</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The caret position as zero based offset</span>
+  <span class='z'>** from start of text.  Note that SWT doesn't allow</span>
+  <span class='z'>** setting of caret position for native widgets.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Int <span id='caretOffset'>caretOffset</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Font for text. Defaults to null (system default).</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Font? <span id='font'>font</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The preferred number of character columns to</span>
+  <span class='z'>** use in calculating prefSize.</span>
+  <span class='z'>**</span>
+  Int <span id='prefCols'>prefCols</span> := 20
+
+  <span class='z'>**</span>
+  <span class='z'>** The preferred number of character rows to</span>
+  <span class='z'>** use in calculating prefSize if multiLine, otherwise</span>
+  <span class='z'>** this field is ignored.</span>
+  <span class='z'>**</span>
+  Int <span id='prefRows'>prefRows</span> := 10
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Selection</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the selected text or "" if nothing selected.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Str <span id='selectText'>selectText</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the starting offset of the current selection.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Int <span id='selectStart'>selectStart</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the number of chars in the current selection.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Int <span id='selectSize'>selectSize</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Set the selection range.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='select'>select</span><span class='b'>(</span>Int startOffset, Int size<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Select the entire document.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='selectAll'>selectAll</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Clear the selection.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='selectClear'>selectClear</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the preferred size based on `prefCols` and</span>
+  <span class='z'>** `prefRows`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> <span class='k'>native</span> Size <span id='prefSize'>prefSize</span><span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Replace the text with 'newText' starting at position 'start'</span>
+  <span class='z'>** for a length of 'replaceLen'.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='modify'>modify</span><span class='b'>(</span>Int start, Int replaceLen, Str newText<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Cuts the selected text to clipboard.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='cut'>cut</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Copy the selected text to clipboard.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='copy'>copy</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Paste the selected text to clipboard.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>native</span> Void <span id='paste'>paste</span><span class='b'>()</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** TextChange</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Wraps up information regarding a text modification.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>class</span> TextChange
+<span class='b'>{</span>
+  <span class='z'>** Zero based offset of modification</span>
+  Int startOffset
+
+  <span class='z'>** Zero based line number of modification</span>
+  Int startLine
+
+  <span class='z'>** Old text which was replaced</span>
+  Str? oldText
+
+  <span class='z'>** New text inserted</span>
+  Str? newText
+
+  <span class='z'>** Number of newlines in `oldText` or zero if no newlines</span>
+  <span class='z'>** This field will lazily be calcualted if null.</span>
+  Int? oldNumNewlines
+  <span class='b'>{</span>
+    get
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>&amp;oldNumNewlines == <span class='k'>null</span><span class='b'>)</span> &amp;oldNumNewlines = oldText?.numNewlines
+      <span class='k'>return</span> &amp;oldNumNewlines
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Number of newlines in `newText` or zero if no newlines.</span>
+  <span class='z'>** This field will lazily be calcualted if null.</span>
+  Int? newNumNewlines
+  <span class='b'>{</span>
+    get
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>&amp;newNumNewlines == <span class='k'>null</span><span class='b'>)</span> &amp;newNumNewlines = newText?.numNewlines
+      <span class='k'>return</span> &amp;newNumNewlines
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Zero based offset of where repaint should start, or if</span>
+  <span class='z'>** null then `startOffset` is assumed.</span>
+  Int? repaintStart
+
+  <span class='z'>** Zero based offset of where repaint should end,</span>
+  <span class='z'>** or if null then 'newText.size' is assumed.</span>
+  Int? repaintLen
+
+  <span class='k'>override</span> Str toStr<span class='b'>()</span>
+  <span class='b'>{</span>
+    o := oldText.size &lt; 10 ? oldText : oldText<span class='b'>[</span>0..&lt;10<span class='b'>]</span> + <span class='s'>"..&lt;"</span>
+    n := newText.size &lt; 10 ? newText : newText<span class='b'>[</span>0..&lt;10<span class='b'>]</span> + <span class='s'>"..&lt;"</span>
+    <span class='k'>return</span> <span class='s'>"startOffset=$startOffset startLine=$startLine "</span> +
+           <span class='s'>"newText=$n.toCode oldText=$o.toCode "</span> +
+           <span class='s'>"oldNumNewlines=$oldNumNewlines newNumNewlines=$newNumNewlines"</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Undo/Redo Support</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Undo this modification on the given widget.</span>
+  <span class='z'>**</span>
+  Void undo<span class='b'>(</span>TextWidget widget<span class='b'>)</span>
+  <span class='b'>{</span>
+    widget.modify<span class='b'>(</span>startOffset, newText.size, oldText<span class='b'>)</span>
+    widget.select<span class='b'>(</span>startOffset + oldText.size, 0<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Redo this modification on the given widget.</span>
+  <span class='z'>**</span>
+  Void redo<span class='b'>(</span>TextWidget widget<span class='b'>)</span>
+  <span class='b'>{</span>
+    widget.modify<span class='b'>(</span>startOffset, oldText.size, newText<span class='b'>)</span>
+    widget.select<span class='b'>(</span>startOffset + newText.size, 0<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='TextWidget.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#border'>border</a></li>
+  <li style='display: block;'><a href='#caretOffset'>caretOffset</a></li>
+  <li style='display: block;'><a href='#copy'>copy</a></li>
+  <li style='display: block;'><a href='#cut'>cut</a></li>
+  <li style='display: block;'><a href='#editable'>editable</a></li>
+  <li style='display: block;'><a href='#font'>font</a></li>
+  <li style='display: block;'><a href='#hscroll'>hscroll</a></li>
+  <li style='display: block;'><a href='#modify'>modify</a></li>
+  <li style='display: block;'><a href='#multiLine'>multiLine</a></li>
+  <li style='display: block;'><a href='#paste'>paste</a></li>
+  <li style='display: block;'><a href='#prefCols'>prefCols</a></li>
+  <li style='display: block;'><a href='#prefRows'>prefRows</a></li>
+  <li style='display: block;'><a href='#prefSize'>prefSize</a></li>
+  <li style='display: block;'><a href='#select'>select</a></li>
+  <li style='display: block;'><a href='#selectAll'>selectAll</a></li>
+  <li style='display: block;'><a href='#selectClear'>selectClear</a></li>
+  <li style='display: block;'><a href='#selectSize'>selectSize</a></li>
+  <li style='display: block;'><a href='#selectStart'>selectStart</a></li>
+  <li style='display: block;'><a href='#selectText'>selectText</a></li>
+  <li style='display: block;'><a href='#text'>text</a></li>
+  <li style='display: block;'><a href='#vscroll'>vscroll</a></li>
+  <li style='display: block;'><a href='#wrap'>wrap</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

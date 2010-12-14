@@ -1,0 +1,296 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Closures</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Closures.html'>Closures</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Functions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Functions.html'>Functions</a></div>
+<div class='next'><a href='JavaFFI.html'>Java FFI</a> <a href='JavaFFI.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Closures</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Closures are an expression to create a <a href='Functions.html'>function</a> inside the body of a method.  Closures have the ability to reference local variables from their enclosing scope.  This ability to create inline functions which access local scope makes it easy to use closures as method arguments.  For instance closures are used extensively as an <a href='#iteration'>iteration</a> mechanism.</p>
+
+<h1 id='syntax'>Syntax </h1>
+
+<p>The basic syntax of a closure:</p>
+
+<pre>|A a, B b...->R| { stmts }</pre>
+
+<p>The start of a closure is its signature which reuses the same syntax as <a href='Functions.html#signatures'>function types</a>.  The body of the closure is a series of zero or more statements.  The <code>return</code> statement is used to return a result and exit out of the closure (Fantom doesn't support any other way to jump out of a closure other than <code>return</code> or <code>throw</code>).  Let's look a simple example:</p>
+
+<pre>f := |->| { echo("hi there") }
+f()
+f()</pre>
+
+<p>The code above creates a closure that prints a message to the console. If we run the code above "hi there" is printed twice.  We are assigning the closure to the variable <code>f</code>.  The closure itself is an expression which creates an instance of <code><a href='../sys/Func.html'>Func</a></code> - just like <code>8</code> is an expression which creates an <code><a href='../sys/Int.html'>Int</a></code>.  The signature of the function is <code>|->|</code> which means that the function takes no arguments and returns <code>Void</code>.  Once the closure is assigned to <code>f</code>, we can <a href='Functions.html#calling'>call</a> <code>f</code> like any other function.</p>
+
+<p>Here is another example:</p>
+
+<pre>f := |Int a, Int b->Int| { return a + b }
+nine := f(4, 5)</pre>
+
+<p>The code above declares a closure which accepts two <code>Ints</code> and returns their sum.  Notice the closure uses the <code>return</code> statement to return the result (later we'll see how we can omit it).</p>
+
+<h1 id='bindingLocals'>Binding Locals </h1>
+
+<p>The real power of a closure is its ability to bind to the local variables in its enclosing scope.  Consider this example:</p>
+
+<pre>counter := 0
+f := |->Int| { return ++counter }
+echo(f())
+echo(f())
+echo(f())
+echo(counter)</pre>
+
+<p>This example creates a function which returns an <code>Int</code> and then calls the function three times.  Note how the body of the closure uses the local variable <code>counter</code>.  The closure has access to both read and write any variable in its enclosing scope - just like an <code>if</code> statement or a <code>while</code> loop.  So the output of the code above is to print "1", "2", "3", and "3".</p>
+
+<h2 id='scopeLifetime'>Scope Lifetime </h2>
+
+<p>When a closure binds to a local variable in its outer scope, that variable lives as long as the closure lives.  Remember that closures are just <code>Func</code> objects which can be passed outside of the original scope.  Consider this example:</p>
+
+<pre>static Func createFunc()
+{
+  counter := 0
+  return |->Int| { return ++counter }
+}
+
+static Void main()
+{
+  f := createFunc
+  echo(f())
+  echo(f())
+  echo(f())
+}</pre>
+
+<p>The <code>createFunc</code> method returns a closure function bound to the local variable <code>counter</code>.  The local variable will exist as long as the closure exists.  In this case the <code>main</code> method assigns the function to the variable <code>f</code> then calls it three times.  The output will print "1", "2", and "3".  Effectively this allows closures to store their own state between invocations.</p>
+
+<h2 id='bindingThis'>Binding This </h2>
+
+<p>If a closure is declared inside an instance method, then a closure can bind <code>this</code> variable just like any other local:</p>
+
+<pre>Str first := "Bart"
+Str last  := "Simpson"
+
+Void test()
+{
+  f := |->Str| { return first + " " + this.last }
+  echo(f())
+}</pre>
+
+<p>The code above illustrates binding to two local slots.  The closure binds to <code>first</code> with an implicit <code>this</code>.  The closure uses an explicit <code>this</code> to bind to <code>last</code>.  Note that the <code>this</code> keyword references the enclosing method's instance, <em>not</em> the the closure object.  This also means generic <code>Obj</code> methods like <code>toStr</code> and <code>type</code> reference the enclosing method instance, not the closure instance.</p>
+
+<h2 id='multipleClosures'>Multiple Closures </h2>
+
+<p>When a method declares multiple closures, the closures all share the same local variables:</p>
+
+<pre>counter := 0
+f := |->Int| { return ++counter }
+g := |->Int| { return ++counter }
+echo(f())
+echo(g())
+echo(f())
+echo(g())</pre>
+
+<p>The code above prints "1", "2", "3", "4" because both <code>f</code> and <code>g</code> share the same binding to <code>counter</code>.</p>
+
+<p>Note: in the current implementation all closures share the same set of locals.  This means that any closure holding a reference to those locals will prevent garbage collection of all closure variables.</p>
+
+<h1 id='closureParameters'>Closure Parameters </h1>
+
+<p>A closure is just a normal expression and can be passed as an argument to a method call which expects a <code>Func</code> parameter. Many key APIs are designed to work with functions.  For example consider the <code><a href='../sys/List.html#findAll'>List.findAll</a></code> method which returns a sub-list of every item matching a criteria.  Since we want to leave the match criteria open ended, <code>findAll</code> lets you pass in an arbitrary function to determine matches.</p>
+
+<p>Let's consider an example for finding all the even numbers in a list:</p>
+
+<pre>list := [0, 1, 2, 3, 4]
+f := |Int v->Bool| { return v%2==0 }
+evens := list.findAll(f)</pre>
+
+<p>The code above creates a function, then passes it to the <code>findAll</code> method.  Since the closure is just an expression we could also rewrite the code as:</p>
+
+<pre>evens := list.findAll(|Int v->Bool| { return v%2==0 })</pre>
+
+<p>Since closures are used heavily in this way, Fantom supports a special syntax borrowed from Ruby.  If a closure is the last argument to a method call, then the closure can be pulled out as a suffix to the call:</p>
+
+<pre>evens := list.findAll() |Int v->Bool| { return v%2==0 }</pre>
+
+<p>Since we aren't passing any arguments other than the closure we can simplify this code even further by removing the parens:</p>
+
+<pre>evens := list.findAll |Int v->Bool| { return v%2==0 }</pre>
+
+<h1 id='iteration'>Iteration </h1>
+
+<p>Closures are designed to be the primary mechanism of iteration. Key methods which accept a function parameter:</p>
+
+<ul>
+<li><code><a href='../sys/List.html#each'>sys::List.each</a></code>: iterate a list</li>
+
+<li><code><a href='../sys/List.html#eachr'>sys::List.eachr</a></code>: reverse iterate a list</li>
+
+<li><code><a href='../sys/Map.html#each'>sys::Map.each</a></code>: iterate a map</li>
+</ul>
+
+<p>When iterating a list both the value and the integer index are passed to the closure:</p>
+
+<pre>list := ["one", "two", "three"]
+list.each |Str val, Int index| { echo("$index = $val") }</pre>
+
+<p>But remember that we don't have to <a href='Functions.html#arityCompatibility'>use all</a> the arguments provided to the function.  For example if we don't care about the integer index:</p>
+
+<pre>list := ["one", "two", "three"]
+list.each |Str val| { echo(val) }</pre>
+
+<p>Map iteration works the same way:</p>
+
+<pre>map := [1:"one", 3:"three", 5:"five"]
+map.each |Str val, Int key| { echo("$key=$val") }
+map.each |Str val| { echo(val) }</pre>
+
+<h1 id='typeInference'>Closure Type Inference </h1>
+
+<p>Closures which are passed as the last argument to a method support type inference:</p>
+
+<pre>// fully specified closure signatures
+list := ["one", "two", "three"]
+list.each |Str v, Int i| { echo("$i = $v") }
+list.each |Str v| { echo(v) }
+
+// inferred closure signatures
+list.each |v, i| { echo("$i = $v") }
+list.each |v| { echo(v) }</pre>
+
+<p>If you leave the types off the closures parameters, then they are inferred based on the closure's context. In the example above a closure passed to <code>Str[].list.each</code> is inferred to have a type of <code>|Str,Int|</code>.</p>
+
+<p>You can also use inference in conjunction with a return type or you can omit the return type entirely:</p>
+
+<pre>odds = [1, 2, 3, 4, 5].findAll |v->Bool| { v.isOdd }
+odds = [1, 2, 3, 4, 5].findAll |v| { v.isOdd }</pre>
+
+<p>Closures can only infer the type when they are being passed to a method which expects a function.  If a closure's parameters cannot be inferred then the defaults to <code>Obj?</code>:</p>
+
+<pre>// closure with inferred type of |Obj? v|
+f := |v| { echo(v) }</pre>
+
+<h1 id='itBlocks'>It-Blocks </h1>
+
+<p>It-blocks are a special form of closures with the following differences:</p>
+
+<ul>
+<li>They omit a function signature and are declared only with curly braces</li>
+
+<li>Use <a href='#typeInference'>type inference</a> based on their context</li>
+
+<li>Define an implicit single parameter called <code>it</code></li>
+
+<li>Define an implicit scope for <code>it</code></li>
+
+<li>Return keyword is not allowed in an it-block</li>
+
+<li>It-blocks are given compile time permission to set const fields on the <code>it</code> parameter, although runtime checks will throw ConstErr if an attempt is made to set a const field outside of <code>its</code> constructor (see <a href='Fields.html#const'>const fields</a>)</li>
+</ul>
+
+<p>An it-block can be used whenever a single parameter function is expected:</p>
+
+<pre>["a", "b", "c"].each |Str s| { echo(s.upper) }  // long hand
+["a", "b", "c"].each { echo(it.upper) }         // short hand</pre>
+
+<p>In the example above, the it-block is a closure with an implicit <code>Str</code> parameter called <code>it</code>.</p>
+
+<p>The <code>it</code> parameter works just like the implicit <code>this</code> parameter in an instance method.  If a given identifier is not declared in the local scope, then we attempt to bind to <code>it</code>:</p>
+
+<pre>["a", "b", "c"].each { echo(it.upper) }  // explicit it call
+["a", "b", "c"].each { echo(upper) }     // implicit it call</pre>
+
+<p>Just like <code>this</code>, if a local variable shadows a slot on <code>it</code>, then the local variable is used.  If an attempt is made to implicitly access a slot which exists on both <code>this</code> and <code>it</code>, then it is a compile time error:</p>
+
+<pre>["a", "b", "c"].each { echo(toStr) }        // Ambiguous slot error
+["a", "b", "c"].each { echo(it.toStr) }     // explicit call on it
+["a", "b", "c"].each { echo(this.toStr) }   // explicit call on this</pre>
+
+<h1 id='thisFunc'>This Functions </h1>
+
+<p>As a general rule the <code>sys::This</code> type is reserved for use only as the <a href='Methods.html#thisReturns'>return type</a> of instance methods.  There is one exception - you are allowed to declare a method parameter typed as <code>|This|</code> to indicate that an it-block function is expected:</p>
+
+<pre>new make(|This| f) { f(this) }</pre>
+
+<h1 id='withBlocks'>With-Blocks </h1>
+
+<p>Fantom allows you to append an it-block to any expression.  Whenever an it-block is used and a function is not expected, then the compiler generates a call to <code><a href='../sys/Obj.html#with'>Obj.with</a></code>:</p>
+
+<pre>list := Str[,].with { fill("x", 3) }   // explicit call to with
+list := Str[,] { fill("x", 3) }        // implicit call to with</pre>
+
+<p>The default implementation of <code>Obj.with</code> just applies the function:</p>
+
+<pre>virtual This with(|This| f)
+{
+  f(this)
+  return this
+}</pre>
+
+<p>Using it-blocks and <code>Obj.with</code> allows you open a new lexical scope with any expression.  It is quite useful for declarative programming.</p>
+<div class='prevNext'>
+<div class='prev'><a href='Functions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Functions.html'>Functions</a></div>
+<div class='next'><a href='JavaFFI.html'>Java FFI</a> <a href='JavaFFI.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#syntax'>Syntax </a></li><li><a href='#bindingLocals'>Binding Locals </a><ul>
+<li><a href='#scopeLifetime'>Scope Lifetime </a></li><li><a href='#bindingThis'>Binding This </a></li><li><a href='#multipleClosures'>Multiple Closures </a></li></ul>
+</li><li><a href='#closureParameters'>Closure Parameters </a></li><li><a href='#iteration'>Iteration </a></li><li><a href='#typeInference'>Closure Type Inference </a></li><li><a href='#itBlocks'>It-Blocks </a></li><li><a href='#thisFunc'>This Functions </a></li><li><a href='#withBlocks'>With-Blocks </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

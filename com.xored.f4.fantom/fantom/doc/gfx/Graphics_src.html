@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>gfx::Graphics</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>gfx</a></li>
+  <li>&gt;</li>
+  <li><a href='Graphics.html'>Graphics</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>mixin</h2>
+<h1>gfx::Graphics</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  gfx::Graphics</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   25 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Graphics is used to draw 2D graphics.  Targets might include</span>
+<span class='z'>** display devices, printers, SVG/Canvas, or PDF.</span>
+<span class='z'>**</span>
+<span class='z'>** See [Fwt]`fwt::pod-doc#painting` for details.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>mixin</span> Graphics
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Current brush defines how text and shapes are filled.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Brush <span id='brush'>brush</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Current pen defines how the shapes are stroked.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Pen <span id='pen'>pen</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Current font used for drawing text.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Font <span id='font'>font</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Used to toggle anti-aliasing on and off.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Bool <span id='antialias'>antialias</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Current alpha value used to render text, images, and shapes.</span>
+  <span class='z'>** The value must be between 0 (transparent) and 255 (opaue).</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Int <span id='alpha'>alpha</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a line with the current pen and brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawLine'>drawLine</span><span class='b'>(</span>Int x1, Int y1, Int x2, Int y2<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a polyline with the current pen and brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawPolyline'>drawPolyline</span><span class='b'>(</span>Point<span class='b'>[]</span> p<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a polygon with the current pen and brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawPolygon'>drawPolygon</span><span class='b'>(</span>Point<span class='b'>[]</span> p<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Fill a polygon with the current brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='fillPolygon'>fillPolygon</span><span class='b'>(</span>Point<span class='b'>[]</span> p<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a rectangle with the current pen and brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawRect'>drawRect</span><span class='b'>(</span>Int x, Int y, Int w, Int h<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Fill a rectangle with the current brush.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='fillRect'>fillRect</span><span class='b'>(</span>Int x, Int y, Int w, Int h<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw an oval with the current pen and brush.  The</span>
+  <span class='z'>** oval is fit within the rectangle specified by x, y, w, h.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawOval'>drawOval</span><span class='b'>(</span>Int x, Int y, Int w, Int h<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Fill an oval with the current brush.  The oval is</span>
+  <span class='z'>** fit within the rectangle specified by x, y, w, h.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='fillOval'>fillOval</span><span class='b'>(</span>Int x, Int y, Int w, Int h<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw an arc with the current pen and brush.  The angles</span>
+  <span class='z'>** are measured in degrees with 0 degrees is 3 o'clock with</span>
+  <span class='z'>** a counter-clockwise arcAngle.  The origin of the arc is</span>
+  <span class='z'>** centered within x, y, w, h.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawArc'>drawArc</span><span class='b'>(</span>Int x, Int y, Int w, Int h, Int startAngle, Int arcAngle<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Fill an arc with the current brush.  The angles are</span>
+  <span class='z'>** measured in degrees with 0 degrees is 3 o'clock with</span>
+  <span class='z'>** a counter-clockwise arcAngle.  The origin of the arc is</span>
+  <span class='z'>** centered within x, y, w, h.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='fillArc'>fillArc</span><span class='b'>(</span>Int x, Int y, Int w, Int h, Int startAngle, Int arcAngle<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a the text string with the current brush and font.</span>
+  <span class='z'>** The x, y coordinate specifies the top left corner of</span>
+  <span class='z'>** the rectangular area where the text is to be drawn.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawText'>drawText</span><span class='b'>(</span>Str s, Int x, Int y<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Draw a the image string with its top left corner at x,y.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='drawImage'>drawImage</span><span class='b'>(</span>Image image, Int x, Int y<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Copy a rectangular region of the image to the graphics</span>
+  <span class='z'>** device.  If the source and destination don't have the</span>
+  <span class='z'>** same size, then the copy is resized.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='copyImage'>copyImage</span><span class='b'>(</span>Image image, Rect src, Rect dest<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Translate the coordinate system to the new origin.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='translate'>translate</span><span class='b'>(</span>Int x, Int y<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Set the clipping area to the intersection of the</span>
+  <span class='z'>** current clipping region and the specified rectangle.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> This <span id='clip'>clip</span><span class='b'>(</span>Rect r<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Push the current graphics state onto an internal</span>
+  <span class='z'>** stack.  Reset the state back to its current state</span>
+  <span class='z'>** via `pop`.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='push'>push</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Pop the graphics stack and reset the state to the</span>
+  <span class='z'>** the last push.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='pop'>pop</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Free any operating system resources used by this instance.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='dispose'>dispose</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Graphics.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#alpha'>alpha</a></li>
+  <li style='display: block;'><a href='#antialias'>antialias</a></li>
+  <li style='display: block;'><a href='#brush'>brush</a></li>
+  <li style='display: block;'><a href='#clip'>clip</a></li>
+  <li style='display: block;'><a href='#copyImage'>copyImage</a></li>
+  <li style='display: block;'><a href='#dispose'>dispose</a></li>
+  <li style='display: block;'><a href='#drawArc'>drawArc</a></li>
+  <li style='display: block;'><a href='#drawImage'>drawImage</a></li>
+  <li style='display: block;'><a href='#drawLine'>drawLine</a></li>
+  <li style='display: block;'><a href='#drawOval'>drawOval</a></li>
+  <li style='display: block;'><a href='#drawPolygon'>drawPolygon</a></li>
+  <li style='display: block;'><a href='#drawPolyline'>drawPolyline</a></li>
+  <li style='display: block;'><a href='#drawRect'>drawRect</a></li>
+  <li style='display: block;'><a href='#drawText'>drawText</a></li>
+  <li style='display: block;'><a href='#fillArc'>fillArc</a></li>
+  <li style='display: block;'><a href='#fillOval'>fillOval</a></li>
+  <li style='display: block;'><a href='#fillPolygon'>fillPolygon</a></li>
+  <li style='display: block;'><a href='#fillRect'>fillRect</a></li>
+  <li style='display: block;'><a href='#font'>font</a></li>
+  <li style='display: block;'><a href='#pen'>pen</a></li>
+  <li style='display: block;'><a href='#pop'>pop</a></li>
+  <li style='display: block;'><a href='#push'>push</a></li>
+  <li style='display: block;'><a href='#translate'>translate</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+gfx 1.0.56
+[11-Nov-2010 Thu 10:08:24AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

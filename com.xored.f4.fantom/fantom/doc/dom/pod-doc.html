@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>dom PodDoc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>dom</a></li>
+  <li>&gt;</li>
+  <li><a href='pod-doc.html'>dom PodDoc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+ <div class='overview'>
+  <h2>pod</h2>
+  <h1>dom</h1>
+ </div>
+</div>
+
+<h1 id='overview'>Overview </h1>
+
+<p><strong>WARNING</strong>: the dom API is still an early prototype, so will be going through many changes during development</p>
+
+<p>The <a href='index.html'>dom</a> pod provides a framework for interoperating with the browser DOM and related browser APIs.  For the most part, these map one-to-one:</p>
+
+<pre>Browser           Fantom
+--------------    ---------------
+Window            Win
+Document          Doc
+Element           Elem
+Event             Event
+XmlHttpRequest    HttpReq/HttpRes</pre>
+
+<h2 id='win'>Win </h2>
+
+<pre>// basics
+win := Win.cur       // get current Win instance
+win.alert("Hello!")  // display a modal dialog
+win.uri              // the URI for this page
+win.hyperlink(uri)   // hyperlink to new page
+win.viewport         // get size of window viewport
+
+// event handlers
+win.onEvent("hashchange", false) |e| { Win.cur.alert("hashchanged!") }
+
+// storage
+win.localStorage["bar"]         // return value for bar from local storage
+win.localStorage["foo"] = 25    // store foo:25 in local storage
+win.localStorage.remove("foo")  // remove foo from local storage
+win.localStorage.clear          // clear all contents from local storage</pre>
+
+<h2 id='doc'>Doc </h2>
+
+<pre>doc := Win.cur.doc      // get doc instance for this window
+doc.elem("someId")      // return the Elem with id='someId'
+doc.createElem("div")   // create a new &lt;div> element</pre>
+
+<h2 id='elem'>Elem </h2>
+
+<pre>// attributes
+elem["alt"]               // get an attribute value
+elem["alt"] = "Alt text"  // set an attribute value
+elem.id                   // 'id' attribute
+elem.name                 // 'name' attribute
+elem.tagName              // tag name of this element
+
+// CSS
+elem.className                 // return the current class name(s)
+elem.hasClassName("alpha")     // does this element have the given class name?
+elem.addClassName("beta")      // add a new class name to any current class names
+elem.removeClassName("gamma")  // remove a class name, leaving any others remaining
+
+// tree
+elem.parent             // parent element
+elem.next               // next sibling
+elem.prev               // prev sibling
+elem.children           // List of child elements
+elem.first              // first child, or null if no children
+elem.add(child)         // add a new child element
+elem.remove(child)      // remove a child element
+
+// form conveniences
+elem.val                // the 'value' attribute
+elem.checked            // true/false for checkboxes
+
+// position and size
+elem.bounds             // pos and size of element
+
+// event handlers
+elem.onEvent("click", false) |e| { Win.cur.alert("$e.target clicked!") }
+
+// find
+elem.find |e| { e.tagName == "img" }     // find first &lt;img> descendant
+elem.findAll |e| { e.tagName == "img" }  // find all &lt;img> descendants</pre>
+
+<h2 id='xhr'>XmlHttpRequest </h2>
+
+<p>The <code><a href='HttpReq.html'>HttpReq</a></code> object is used to make background HTTP requests from the browser.  For both sync and async requests, the response is passed to you in the callback closure:</p>
+
+<pre>HttpReq { uri=`/foo` }.send("POST", "some content") |res|
+{
+  Win.cur.alert(res.content)
+}</pre>
+
+<p>Convenience methods are availabe for the common request methods:</p>
+
+<pre>HttpReq { uri=`/foo` }.get |res| {...}
+HttpReq { uri=`/foo` }.post("some content") |res| {...}
+HttpReq { uri=`/foo` }.postForm(["name":"Barney Stinson"]) |res| {...}</pre>
+
+<p>The <code><a href='HttpReq.html#postForm'>postForm</a></code> will automatically encode the request to look like a normal HTML form submission.</p>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a><ul>
+<li><a href='#win'>Win </a></li><li><a href='#doc'>Doc </a></li><li><a href='#elem'>Elem </a></li><li><a href='#xhr'>XmlHttpRequest </a></li></ul>
+</li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+dom 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

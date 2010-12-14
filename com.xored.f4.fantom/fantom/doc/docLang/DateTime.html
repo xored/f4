@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Date Time</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='DateTime.html'>Date Time</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='DSLs.html'><img src='../go-previous.png' alt='prev' /></a> <a href='DSLs.html'>DSLs</a></div>
+<div class='next'><a href='Appendix.html'>Appendix</a> <a href='Appendix.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Date Time</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The following sys types are used to represent and work with time:</p>
+
+<ul>
+<li><code><a href='../sys/Duration.html'>sys::Duration</a></code>: period of time measured in nanosecond ticks</li>
+
+<li><code><a href='../sys/DateTime.html'>sys::DateTime</a></code>: an absolute period of time relative to a specific timezone</li>
+
+<li><code><a href='../sys/TimeZone.html'>sys::TimeZone</a></code>: represents the rules for UTC offset and daylight savings time according to zoneinfo database</li>
+
+<li><code><a href='../sys/Date.html'>sys::Date</a></code>: a calendar date independent of any time of day</li>
+
+<li><code><a href='../sys/Time.html'>sys::Time</a></code>: a time of day independent of any calendar date</li>
+
+<li><code><a href='../sys/Month.html'>sys::Month</a></code>: enum for months of the year</li>
+
+<li><code><a href='../sys/Weekday.html'>sys::Weekday</a></code>: enum for days of the week</li>
+</ul>
+
+<p>All these classes are immutable <a href='http://fantom.org/doc/docLang/Classes.html#const'>const classes</a>.</p>
+
+<h1 id='ticks'>Ticks </h1>
+
+<p>The basic unit of Fantom time is the nanosecond <em>tick</em>.  Both Duration and DateTime have a <code>ticks</code> method and a constructor which takes a number of ticks.</p>
+
+<p>In the case of Durations, ticks are relative.  The <code>Duration.now</code> method can be used to track elapsed time independent of wall-clock time.  If you are measuring relative periods of time, you should always prefer <code>Duration.now</code> because it advances consistently independent of changes to the system clock. It is not uncommon for computers to automatically adjust their clocks periodically by several seconds or even minutes which can skew wall-time measurements.  In the Java runtime <code>Duration.now</code> maps to <code>System.nanoTime</code>.</p>
+
+<p>Ticks in DateTime use an epoch of midnight 1-Jan-2000 UTC.  Dates before 2000 use negative ticks.  Although the Unix epoch is 1970, we thought since Fantom was born in 2005 we might as well use the millennium as the epoch.</p>
+
+<h1 id='dateTime'>DateTime </h1>
+
+<p>Absolute time is represented as a number of nanosecond ticks relative to the 1-Jan-2000 epoch.  Ticks are a good representation of time for computers, but as humans we think about time as years, months, days, hours, minutes, etc. The translation from ticks to human time is always relative to a given timezone. For example 337,350,600,000,000,000 ticks represents 8:30am 9-Sep-2010 in New York time, but it is  1:30pm in London time.  It is the exact same instant in absolute time, but the human time representation is different based on our timezone perspective.</p>
+
+<p>The <code>DateTime</code> class encapsulates an absolute time in ticks relative to a given timezone.  Although absolute time and timezone human time are two different concepts, it is convenient to bundle them into a single class.  In practice knowing the timezone of a given timestamp is often quite important.  Countless problems are caused when time has an ambiguous timezone association.  For example ISO 8601 time representation provides for an UTC offset, but that is never enough to actually figure out the timezone.  In Fantom we require a unambiguous timezone be associated with every DateTime and it is part of the canonical serialized representation.</p>
+
+<p>The DateTime class provides nice simple APIs for accessing the human time elements which are relative to the associated timezone:</p>
+
+<pre>d := DateTime.now
+echo("$d.day $d.month $d.year | $d.hour $d.min | $d.tz")
+echo("$d.date | $d.time")
+
+// outputs on a computer in EDT
+9 sep 2010 | 8 58 | New_York
+2010-09-09 | 08:58:54.668</pre>
+
+<p>Note that the <code>tz</code> method is used to get the associated <code><a href='../sys/TimeZone.html'>sys::TimeZone</a></code>. You can also construct DateTimes with an explicit timezone or easily convert between timezones:</p>
+
+<pre>echo(DateTime.now)
+echo(DateTime.nowUtc)
+echo(DateTime.now.toTimeZone(TimeZone("Taipei")))
+
+ // outputs
+ 2010-09-09T09:00:41.09-04:00 New_York
+ 2010-09-09T13:00:41.106Z UTC
+ 2010-09-09T21:00:41.09+08:00 Taipei</pre>
+
+<h1 id='localization'>Localization and Formatting </h1>
+
+<p>All three classes Date, Time, and DateTime support a <code>toLocale</code> and <code>fromLocale</code> method which can be used to parse/format using a string pattern. The <code><a href='../sys/DateTime.html#toLocale'>pattern language</a></code> is similar to that used by Java's SimpleDateFormat.  But Fantom supports some extra features and adheres to the following conventions:</p>
+
+<ul>
+<li>capitalized letters are for date fields (year, month, day, weekday)</li>
+
+<li>lower case letters are used for time fields (hour, minutes, seconds)</li>
+
+<li>optional seconds and fractional seconds are capitalized (S and F)</li>
+</ul>
+
+<p>Couple simple examples:</p>
+
+<pre>DateTime.now.toLocale("kk:mmaa")              =>  09:10am
+DateTime.now.toLocale("DDD 'of' MMMM, YYYY")  =>  9th of September, 2010</pre>
+
+<h1 id='timeZone'>TimeZone </h1>
+
+<p>In Fantom we use the term <em>timezone</em> to encapsulate two concepts: offset from UTC and daylight saving time rules.  For example, US Eastern Standard Time is -5hrs from UTC.  But between 2am on the second Sunday of March and 2am on the first Sunday in November is daylight savings time (DST) and is -4hrs from UTC.</p>
+
+<p>Because timezones are such a critical aspect of DateTime representation, Fantom requires a comprehensive model and database of timezones.  Timezones are quite problematic for computers because they are a political abstraction versus a scientific abstraction.  This means that a given region might change its timezone rules (either UTC offset of DST  rules) over time.  For example, in 2007 the US changed the dates for when DST starts and ends.  This means that computing a date in 2000 uses different rules than 2010 (we call these <em>historical timezones</em>).</p>
+
+<p>Luckily there is a database which keeps track of these rules across regions and time.  We use the <a href='http://en.wikipedia.org/wiki/Zoneinfo'>zoneinfo</a> database which is used by Unix and some versions of Java.  In Fantom we compile  a subset of the zoneinfo database into a binary representation using the "adm/buildtz.fan" script.  The database is stored in "etc/sys". Due to the size of the database, we use random access IO to load timezones on demand.  In JavaScript, the JsTimeZone class is used to define which timezone definitions are sent to the browser.</p>
+
+<p>The zoneinfo database uses a convention of naming timezones as "Continent/City". For example, US Eastern time is canonically identified as "America/New_York". Since there are no duplicate city names between continents, the city name also works as a canonical identifier.  Since the timezone is always included during serialization, we use the city name only as the canonical identifier. In the API this is distinguished as <code><a href='../sys/TimeZone.html#name'>name</a></code> and <code><a href='../sys/TimeZone.html#fullName'>fullName</a></code>.</p>
+
+<h2 id='relTimeZone'>Relative TimeZone </h2>
+
+<p>In most cases we wish to compare time absolutely.  For example if looking at a log file, we would generally expect to see events from multiple timezones ordered by absolute time.  But sometimes we wish to compare times by their human time.  The special timezone "Rel"  is used for this purpose.  Any conversion to/from "Rel" preserves the timezone representation and changes the absolute ticks.</p>
+
+<p>Here is a simple program to demonstrate:</p>
+
+<pre>pattern := "DD-MM-YYYY hh:mm zzz"
+a := DateTime.fromLocale("01-09-2010 03:00 Los_Angeles", pattern)
+b := DateTime.fromLocale("01-09-2010 03:00 Chicago", pattern)
+echo("$a ?= $b => ${a==b}")
+a = a.toRel
+b = b.toRel
+echo("$a ?= $b => ${a==b}")
+
+// outputs
+2010-09-01T03:00:00-07:00 Los_Angeles ?= 2010-09-01T03:00:00-05:00 Chicago => false
+2010-09-01T03:00:00Z Rel ?= 2010-09-01T03:00:00Z Rel => true</pre>
+
+<h1 id='tradeoffs'>Trade-offs </h1>
+
+<p>Like any software development, engineering these APIs requires making trade-offs. We hope to make trade-offs which solve most use cases with a simple, easy-to-use API.  But of course its a matter of perspective based your own personal use cases :-)  But it is worthwhile to consider the trade-offs.</p>
+
+<p>All the Fantom time APIs are based on a nanosecond tick.  A 64-bit integer can store between +/-292 years.  So by using nanoseconds as the unit of a tick, we have made a trade-off optimized in favor of programs which require nanosecond precision versus programs which work with time spans of 100s years.  It is also worth noting that JavaScript treats all numbers as a 64-bit floating point number, so nanosecond precision is lost when working with large Durations or DateTimes.</p>
+
+<p>Fantom's dates are based on the <a href='http://en.wikipedia.org/wiki/Gregorian_calendar'>Gregorian calendar</a> which isn't the only calendar system in use.  But for practical purposes, using the Gregorian system hits 99.9% use case without adding complications.</p>
+
+<p>The actual UTC time scale uses leap seconds to keep the calendar in sync with solar time.  But in general computer systems don't take leap seconds into account and Fantom doesn't either.  From a practical perspective this makes it easy to convert between Fantom ticks and other representations such as Java millis.</p>
+
+<p>By building date and time classes into the core <code>sys</code> pod, we don't provide all the hooks and functionality which might be required for everybody.  But this is a trade-off.  Our first priority is to have core representations which all APIs can use without additional dependencies.  But we also feel that the APIs we have are a sweet spot for probably just about every use case.  But of course anybody could create additional APIs in new pods.</p>
+<div class='prevNext'>
+<div class='prev'><a href='DSLs.html'><img src='../go-previous.png' alt='prev' /></a> <a href='DSLs.html'>DSLs</a></div>
+<div class='next'><a href='Appendix.html'>Appendix</a> <a href='Appendix.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#ticks'>Ticks </a></li><li><a href='#dateTime'>DateTime </a></li><li><a href='#localization'>Localization and Formatting </a></li><li><a href='#timeZone'>TimeZone </a><ul>
+<li><a href='#relTimeZone'>Relative TimeZone </a></li></ul>
+</li><li><a href='#tradeoffs'>Trade-offs </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

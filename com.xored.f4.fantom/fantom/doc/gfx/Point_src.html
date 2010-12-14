@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>gfx::Point</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>gfx</a></li>
+  <li>&gt;</li>
+  <li><a href='Point.html'>Point</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>gfx::Point</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  gfx::Point</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   12 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Point</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Point represents a coordinate in the display space.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Point
+<span class='b'>{</span>
+  <span class='z'>** Default instance is 0, 0.</span>
+  <span class='k'>const</span> <span class='k'>static</span> Point <span id='defVal'>defVal</span> := Point<span class='b'>(</span>0, 0<span class='b'>)</span>
+
+  <span class='z'>** Construct with x, y.</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Int x, Int y<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.x = x; <span class='k'>this</span>.y = y <span class='b'>}</span>
+
+  <span class='z'>** Parse from string.  If invalid and checked is</span>
+  <span class='z'>** true then throw ParseErr otherwise return null.</span>
+  <span class='k'>static</span> Point? <span id='fromStr'>fromStr</span><span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      comma := s.index<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      <span class='k'>return</span> make<span class='b'>(</span>s<span class='b'>[</span>0..&lt;comma<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>comma+1..-1<span class='b'>]</span>.trim.toInt<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> ParseErr<span class='b'>(</span><span class='s'>"Invalid Point: $s"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return 'x+tx, y+ty'</span>
+  Point <span id='translate'>translate</span><span class='b'>(</span>Point t<span class='b'>)</span> <span class='b'>{</span> make<span class='b'>(</span>x+t.x, y+t.y<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>** Return hash of x and y.</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span> <span class='b'>{</span> x.xor<span class='b'>(</span>y.shiftl<span class='b'>(</span>16<span class='b'>))</span> <span class='b'>}</span>
+
+  <span class='z'>** Return if obj is same Point value.</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Point
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.x == that.x &amp;&amp; <span class='k'>this</span>.y == that.y
+  <span class='b'>}</span>
+
+  <span class='z'>** Return '"x,y"'</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span> <span class='b'>{</span> <span class='s'>"$x,$y"</span> <span class='b'>}</span>
+
+  <span class='z'>** X coordinate</span>
+  <span class='k'>const</span> Int <span id='x'>x</span>
+
+  <span class='z'>** Y coordinate</span>
+  <span class='k'>const</span> Int <span id='y'>y</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Size</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Size represents the width and height of a rectangle.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Size
+<span class='b'>{</span>
+  <span class='z'>** Default instance is 0, 0.</span>
+  <span class='k'>const</span> <span class='k'>static</span> Size defVal := Size<span class='b'>(</span>0, 0<span class='b'>)</span>
+
+  <span class='z'>** Construct with w, h.</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Int w, Int h<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.w = w; <span class='k'>this</span>.h = h <span class='b'>}</span>
+
+  <span class='z'>** Parse from string.  If invalid and checked is</span>
+  <span class='z'>** true then throw ParseErr otherwise return null.</span>
+  <span class='k'>static</span> Size? fromStr<span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      comma := s.index<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      <span class='k'>return</span> make<span class='b'>(</span>s<span class='b'>[</span>0..&lt;comma<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>comma+1..-1<span class='b'>]</span>.trim.toInt<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> ParseErr<span class='b'>(</span><span class='s'>"Invalid Size: $s"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return '"w,h"'</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='s'>"$w,$h"</span> <span class='b'>}</span>
+
+  <span class='z'>** Return hash of w and h.</span>
+  <span class='k'>override</span> Int hash<span class='b'>()</span> <span class='b'>{</span> w.xor<span class='b'>(</span>h.shiftl<span class='b'>(</span>16<span class='b'>))</span> <span class='b'>}</span>
+
+  <span class='z'>** Return if obj is same Size value.</span>
+  <span class='k'>override</span> Bool equals<span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Size
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.w == that.w &amp;&amp; <span class='k'>this</span>.h == that.h
+  <span class='b'>}</span>
+
+  <span class='z'>** Width</span>
+  <span class='k'>const</span> Int w
+
+  <span class='z'>** Height</span>
+  <span class='k'>const</span> Int h
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Rect</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Represents the x,y coordinate and w,h size of a rectangle.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Rect
+<span class='b'>{</span>
+  <span class='z'>** Default instance is 0, 0, 0, 0.</span>
+  <span class='k'>const</span> <span class='k'>static</span> Rect defVal := Rect<span class='b'>(</span>0, 0, 0, 0<span class='b'>)</span>
+
+  <span class='z'>** Construct with x, y, w, h.</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Int x, Int y, Int w, Int h<span class='b'>)</span>
+    <span class='b'>{</span> <span class='k'>this</span>.x = x; <span class='k'>this</span>.y = y; <span class='k'>this</span>.w = w; <span class='k'>this</span>.h = h <span class='b'>}</span>
+
+  <span class='z'>** Construct from a Point and Size instance</span>
+  <span class='k'>new</span> makePosSize<span class='b'>(</span>Point p, Size s<span class='b'>)</span>
+    <span class='b'>{</span> <span class='k'>this</span>.x = p.x; <span class='k'>this</span>.y = p.y; <span class='k'>this</span>.w = s.w; <span class='k'>this</span>.h= s.h <span class='b'>}</span>
+
+  <span class='z'>** Parse from string.  If invalid and checked is</span>
+  <span class='z'>** true then throw ParseErr otherwise return null.</span>
+  <span class='k'>static</span> Rect? fromStr<span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      c1 := s.index<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      c2 := s.index<span class='b'>(</span><span class='s'>","</span>, c1+1<span class='b'>)</span>
+      c3 := s.index<span class='b'>(</span><span class='s'>","</span>, c2+1<span class='b'>)</span>
+      <span class='k'>return</span> make<span class='b'>(</span>s<span class='b'>[</span>0..&lt;c1<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>c1+1..&lt;c2<span class='b'>]</span>.trim.toInt,
+                  s<span class='b'>[</span>c2+1..&lt;c3<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>c3+1..-1<span class='b'>]</span>.trim.toInt<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> ParseErr<span class='b'>(</span><span class='s'>"Invalid Rect: $s"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Get the x, y coordinate of this rectangle.</span>
+  Point pos<span class='b'>()</span> <span class='b'>{</span> Point<span class='b'>(</span>x, y<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>** Get the w, h size of this rectangle.</span>
+  Size size<span class='b'>()</span> <span class='b'>{</span> Size<span class='b'>(</span>w, h<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>** Return true if x,y is inside the bounds of this rectangle.</span>
+  Bool contains<span class='b'>(</span>Int x, Int y<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> x &gt;= <span class='k'>this</span>.x &amp;&amp; x &lt;= <span class='k'>this</span>.x+w &amp;&amp;
+           y &gt;= <span class='k'>this</span>.y &amp;&amp; y &lt;= <span class='k'>this</span>.y+h
+  <span class='b'>}</span>
+
+  <span class='z'>** Return '"x,y,w,h"'</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='s'>"$x,$y,$w,$h"</span> <span class='b'>}</span>
+
+  <span class='z'>** Return hash of x, y, w, and h.</span>
+  <span class='k'>override</span> Int hash<span class='b'>()</span>
+  <span class='b'>{</span>
+    x.xor<span class='b'>(</span>y.shiftl<span class='b'>(</span>8<span class='b'>))</span>.xor<span class='b'>(</span>w.shiftl<span class='b'>(</span>16<span class='b'>))</span>.xor<span class='b'>(</span>w.shiftl<span class='b'>(</span>24<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return if obj is same Rect value.</span>
+  <span class='k'>override</span> Bool equals<span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Rect
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.x == that.x &amp;&amp; <span class='k'>this</span>.y == that.y &amp;&amp;
+           <span class='k'>this</span>.w == that.w &amp;&amp; <span class='k'>this</span>.h == that.h
+  <span class='b'>}</span>
+
+  <span class='z'>** X coordinate</span>
+  <span class='k'>const</span> Int x
+
+  <span class='z'>** Y coordinate</span>
+  <span class='k'>const</span> Int y
+
+  <span class='z'>** Width</span>
+  <span class='k'>const</span> Int w
+
+  <span class='z'>** Height</span>
+  <span class='k'>const</span> Int h
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Insets</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Insets represent a number of pixels around the edge of a rectangle.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Insets
+<span class='b'>{</span>
+  <span class='z'>** Default instance 0, 0, 0, 0.</span>
+  <span class='k'>const</span> <span class='k'>static</span> Insets defVal := Insets<span class='b'>(</span>0, 0, 0, 0<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with top, and optional right, bottom, left.  If one side</span>
+  <span class='z'>** is not specified, it is reflected from the opposite side:</span>
+  <span class='z'>**</span>
+  <span class='z'>**   Insets(5)     =&gt; Insets(5,5,5,5)</span>
+  <span class='z'>**   Insets(5,6)   =&gt; Insets(5,6,5,6)</span>
+  <span class='z'>**   Insets(5,6,7) =&gt; Insets(5,6,7,6)</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Int top, Int? right := <span class='k'>null</span>, Int? bottom := <span class='k'>null</span>, Int? left := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>right == <span class='k'>null</span><span class='b'>)</span> right = top
+    <span class='k'>if</span> <span class='b'>(</span>bottom == <span class='k'>null</span><span class='b'>)</span> bottom = top
+    <span class='k'>if</span> <span class='b'>(</span>left == <span class='k'>null</span><span class='b'>)</span> left = right
+    <span class='k'>this</span>.top = top
+    <span class='k'>this</span>.right = right
+    <span class='k'>this</span>.bottom = bottom
+    <span class='k'>this</span>.left = left
+  <span class='b'>}</span>
+
+  <span class='z'>** Parse from string (see `toStr`).  If invalid and checked</span>
+  <span class='z'>** is true then throw ParseErr otherwise return null.  Supported</span>
+  <span class='z'>** formats are:</span>
+  <span class='z'>**   - "len"</span>
+  <span class='z'>**   - "top,right,bottom,left"</span>
+  <span class='k'>static</span> Insets? fromStr<span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      c1 := s.index<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>c1 == <span class='k'>null</span><span class='b'>)</span> <span class='b'>{</span> len := s.toInt; <span class='k'>return</span> make<span class='b'>(</span>len, len, len, len<span class='b'>)</span> <span class='b'>}</span>
+      c2 := s.index<span class='b'>(</span><span class='s'>","</span>, c1+1<span class='b'>)</span>
+      c3 := s.index<span class='b'>(</span><span class='s'>","</span>, c2+1<span class='b'>)</span>
+      <span class='k'>return</span> make<span class='b'>(</span>s<span class='b'>[</span>0..&lt;c1<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>c1+1..&lt;c2<span class='b'>]</span>.trim.toInt,
+                  s<span class='b'>[</span>c2+1..&lt;c3<span class='b'>]</span>.trim.toInt, s<span class='b'>[</span>c3+1..-1<span class='b'>]</span>.trim.toInt<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> ParseErr<span class='b'>(</span><span class='s'>"Invalid Insets: $s"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** If all four sides are equal return '"len"'</span>
+  <span class='z'>** otherwise return '"top,right,bottom,left"'.</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>top == right &amp;&amp; top == bottom &amp;&amp; top == left<span class='b'>)</span>
+      <span class='k'>return</span> top.toStr
+    <span class='k'>else</span>
+      <span class='k'>return</span> <span class='s'>"$top,$right,$bottom,$left"</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return hash of top, right, bottom, left.</span>
+  <span class='k'>override</span> Int hash<span class='b'>()</span>
+  <span class='b'>{</span>
+    top.xor<span class='b'>(</span>right.shiftl<span class='b'>(</span>8<span class='b'>))</span>.xor<span class='b'>(</span>bottom.shiftl<span class='b'>(</span>16<span class='b'>))</span>.xor<span class='b'>(</span>left.shiftl<span class='b'>(</span>24<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return if obj is same Insets value.</span>
+  <span class='k'>override</span> Bool equals<span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Insets
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.top == that.top &amp;&amp; <span class='k'>this</span>.right == that.right &amp;&amp;
+           <span class='k'>this</span>.bottom == that.bottom &amp;&amp; <span class='k'>this</span>.left == that.left
+  <span class='b'>}</span>
+
+  <span class='z'>** Return right+left, top+bottom</span>
+  Size toSize<span class='b'>()</span> <span class='b'>{</span> Size<span class='b'>(</span>right+left, top+bottom<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>** Top side spacing</span>
+  <span class='k'>const</span> Int top
+
+  <span class='z'>** Right side spacing</span>
+  <span class='k'>const</span> Int right
+
+  <span class='z'>** Bottom side spacing</span>
+  <span class='k'>const</span> Int bottom
+
+  <span class='z'>** Left side spacing</span>
+  <span class='k'>const</span> Int left
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Hints</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Hints model heights/weight contraints.  Hint differs from Size</span>
+<span class='z'>** in that 'w' or 'h' can be null.</span>
+<span class='z'>**</span>
+@Js
+<span class='k'>const</span> <span class='k'>class</span> Hints
+<span class='b'>{</span>
+
+  <span class='z'>** Default instance is null, null.</span>
+  <span class='k'>const</span> <span class='k'>static</span> Hints defVal := Hints<span class='b'>(</span><span class='k'>null</span>, <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>** Construct with w, h.</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Int? w, Int? h<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.w = w; <span class='k'>this</span>.h = h <span class='b'>}</span>
+
+  <span class='z'>** Return '"w,h"'</span>
+  <span class='k'>override</span> Str toStr<span class='b'>()</span> <span class='b'>{</span> <span class='s'>"$w,$h"</span> <span class='b'>}</span>
+
+  <span class='z'>** Return hash of w and h.</span>
+  <span class='k'>override</span> Int hash<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='b'>(</span>w == <span class='k'>null</span> ? 3 : w.hash<span class='b'>)</span>.xor<span class='b'>((</span>h == <span class='k'>null</span> ? 11 : h.hash<span class='b'>)</span>.shiftl<span class='b'>(</span>16<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Return if obj is same Hints value.</span>
+  <span class='k'>override</span> Bool equals<span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Hints
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.w == that.w &amp;&amp; <span class='k'>this</span>.h == that.h
+  <span class='b'>}</span>
+
+  <span class='z'>** Add the given w and h to this hint's dimensions.  If a hint</span>
+  <span class='z'>** dimension is null, then the resulting dimension is null too.</span>
+  @Operator Hints plus<span class='b'>(</span>Size size<span class='b'>)</span>
+  <span class='b'>{</span>
+    make<span class='b'>(</span>w == <span class='k'>null</span> ? <span class='k'>null</span> : w + size.w, h == <span class='k'>null</span> ? <span class='k'>null</span> : h + size.h<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Subtract the given w and h from this hint's dimensions.  If a hint</span>
+  <span class='z'>** dimension is null, then the resulting dimension is null too.</span>
+  @Operator Hints minus<span class='b'>(</span>Size size<span class='b'>)</span>
+  <span class='b'>{</span>
+    make<span class='b'>(</span>w == <span class='k'>null</span> ? <span class='k'>null</span> : w - size.w, h == <span class='k'>null</span> ? <span class='k'>null</span> : h - size.h<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Suggested width or null if no contraints</span>
+  <span class='k'>const</span> Int? w
+
+  <span class='z'>** Suggested height or null if no contraints</span>
+  <span class='k'>const</span> Int? h
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Point.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#defVal'>defVal</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#translate'>translate</a></li>
+  <li style='display: block;'><a href='#x'>x</a></li>
+  <li style='display: block;'><a href='#y'>y</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+gfx 1.0.56
+[11-Nov-2010 Thu 10:08:24AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

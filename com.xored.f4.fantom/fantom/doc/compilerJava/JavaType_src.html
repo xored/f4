@@ -1,0 +1,429 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compilerJava::JavaType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compilerJava</a></li>
+  <li>&gt;</li>
+  <li><a href='JavaType.html'>JavaType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compilerJava::JavaType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compilerJava::JavaType : <a href='../compiler/CType.html'>compiler::CType</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   17 Nov 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+
+<span class='z'>**</span>
+<span class='z'>** JavaType is the implementation of CType for a Java class.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> JavaType : CType
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with loaded Type.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>JavaPod pod, Str name, CType? primitiveNullable := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pod    = pod
+    <span class='k'>this</span>.name   = name
+    <span class='k'>this</span>.qname  = pod.name + <span class='s'>"::"</span> + name
+    <span class='k'>this</span>.base   = ns.objType
+    <span class='k'>this</span>.mixins = CType<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>this</span>.primitiveNullable = primitiveNullable
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CType</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> CNamespace <span id='ns'>ns</span><span class='b'>()</span> <span class='b'>{</span> pod.ns <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> JavaPod <span id='pod'>pod</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str <span id='name'>name</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str <span id='qname'>qname</span>
+  <span class='k'>override</span> Str <span id='signature'>signature</span><span class='b'>()</span> <span class='b'>{</span> qname <span class='b'>}</span>
+
+  <span class='k'>override</span> CFacet? <span id='facet'>facet</span><span class='b'>(</span>Str qname<span class='b'>)</span> <span class='b'>{</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CType? <span id='base'>base</span> <span class='b'>{</span> get <span class='b'>{</span> load; <span class='k'>return</span> &amp;base <span class='b'>}</span> <span class='b'>}</span>
+  <span class='k'>override</span> CType<span class='b'>[]</span> <span id='mixins'>mixins</span> <span class='b'>{</span> get <span class='b'>{</span> load; <span class='k'>return</span> &amp;mixins <span class='b'>}</span> <span class='b'>}</span>
+  <span class='k'>override</span> Int <span id='flags'>flags</span> <span class='b'>{</span> get <span class='b'>{</span> load; <span class='k'>return</span> &amp;flags <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isForeign'>isForeign</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>true</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isSupported'>isSupported</span><span class='b'>()</span> <span class='b'>{</span> arrayRank &lt;= 1 <span class='b'>}</span> <span class='y'>// multi-dimensional arrays unsupported</span>
+
+  <span class='k'>override</span> Bool <span id='isVal'>isVal</span><span class='b'>()</span> <span class='b'>{</span> pod <span class='k'>is</span> JavaPrimitives <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isNullable'>isNullable</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toNullable'>toNullable</span><span class='b'>()</span> <span class='b'>{</span> primitiveNullable ?: NullableType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>private</span> CType? <span id='primitiveNullable'>primitiveNullable</span>
+
+  <span class='k'>override</span> Bool <span id='isGeneric'>isGeneric</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isParameterized'>isParameterized</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isGenericParameter'>isGenericParameter</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toListOf'>toListOf</span><span class='b'>()</span> <span class='b'>{</span> ListType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> Str:CSlot <span id='slots'>slots</span> <span class='b'>{</span> get <span class='b'>{</span> load; <span class='k'>return</span> &amp;slots <span class='b'>}</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> COperators <span id='operators'>operators</span><span class='b'>()</span> <span class='b'>{</span> COperators<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> CSlot? <span id='slot'>slot</span><span class='b'>(</span>Str name<span class='b'>)</span> <span class='b'>{</span> slots<span class='b'>[</span>name<span class='b'>]</span> <span class='b'>}</span>
+
+  <span class='z'>** Handle the case where a field and method have the same</span>
+  <span class='z'>** name; in this case the field will always be first with</span>
+  <span class='z'>** a linked list to the overloaded methods</span>
+  <span class='k'>override</span> CMethod? <span id='method'>method</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    x := slots<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>x == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>x <span class='k'>is</span> JavaField<span class='b'>)</span> <span class='k'>return</span> <span class='b'>((</span>JavaField<span class='b'>)</span>x<span class='b'>)</span>.next
+    <span class='k'>return</span> x
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CType <span id='inferredAs'>inferredAs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>isPrimitive<span class='b'>)</span>
+      <span class='k'>return</span> name == <span class='s'>"float"</span> ? ns.floatType : ns.intType
+
+    <span class='k'>if</span> <span class='b'>(</span>isArray &amp;&amp; !arrayOf.isPrimitive &amp;&amp; !arrayOf.isArray<span class='b'>)</span>
+      <span class='k'>return</span> inferredArrayOf.toListOf
+
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fits</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Bool <span id='fits'>fits</span><span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>CType.<span class='k'>super</span>.fits<span class='b'>(</span>t<span class='b'>))</span> <span class='k'>return</span> <span class='k'>true</span>
+    t = t.toNonNullable
+    <span class='k'>if</span> <span class='b'>(</span>t <span class='k'>is</span> JavaType<span class='b'>)</span> <span class='k'>return</span> fitsJava<span class='b'>(</span>t<span class='b'>)</span>
+    <span class='k'>return</span> fitsFan<span class='b'>(</span>t<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Bool <span id='fitsJava'>fitsJava</span><span class='b'>(</span>JavaType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// * =&gt; java.lang.Object</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.qname == <span class='s'>"[java]java.lang::Object"</span><span class='b'>)</span> <span class='k'>return</span> !isPrimitive
+
+    <span class='y'>// array =&gt; array</span>
+    <span class='k'>if</span> <span class='b'>(</span>isArray &amp;&amp; t.isArray<span class='b'>)</span> <span class='k'>return</span> arrayOf.fits<span class='b'>(</span>t.arrayOf<span class='b'>)</span>
+
+    <span class='y'>// doesn't fit</span>
+    <span class='k'>return</span> <span class='k'>false</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Bool <span id='fitsFan'>fitsFan</span><span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// floats =&gt; Float; byte,short,char,int =&gt; Int</span>
+    <span class='k'>if</span> <span class='b'>(</span>isPrimitive<span class='b'>)</span> <span class='k'>return</span> name == <span class='s'>"float"</span> ? t.isFloat : t.isInt
+
+    <span class='y'>// arrays =&gt; List</span>
+    <span class='k'>if</span> <span class='b'>(</span>isArray &amp;&amp; t <span class='k'>is</span> ListType<span class='b'>)</span> <span class='k'>return</span> arrayOf.fits<span class='b'>(((</span>ListType<span class='b'>)</span>t<span class='b'>)</span>.v<span class='b'>)</span>
+
+    <span class='y'>// doesn't fit</span>
+    <span class='k'>return</span> <span class='k'>false</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Load</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='load'>load</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>loaded<span class='b'>)</span> <span class='k'>return</span>
+    slots := Str:CSlot<span class='b'>[</span>:<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>isPrimitive<span class='b'>)</span>
+    <span class='b'>{</span>
+      flags = FConst.Public
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// map Java members to slots using Java reflection</span>
+      pod.bridge.loadType<span class='b'>(</span><span class='k'>this</span>, slots<span class='b'>)</span>
+
+      <span class='y'>// merge in sys::Obj slots</span>
+      ns.objType.slots.each |CSlot s|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>s.isCtor<span class='b'>)</span> <span class='k'>return</span>
+        <span class='k'>if</span> <span class='b'>(</span>slots<span class='b'>[</span>name<span class='b'>]</span> == <span class='k'>null</span><span class='b'>)</span> slots<span class='b'>[</span>s.name<span class='b'>]</span> = s
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>this</span>.slots = slots
+    loaded = <span class='k'>true</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Primitives</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Bool <span id='isPrimitive'>isPrimitive</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> pod === pod.bridge.primitives &amp;&amp; arrayRank == 0
+  <span class='b'>}</span>
+
+  Bool <span id='isPrimitiveIntLike'>isPrimitiveIntLike</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    primitives := pod.bridge.primitives
+    <span class='k'>return</span> <span class='k'>this</span> === primitives.intType ||
+           <span class='k'>this</span> === primitives.charType ||
+           <span class='k'>this</span> === primitives.shortType ||
+           <span class='k'>this</span> === primitives.byteType
+  <span class='b'>}</span>
+
+  Bool <span id='isPrimitiveFloat'>isPrimitiveFloat</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    primitives := pod.bridge.primitives
+    <span class='k'>return</span> <span class='k'>this</span> === primitives.floatType
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Arrays</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this is an interop array like</span>
+  <span class='z'>** 'fanx.interop.IntArray' which models 'int[]'.</span>
+  <span class='z'>**</span>
+  Bool <span id='isInteropArray'>isInteropArray</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> pod.isInterop &amp;&amp; name.endsWith<span class='b'>(</span><span class='s'>"Array"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Is this a array type such as '[java]foo.bar::[Baz'</span>
+  <span class='z'>**</span>
+  Bool <span id='isArray'>isArray</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> arrayRank &gt; 0 <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The rank of the array where 0 is not an array,</span>
+  <span class='z'>** 1 is one dimension, 2 is two dimensional, etc.</span>
+  <span class='z'>**</span>
+  Int <span id='arrayRank'>arrayRank</span> := 0
+
+  <span class='z'>**</span>
+  <span class='z'>** If this an array, this is the component type.</span>
+  <span class='z'>**</span>
+  JavaType? <span id='arrayOf'>arrayOf</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The arrayOf field always stores a JavaType so that we</span>
+  <span class='z'>** can correctly resolve the FFI qname.  This means that</span>
+  <span class='z'>** that an array of java.lang.Object will have an arrayOf</span>
+  <span class='z'>** value of [java]java.lang::Object.  This method correctly</span>
+  <span class='z'>** maps the arrayOf map to its canonical Fantom type.</span>
+  <span class='z'>**</span>
+  CType? <span id='inferredArrayOf'>inferredArrayOf</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>arrayOf == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    CType x := JavaReflect.objectClassToDirectFanType<span class='b'>(</span>ns, arrayOf.toJavaClassName<span class='b'>)</span> ?: arrayOf
+    <span class='k'>return</span> x.toNullable
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the type which is an array of this type.</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> JavaType <span id='toArrayOf'>toArrayOf</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> JavaType<span class='b'>(</span>pod, <span class='s'>"["</span> + name<span class='b'>)</span>
+    <span class='b'>{</span>
+      it.arrayRank = <span class='k'>this</span>.arrayRank + 1
+      it.arrayOf = <span class='k'>this</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get this type's Java class name:</span>
+  <span class='z'>**   [java]java.lang::Class  =&gt; java.lang.Class</span>
+  <span class='z'>**   [java]java.lang::[Class =&gt; [Ljava.lang.Class;</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> Str <span id='toJavaClassName'>toJavaClassName</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    s := StrBuf<span class='b'>()</span>
+    <span class='k'>if</span> <span class='b'>(</span>isArray<span class='b'>)</span>
+    <span class='b'>{</span>
+      rank := arrayRank
+      rank.times <span class='b'>{</span> s.addChar<span class='b'>(</span><span class='s'>'['</span><span class='b'>)</span> <span class='b'>}</span>
+      s.addChar<span class='b'>(</span><span class='s'>'L'</span><span class='b'>)</span>
+      s.add<span class='b'>(</span>pod.packageName<span class='b'>)</span>.addChar<span class='b'>(</span><span class='s'>'.'</span><span class='b'>)</span>
+      s.add<span class='b'>(</span>name<span class='b'>[</span>rank .. -rank<span class='b'>])</span>
+      s.addChar<span class='b'>(</span><span class='s'>';'</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      s.add<span class='b'>(</span>pod.packageName<span class='b'>)</span>.addChar<span class='b'>(</span><span class='s'>'.'</span><span class='b'>)</span>.add<span class='b'>(</span>name<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> s.toStr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** We use an implicit constructor called "&lt;new&gt;" on</span>
+  <span class='z'>** each type as the protocol for telling the Java runtime</span>
+  <span class='z'>** to perform a 'new' opcode for object allocation:</span>
+  <span class='z'>**   CallNew Type.&lt;new&gt;  // allocate object</span>
+  <span class='z'>**   args...             // arguments are pushed onto stack</span>
+  <span class='z'>**   CallCtor &lt;init&gt;     // call to java constructor</span>
+  <span class='z'>**</span>
+  <span class='k'>once</span> CMethod <span id='newMethod'>newMethod</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> JavaMethod
+    <span class='b'>{</span>
+      it.parent = <span class='k'>this</span>
+      it.name = <span class='s'>"&lt;new&gt;"</span>
+      it.flags = FConst.Ctor + FConst.Public
+      it.returnType = <span class='k'>this</span>
+      it.params = JavaParam<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** We use an implicit method called "&lt;class&gt;" on</span>
+  <span class='z'>** each type as the protocol for telling the Java runtime</span>
+  <span class='z'>** to load a class literal</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> CMethod <span id='classLiteral'>classLiteral</span><span class='b'>(</span>JavaBridge bridge, CType base<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> JavaMethod
+    <span class='b'>{</span>
+      it.parent = base
+      it.name = <span class='s'>"&lt;class&gt;"</span>
+      it.flags = FConst.Public + FConst.Static
+      it.returnType = bridge.classType
+      it.params = JavaParam<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Bool <span id='loaded'>loaded</span> := <span class='k'>false</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='JavaType.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#arrayOf'>arrayOf</a></li>
+  <li style='display: block;'><a href='#arrayRank'>arrayRank</a></li>
+  <li style='display: block;'><a href='#base'>base</a></li>
+  <li style='display: block;'><a href='#classLiteral'>classLiteral</a></li>
+  <li style='display: block;'><a href='#facet'>facet</a></li>
+  <li style='display: block;'><a href='#fits'>fits</a></li>
+  <li class='hidden' style='display: block;'><a href='#fitsFan'>fitsFan</a></li>
+  <li class='hidden' style='display: block;'><a href='#fitsJava'>fitsJava</a></li>
+  <li style='display: block;'><a href='#flags'>flags</a></li>
+  <li style='display: block;'><a href='#inferredArrayOf'>inferredArrayOf</a></li>
+  <li style='display: block;'><a href='#inferredAs'>inferredAs</a></li>
+  <li style='display: block;'><a href='#isArray'>isArray</a></li>
+  <li style='display: block;'><a href='#isForeign'>isForeign</a></li>
+  <li style='display: block;'><a href='#isGeneric'>isGeneric</a></li>
+  <li style='display: block;'><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li style='display: block;'><a href='#isInteropArray'>isInteropArray</a></li>
+  <li style='display: block;'><a href='#isNullable'>isNullable</a></li>
+  <li style='display: block;'><a href='#isParameterized'>isParameterized</a></li>
+  <li style='display: block;'><a href='#isPrimitive'>isPrimitive</a></li>
+  <li style='display: block;'><a href='#isPrimitiveFloat'>isPrimitiveFloat</a></li>
+  <li style='display: block;'><a href='#isPrimitiveIntLike'>isPrimitiveIntLike</a></li>
+  <li style='display: block;'><a href='#isSupported'>isSupported</a></li>
+  <li style='display: block;'><a href='#isVal'>isVal</a></li>
+  <li class='hidden' style='display: block;'><a href='#load'>load</a></li>
+  <li class='hidden' style='display: block;'><a href='#loaded'>loaded</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#method'>method</a></li>
+  <li style='display: block;'><a href='#mixins'>mixins</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#newMethod'>newMethod</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#operators'>operators</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li class='hidden' style='display: block;'><a href='#primitiveNullable'>primitiveNullable</a></li>
+  <li style='display: block;'><a href='#qname'>qname</a></li>
+  <li style='display: block;'><a href='#signature'>signature</a></li>
+  <li style='display: block;'><a href='#slot'>slot</a></li>
+  <li style='display: block;'><a href='#slots'>slots</a></li>
+  <li style='display: block;'><a href='#toArrayOf'>toArrayOf</a></li>
+  <li style='display: block;'><a href='#toJavaClassName'>toJavaClassName</a></li>
+  <li style='display: block;'><a href='#toListOf'>toListOf</a></li>
+  <li style='display: block;'><a href='#toNullable'>toNullable</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compilerJava 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

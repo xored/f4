@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::AttrAsm</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='AttrAsm.html'>AttrAsm</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::AttrAsm</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    compiler::AttrAsm</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   15 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//   20 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** AttrAsm provides support for assembling the attributes</span>
+<span class='z'>** table for types and slots.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> AttrAsm : CompilerSupport
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler, FPod fpod<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.fpod = fpod;
+    <span class='k'>this</span>.attrs = FAttr<span class='b'>[</span>,<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Named Adds</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='sourceFile'>sourceFile</span><span class='b'>(</span>Str? source<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>source == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+    utf<span class='b'>(</span>FConst.SourceFileAttr, source<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='lineNumber'>lineNumber</span><span class='b'>(</span>Int? line<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>line == <span class='k'>null</span> || line == 0<span class='b'>)</span> <span class='k'>return</span>
+    u2<span class='b'>(</span>FConst.LineNumberAttr, line<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='facets'>facets</span><span class='b'>(</span>FacetDef<span class='b'>[]</span>? facets<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>facets == <span class='k'>null</span> || facets.isEmpty<span class='b'>)</span> <span class='k'>return</span>
+
+    buf := Buf.make
+    buf.writeI2<span class='b'>(</span>facets.size<span class='b'>)</span>
+    facets.each |FacetDef f|
+    <span class='b'>{</span>
+      buf.writeI2<span class='b'>(</span>fpod.addTypeRef<span class='b'>(</span>f.type<span class='b'>))</span>
+      <span class='k'>try</span>
+        buf.writeUtf<span class='b'>(</span>f.serialize<span class='b'>)</span>
+      <span class='k'>catch</span> <span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+        err<span class='b'>(</span><span class='s'>"Facet value is not serializable: '$f.type' ($e.msg)"</span>, f.loc<span class='b'>)</span>
+      add<span class='b'>(</span>FConst.FacetsAttr, buf<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='enumOrdinal'>enumOrdinal</span><span class='b'>(</span>Int ordinal<span class='b'>)</span>
+  <span class='b'>{</span>
+    u2<span class='b'>(</span>FConst.EnumOrdinalAttr, ordinal<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Generic Adds</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='utf'>utf</span><span class='b'>(</span>Str name, Str data<span class='b'>)</span>
+  <span class='b'>{</span>
+    buf := Buf.make
+    buf.writeUtf<span class='b'>(</span>data<span class='b'>)</span>
+    add<span class='b'>(</span>name, buf<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='u2'>u2</span><span class='b'>(</span>Str name, Int data<span class='b'>)</span>
+  <span class='b'>{</span>
+    buf := Buf.make
+    buf.writeI2<span class='b'>(</span>data<span class='b'>)</span>
+    add<span class='b'>(</span>name, buf<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void <span id='add'>add</span><span class='b'>(</span>Str name, Buf data<span class='b'>)</span>
+  <span class='b'>{</span>
+    a := FAttr.make
+    a.name = fpod.addName<span class='b'>(</span>name<span class='b'>)</span>
+    a.data = data
+    attrs.add<span class='b'>(</span>a<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  FPod <span id='fpod'>fpod</span>
+  FAttr<span class='b'>[]</span> <span id='attrs'>attrs</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='AttrAsm.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#add'>add</a></li>
+  <li style='display: block;'><a href='#attrs'>attrs</a></li>
+  <li style='display: block;'><a href='#enumOrdinal'>enumOrdinal</a></li>
+  <li style='display: block;'><a href='#facets'>facets</a></li>
+  <li style='display: block;'><a href='#fpod'>fpod</a></li>
+  <li style='display: block;'><a href='#lineNumber'>lineNumber</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#sourceFile'>sourceFile</a></li>
+  <li style='display: block;'><a href='#u2'>u2</a></li>
+  <li style='display: block;'><a href='#utf'>utf</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::Frame</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='Frame.html'>Frame</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>flux::Frame</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../fwt/Widget.html'>fwt::Widget</a>
+    <a href='../fwt/Pane.html'>fwt::Pane</a>
+      <a href='../fwt/ContentPane.html'>fwt::ContentPane</a>
+        <a href='../fwt/Window.html'>fwt::Window</a>
+          flux::Frame</pre>
+</div>
+<p><code class='sig'>@<a href='../sys/Serializable.html'>Serializable</a> {
+simple=false
+collection=false
+}<br/>
+</code></p>
+<div class='detail'>
+
+<p>Frame is the main top level window in flux applications.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='command' class='method'>command<a href='Frame_src.html#command'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='FluxCommand.html'>FluxCommand</a>? command(<a href='../sys/Str.html'>Str</a> id)</code></p>
+
+<p>Lookup a predefined command by id or return null if not found.  See <code><a href='CommandId.html'>CommandId</a></code> for the predefined id strings.</p>
+</dd>
+<dt id='commands' class='field hidden'>commands<a href='Frame_src.html#commands'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='Commands.html'>Commands</a> commands := Commands(this)</code></p>
+</dd>
+<dt id='console' class='method'>console<a href='Frame_src.html#console'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Console.html'>Console</a> console()</code></p>
+
+<p>Convenience for getting the console sidebar.</p>
+</dd>
+<dt id='curMark' class='field hidden'>curMark<a href='Frame_src.html#curMark'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Int.html'>Int</a>? curMark</code></p>
+
+<p>Index into marks for current mark</p>
+</dd>
+<dt id='findById' class='method'>findById<a href='Frame_src.html#findById'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Frame.html'>Frame</a>? findById(<a href='../sys/Str.html'>Str</a> id, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Lookup a frame by its id within the VM.  If the frame cannot be found and checked is true then throw an Err, otherwise return null.  This method can only be called on the UI thread.</p>
+</dd>
+<dt id='handleDrop' class='method hidden'>handleDrop<a href='Frame_src.html#handleDrop'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> handleDrop(<a href='../sys/Obj.html'>Obj</a> data)</code></p>
+</dd>
+<dt id='id' class='field'>id<a href='Frame_src.html#id'>Source</a></dt>
+<dd>
+<p><code class='sig'>const <a href='../sys/Str.html'>Str</a> id</code></p>
+
+<p>Get the id of this frame within the VM.  The id may be used as an immutable pointer to the frame to pass between threads. See <a href='Frame.html#findById'>findById</a> to resolve a frame by id.  The id is an opaque string, no attempt should be made to interpret the format.</p>
+</dd>
+<dt id='initId' class='method hidden'>initId<a href='Frame_src.html#initId'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Str.html'>Str</a> initId()</code></p>
+
+<p>Internal id initialization</p>
+</dd>
+<dt id='load' class='method'>load<a href='Frame_src.html#load'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> load(<a href='../sys/Uri.html'>Uri</a> uri, <a href='LoadMode.html'>LoadMode</a> mode := LoadMode())</code></p>
+
+<p>Load the specified resource Uri in the active tab. The default mode will replace the current tab.</p>
+</dd>
+<dt id='loadMark' class='method'>loadMark<a href='Frame_src.html#loadMark'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> loadMark(<a href='Mark.html'>Mark</a> mark, <a href='LoadMode.html'>LoadMode</a> mode := LoadMode())</code></p>
+
+<p>Load the specified mark's Uri in the active tab. If the current tab is already at the specified uri, then it is not reloaded.</p>
+</dd>
+<dt id='loadState' class='method hidden'>loadState<a href='Frame_src.html#loadState'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> loadState()</code></p>
+</dd>
+<dt id='locator' class='field hidden'>locator<a href='Frame_src.html#locator'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='LocatorBar.html'>LocatorBar</a> locator := LocatorBar(this)</code></p>
+</dd>
+<dt id='make' class='method hidden'>make<a href='Frame_src.html#make'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new make()</code></p>
+</dd>
+<dt id='marks' class='field'>marks<a href='Frame_src.html#marks'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Mark.html'>Mark</a>[] marks := Mark[,].ro</code></p>
+
+<p>The current mark list for the frame.  This is the list of uris with optional line/col numbers which the user can currently cycle thru using the jumpPrev and jumpNext commands.  This list is always readonly, set the field to update the marks and invoke the onMarks callback for each view.</p>
+</dd>
+<dt id='saveState' class='method hidden'>saveState<a href='Frame_src.html#saveState'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> saveState()</code></p>
+</dd>
+<dt id='select' class='method'>select<a href='Frame_src.html#select'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> select(<a href='View.html'>View</a> view)</code></p>
+
+<p>Select the active view tab.</p>
+</dd>
+<dt id='sideBar' class='method'>sideBar<a href='Frame_src.html#sideBar'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='SideBar.html'>SideBar</a>? sideBar(<a href='../sys/Type.html'>Type</a> t, <a href='../sys/Bool.html'>Bool</a> make := true)</code></p>
+
+<p>Get the sidebar for the specified SideBar type.  If the sidebar has already been created for this frame then return that instance.  Otherwise if make is true, then create a new sidebar for this frame.  If make is false return null.</p>
+</dd>
+<dt id='sideBarPane' class='field hidden'>sideBarPane<a href='Frame_src.html#sideBarPane'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='SideBarPane.html'>SideBarPane</a> sideBarPane := SideBarPane(this, this.tabPane)</code></p>
+</dd>
+<dt id='sideBars' class='method'>sideBars<a href='Frame_src.html#sideBars'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='SideBar.html'>SideBar</a>[] sideBars()</code></p>
+
+<p>Get the sidebars which are currently created for this frame. This list includes both showing and hidden sidebars.</p>
+</dd>
+<dt id='tabPane' class='field hidden'>tabPane<a href='Frame_src.html#tabPane'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='ViewTabPane.html'>ViewTabPane</a> tabPane := ViewTabPane(this)</code></p>
+</dd>
+<dt id='view' class='method'>view<a href='Frame_src.html#view'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='View.html'>View</a> view()</code></p>
+
+<p>Get the active view.  A given frame always has exactly one view active.</p>
+</dd>
+<dt id='views' class='method'>views<a href='Frame_src.html#views'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='View.html'>View</a>[] views()</code></p>
+
+<p>Get the list of views this frame has opened in tabs.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Frame_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#command'>command</a></li>
+  <li class='hidden'><a href='#commands'>commands</a></li>
+  <li><a href='#console'>console</a></li>
+  <li class='hidden'><a href='#curMark'>curMark</a></li>
+  <li><a href='#findById'>findById</a></li>
+  <li class='hidden'><a href='#handleDrop'>handleDrop</a></li>
+  <li><a href='#id'>id</a></li>
+  <li class='hidden'><a href='#initId'>initId</a></li>
+  <li><a href='#load'>load</a></li>
+  <li><a href='#loadMark'>loadMark</a></li>
+  <li class='hidden'><a href='#loadState'>loadState</a></li>
+  <li class='hidden'><a href='#locator'>locator</a></li>
+  <li class='hidden'><a href='#make'>make</a></li>
+  <li><a href='#marks'>marks</a></li>
+  <li class='hidden'><a href='#saveState'>saveState</a></li>
+  <li><a href='#select'>select</a></li>
+  <li><a href='#sideBar'>sideBar</a></li>
+  <li class='hidden'><a href='#sideBarPane'>sideBarPane</a></li>
+  <li><a href='#sideBars'>sideBars</a></li>
+  <li class='hidden'><a href='#tabPane'>tabPane</a></li>
+  <li><a href='#view'>view</a></li>
+  <li><a href='#views'>views</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

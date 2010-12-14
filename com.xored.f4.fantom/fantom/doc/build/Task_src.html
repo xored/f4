@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>build::Task</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>build</a></li>
+  <li>&gt;</li>
+  <li><a href='Task.html'>Task</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>build::Task</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  build::Task</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   4 Nov 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Task is the base class for commands to run in build scripts.</span>
+<span class='z'>** The library of Task subclasses represent the reusable units of</span>
+<span class='z'>** work which are composed together to implement build script</span>
+<span class='z'>** Targets.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> Task
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with parent script.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>BuildScript script<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.script = script
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Run</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Run this task.  If there is an error, the report them via</span>
+  <span class='z'>** the script's log and throw FatalBuildErr if the script should</span>
+  <span class='z'>** be terminated.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void <span id='run'>run</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Env</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the parent build script associated with this task.</span>
+  <span class='z'>**</span>
+  <span class='k'>readonly</span> BuildScript <span id='script'>script</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for script.log</span>
+  <span class='z'>**</span>
+  BuildLog <span id='log'>log</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> script.log <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Log an error and return a FatalBuildErr instance</span>
+  <span class='z'>**</span>
+  FatalBuildErr <span id='fatal'>fatal</span><span class='b'>(</span>Str msg, Err? err := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    log.err<span class='b'>(</span>msg, err<span class='b'>)</span>
+    <span class='k'>return</span> FatalBuildErr<span class='b'>(</span>msg, err<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Task.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#fatal'>fatal</a></li>
+  <li style='display: block;'><a href='#log'>log</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#run'>run</a></li>
+  <li style='display: block;'><a href='#script'>script</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+build 1.0.56
+[11-Nov-2010 Thu 10:08:18AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

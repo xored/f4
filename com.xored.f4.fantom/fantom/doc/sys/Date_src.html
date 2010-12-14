@@ -1,0 +1,357 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Date</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Date.html'>Date</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final class</h2>
+<h1>sys::Date</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Date</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2009, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   10 Jan 09  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Date represents a day in time independent of a timezone.</span>
+<span class='z'>**</span>
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>final</span> <span class='k'>class</span> Date
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get today's Date using specified timezone.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Date <span id='today'>today</span><span class='b'>(</span>TimeZone tz := TimeZone.cur<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Make for the specified date values:</span>
+  <span class='z'>**  - year:  no restriction (although only 1901-2099 maps to DateTime)</span>
+  <span class='z'>**  - month: Month enumeration</span>
+  <span class='z'>**  - day:   1-31</span>
+  <span class='z'>**</span>
+  <span class='z'>** Throw ArgErr is any of the parameters are out of range.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Date <span id='make'>make</span><span class='b'>(</span>Int year, Month month, Int day<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the string into a Date from the programmatic encoding</span>
+  <span class='z'>** defined by `toStr`.  If the string cannot be parsed into a valid</span>
+  <span class='z'>** Date and checked is false then return null, otherwise throw</span>
+  <span class='z'>** ParseErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Date? <span id='fromStr'>fromStr</span><span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default value is "2000-01-01".</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> <span class='k'>const</span> Date <span id='defVal'>defVal</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Private constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>new</span> <span id='privateMake'>privateMake</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Identity</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Two dates are equal if have the same year, month, and day.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? that<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return hash of year, month, and day.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare based on year, month, and day.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='compare'>compare</span><span class='b'>(</span>Obj obj<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return programmatic ISO 8601 string encoding formatted as follows:</span>
+  <span class='z'>**   YYYY-MM-DD</span>
+  <span class='z'>**   2009-01-10</span>
+  <span class='z'>**</span>
+  <span class='z'>** Also `fromStr`, `toIso`, and `toLocale`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the year as a number such as 2009.</span>
+  <span class='z'>**</span>
+  Int <span id='year'>year</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the month of this date.</span>
+  <span class='z'>**</span>
+  Month <span id='month'>month</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the day of the month as a number between 1 and 31.</span>
+  <span class='z'>**</span>
+  Int <span id='day'>day</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the day of the week for this date.</span>
+  <span class='z'>**</span>
+  Weekday <span id='weekday'>weekday</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the day of the year as a number between</span>
+  <span class='z'>** 1 and 365 (or 1 to 366 if a leap year).</span>
+  <span class='z'>**</span>
+  Int <span id='dayOfYear'>dayOfYear</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Locale</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Format this date according to the specified pattern.  If</span>
+  <span class='z'>** pattern is null, then a localized default is used.  The</span>
+  <span class='z'>** pattern format is the same as `DateTime.toLocale`:</span>
+  <span class='z'>**</span>
+  <span class='z'>**   YY     Two digit year             07</span>
+  <span class='z'>**   YYYY   Four digit year            2007</span>
+  <span class='z'>**   M      One/two digit month        6, 11</span>
+  <span class='z'>**   MM     Two digit month            06, 11</span>
+  <span class='z'>**   MMM    Three letter abbr month    Jun, Nov</span>
+  <span class='z'>**   MMMM   Full month                 June, November</span>
+  <span class='z'>**   D      One/two digit day          5, 28</span>
+  <span class='z'>**   DD     Two digit day              05, 28</span>
+  <span class='z'>**   DDD    Day with suffix            1st, 2nd, 3rd, 24th</span>
+  <span class='z'>**   WWW    Three letter abbr weekday  Tue</span>
+  <span class='z'>**   WWWW   Full weekday               Tuesday</span>
+  <span class='z'>**   'xyz'  Literal characters</span>
+  <span class='z'>**</span>
+  Str <span id='toLocale'>toLocale</span><span class='b'>(</span>Str? pattern := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a string into a Date using the given pattern.  If</span>
+  <span class='z'>** string is not a valid format then return null or raise ParseErr</span>
+  <span class='z'>** based on checked flag.  See `toLocale` for pattern syntax.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Date? <span id='fromLocale'>fromLocale</span><span class='b'>(</span>Str str, Str pattern, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// ISO 8601</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse an ISO 8601 date.  If invalid format and checked is</span>
+  <span class='z'>** false return null, otherwise throw ParseErr.  The following</span>
+  <span class='z'>** format is supported:</span>
+  <span class='z'>**   YYYY-MM-DD</span>
+  <span class='z'>**</span>
+  <span class='z'>** Also see `toIso` and `fromStr`.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Date? <span id='fromIso'>fromIso</span><span class='b'>(</span>Str s, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Format this instance according to ISO 8601 using the pattern:</span>
+  <span class='z'>**   YYYY-MM-DD</span>
+  <span class='z'>**</span>
+  <span class='z'>** Also see `fromIso` and `toStr`.</span>
+  <span class='z'>**</span>
+  Str <span id='toIso'>toIso</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Past/Future</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add the specified number of days to this date to get a date in</span>
+  <span class='z'>** the future.  Throw ArgErr if 'days' parameter it not an even number</span>
+  <span class='z'>** of days.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   Date(2008, Month.feb, 28) + 2day  =&gt;  2008-03-01</span>
+  <span class='z'>**</span>
+  @Operator Date <span id='plus'>plus</span><span class='b'>(</span>Duration days<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Subtract the specified number of days to this date to get a date in</span>
+  <span class='z'>** the past.  Throw ArgErr if 'days' parameter it not an even number</span>
+  <span class='z'>** of days.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   Date(2008, Month.feb, 28) - 2day  =&gt;  2008-02-26</span>
+  <span class='z'>**</span>
+  @Operator Date <span id='minus'>minus</span><span class='b'>(</span>Duration days<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the delta between this and the given date.  The</span>
+  <span class='z'>** result is always an exact multiple of 24 hour days.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   Date(2009, Month.jan, 5) - Date(2009, Month.jan, 2)  =&gt;  3day</span>
+  <span class='z'>**</span>
+  @Operator Duration <span id='minusDate'>minusDate</span><span class='b'>(</span>Date days<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the first day of this Date's current month.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   Date("2009-10-28").firstOfMonth  =&gt;  2009-10-01</span>
+  <span class='z'>**</span>
+  Date <span id='firstOfMonth'>firstOfMonth</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the last day of this Date's current month.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Example:</span>
+  <span class='z'>**   Date("2009-10-28").lastOfMonth  =&gt;  2009-10-31</span>
+  <span class='z'>**</span>
+  Date <span id='lastOfMonth'>lastOfMonth</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Misc</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return is this date equal to `today` - 1day.</span>
+  <span class='z'>**</span>
+  Bool <span id='isYesterday'>isYesterday</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return is this date equal to `today`.</span>
+  <span class='z'>**</span>
+  Bool <span id='isToday'>isToday</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return is this date equal to `today` + 1day.</span>
+  <span class='z'>**</span>
+  Bool <span id='isTomorrow'>isTomorrow</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Combine this Date with the given Time to return a DateTime.</span>
+  <span class='z'>**</span>
+  DateTime <span id='toDateTime'>toDateTime</span><span class='b'>(</span>Time t, TimeZone tz := TimeZone.cur<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return a DateTime for the beginning of the this day at midnight.</span>
+  <span class='z'>**</span>
+  DateTime <span id='midnight'>midnight</span><span class='b'>(</span>TimeZone tz := TimeZone.cur<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get this Date as a Fantom expression suitable for code generation.</span>
+  <span class='z'>**</span>
+  Str <span id='toCode'>toCode</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Date.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#compare'>compare</a></li>
+  <li style='display: block;'><a href='#day'>day</a></li>
+  <li style='display: block;'><a href='#dayOfYear'>dayOfYear</a></li>
+  <li style='display: block;'><a href='#defVal'>defVal</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#firstOfMonth'>firstOfMonth</a></li>
+  <li style='display: block;'><a href='#fromIso'>fromIso</a></li>
+  <li style='display: block;'><a href='#fromLocale'>fromLocale</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#isToday'>isToday</a></li>
+  <li style='display: block;'><a href='#isTomorrow'>isTomorrow</a></li>
+  <li style='display: block;'><a href='#isYesterday'>isYesterday</a></li>
+  <li style='display: block;'><a href='#lastOfMonth'>lastOfMonth</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#midnight'>midnight</a></li>
+  <li style='display: block;'><a href='#minus'>minus</a></li>
+  <li style='display: block;'><a href='#minusDate'>minusDate</a></li>
+  <li style='display: block;'><a href='#month'>month</a></li>
+  <li style='display: block;'><a href='#plus'>plus</a></li>
+  <li class='hidden' style='display: block;'><a href='#privateMake'>privateMake</a></li>
+  <li style='display: block;'><a href='#toCode'>toCode</a></li>
+  <li style='display: block;'><a href='#toDateTime'>toDateTime</a></li>
+  <li style='display: block;'><a href='#toIso'>toIso</a></li>
+  <li style='display: block;'><a href='#toLocale'>toLocale</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#today'>today</a></li>
+  <li style='display: block;'><a href='#weekday'>weekday</a></li>
+  <li style='display: block;'><a href='#year'>year</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

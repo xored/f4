@@ -1,0 +1,329 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>web::WebClient</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>web</a></li>
+  <li>&gt;</li>
+  <li><a href='WebClient.html'>WebClient</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>web::WebClient</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  web::WebClient</pre>
+</div>
+<div class='detail'>
+
+<p>The <code>WebClient</code> class is used to manage client side HTTP requests and responses.  The basic lifecycle of WebClient:</p>
+
+<ol style='list-style-type:decimal'>
+<li>configure request fields such as <code>reqUri</code>, <code>reqMethod</code>, and <code>reqHeaders</code></li>
+
+<li>send request headers via <code>writeReq</code></li>
+
+<li>optionally write request body via <code>reqOut</code></li>
+
+<li>read response status and headers via <code>readRes</code></li>
+
+<li>process response fields such as <code>resCode</code> and <code>resHeaders</code></li>
+
+<li>optionally read response body via <code>resIn</code></li>
+</ol>
+
+<p>Using the low level methods <code>writeReq</code> and <code>readRes</code> enables HTTP pipelining (multiple requests and responses on the same TCP socket connection).  There are also a series of convenience methods which make common cases easier.</p>
+
+<p>See <a href='pod-doc.html#webClient'>pod doc</a> and <a href='../examples/web-client.html'>examples</a>.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='checkFollowRedirect' class='method hidden'>checkFollowRedirect<a href='WebClient_src.html#checkFollowRedirect'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> checkFollowRedirect()</code></p>
+
+<p>If we have a 3xx statu code with a location header, then check for an automate redirect.</p>
+</dd>
+<dt id='close' class='method'>close<a href='WebClient_src.html#close'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> close()</code></p>
+
+<p>Close the HTTP request and the underlying socket.  Return this.</p>
+</dd>
+<dt id='followRedirects' class='field'>followRedirects<a href='WebClient_src.html#followRedirects'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> followRedirects := true</code></p>
+
+<p>When set to true a 3xx response with a Location header will automatically update the <a href='WebClient.html#reqUri'>reqUri</a> field and retry the request using the alternate URI.  Redirects are not followed if the request has a content body.</p>
+</dd>
+<dt id='getBuf' class='method'>getBuf<a href='WebClient_src.html#getBuf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Buf.html'>Buf</a> getBuf()</code></p>
+
+<p>Make a GET request and return the response content as an in-memory byte buffer.  The web client is automatically closed. Throw IOErr is response is not 200.</p>
+</dd>
+<dt id='getIn' class='method'>getIn<a href='WebClient_src.html#getIn'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/InStream.html'>InStream</a> getIn()</code></p>
+
+<p>Make a GET request and return the input stream to the response or throw IOErr if response is not 200.  It is the caller's responsibility to close this web client.</p>
+</dd>
+<dt id='getStr' class='method'>getStr<a href='WebClient_src.html#getStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> getStr()</code></p>
+
+<p>Make a GET request and return the response content as an in-memory string.  The web client is automatically closed. Throw IOErr is response is not 200.</p>
+</dd>
+<dt id='isConnected' class='method'>isConnected<a href='WebClient_src.html#isConnected'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isConnected()</code></p>
+
+<p>Return if this web client is currently connected to the remote host.</p>
+</dd>
+<dt id='make' class='method'>make<a href='WebClient_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/Uri.html'>Uri</a>? reqUri := null)</code></p>
+
+<p>Construct with optional request URI.</p>
+</dd>
+<dt id='noHeaders' class='field hidden'>noHeaders<a href='WebClient_src.html#noHeaders'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Str.html'>Str</a>:<a href='../sys/Str.html'>Str</a> noHeaders := [Str:Str][:]</code></p>
+</dd>
+<dt id='options' class='field hidden'>options<a href='WebClient_src.html#options'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../inet/SocketOptions.html'>SocketOptions</a>? options</code></p>
+</dd>
+<dt id='postForm' class='method'>postForm<a href='WebClient_src.html#postForm'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> postForm(<a href='../sys/Str.html'>Str</a>:<a href='../sys/Str.html'>Str</a> form)</code></p>
+
+<p>Make a post request to the URI with the given form data. Set the Content-Type to application/x-www-form-urlencoded. Upon completion the response is ready to be read.</p>
+</dd>
+<dt id='postStr' class='method'>postStr<a href='WebClient_src.html#postStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> postStr(<a href='../sys/Str.html'>Str</a> content)</code></p>
+
+<p>Make a post request to the URI using UTF-8 encoding of given string.  If Content-Type is not already set, then set it to "text/plain; charset=utf-8".  Upon completion the response is ready to be read.</p>
+</dd>
+<dt id='readRes' class='method'>readRes<a href='WebClient_src.html#readRes'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> readRes()</code></p>
+
+<p>Read the response status line and response headers.  This method may be called after the request has been written via <a href='WebClient.html#writeReq'>writeReq</a> and <a href='WebClient.html#reqOut'>reqOut</a>.  Once this method completes the response status and headers are available.  If there is a response body, it is available for reading via <a href='WebClient.html#resIn'>resIn</a>.  Throw IOErr if there is a network or protocol error.  Return this.</p>
+</dd>
+<dt id='reqHeaders' class='field'>reqHeaders<a href='WebClient_src.html#reqHeaders'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>:<a href='../sys/Str.html'>Str</a> reqHeaders := ...</code></p>
+
+<p>The HTTP headers to use for the next request.  This map uses case insensitive keys.  The "Host" header is implicitly defined by <code>reqUri</code> and must not be defined in this map.</p>
+</dd>
+<dt id='reqMethod' class='field'>reqMethod<a href='WebClient_src.html#reqMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> reqMethod := "GET"</code></p>
+
+<p>The HTTP method for the request.  Defaults to "GET".</p>
+</dd>
+<dt id='reqOut' class='method'>reqOut<a href='WebClient_src.html#reqOut'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/OutStream.html'>OutStream</a> reqOut()</code></p>
+
+<p>Get the output stream used to write the request body.  This stream is only available if the request headers included a "Content-Type" header.  If an explicit "Content-Length" was specified then this is a fixed length output stream, otherwise the request is automatically configured to use a chunked transfer encoding.  This stream should be closed once the content has been fully written.</p>
+</dd>
+<dt id='reqOutStream' class='field hidden'>reqOutStream<a href='WebClient_src.html#reqOutStream'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/OutStream.html'>OutStream</a>? reqOutStream</code></p>
+</dd>
+<dt id='reqUri' class='field'>reqUri<a href='WebClient_src.html#reqUri'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Uri.html'>Uri</a> reqUri := ``</code></p>
+
+<p>The absolute URI of request.</p>
+</dd>
+<dt id='reqVersion' class='field'>reqVersion<a href='WebClient_src.html#reqVersion'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Version.html'>Version</a> reqVersion := ver11</code></p>
+
+<p>HTTP version to use for request must be 1.0 or 1.1. Default is 1.1.</p>
+</dd>
+<dt id='resBuf' class='method'>resBuf<a href='WebClient_src.html#resBuf'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Buf.html'>Buf</a> resBuf()</code></p>
+
+<p>Return the entire response back as an in-memory byte buffer. Convenience for <code>resIn.readAllBuf</code>.</p>
+</dd>
+<dt id='resCode' class='field'>resCode<a href='WebClient_src.html#resCode'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a> resCode</code></p>
+
+<p>HTTP status code returned by response.</p>
+</dd>
+<dt id='resHeader' class='method'>resHeader<a href='WebClient_src.html#resHeader'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? resHeader(<a href='../sys/Str.html'>Str</a> key, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Get a response header.  If not found and checked is false then return true, otherwise throw Err.</p>
+</dd>
+<dt id='resHeaders' class='field'>resHeaders<a href='WebClient_src.html#resHeaders'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>:<a href='../sys/Str.html'>Str</a> resHeaders := noHeaders</code></p>
+
+<p>HTTP headers returned by response.</p>
+</dd>
+<dt id='resIn' class='method'>resIn<a href='WebClient_src.html#resIn'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/InStream.html'>InStream</a> resIn()</code></p>
+
+<p>Input stream to read response content.  The input stream will correctly handle end of stream when the content has been fully read.  If the "Content-Length" header was specified the end of stream is based on the fixed number of bytes.  If the "Transfer-Encoding" header defines a chunked encoding, then chunks are automatically handled.  If the response has no content body, then throw IOErr.</p>
+
+<p>The response input stream is automatically configured with the correct character encoding if one is specified in the "Content-Type" response header.</p>
+
+<p>Also see convenience methods: <a href='WebClient.html#resStr'>resStr</a> and <a href='WebClient.html#resBuf'>resBuf</a>.</p>
+</dd>
+<dt id='resInStream' class='field hidden'>resInStream<a href='WebClient_src.html#resInStream'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/InStream.html'>InStream</a>? resInStream</code></p>
+</dd>
+<dt id='resPhrase' class='field'>resPhrase<a href='WebClient_src.html#resPhrase'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> resPhrase := ""</code></p>
+
+<p>HTTP status reason phrase returned by response.</p>
+</dd>
+<dt id='resStr' class='method'>resStr<a href='WebClient_src.html#resStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> resStr()</code></p>
+
+<p>Return the entire response back as an in-memory string. Convenience for <code>resIn.readAllStr</code>.</p>
+</dd>
+<dt id='resVersion' class='field'>resVersion<a href='WebClient_src.html#resVersion'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Version.html'>Version</a> resVersion := ver11</code></p>
+
+<p>HTTP version returned by response.</p>
+</dd>
+<dt id='socket' class='field hidden'>socket<a href='WebClient_src.html#socket'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../inet/TcpSocket.html'>TcpSocket</a>? socket</code></p>
+</dd>
+<dt id='socketOptions' class='method'>socketOptions<a href='WebClient_src.html#socketOptions'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../inet/SocketOptions.html'>SocketOptions</a> socketOptions()</code></p>
+
+<p>Socket options for the TCP socket used for requests.</p>
+</dd>
+<dt id='ver10' class='field hidden'>ver10<a href='WebClient_src.html#ver10'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Version.html'>Version</a> ver10 := Version("1.0")</code></p>
+</dd>
+<dt id='ver11' class='field hidden'>ver11<a href='WebClient_src.html#ver11'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static private <a href='../sys/Version.html'>Version</a> ver11 := Version("1.1")</code></p>
+</dd>
+<dt id='writeReq' class='method'>writeReq<a href='WebClient_src.html#writeReq'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> writeReq()</code></p>
+
+<p>Write the request line and request headers.  Once this method completes the request body may be written via <a href='WebClient.html#reqOut'>reqOut</a>, or the response may be immediately read via <a href='WebClient.html#readRes'>readRes</a>.  Throw IOErr if there is a network or protocol error.  Return this.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='WebClient_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden'><a href='#checkFollowRedirect'>checkFollowRedirect</a></li>
+  <li><a href='#close'>close</a></li>
+  <li><a href='#followRedirects'>followRedirects</a></li>
+  <li><a href='#getBuf'>getBuf</a></li>
+  <li><a href='#getIn'>getIn</a></li>
+  <li><a href='#getStr'>getStr</a></li>
+  <li><a href='#isConnected'>isConnected</a></li>
+  <li><a href='#make'>make</a></li>
+  <li class='hidden'><a href='#noHeaders'>noHeaders</a></li>
+  <li class='hidden'><a href='#options'>options</a></li>
+  <li><a href='#postForm'>postForm</a></li>
+  <li><a href='#postStr'>postStr</a></li>
+  <li><a href='#readRes'>readRes</a></li>
+  <li><a href='#reqHeaders'>reqHeaders</a></li>
+  <li><a href='#reqMethod'>reqMethod</a></li>
+  <li><a href='#reqOut'>reqOut</a></li>
+  <li class='hidden'><a href='#reqOutStream'>reqOutStream</a></li>
+  <li><a href='#reqUri'>reqUri</a></li>
+  <li><a href='#reqVersion'>reqVersion</a></li>
+  <li><a href='#resBuf'>resBuf</a></li>
+  <li><a href='#resCode'>resCode</a></li>
+  <li><a href='#resHeader'>resHeader</a></li>
+  <li><a href='#resHeaders'>resHeaders</a></li>
+  <li><a href='#resIn'>resIn</a></li>
+  <li class='hidden'><a href='#resInStream'>resInStream</a></li>
+  <li><a href='#resPhrase'>resPhrase</a></li>
+  <li><a href='#resStr'>resStr</a></li>
+  <li><a href='#resVersion'>resVersion</a></li>
+  <li class='hidden'><a href='#socket'>socket</a></li>
+  <li><a href='#socketOptions'>socketOptions</a></li>
+  <li class='hidden'><a href='#ver10'>ver10</a></li>
+  <li class='hidden'><a href='#ver11'>ver11</a></li>
+  <li><a href='#writeReq'>writeReq</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+web 1.0.56
+[11-Nov-2010 Thu 10:08:20AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

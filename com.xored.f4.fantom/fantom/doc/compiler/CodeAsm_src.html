@@ -1,0 +1,1861 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CodeAsm</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CodeAsm.html'>CodeAsm</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::CodeAsm</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    compiler::CodeAsm</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   15 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** CodeAsm is used to assemble the fcode instructions of an Expr or Block.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> CodeAsm : CompilerSupport
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler, Loc loc, FPod fpod, MethodDef? curMethod<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.loc       = loc
+    <span class='k'>this</span>.fpod      = fpod
+    <span class='k'>this</span>.curMethod = curMethod
+    <span class='k'>this</span>.code      = Buf.make
+    <span class='k'>this</span>.errTable  = Buf.make; errTable.writeI2<span class='b'>(</span>-1<span class='b'>)</span>
+    <span class='k'>this</span>.errCount  = 0
+    <span class='k'>this</span>.lines     = Buf.make; lines.writeI2<span class='b'>(</span>-1<span class='b'>)</span>
+    <span class='k'>this</span>.lineCount = 0
+    <span class='k'>this</span>.loopStack = Loop<span class='b'>[</span>,<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Statements</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='block'>block</span><span class='b'>(</span>Block block<span class='b'>)</span>
+  <span class='b'>{</span>
+    block.stmts.each |Stmt s| <span class='b'>{</span> stmt<span class='b'>(</span>s<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='stmt'>stmt</span><span class='b'>(</span>Stmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>stmt.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> StmtId.nop:           <span class='k'>return</span>
+      <span class='k'>case</span> StmtId.expr:          expr<span class='b'>(((</span>ExprStmt<span class='b'>)</span>stmt<span class='b'>)</span>.expr<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.localDef:      localVarDefStmt<span class='b'>((</span>LocalDefStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.ifStmt:        ifStmt<span class='b'>((</span>IfStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.returnStmt:    returnStmt<span class='b'>((</span>ReturnStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.throwStmt:     throwStmt<span class='b'>((</span>ThrowStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.forStmt:       forStmt<span class='b'>((</span>ForStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.whileStmt:     whileStmt<span class='b'>((</span>WhileStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.breakStmt:     breakOrContinueStmt<span class='b'>(</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.continueStmt:  breakOrContinueStmt<span class='b'>(</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.switchStmt:    switchStmt<span class='b'>((</span>SwitchStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>case</span> StmtId.tryStmt:       tryStmt<span class='b'>((</span>TryStmt<span class='b'>)</span>stmt<span class='b'>)</span>
+      <span class='k'>default</span>:                   <span class='k'>throw</span> Err<span class='b'>(</span>stmt.id.toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='ifStmt'>ifStmt</span><span class='b'>(</span>IfStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    endLabel := -1
+    c := Cond.make
+
+    <span class='y'>// optimize: if (true)</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.condition.id == ExprId.trueLiteral<span class='b'>)</span>
+    <span class='b'>{</span>
+      block<span class='b'>(</span>stmt.trueBlock<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// optimize: if (false)</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.condition.id == ExprId.falseLiteral<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>stmt.falseBlock != <span class='k'>null</span><span class='b'>)</span>
+        block<span class='b'>(</span>stmt.falseBlock<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check condition - if the condition is itself a CondExpr</span>
+    <span class='y'>// then we just have it branch directly to the true/false</span>
+    <span class='y'>// block rather than wasting instructions to push true/false</span>
+    <span class='y'>// onto the stack</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.condition <span class='k'>is</span> CondExpr<span class='b'>)</span>
+    <span class='b'>{</span>
+      cond<span class='b'>((</span>CondExpr<span class='b'>)</span>stmt.condition, c<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>stmt.condition<span class='b'>)</span>
+      c.jumpFalses.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// true block</span>
+    c.jumpTrues.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+    block<span class='b'>(</span>stmt.trueBlock<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!stmt.trueBlock.isExit &amp;&amp; stmt.falseBlock != <span class='k'>null</span><span class='b'>)</span>
+      endLabel = jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+
+    <span class='y'>// false block</span>
+    c.jumpFalses.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.falseBlock != <span class='k'>null</span><span class='b'>)</span>
+      block<span class='b'>(</span>stmt.falseBlock<span class='b'>)</span>
+
+    <span class='y'>// end</span>
+    <span class='k'>if</span> <span class='b'>(</span>endLabel != -1<span class='b'>)</span> backpatch<span class='b'>(</span>endLabel<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='returnStmt'>returnStmt</span><span class='b'>(</span>ReturnStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if we are in a protected region, then we can't return immediately,</span>
+    <span class='y'>// rather we need to save the result into a temporary local; and use</span>
+    <span class='y'>// a "leave" instruction which we will backpatch in finishCode() with</span>
+    <span class='y'>// the actual return sequence;</span>
+    <span class='k'>if</span> <span class='b'>(</span>inProtectedRegion<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// if returning a result then stash in temp local</span>
+      <span class='k'>if</span> <span class='b'>(</span>stmt.expr != <span class='k'>null</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        expr<span class='b'>(</span>stmt.expr<span class='b'>)</span>
+        returnLocal = stmt.leaveVar
+        op<span class='b'>(</span>FOp.StoreVar, returnLocal.register<span class='b'>)</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// jump to any finally blocks we are inside</span>
+      protectedRegions.eachr |ProtectedRegion region|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>region.hasFinally<span class='b'>)</span>
+          region.jumpFinallys.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFinally<span class='b'>))</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// generate leave instruction and register for backpatch</span>
+      <span class='k'>if</span> <span class='b'>(</span>leavesToReturn == <span class='k'>null</span><span class='b'>)</span> leavesToReturn = Int<span class='b'>[</span>,<span class='b'>]</span>
+      leavesToReturn.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.Leave<span class='b'>))</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// process as normal return</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.expr != <span class='k'>null</span><span class='b'>)</span> expr<span class='b'>(</span>stmt.expr<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.Return<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='throwStmt'>throwStmt</span><span class='b'>(</span>ThrowStmt stmt<span class='b'>)</span> <span class='b'>{</span> throwOp<span class='b'>(</span>stmt.exception<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='throwOp'>throwOp</span><span class='b'>(</span>Expr exception<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>exception<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.Throw<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='localVarDefStmt'>localVarDefStmt</span><span class='b'>(</span>LocalDefStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.isCatchVar<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// "declaration" of a catch variable is used store the</span>
+      <span class='y'>// variable back to its local register</span>
+      var := stmt.var
+      op<span class='b'>(</span>FOp.CatchErrStart, fpod.addTypeRef<span class='b'>(</span>stmt.ctype<span class='b'>))</span>
+
+      <span class='y'>// if the catch variable has been hoisted onto the heap</span>
+      <span class='y'>// with a wrapper, call the wrapper constructor</span>
+      <span class='k'>if</span> <span class='b'>(</span>var.isWrapped<span class='b'>)</span>
+      <span class='b'>{</span>
+        wrapCtor := fpod.addMethodRef<span class='b'>(</span>var.wrapField.parent.method<span class='b'>(</span><span class='s'>"make"</span><span class='b'>)</span>, 1<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallNew, wrapCtor<span class='b'>)</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// store back to local register</span>
+      op<span class='b'>(</span>FOp.StoreVar, var.register<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>stmt.init != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>stmt.init<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Loops</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='whileStmt'>whileStmt</span><span class='b'>(</span>WhileStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// push myself onto the loop stack so that breaks</span>
+    <span class='y'>// and continues can register for backpatching</span>
+    loop := Loop<span class='b'>(</span>stmt<span class='b'>)</span>
+    loopStack.push<span class='b'>(</span>loop<span class='b'>)</span>
+
+    <span class='y'>// assemble the while loop code</span>
+    continueLabel := mark
+    expr<span class='b'>(</span>stmt.condition<span class='b'>)</span>
+    breakJump := jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>)</span>
+    block<span class='b'>(</span>stmt.block<span class='b'>)</span>
+    jump<span class='b'>(</span>FOp.Jump, continueLabel<span class='b'>)</span>
+    breakLabel := mark
+    backpatch<span class='b'>(</span>breakJump<span class='b'>)</span>
+
+    <span class='y'>// backpatch continues/breaks</span>
+    loop.continues.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos, continueLabel<span class='b'>)</span> <span class='b'>}</span>
+    loop.breaks.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos, breakLabel<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// pop loop from stack</span>
+    loopStack.pop
+
+    <span class='y'>// TODO - the fcode will often contain Jumps to Jumps which can be optimized</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='forStmt'>forStmt</span><span class='b'>(</span>ForStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    breakJump := -1
+
+    <span class='y'>// push myself onto the loop stack so that breaks</span>
+    <span class='y'>// and continues can register for backpatching</span>
+    loop := Loop<span class='b'>(</span>stmt<span class='b'>)</span>
+    loopStack.push<span class='b'>(</span>loop<span class='b'>)</span>
+
+    <span class='y'>// assemble init if available</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.init != <span class='k'>null</span><span class='b'>)</span> <span class='k'>this</span>.stmt<span class='b'>(</span>stmt.init<span class='b'>)</span>
+
+    <span class='y'>// assemble the for loop code</span>
+    condLabel := mark
+    <span class='k'>if</span> <span class='b'>(</span>stmt.condition != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>stmt.condition<span class='b'>)</span>
+      breakJump = jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>)</span>
+    <span class='b'>}</span>
+    block<span class='b'>(</span>stmt.block<span class='b'>)</span>
+    updateLabel := mark
+    <span class='k'>if</span> <span class='b'>(</span>stmt.update != <span class='k'>null</span><span class='b'>)</span> expr<span class='b'>(</span>stmt.update<span class='b'>)</span>
+    jump<span class='b'>(</span>FOp.Jump, condLabel<span class='b'>)</span>
+    endLabel := mark
+    <span class='k'>if</span> <span class='b'>(</span>breakJump != -1<span class='b'>)</span> backpatch<span class='b'>(</span>breakJump, endLabel<span class='b'>)</span>
+
+    <span class='y'>// backpatch continues/breaks</span>
+    loop.continues.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos, updateLabel<span class='b'>)</span> <span class='b'>}</span>
+    loop.breaks.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos, endLabel<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// pop loop from stack</span>
+    loopStack.pop
+
+    <span class='y'>// TODO - the fcode will often contain Jumps to Jumps which can be optimized</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='breakOrContinueStmt'>breakOrContinueStmt</span><span class='b'>(</span>Stmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// associated loop should be top of stack</span>
+    loop := loopStack.peek
+    <span class='k'>if</span> <span class='b'>(</span>loop.stmt !== stmt-&gt;loop<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Internal compiler error"</span>, stmt.loc<span class='b'>)</span>
+
+    <span class='y'>// if we are inside a protection region which was pushed onto</span>
+    <span class='y'>// my loop's own stack that means this break or continue</span>
+    <span class='y'>// needs to jump out of the protected region - that requires</span>
+    <span class='y'>// calling each region's finally block and using a "leave"</span>
+    <span class='y'>// instruction rather than a standard "jump"</span>
+    Int? toBackpatch := <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>!loop.protectedRegions.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// jump to any finally blocks we are inside</span>
+      loop.protectedRegions.eachr |ProtectedRegion region|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>region.hasFinally<span class='b'>)</span>
+          region.jumpFinallys.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFinally<span class='b'>))</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// generate leave instruction</span>
+      toBackpatch = jump<span class='b'>(</span>FOp.Leave<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// generate standard jump instruction</span>
+      toBackpatch = jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// register for backpatch</span>
+    <span class='k'>if</span> <span class='b'>(</span>stmt.id === StmtId.breakStmt<span class='b'>)</span>
+      loop.breaks.add<span class='b'>(</span>toBackpatch<span class='b'>)</span>
+    <span class='k'>else</span>
+      loop.continues.add<span class='b'>(</span>toBackpatch<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Switch</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='switchStmt'>switchStmt</span><span class='b'>(</span>SwitchStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// A table switch is a series of contiguous (or near contiguous)</span>
+    <span class='y'>// cases which can be represented an offset into a jump table.</span>
+    minMax := computeTableRange<span class='b'>(</span>stmt<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>minMax != <span class='k'>null</span><span class='b'>)</span>
+      tableSwitchStmt<span class='b'>(</span>stmt, minMax<span class='b'>[</span>0<span class='b'>]</span>, minMax<span class='b'>[</span>1<span class='b'>])</span>
+    <span class='k'>else</span>
+      equalsSwitchStmt<span class='b'>(</span>stmt<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compute the range of this switch and return as a list of '[min, max]'</span>
+  <span class='z'>** if the switch is a candidate for a table switch as a series of</span>
+  <span class='z'>** contiguous (or near contiguous) cases which can be represented an</span>
+  <span class='z'>** offset into a jump table.  Return null if the switch is not numeric</span>
+  <span class='z'>** or too sparse to use as a table switch.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int<span class='b'>[]</span>? <span id='computeTableRange'>computeTableRange</span><span class='b'>(</span>SwitchStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// we only compute ranges for Ints and Enums</span>
+    ctype := stmt.condition.ctype
+    <span class='k'>if</span> <span class='b'>(</span>!ctype.isInt &amp;&amp; !ctype.isEnum<span class='b'>)</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+
+    <span class='y'>// now we need to determine contiguous range</span>
+    min := 2147483647
+    max := -2147483648
+    count := 0
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      stmt.cases.each |Case c|
+      <span class='b'>{</span>
+        <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;c.cases.size; ++i<span class='b'>)</span>
+        <span class='b'>{</span>
+          count++
+          expr := c.cases<span class='b'>[</span>i<span class='b'>]</span>
+          <span class='y'>// TODO: need to handle static const Int fields here</span>
+          literal := expr.asTableSwitchCase
+          <span class='k'>if</span> <span class='b'>(</span>literal == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> CompilerErr<span class='b'>(</span><span class='s'>"return null"</span>, c.loc<span class='b'>)</span>
+          <span class='k'>if</span> <span class='b'>(</span>literal &lt; min<span class='b'>)</span> min = literal
+          <span class='k'>if</span> <span class='b'>(</span>literal &gt; max<span class='b'>)</span> max = literal
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if no cases, then don't use tableswitch</span>
+    <span class='k'>if</span> <span class='b'>(</span>count == 0<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+
+    <span class='y'>// enums and anything with less than 32 jumps is immediately</span>
+    <span class='y'>// allowed, otherwise base the table on a percentage of count</span>
+    delta := max - min
+    <span class='k'>if</span> <span class='b'>(</span>ctype.isEnum || delta &lt; 32 || count*32 &gt; delta<span class='b'>)</span>
+      <span class='k'>return</span> <span class='b'>[</span>min,max<span class='b'>]</span>
+    <span class='k'>else</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='tableSwitchStmt'>tableSwitchStmt</span><span class='b'>(</span>SwitchStmt stmt, Int min, Int max<span class='b'>)</span>
+  <span class='b'>{</span>
+    stmt.isTableswitch = <span class='k'>true</span>
+    conditionType := stmt.condition.ctype
+    isEnum := conditionType.isEnum
+
+    <span class='y'>// push condition onto the stack</span>
+    expr<span class='b'>(</span>stmt.condition<span class='b'>)</span>
+
+    <span class='y'>// get a real int onto the stack</span>
+    <span class='k'>if</span> <span class='b'>(</span>conditionType.isInt &amp;&amp; conditionType.isNullable<span class='b'>)</span>
+      coerceOp<span class='b'>(</span>conditionType, ns.intType<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>isEnum<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.enumOrdinal<span class='b'>))</span>
+
+    <span class='y'>// if min is not zero, then do a subtraction so that</span>
+    <span class='y'>// our condition is a zero based index into the jump table</span>
+    <span class='k'>if</span> <span class='b'>(</span>min != 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      op<span class='b'>(</span>FOp.LoadInt, fpod.ints.add<span class='b'>(</span>-min<span class='b'>))</span>
+      op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.intPlus<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// now allocate our jump table</span>
+    count := max - min + 1
+    jumps := Case?<span class='b'>[</span>,<span class='b'>]</span>
+    jumps.size = count
+
+    <span class='y'>// walk thru each case, and map the jump offset to a block</span>
+    stmt.cases.each |Case c|
+    <span class='b'>{</span>
+      <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;c.cases.size; ++i<span class='b'>)</span>
+      <span class='b'>{</span>
+        expr    := c.cases<span class='b'>[</span>i<span class='b'>]</span>
+        literal := expr.asTableSwitchCase
+        offset  := literal - min
+        jumps<span class='b'>[</span>offset<span class='b'>]</span> = c
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// now write the switch bytecodes</span>
+    op<span class='b'>(</span>FOp.Switch<span class='b'>)</span>
+    code.writeI2<span class='b'>(</span>count<span class='b'>)</span>
+    jumpStart := code.size
+    fill := count*2
+    fill.times |-&gt;| <span class='b'>{</span> code.write<span class='b'>(</span>0xff<span class='b'>)</span> <span class='b'>}</span>  <span class='y'>// we'll backpatch the jump offsets last</span>
+
+    <span class='y'>// default block goes first - it's the switch fall</span>
+    <span class='y'>// thru, save offset to back patch jump</span>
+    defaultStart := mark
+    defaultEnd := switchBlock<span class='b'>(</span>stmt.defaultBlock<span class='b'>)</span>
+
+    <span class='y'>// now write each case block</span>
+    caseEnds := Int?<span class='b'>[</span>,<span class='b'>]</span>
+    caseEnds.size = stmt.cases.size
+    stmt.cases.each |Case c, Int i|
+    <span class='b'>{</span>
+      c.startOffset = code.size
+      caseEnds<span class='b'>[</span>i<span class='b'>]</span> = switchBlock<span class='b'>(</span>c.block<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// backpatch the jump table</span>
+    end := code.size
+    code.seek<span class='b'>(</span>jumpStart<span class='b'>)</span>
+    jumps.each |Case? c, Int i|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>c == <span class='k'>null</span><span class='b'>)</span>
+        code.writeI2<span class='b'>(</span>defaultStart<span class='b'>)</span>
+      <span class='k'>else</span>
+        code.writeI2<span class='b'>(</span>c.startOffset<span class='b'>)</span>
+    <span class='b'>}</span>
+    code.seek<span class='b'>(</span>end<span class='b'>)</span>
+
+    <span class='y'>// backpatch all the case blocks to jump here when done</span>
+    <span class='k'>if</span> <span class='b'>(</span>defaultEnd != -1<span class='b'>)</span> backpatch<span class='b'>(</span>defaultEnd<span class='b'>)</span>
+    caseEnds.each |Int pos|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>pos != -1<span class='b'>)</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='equalsSwitchStmt'>equalsSwitchStmt</span><span class='b'>(</span>SwitchStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    stmt.isTableswitch = <span class='k'>false</span>
+
+    <span class='y'>// push condition onto the stack</span>
+    condition := stmt.condition
+    expr<span class='b'>(</span>condition<span class='b'>)</span>
+
+    <span class='y'>// walk thru each case, keeping track of all the</span>
+    <span class='y'>// places we need to backpatch when cases match</span>
+    jumpPositions := Int<span class='b'>[</span>,<span class='b'>]</span>
+    jumpCases := Case<span class='b'>[</span>,<span class='b'>]</span>
+    stmt.cases.each |Case c|
+    <span class='b'>{</span>
+      <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;c.cases.size; ++i<span class='b'>)</span>
+      <span class='b'>{</span>
+        opType<span class='b'>(</span>FOp.Dup, condition.ctype<span class='b'>)</span>
+        compareOp<span class='b'>(</span>stmt.condition.ctype, FOp.CmpEQ, c.cases<span class='b'>[</span>i<span class='b'>])</span>
+        jumpPositions.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpTrue<span class='b'>))</span>
+        jumpCases.add<span class='b'>(</span>c<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// default block goes first - it's the switch fall</span>
+    <span class='y'>// thru, save offset to back patch jump</span>
+    defaultStart := mark
+    defaultEnd := switchBlock<span class='b'>(</span>stmt.defaultBlock, condition.ctype<span class='b'>)</span>
+
+    <span class='y'>// now write each case block</span>
+    caseEnds := Int?<span class='b'>[</span>,<span class='b'>]</span>
+    caseEnds.size = stmt.cases.size
+    stmt.cases.each |Case c, Int i|
+    <span class='b'>{</span>
+      c.startOffset = code.size
+      caseEnds<span class='b'>[</span>i<span class='b'>]</span> = switchBlock<span class='b'>(</span>c.block, condition.ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// backpatch the jump table</span>
+    end := code.size
+    jumpPositions.each |Int pos, Int i|
+    <span class='b'>{</span>
+      backpatch<span class='b'>(</span>pos, jumpCases<span class='b'>[</span>i<span class='b'>]</span>.startOffset<span class='b'>)</span>
+    <span class='b'>}</span>
+    code.seek<span class='b'>(</span>end<span class='b'>)</span>
+
+    <span class='y'>// backpatch all the case blocks to jump here when done</span>
+    <span class='k'>if</span> <span class='b'>(</span>defaultEnd != -1<span class='b'>)</span> backpatch<span class='b'>(</span>defaultEnd<span class='b'>)</span>
+    caseEnds.each |Int pos|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>pos != -1<span class='b'>)</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Int <span id='switchBlock'>switchBlock</span><span class='b'>(</span>Block? block, CType? popType := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>popType != <span class='k'>null</span><span class='b'>)</span> opType<span class='b'>(</span>FOp.Pop, popType<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>block != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>this</span>.block<span class='b'>(</span>block<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>block.isExit<span class='b'>)</span> <span class='k'>return</span> -1
+    <span class='b'>}</span>
+    <span class='k'>return</span> jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Try</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Bool <span id='inProtectedRegion'>inProtectedRegion</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> protectedRegions != <span class='k'>null</span> &amp;&amp; !protectedRegions.isEmpty
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='tryStmt'>tryStmt</span><span class='b'>(</span>TryStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// enter a "protected region" which means that we can't</span>
+    <span class='y'>// jump or return out of this region directly - we have to</span>
+    <span class='y'>// use a special "leave" jump of the protected region</span>
+    <span class='k'>if</span> <span class='b'>(</span>protectedRegions == <span class='k'>null</span><span class='b'>)</span> protectedRegions = ProtectedRegion<span class='b'>[</span>,<span class='b'>]</span>
+    region := ProtectedRegion<span class='b'>(</span>stmt<span class='b'>)</span>
+    protectedRegions.push<span class='b'>(</span>region<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!loopStack.isEmpty<span class='b'>)</span> loopStack.peek.protectedRegions.push<span class='b'>(</span>region<span class='b'>)</span>
+
+    <span class='y'>// assemble body of try block</span>
+    start := mark
+    block<span class='b'>(</span>stmt.block<span class='b'>)</span>
+    end := mark
+
+    <span class='y'>// if the block isn't guaranteed to exit:</span>
+    <span class='y'>//  1) if we have a finally, then jump to finally</span>
+    <span class='y'>//  2) jump over catch blocks</span>
+    tryDone := -1
+    finallyStart := -1
+    <span class='k'>if</span> <span class='b'>(</span>!stmt.block.isExit<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>region.hasFinally<span class='b'>)</span>
+      <span class='b'>{</span>
+        region.jumpFinallys.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFinally<span class='b'>))</span>
+        end = mark
+      <span class='b'>}</span>
+      tryDone = jump<span class='b'>(</span>FOp.Leave<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// assemble catch blocks</span>
+    catchDones := Int?<span class='b'>[</span>,<span class='b'>]</span>
+    catchDones.size = stmt.catches.size
+    stmt.catches.each |Catch c, Int i|
+    <span class='b'>{</span>
+      catchDones<span class='b'>[</span>i<span class='b'>]</span> = tryCatch<span class='b'>(</span>c, start, end, region<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// assemble finally block</span>
+    <span class='k'>if</span> <span class='b'>(</span>region.hasFinally<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// wrap try block and each catch block with catch all to finally</span>
+      addToErrTable<span class='b'>(</span>start, end, mark, <span class='k'>null</span><span class='b'>)</span>
+      stmt.catches.each |Catch c|
+      <span class='b'>{</span>
+        addToErrTable<span class='b'>(</span>c.start, c.end, mark, <span class='k'>null</span><span class='b'>)</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// handler code</span>
+      region.jumpFinallys.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+      op<span class='b'>(</span>FOp.FinallyStart<span class='b'>)</span>
+      block<span class='b'>(</span>stmt.finallyBlock<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.FinallyEnd<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// mark next statement as jump destination for try block</span>
+    <span class='k'>if</span> <span class='b'>(</span>tryDone != -1<span class='b'>)</span> backpatch<span class='b'>(</span>tryDone<span class='b'>)</span>
+    catchDones.each |Int pos| <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>pos != -1<span class='b'>)</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// leave protected region</span>
+    <span class='k'>if</span> <span class='b'>(</span>!loopStack.isEmpty<span class='b'>)</span> loopStack.peek.protectedRegions.pop
+    protectedRegions.pop
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Int <span id='tryCatch'>tryCatch</span><span class='b'>(</span>Catch c, Int start, Int end, ProtectedRegion region<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// assemble catch block - if there isn't a local variable</span>
+    <span class='y'>// we emit the CatchAllStart, otherwise the block will</span>
+    <span class='y'>// start off with a LocalVarDef which will write out the</span>
+    <span class='y'>// CatchErrStart opcode</span>
+    handler := mark
+    c.start = mark
+    <span class='k'>if</span> <span class='b'>(</span>c.errVariable == <span class='k'>null</span><span class='b'>)</span> op<span class='b'>(</span>FOp.CatchAllStart<span class='b'>)</span>
+    block<span class='b'>(</span>c.block<span class='b'>)</span>
+    done := -1
+    <span class='k'>if</span> <span class='b'>(</span>!c.block.isExit<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>region.hasFinally<span class='b'>)</span>
+        region.jumpFinallys.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFinally<span class='b'>))</span>
+
+      done = jump<span class='b'>(</span>FOp.Leave<span class='b'>)</span>
+    <span class='b'>}</span>
+    c.end = mark
+    op<span class='b'>(</span>FOp.CatchEnd<span class='b'>)</span>
+
+    <span class='y'>// fill in err table</span>
+    addToErrTable<span class='b'>(</span>start, end, handler, c.errType<span class='b'>)</span>
+
+    <span class='y'>// return position to backpatch</span>
+    <span class='k'>return</span> done
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='addToErrTable'>addToErrTable</span><span class='b'>(</span>Int start, Int end, Int handler, CType? errType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// catch all is implicitly a catch for sys::Err</span>
+    <span class='k'>if</span> <span class='b'>(</span>errType == <span class='k'>null</span><span class='b'>)</span> errType = ns.errType
+
+    <span class='y'>// add to err table buffer</span>
+    errCount++
+    errTable.writeI2<span class='b'>(</span>start<span class='b'>)</span>
+    errTable.writeI2<span class='b'>(</span>end<span class='b'>)</span>
+    errTable.writeI2<span class='b'>(</span>handler<span class='b'>)</span>
+    errTable.writeI2<span class='b'>(</span>fpod.addTypeRef<span class='b'>(</span>errType<span class='b'>))</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Expressions</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='expr'>expr</span><span class='b'>(</span>Expr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    line<span class='b'>(</span>expr.loc<span class='b'>)</span>
+    <span class='k'>switch</span> <span class='b'>(</span>expr.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.nullLiteral:     nullLiteral
+      <span class='k'>case</span> ExprId.trueLiteral:
+      <span class='k'>case</span> ExprId.falseLiteral:    boolLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.intLiteral:      intLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.floatLiteral:    floatLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.decimalLiteral:  decimalLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.strLiteral:      strLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.durationLiteral: durationLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.uriLiteral:      uriLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.typeLiteral:     typeLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.slotLiteral:     slotLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.rangeLiteral:    rangeLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.listLiteral:     listLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.mapLiteral:      mapLiteral<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.boolNot:         not<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.cmpNull:         cmpNull<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.cmpNotNull:      cmpNotNull<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.elvis:           elvis<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.assign:          assign<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.same:            same<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.notSame:         notSame<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.boolOr:          or<span class='b'>(</span>expr, <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>case</span> ExprId.boolAnd:         and<span class='b'>(</span>expr, <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>case</span> ExprId.isExpr:          isExpr<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.isnotExpr:       isnotExpr<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.asExpr:          asExpr<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.localVar:
+      <span class='k'>case</span> ExprId.thisExpr:
+      <span class='k'>case</span> ExprId.superExpr:
+      <span class='k'>case</span> ExprId.itExpr:          loadLocalVar<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.call:
+      <span class='k'>case</span> ExprId.construction:    call<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.shortcut:        shortcut<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.field:           loadField<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.coerce:          coerce<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.closure:         closure<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.ternary:         ternary<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.staticTarget:    <span class='k'>return</span>
+      <span class='k'>case</span> ExprId.throwExpr:       throwOp<span class='b'>(((</span>ThrowExpr<span class='b'>)</span>expr<span class='b'>)</span>.exception<span class='b'>)</span>
+      <span class='k'>default</span>:                     <span class='k'>throw</span> Err<span class='b'>(</span>expr.id.toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Literals</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='nullLiteral'>nullLiteral</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadNull<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='boolLiteral'>boolLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr.val == <span class='k'>true</span><span class='b'>)</span>
+      op<span class='b'>(</span>FOp.LoadTrue<span class='b'>)</span>
+    <span class='k'>else</span>
+      op<span class='b'>(</span>FOp.LoadFalse<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='intLiteral'>intLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadInt, fpod.ints.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='floatLiteral'>floatLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadFloat, fpod.floats.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='decimalLiteral'>decimalLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadDecimal, fpod.decimals.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='strLiteral'>strLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadStr, fpod.strs.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='durationLiteral'>durationLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadDuration, fpod.durations.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='uriLiteral'>uriLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadUri, fpod.uris.add<span class='b'>(</span>expr.val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='typeLiteral'>typeLiteral</span><span class='b'>(</span>LiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    val := <span class='b'>(</span>CType<span class='b'>)</span>expr.val
+    op<span class='b'>(</span>FOp.LoadType, fpod.addTypeRef<span class='b'>(</span>val<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='slotLiteral'>slotLiteral</span><span class='b'>(</span>SlotLiteralExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadType, fpod.addTypeRef<span class='b'>(</span>expr.parent<span class='b'>))</span>
+    op<span class='b'>(</span>FOp.LoadStr, fpod.strs.add<span class='b'>(</span>expr.name<span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr.slot <span class='k'>is</span> CField<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.typeField, 1<span class='b'>))</span>
+    <span class='k'>else</span>
+      op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.typeMethod, 1<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='rangeLiteral'>rangeLiteral</span><span class='b'>(</span>RangeLiteralExpr r<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>r.start<span class='b'>)</span>;
+    expr<span class='b'>(</span>r.end<span class='b'>)</span>;
+    <span class='k'>if</span> <span class='b'>(</span>r.exclusive<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallNew, fpod.addMethodRef<span class='b'>(</span>ns.rangeMakeExclusive<span class='b'>))</span>
+    <span class='k'>else</span>
+      op<span class='b'>(</span>FOp.CallNew, fpod.addMethodRef<span class='b'>(</span>ns.rangeMakeInclusive<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='listLiteral'>listLiteral</span><span class='b'>(</span>ListLiteralExpr list<span class='b'>)</span>
+  <span class='b'>{</span>
+    t := list.ctype
+    <span class='k'>if</span> <span class='b'>(</span>t <span class='k'>is</span> NullableType<span class='b'>)</span> t = t-&gt;root
+    v := <span class='b'>((</span>ListType<span class='b'>)</span>t<span class='b'>)</span>.v
+
+    op<span class='b'>(</span>FOp.LoadType, fpod.addTypeRef<span class='b'>(</span>v<span class='b'>))</span>;
+    op<span class='b'>(</span>FOp.LoadInt,  fpod.ints.add<span class='b'>(</span>list.vals.size<span class='b'>))</span>
+    op<span class='b'>(</span>FOp.CallNew,  fpod.addMethodRef<span class='b'>(</span>ns.listMake<span class='b'>))</span>
+
+    add := fpod.addMethodRef<span class='b'>(</span>ns.listAdd<span class='b'>)</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;list.vals.size; ++i<span class='b'>)</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>list.vals<span class='b'>[</span>i<span class='b'>])</span>
+      op<span class='b'>(</span>FOp.CallVirtual, add<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='mapLiteral'>mapLiteral</span><span class='b'>(</span>MapLiteralExpr map<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadType, fpod.addTypeRef<span class='b'>(</span>map.ctype<span class='b'>))</span>
+    op<span class='b'>(</span>FOp.CallNew,  fpod.addMethodRef<span class='b'>(</span>ns.mapMake<span class='b'>))</span>
+
+    set := fpod.addMethodRef<span class='b'>(</span>ns.mapSet<span class='b'>)</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=0; i&lt;map.keys.size; ++i<span class='b'>)</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>map.keys<span class='b'>[</span>i<span class='b'>])</span>
+      expr<span class='b'>(</span>map.vals<span class='b'>[</span>i<span class='b'>])</span>
+      op<span class='b'>(</span>FOp.CallVirtual, set<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// UnaryExpr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='not'>not</span><span class='b'>(</span>UnaryExpr unary<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>unary.operand<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.boolNot<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='cmpNull'>cmpNull</span><span class='b'>(</span>UnaryExpr unary<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>unary.operand<span class='b'>)</span>
+    opType<span class='b'>(</span>FOp.CmpNull, unary.operand.ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='cmpNotNull'>cmpNotNull</span><span class='b'>(</span>UnaryExpr unary<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>unary.operand<span class='b'>)</span>
+    opType<span class='b'>(</span>FOp.CmpNotNull, unary.operand.ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// BinaryExpr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='same'>same</span><span class='b'>(</span>BinaryExpr binary<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>binary.lhs.id === ExprId.nullLiteral ||
+        binary.rhs.id === ExprId.nullLiteral<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Unexpected use of same with null literals"</span>, binary.loc<span class='b'>)</span>
+    expr<span class='b'>(</span>binary.lhs<span class='b'>)</span>
+    expr<span class='b'>(</span>binary.rhs<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.CmpSame<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='notSame'>notSame</span><span class='b'>(</span>BinaryExpr binary<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>binary.lhs.id === ExprId.nullLiteral ||
+        binary.rhs.id === ExprId.nullLiteral<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Unexpected use of same with null literals"</span>, binary.loc<span class='b'>)</span>
+    expr<span class='b'>(</span>binary.lhs<span class='b'>)</span>
+    expr<span class='b'>(</span>binary.rhs<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.CmpNotSame<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CondExpr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='cond'>cond</span><span class='b'>(</span>CondExpr expr, Cond cond<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>expr.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.boolOr:  or<span class='b'>(</span>expr, cond<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.boolAnd: and<span class='b'>(</span>expr, cond<span class='b'>)</span>
+      <span class='k'>default</span>:             <span class='k'>throw</span> Err<span class='b'>(</span>expr.id.toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='or'>or</span><span class='b'>(</span>CondExpr expr, Cond? cond<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if cond is null this is a top level expr which means</span>
+    <span class='y'>// the result is to push true or false onto the stack;</span>
+    <span class='y'>// otherwise our only job is to do the various jumps if</span>
+    <span class='y'>// true or fall-thru if true (used with if statement)</span>
+    <span class='y'>// NOTE: this code could be further optimized because</span>
+    <span class='y'>//   it doesn't optimize "a &amp;&amp; b || c &amp;&amp; c"</span>
+    topLevel := cond == <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span> cond = Cond.make
+
+    <span class='y'>// perform short circuit logical-or</span>
+    expr.operands.each |Expr operand, Int i|
+    <span class='b'>{</span>
+      <span class='k'>this</span>.expr<span class='b'>(</span>operand<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>i &lt; expr.operands.size-1<span class='b'>)</span>
+        cond.jumpTrues.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpTrue<span class='b'>))</span>
+      <span class='k'>else</span>
+        cond.jumpFalses.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if top level push true/false onto stack</span>
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span> condEnd<span class='b'>(</span>cond<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='and'>and</span><span class='b'>(</span>CondExpr expr, Cond? cond<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if cond is null this is a top level expr which means</span>
+    <span class='y'>// the result is to push true or false onto the stack;</span>
+    <span class='y'>// otherwise our only job is to do the various jumps if</span>
+    <span class='y'>// true or fall-thru if true (used with if statement)</span>
+    <span class='y'>// NOTE: this code could be further optimized because</span>
+    <span class='y'>//   it doesn't optimize "a &amp;&amp; b || c &amp;&amp; c"</span>
+    topLevel := cond == <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span> cond = Cond.make
+
+    <span class='y'>// perform short circuit logical-and</span>
+    expr.operands.each |Expr operand|
+    <span class='b'>{</span>
+      <span class='k'>this</span>.expr<span class='b'>(</span>operand<span class='b'>)</span>
+      cond.jumpFalses.add<span class='b'>(</span>jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if top level push true/false onto stack</span>
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span> condEnd<span class='b'>(</span>cond<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='condEnd'>condEnd</span><span class='b'>(</span>Cond cond<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// true if always fall-thru</span>
+    cond.jumpTrues.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+    op<span class='b'>(</span>FOp.LoadTrue<span class='b'>)</span>
+    end := jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+
+    <span class='y'>// false</span>
+    cond.jumpFalses.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+    op<span class='b'>(</span>FOp.LoadFalse<span class='b'>)</span>
+
+    backpatch<span class='b'>(</span>end<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Type Checks</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='isExpr'>isExpr</span><span class='b'>(</span>TypeCheckExpr tc<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>tc.target<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.Is, fpod.addTypeRef<span class='b'>(</span>tc.check<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='isnotExpr'>isnotExpr</span><span class='b'>(</span>TypeCheckExpr tc<span class='b'>)</span>
+  <span class='b'>{</span>
+    isExpr<span class='b'>(</span>tc<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.boolNot<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='asExpr'>asExpr</span><span class='b'>(</span>TypeCheckExpr tc<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>tc.target<span class='b'>)</span>
+    op<span class='b'>(</span>FOp.As, fpod.addTypeRef<span class='b'>(</span>tc.check<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='coerce'>coerce</span><span class='b'>(</span>TypeCheckExpr tc<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>tc.target<span class='b'>)</span>
+    coerceOp<span class='b'>(</span>tc.from, tc.ctype<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!tc.leave<span class='b'>)</span> opType<span class='b'>(</span>FOp.Pop, tc.ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='coerceOp'>coerceOp</span><span class='b'>(</span>CType from, CType to<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// map from/to to typeRefs</span>
+    fromRef := fpod.addTypeRef<span class='b'>(</span>from<span class='b'>)</span>
+    toRef   := fpod.addTypeRef<span class='b'>(</span>to<span class='b'>)</span>
+
+    <span class='y'>// short circuit if coercing same types</span>
+    <span class='k'>if</span> <span class='b'>(</span>fromRef == toRef<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='y'>// write opcode with its from/to arguments</span>
+    op<span class='b'>(</span>FOp.Coerce<span class='b'>)</span>
+    code.writeI2<span class='b'>(</span>fromRef<span class='b'>)</span>
+    code.writeI2<span class='b'>(</span>toRef<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Elvis</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='elvis'>elvis</span><span class='b'>(</span>BinaryExpr binary<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>binary.lhs<span class='b'>)</span>
+    opType<span class='b'>(</span>FOp.Dup, binary.lhs.ctype<span class='b'>)</span>
+    opType<span class='b'>(</span>FOp.CmpNull, binary.lhs.ctype<span class='b'>)</span>
+    isNullLabel := jump<span class='b'>(</span>FOp.JumpTrue<span class='b'>)</span>
+    endLabel := jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+    backpatch<span class='b'>(</span>isNullLabel<span class='b'>)</span>
+    opType<span class='b'>(</span>FOp.Pop, binary.lhs.ctype<span class='b'>)</span>
+    expr<span class='b'>(</span>binary.rhs<span class='b'>)</span>
+    backpatch<span class='b'>(</span>endLabel<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Ternary</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='ternary'>ternary</span><span class='b'>(</span>TernaryExpr ternary<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>ternary.condition<span class='b'>)</span>
+    falseLabel := jump<span class='b'>(</span>FOp.JumpFalse<span class='b'>)</span>
+    expr<span class='b'>(</span>ternary.trueExpr<span class='b'>)</span>
+    endLabel := jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+    backpatch<span class='b'>(</span>falseLabel<span class='b'>)</span>
+    expr<span class='b'>(</span>ternary.falseExpr<span class='b'>)</span>
+    backpatch<span class='b'>(</span>endLabel<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Closure</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='closure'>closure</span><span class='b'>(</span>ClosureExpr c<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// we replace the closure with its substitute</span>
+    <span class='y'>// expression - call to closure constructor</span>
+    expr<span class='b'>(</span>c.substitute<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Assign</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Simple assignment using =</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='assign'>assign</span><span class='b'>(</span>BinaryExpr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>expr.lhs.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.localVar: assignLocalVar<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.field:    assignField<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>default</span>: <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Internal compiler error"</span>, expr.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Local Var</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='loadLocalVar'>loadLocalVar</span><span class='b'>(</span>LocalVarExpr var<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.LoadVar, var.register<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='storeLocalVar'>storeLocalVar</span><span class='b'>(</span>LocalVarExpr var<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>FOp.StoreVar, var.register<span class='b'>)</span>;
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='assignLocalVar'>assignLocalVar</span><span class='b'>(</span>BinaryExpr assign<span class='b'>)</span>
+  <span class='b'>{</span>
+    expr<span class='b'>(</span>assign.rhs<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>assign.leave<span class='b'>)</span> opType<span class='b'>(</span>FOp.Dup, assign.ctype<span class='b'>)</span>
+    storeLocalVar<span class='b'>((</span>LocalVarExpr<span class='b'>)</span>assign.lhs<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Field</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='loadField'>loadField</span><span class='b'>(</span>FieldExpr fexpr, Bool dupTarget := <span class='k'>false</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    field := fexpr.field
+
+    <span class='y'>// evaluate target expression</span>
+    <span class='k'>if</span> <span class='b'>(</span>fexpr.target != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>fexpr.target<span class='b'>)</span>;
+      <span class='k'>if</span> <span class='b'>(</span>dupTarget<span class='b'>)</span> opType<span class='b'>(</span>FOp.Dup, fexpr.target.ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if safe, check for null condition</span>
+    Int? isNullLabel := <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>fexpr.isSafe<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>fexpr.target == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Compiler error field isSafe"</span>, fexpr.loc<span class='b'>)</span>
+      opType<span class='b'>(</span>FOp.Dup, fexpr.ctype<span class='b'>)</span>
+      opType<span class='b'>(</span>FOp.CmpNull, fexpr.ctype<span class='b'>)</span>
+      isNullLabel = jump<span class='b'>(</span>FOp.JumpTrue<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// load field via accessor method</span>
+    <span class='k'>if</span> <span class='b'>(</span>fexpr.useAccessor<span class='b'>)</span>
+    <span class='b'>{</span>
+      getter := field.getter <span class='y'>// if null then bug in useAccessor</span>
+      index := fpod.addMethodRef<span class='b'>(</span>getter<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.parent.isMixin<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>getter.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallMixinStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.CallMixinVirtual, index<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>getter.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallStatic, index<span class='b'>)</span>
+        <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>fexpr.target.id == ExprId.superExpr<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallNonVirtual, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.CallVirtual, index<span class='b'>)</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// if parameterized or covariant, then coerce</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.isParameterized<span class='b'>)</span>
+        coerceOp<span class='b'>(</span>ns.objType, field.fieldType<span class='b'>)</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>field.isCovariant<span class='b'>)</span>
+        coerceOp<span class='b'>(</span>field.inheritedReturnType, field.fieldType<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='y'>// load field directly from storage</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      index := fpod.addFieldRef<span class='b'>(</span>field<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.parent.isMixin<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>field.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.LoadMixinStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"LoadMixinInstance"</span>, fexpr.loc<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>field.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.LoadStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.LoadInstance, index<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if safe, handle null case</span>
+    <span class='k'>if</span> <span class='b'>(</span>fexpr.isSafe<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.fieldType.isVal<span class='b'>)</span> coerceOp<span class='b'>(</span>field.fieldType, field.fieldType.toNullable<span class='b'>)</span>
+      endLabel := jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+      backpatch<span class='b'>(</span>isNullLabel<span class='b'>)</span>
+      opType<span class='b'>(</span>FOp.Pop, fexpr.ctype<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.LoadNull<span class='b'>)</span>
+      backpatch<span class='b'>(</span>endLabel<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='assignField'>assignField</span><span class='b'>(</span>BinaryExpr assign<span class='b'>)</span>
+  <span class='b'>{</span>
+    lhs := <span class='b'>(</span>FieldExpr<span class='b'>)</span>assign.lhs
+    isInstanceField := !lhs.field.isStatic;  <span class='y'>// used to determine how to duplicate</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>lhs .target != <span class='k'>null</span><span class='b'>)</span> expr<span class='b'>(</span>lhs.target<span class='b'>)</span>
+    expr<span class='b'>(</span>assign.rhs<span class='b'>)</span>;
+    <span class='k'>if</span> <span class='b'>(</span>assign.leave<span class='b'>)</span>
+    <span class='b'>{</span>
+      opType<span class='b'>(</span>FOp.Dup, assign.ctype<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>isInstanceField<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.StoreVar, assign.tempVar.register<span class='b'>)</span>
+    <span class='b'>}</span>
+    storeField<span class='b'>(</span>lhs<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>assign.leave &amp;&amp; isInstanceField<span class='b'>)</span>
+    <span class='b'>{</span>
+      op<span class='b'>(</span>FOp.LoadVar, assign.tempVar.register<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='storeField'>storeField</span><span class='b'>(</span>FieldExpr fexpr<span class='b'>)</span>
+  <span class='b'>{</span>
+    field := fexpr.field
+    <span class='k'>if</span> <span class='b'>(</span>fexpr.useAccessor<span class='b'>)</span>
+    <span class='b'>{</span>
+      setter := field.setter  <span class='y'>// if null then bug in useAccessor</span>
+      index := fpod.addMethodRef<span class='b'>(</span>setter<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>field.parent.isMixin<span class='b'>)</span> <span class='y'>// TODO</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>setter.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallMixinStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.CallMixinVirtual, index<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>setter.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallStatic, index<span class='b'>)</span>
+        <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>fexpr.target.id == ExprId.superExpr<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.CallNonVirtual, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.CallVirtual, index<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      index := fpod.addFieldRef<span class='b'>(</span>field<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>field.parent.isMixin<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>field.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.StoreMixinStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"StoreMixinInstance"</span>, fexpr.loc<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>field.isStatic<span class='b'>)</span>
+          op<span class='b'>(</span>FOp.StoreStatic, index<span class='b'>)</span>
+        <span class='k'>else</span>
+          op<span class='b'>(</span>FOp.StoreInstance, index<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Call</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='call'>call</span><span class='b'>(</span>CallExpr call, Bool leave := call.leave<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// evaluate target</span>
+    method := call.method
+
+    <span class='y'>// push call target onto the stack</span>
+    target := call.target
+    <span class='k'>if</span> <span class='b'>(</span>target != <span class='k'>null</span><span class='b'>)</span> expr<span class='b'>(</span>target<span class='b'>)</span>
+
+    <span class='y'>// if safe, check for null</span>
+    Int? isNullLabel := <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.isSafe<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// sanity check</span>
+      <span class='k'>if</span> <span class='b'>(</span>target == <span class='k'>null</span> || <span class='b'>(</span>target.ctype.isVal &amp;&amp; !target.ctype.isNullable<span class='b'>))</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Compiler error call isSafe: $call"</span>, call.loc<span class='b'>)</span>
+
+      <span class='y'>// check if null and if so then jump over call</span>
+      opType<span class='b'>(</span>FOp.Dup, target.ctype<span class='b'>)</span>
+      opType<span class='b'>(</span>FOp.CmpNull, target.ctype<span class='b'>)</span>
+      isNullLabel = jump<span class='b'>(</span>FOp.JumpTrue<span class='b'>)</span>
+
+      <span class='y'>// now if we are calling a value-type method we might need to coerce</span>
+      <span class='k'>if</span> <span class='b'>(</span>target.ctype.isVal || method.parent.isVal<span class='b'>)</span>
+        coerceOp<span class='b'>(</span>target.ctype, call.method.parent<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// invoke call</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.isDynamic<span class='b'>)</span>
+    <span class='b'>{</span>
+      dynamicCall<span class='b'>(</span>call<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      call.args.each |Expr arg| <span class='b'>{</span> expr<span class='b'>(</span>arg<span class='b'>)</span> <span class='b'>}</span>
+      invokeCall<span class='b'>(</span>call, leave<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if safe, handle null case</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.isSafe<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// if the method return a value type, ensure it is coerced to nullable</span>
+      <span class='k'>if</span> <span class='b'>(</span>method.returnType.isVal &amp;&amp; call.leave<span class='b'>)</span>
+        coerceOp<span class='b'>(</span>method.returnType, call.ctype.toNullable<span class='b'>)</span>
+
+      <span class='y'>// jump to end after successful call and push null onto</span>
+      <span class='y'>// stack for null check from above (if a leave)</span>
+      endLabel := jump<span class='b'>(</span>FOp.Jump<span class='b'>)</span>
+      backpatch<span class='b'>(</span>isNullLabel<span class='b'>)</span>
+      opType<span class='b'>(</span>FOp.Pop, target.ctype<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>call.leave<span class='b'>)</span> op<span class='b'>(</span>FOp.LoadNull<span class='b'>)</span>
+      backpatch<span class='b'>(</span>endLabel<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='dynamicCall'>dynamicCall</span><span class='b'>(</span>CallExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// name str literal</span>
+    op<span class='b'>(</span>FOp.LoadStr, fpod.strs.add<span class='b'>(</span>call.name<span class='b'>))</span>
+
+    <span class='y'>// args Obj[]</span>
+    <span class='y'>// TODO: don't need to create whole new Obj[] when no arguments</span>
+    op<span class='b'>(</span>FOp.LoadInt,  fpod.ints.add<span class='b'>(</span>call.args.size<span class='b'>))</span>
+    op<span class='b'>(</span>FOp.CallNew,  fpod.addMethodRef<span class='b'>(</span>ns.listMakeObj<span class='b'>))</span>
+    add := fpod.addMethodRef<span class='b'>(</span>ns.listAdd<span class='b'>)</span>
+    call.args.each |Expr arg|
+    <span class='b'>{</span>
+      expr<span class='b'>(</span>arg<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallVirtual, add<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// Obj.trap</span>
+    op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.objTrap<span class='b'>))</span>
+
+    <span class='y'>// pop return if no leave</span>
+    <span class='k'>if</span> <span class='b'>(</span>!call.leave<span class='b'>)</span> opType<span class='b'>(</span>FOp.Pop, call.ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='invokeCall'>invokeCall</span><span class='b'>(</span>CallExpr call, Bool leave := call.leave<span class='b'>)</span>
+  <span class='b'>{</span>
+    m := call.method
+    index := fpod.addMethodRef<span class='b'>(</span>m, call.args.size<span class='b'>)</span>
+
+    <span class='y'>// write CallVirtual, CallNonVirtual, CallStatic, CallNew, or CallCtor;</span>
+    <span class='y'>// note that if a constructor call has a target (this or super), then it</span>
+    <span class='y'>// is a CallCtor instance call because we don't want to allocate</span>
+    <span class='y'>// a new instance</span>
+    <span class='k'>if</span> <span class='b'>(</span>m.parent.isMixin<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.isStatic<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallMixinStatic, index<span class='b'>)</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>call.target.id == ExprId.superExpr<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallMixinNonVirtual, index<span class='b'>)</span>
+      <span class='k'>else</span>
+        op<span class='b'>(</span>FOp.CallMixinVirtual, index<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>m.isStatic<span class='b'>)</span>
+    <span class='b'>{</span>
+      op<span class='b'>(</span>FOp.CallStatic, index<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>m.isCtor<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>call.target == <span class='k'>null</span> || call.target.id == ExprId.staticTarget<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallNew, index<span class='b'>)</span>
+      <span class='k'>else</span>
+        op<span class='b'>(</span>FOp.CallCtor, index<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// because CallNonVirtual maps to Java's invokespecial, we can't</span>
+      <span class='y'>// use it for calls outside of the class (consider it like calling</span>
+      <span class='y'>// protected method); we also don't want to use non-virtual for</span>
+      <span class='y'>// any Obj methods since those are implemented as static wrappers</span>
+      <span class='y'>// in the Java/.NET runtime</span>
+      targetId := call.target.id
+      <span class='k'>if</span> <span class='b'>(</span>targetId == ExprId.superExpr ||
+          <span class='b'>(</span>targetId == ExprId.thisExpr &amp;&amp; !m.isVirtual &amp;&amp; !m.parent.isObj<span class='b'>))</span>
+        op<span class='b'>(</span>FOp.CallNonVirtual, index<span class='b'>)</span>
+      <span class='k'>else</span>
+        op<span class='b'>(</span>FOp.CallVirtual, index<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we are leaving a value on the stack of a method which</span>
+    <span class='y'>// has a parameterized return value or is covariant, then we</span>
+    <span class='y'>// need to insert a cast operation</span>
+    <span class='y'>//   Int.toStr    =&gt; non-generic - no cast</span>
+    <span class='y'>//   Str[].toStr  =&gt; return isn't parameterized - no cast</span>
+    <span class='y'>//   Str[].get()  =&gt; actual return is Obj, but we want Str - cast</span>
+    <span class='y'>//   covariant    =&gt; actual call is against inheritedReturnType</span>
+    <span class='k'>if</span> <span class='b'>(</span>leave<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.isParameterized<span class='b'>)</span>
+      <span class='b'>{</span>
+        ret := m.generic.returnType
+        <span class='k'>if</span> <span class='b'>(</span>ret.isGenericParameter<span class='b'>)</span>
+          coerceOp<span class='b'>(</span>ns.objType, m.returnType<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>m.isCovariant<span class='b'>)</span>
+      <span class='b'>{</span>
+        coerceOp<span class='b'>(</span>m.inheritedReturnType, m.returnType<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if the method left a value on the stack, and we</span>
+    <span class='y'>// aren't going to use it, then pop it off</span>
+    <span class='k'>if</span> <span class='b'>(</span>!leave<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// note we need to use the actual method signature (not parameterized)</span>
+      x := m.isParameterized ? m.generic : m
+      <span class='k'>if</span> <span class='b'>(</span>!x.returnType.isVoid || x.isCtor<span class='b'>)</span>
+        opType<span class='b'>(</span>FOp.Pop, x.returnType<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Shortcut</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Void <span id='shortcut'>shortcut</span><span class='b'>(</span>ShortcutExpr call<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// handle comparisions as special opcodes</span>
+    target := call.target
+    firstArg := call.args.first
+    <span class='k'>switch</span> <span class='b'>(</span>call.opToken<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> Token.eq:     compareOp<span class='b'>(</span>target, FOp.CmpEQ, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.notEq:  compareOp<span class='b'>(</span>target, FOp.CmpNE, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.cmp:    compareOp<span class='b'>(</span>target, FOp.Cmp,   firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.lt:     compareOp<span class='b'>(</span>target, FOp.CmpLT, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.ltEq:   compareOp<span class='b'>(</span>target, FOp.CmpLE, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.gt:     compareOp<span class='b'>(</span>target, FOp.CmpGT, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+      <span class='k'>case</span> Token.gtEq:   compareOp<span class='b'>(</span>target, FOp.CmpGE, firstArg<span class='b'>)</span>; <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// always check string concat first since it can</span>
+    <span class='y'>// have string on either left or right hand side</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.isStrConcat<span class='b'>)</span>
+    <span class='b'>{</span>
+      addStr<span class='b'>(</span>call, <span class='k'>true</span><span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if assignment we need to do a bunch of special processing</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.isAssign<span class='b'>)</span>
+    <span class='b'>{</span>
+      shortcutAssign<span class='b'>(</span>call<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// just process as normal call</span>
+    <span class='k'>this</span>.call<span class='b'>(</span>call<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate a comparison.  The lhs can be either a ctype or an expr.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='compareOp'>compareOp</span><span class='b'>(</span>Obj lhs, FOp opCode, Expr rhs<span class='b'>)</span>
+  <span class='b'>{</span>
+    lhsExpr := lhs <span class='k'>as</span> Expr
+    lhsType := lhsExpr != <span class='k'>null</span> ? lhsExpr.ctype : <span class='b'>(</span>CType<span class='b'>)</span>lhs
+
+    <span class='k'>if</span> <span class='b'>(</span>lhsExpr != <span class='k'>null</span><span class='b'>)</span> expr<span class='b'>(</span>lhsExpr<span class='b'>)</span>
+    expr<span class='b'>(</span>rhs<span class='b'>)</span>
+
+    fromRef := fpod.addTypeRef<span class='b'>(</span>lhsType<span class='b'>)</span>
+    toRef   := fpod.addTypeRef<span class='b'>(</span>rhs.ctype<span class='b'>)</span>
+
+    op<span class='b'>(</span>opCode<span class='b'>)</span>
+    code.writeI2<span class='b'>(</span>fromRef<span class='b'>)</span>
+    code.writeI2<span class='b'>(</span>toRef<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** This method is used for complex assignments: prefix/postfix</span>
+  <span class='z'>** increment and special dual assignment operators like "+=".</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='shortcutAssign'>shortcutAssign</span><span class='b'>(</span>ShortcutExpr c<span class='b'>)</span>
+  <span class='b'>{</span>
+    var := c.target
+    leaveUsingTemp := <span class='k'>false</span>
+
+    <span class='y'>// if var is a coercion set that aside and get real variable</span>
+    TypeCheckExpr? coerce := <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>var.id == ExprId.coerce<span class='b'>)</span>
+    <span class='b'>{</span>
+      coerce = <span class='b'>(</span>TypeCheckExpr<span class='b'>)</span>var
+      var = coerce.target
+    <span class='b'>}</span>
+
+    <span class='y'>// load the variable</span>
+    <span class='k'>switch</span> <span class='b'>(</span>var.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.localVar:
+        loadLocalVar<span class='b'>((</span>LocalVarExpr<span class='b'>)</span>var<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.field:
+        fexpr := <span class='b'>(</span>FieldExpr<span class='b'>)</span>var
+        loadField<span class='b'>(</span>fexpr, <span class='k'>true</span><span class='b'>)</span> <span class='y'>// dup target on stack for upcoming set</span>
+        leaveUsingTemp = !fexpr.field.isStatic  <span class='y'>// used to determine how to duplicate</span>
+      <span class='k'>case</span> ExprId.shortcut:
+        <span class='y'>// since .NET sucks when it comes to stack manipulation,</span>
+        <span class='y'>// we use two scratch locals to get the stack into the</span>
+        <span class='y'>// following format:</span>
+        <span class='y'>//   index  \  used for get</span>
+        <span class='y'>//   target /</span>
+        <span class='y'>//   index  \  used for set</span>
+        <span class='y'>//   target /</span>
+        index := <span class='b'>(</span>IndexedAssignExpr<span class='b'>)</span>c
+        get := <span class='b'>(</span>ShortcutExpr<span class='b'>)</span>var
+        expr<span class='b'>(</span>get.target<span class='b'>)</span>  <span class='y'>// target</span>
+        opType<span class='b'>(</span>FOp.Dup, get.target.ctype<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.StoreVar, index.scratchA.register<span class='b'>)</span>
+        expr<span class='b'>(</span>get.args<span class='b'>[</span>0<span class='b'>])</span> <span class='y'>// index expr</span>
+        opType<span class='b'>(</span>FOp.Dup, get.args<span class='b'>[</span>0<span class='b'>]</span>.ctype<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.StoreVar, index.scratchB.register<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.LoadVar, index.scratchA.register<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.LoadVar, index.scratchB.register<span class='b'>)</span>
+        invokeCall<span class='b'>(</span>get, <span class='k'>true</span><span class='b'>)</span>
+        leaveUsingTemp = <span class='k'>true</span>
+      <span class='k'>default</span>:
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Internal error"</span>, var.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we have a coercion do it</span>
+    <span class='k'>if</span> <span class='b'>(</span>coerce != <span class='k'>null</span><span class='b'>)</span> coerceOp<span class='b'>(</span>var.ctype, coerce.check<span class='b'>)</span>
+
+    <span class='y'>// if postfix leave, duplicate value before we preform computation</span>
+    <span class='k'>if</span> <span class='b'>(</span>c.leave &amp;&amp; c.isPostfixLeave<span class='b'>)</span>
+    <span class='b'>{</span>
+      opType<span class='b'>(</span>FOp.Dup, c.ctype<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>leaveUsingTemp<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.StoreVar, c.tempVar.register<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// load args and invoke call</span>
+    c.args.each |Expr arg| <span class='b'>{</span> expr<span class='b'>(</span>arg<span class='b'>)</span> <span class='b'>}</span>
+    invokeCall<span class='b'>(</span>c, <span class='k'>true</span><span class='b'>)</span>
+
+    <span class='y'>// if prefix, duplicate after we've done computation</span>
+    <span class='k'>if</span> <span class='b'>(</span>c.leave &amp;&amp; !c.isPostfixLeave<span class='b'>)</span>
+    <span class='b'>{</span>
+      opType<span class='b'>(</span>FOp.Dup, c.ctype<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>leaveUsingTemp<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.StoreVar, c.tempVar.register<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we have a coercion then uncoerce</span>
+    <span class='k'>if</span> <span class='b'>(</span>coerce != <span class='k'>null</span><span class='b'>)</span> coerceOp<span class='b'>(</span>coerce.check, var.ctype<span class='b'>)</span>
+
+    <span class='y'>// save the variable back</span>
+    <span class='k'>switch</span> <span class='b'>(</span>var.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.localVar:
+        storeLocalVar<span class='b'>((</span>LocalVarExpr<span class='b'>)</span>var<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.field:
+        storeField<span class='b'>((</span>FieldExpr<span class='b'>)</span>var<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.shortcut:
+        set := <span class='b'>(</span>CMethod<span class='b'>)</span>c-&gt;setMethod
+        <span class='y'>// if calling setter we have to ensure unboxed</span>
+        <span class='k'>if</span> <span class='b'>(</span>c.ctype.isVal &amp;&amp; coerce == <span class='k'>null</span><span class='b'>)</span> coerceOp<span class='b'>(</span>c.ctype, ns.objType<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>set, 2<span class='b'>))</span>
+        <span class='k'>if</span> <span class='b'>(</span>!set.returnType.isVoid<span class='b'>)</span> opType<span class='b'>(</span>FOp.Pop, set.returnType<span class='b'>)</span>
+      <span class='k'>default</span>:
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Internal error"</span>, var.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if field leave, then load back from temp local</span>
+    <span class='k'>if</span> <span class='b'>(</span>c.leave &amp;&amp; leaveUsingTemp<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.LoadVar, c.tempVar.register<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Strings</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Assemble code to build a string using sys::StrBuf.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='addStr'>addStr</span><span class='b'>(</span>ShortcutExpr expr, Bool topLevel<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallNew, fpod.addMethodRef<span class='b'>(</span>ns.strBufMake, 0<span class='b'>))</span>
+
+    lhs := expr.target
+    rhs := expr.args.first
+
+    lhsShortcut := lhs <span class='k'>as</span> ShortcutExpr
+    <span class='k'>if</span> <span class='b'>(</span>lhsShortcut != <span class='k'>null</span> &amp;&amp; lhsShortcut.isStrConcat<span class='b'>)</span>
+    <span class='b'>{</span>
+      addStr<span class='b'>(</span>lhsShortcut, <span class='k'>false</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>!isEmptyStrLiteral<span class='b'>(</span>lhs<span class='b'>))</span>
+      <span class='b'>{</span>
+        <span class='k'>this</span>.expr<span class='b'>(</span>lhs<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>lhs.ctype.isVal<span class='b'>)</span> coerceOp<span class='b'>(</span>lhs.ctype, ns.objType<span class='b'>)</span>
+        op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.strBufAdd<span class='b'>))</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>!isEmptyStrLiteral<span class='b'>(</span>rhs<span class='b'>))</span>
+    <span class='b'>{</span>
+      <span class='k'>this</span>.expr<span class='b'>(</span>rhs<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.strBufAdd<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>topLevel<span class='b'>)</span> op<span class='b'>(</span>FOp.CallVirtual, fpod.addMethodRef<span class='b'>(</span>ns.strBufToStr<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Bool <span id='isEmptyStrLiteral'>isEmptyStrLiteral</span><span class='b'>(</span>Expr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> expr.id === ExprId.strLiteral &amp;&amp; expr-&gt;val == <span class='s'>""</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Code Buffer</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Append a opcode with a type argument.</span>
+  <span class='z'>**</span>
+  Void <span id='opType'>opType</span><span class='b'>(</span>FOp opcode, CType arg<span class='b'>)</span>
+  <span class='b'>{</span>
+    op<span class='b'>(</span>opcode, fpod.addTypeRef<span class='b'>(</span>arg<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Append a opcode with option two byte argument.</span>
+  <span class='z'>**</span>
+  Void <span id='op'>op</span><span class='b'>(</span>FOp op, Int? arg := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    code.write<span class='b'>(</span>op.ordinal<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>arg != <span class='k'>null</span><span class='b'>)</span> code.writeI2<span class='b'>(</span>arg<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Jumps</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the current location as a mark to use for backwards jump.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int <span id='mark'>mark</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> code.size
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add the specified jump opcode and two bytes for the jump</span>
+  <span class='z'>** location.  If a backward jump then pass the mark; if a</span>
+  <span class='z'>** a forward jump we return the code pos to backpatch the</span>
+  <span class='z'>** mark later.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int <span id='jump'>jump</span><span class='b'>(</span>FOp op, Int mark := 0xffff<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.op<span class='b'>(</span>op, mark<span class='b'>)</span>
+    <span class='k'>return</span> code.size-2
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Backpacth the mark of forward jump using the given</span>
+  <span class='z'>** pos which was returned by jump().  If mark is defaulted,</span>
+  <span class='z'>** then we use the current instruction as the mark.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='backpatch'>backpatch</span><span class='b'>(</span>Int pos, Int mark := code.size<span class='b'>)</span>
+  <span class='b'>{</span>
+    orig := code.pos
+    code.seek<span class='b'>(</span>pos<span class='b'>)</span>.writeI2<span class='b'>(</span>mark<span class='b'>)</span>
+    code.seek<span class='b'>(</span>orig<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Finish writing out the exception handling table</span>
+  <span class='z'>**</span>
+  Buf <span id='finishCode'>finishCode</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// if we had to return from a protected region, then now we</span>
+    <span class='y'>// need to generate the actual return instructions and backpatch</span>
+    <span class='y'>// all the leaves</span>
+    <span class='k'>if</span> <span class='b'>(</span>leavesToReturn != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      leavesToReturn.each |Int pos| <span class='b'>{</span> backpatch<span class='b'>(</span>pos<span class='b'>)</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>returnLocal != <span class='k'>null</span><span class='b'>)</span> op<span class='b'>(</span>FOp.LoadVar, returnLocal.register<span class='b'>)</span>
+      op<span class='b'>(</span>FOp.Return<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check final size</span>
+    <span class='k'>if</span> <span class='b'>(</span>code.size &gt;= 0x7fff<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Method too big"</span>, loc<span class='b'>)</span>
+    <span class='k'>return</span> code
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Finish writing out the exception handling table</span>
+  <span class='z'>**</span>
+  Buf <span id='finishErrTable'>finishErrTable</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    errTable.seek<span class='b'>(</span>0<span class='b'>)</span>.writeI2<span class='b'>(</span>errCount<span class='b'>)</span>
+    <span class='k'>return</span> errTable
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Finish writing out the line number table</span>
+  <span class='z'>**</span>
+  Buf <span id='finishLines'>finishLines</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    lines.seek<span class='b'>(</span>0<span class='b'>)</span>.writeI2<span class='b'>(</span>lineCount<span class='b'>)</span>
+    <span class='k'>return</span> lines
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Map the opcode we are getting ready to add to the specified line number</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='line'>line</span><span class='b'>(</span>Loc loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    line := loc.line
+    <span class='k'>if</span> <span class='b'>(</span>line == <span class='k'>null</span> || lastLine == line<span class='b'>)</span> <span class='k'>return</span>
+    lineCount++
+    lines.writeI2<span class='b'>(</span>code.size<span class='b'>)</span>
+    lines.writeI2<span class='b'>(</span>line<span class='b'>)</span>
+    lastLine = line
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Loc <span id='loc'>loc</span>
+  FPod <span id='fpod'>fpod</span>
+  MethodDef? <span id='curMethod'>curMethod</span>
+  Buf <span id='code'>code</span>
+  Buf <span id='errTable'>errTable</span>
+  Int <span id='errCount'>errCount</span>
+  Buf <span id='lines'>lines</span>
+  Int <span id='lineCount'>lineCount</span>
+  Int <span id='lastLine'>lastLine</span> := -1
+  Loop<span class='b'>[]</span> <span id='loopStack'>loopStack</span>
+
+  <span class='y'>// protected region fields</span>
+  ProtectedRegion<span class='b'>[]</span>? <span id='protectedRegions'>protectedRegions</span> <span class='y'>// stack of protection regions</span>
+  Int<span class='b'>[]</span>? <span id='leavesToReturn'>leavesToReturn</span>    <span class='y'>// list of Leave positions to backpatch</span>
+  MethodVar? <span id='returnLocal'>returnLocal</span>    <span class='y'>// where we stash return value</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Loop</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> Loop
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Stmt stmt<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.stmt = stmt <span class='b'>}</span>
+
+  Stmt stmt                  <span class='y'>// WhileStmt or ForStmt</span>
+  Int<span class='b'>[]</span> breaks := Int<span class='b'>[</span>,<span class='b'>]</span>     <span class='y'>// backpatch positions</span>
+  Int<span class='b'>[]</span> continues := Int<span class='b'>[</span>,<span class='b'>]</span>  <span class='y'>// backpatch positions</span>
+  ProtectedRegion<span class='b'>[]</span> protectedRegions := ProtectedRegion<span class='b'>[</span>,<span class='b'>]</span> <span class='y'>// stack</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** ProtectedRegion</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> ProtectedRegion
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>TryStmt stmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    hasFinally = stmt.finallyBlock != <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>hasFinally<span class='b'>)</span> jumpFinallys = Int<span class='b'>[</span>,<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  Bool hasFinally      <span class='y'>// does this region have a finally</span>
+  Int<span class='b'>[]</span>? jumpFinallys  <span class='y'>// list of JumpFinally positions to backpatch</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Cond</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> Cond
+<span class='b'>{</span>
+  Int<span class='b'>[]</span> jumpTrues  := Int<span class='b'>[</span>,<span class='b'>]</span>   <span class='y'>// backpatch positions</span>
+  Int<span class='b'>[]</span> jumpFalses := Int<span class='b'>[</span>,<span class='b'>]</span>   <span class='y'>// backpatch positions</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='CodeAsm.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden' style='display: block;'><a href='#addStr'>addStr</a></li>
+  <li class='hidden' style='display: block;'><a href='#addToErrTable'>addToErrTable</a></li>
+  <li class='hidden' style='display: block;'><a href='#and'>and</a></li>
+  <li class='hidden' style='display: block;'><a href='#asExpr'>asExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#assign'>assign</a></li>
+  <li class='hidden' style='display: block;'><a href='#assignField'>assignField</a></li>
+  <li class='hidden' style='display: block;'><a href='#assignLocalVar'>assignLocalVar</a></li>
+  <li class='hidden' style='display: block;'><a href='#backpatch'>backpatch</a></li>
+  <li style='display: block;'><a href='#block'>block</a></li>
+  <li class='hidden' style='display: block;'><a href='#boolLiteral'>boolLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#breakOrContinueStmt'>breakOrContinueStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#call'>call</a></li>
+  <li class='hidden' style='display: block;'><a href='#closure'>closure</a></li>
+  <li class='hidden' style='display: block;'><a href='#cmpNotNull'>cmpNotNull</a></li>
+  <li class='hidden' style='display: block;'><a href='#cmpNull'>cmpNull</a></li>
+  <li style='display: block;'><a href='#code'>code</a></li>
+  <li class='hidden' style='display: block;'><a href='#coerce'>coerce</a></li>
+  <li class='hidden' style='display: block;'><a href='#coerceOp'>coerceOp</a></li>
+  <li class='hidden' style='display: block;'><a href='#compareOp'>compareOp</a></li>
+  <li class='hidden' style='display: block;'><a href='#computeTableRange'>computeTableRange</a></li>
+  <li class='hidden' style='display: block;'><a href='#cond'>cond</a></li>
+  <li class='hidden' style='display: block;'><a href='#condEnd'>condEnd</a></li>
+  <li style='display: block;'><a href='#curMethod'>curMethod</a></li>
+  <li class='hidden' style='display: block;'><a href='#decimalLiteral'>decimalLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#durationLiteral'>durationLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#dynamicCall'>dynamicCall</a></li>
+  <li class='hidden' style='display: block;'><a href='#elvis'>elvis</a></li>
+  <li class='hidden' style='display: block;'><a href='#equalsSwitchStmt'>equalsSwitchStmt</a></li>
+  <li style='display: block;'><a href='#errCount'>errCount</a></li>
+  <li style='display: block;'><a href='#errTable'>errTable</a></li>
+  <li style='display: block;'><a href='#expr'>expr</a></li>
+  <li style='display: block;'><a href='#finishCode'>finishCode</a></li>
+  <li style='display: block;'><a href='#finishErrTable'>finishErrTable</a></li>
+  <li style='display: block;'><a href='#finishLines'>finishLines</a></li>
+  <li class='hidden' style='display: block;'><a href='#floatLiteral'>floatLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#forStmt'>forStmt</a></li>
+  <li style='display: block;'><a href='#fpod'>fpod</a></li>
+  <li class='hidden' style='display: block;'><a href='#ifStmt'>ifStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#inProtectedRegion'>inProtectedRegion</a></li>
+  <li class='hidden' style='display: block;'><a href='#intLiteral'>intLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#invokeCall'>invokeCall</a></li>
+  <li class='hidden' style='display: block;'><a href='#isEmptyStrLiteral'>isEmptyStrLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#isExpr'>isExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#isnotExpr'>isnotExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#jump'>jump</a></li>
+  <li style='display: block;'><a href='#lastLine'>lastLine</a></li>
+  <li style='display: block;'><a href='#leavesToReturn'>leavesToReturn</a></li>
+  <li class='hidden' style='display: block;'><a href='#line'>line</a></li>
+  <li style='display: block;'><a href='#lineCount'>lineCount</a></li>
+  <li style='display: block;'><a href='#lines'>lines</a></li>
+  <li class='hidden' style='display: block;'><a href='#listLiteral'>listLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#loadField'>loadField</a></li>
+  <li class='hidden' style='display: block;'><a href='#loadLocalVar'>loadLocalVar</a></li>
+  <li style='display: block;'><a href='#loc'>loc</a></li>
+  <li class='hidden' style='display: block;'><a href='#localVarDefStmt'>localVarDefStmt</a></li>
+  <li style='display: block;'><a href='#loopStack'>loopStack</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#mapLiteral'>mapLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#mark'>mark</a></li>
+  <li class='hidden' style='display: block;'><a href='#not'>not</a></li>
+  <li class='hidden' style='display: block;'><a href='#notSame'>notSame</a></li>
+  <li class='hidden' style='display: block;'><a href='#nullLiteral'>nullLiteral</a></li>
+  <li style='display: block;'><a href='#op'>op</a></li>
+  <li style='display: block;'><a href='#opType'>opType</a></li>
+  <li class='hidden' style='display: block;'><a href='#or'>or</a></li>
+  <li style='display: block;'><a href='#protectedRegions'>protectedRegions</a></li>
+  <li class='hidden' style='display: block;'><a href='#rangeLiteral'>rangeLiteral</a></li>
+  <li style='display: block;'><a href='#returnLocal'>returnLocal</a></li>
+  <li class='hidden' style='display: block;'><a href='#returnStmt'>returnStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#same'>same</a></li>
+  <li class='hidden' style='display: block;'><a href='#shortcut'>shortcut</a></li>
+  <li class='hidden' style='display: block;'><a href='#shortcutAssign'>shortcutAssign</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotLiteral'>slotLiteral</a></li>
+  <li style='display: block;'><a href='#stmt'>stmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#storeField'>storeField</a></li>
+  <li class='hidden' style='display: block;'><a href='#storeLocalVar'>storeLocalVar</a></li>
+  <li class='hidden' style='display: block;'><a href='#strLiteral'>strLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#switchBlock'>switchBlock</a></li>
+  <li class='hidden' style='display: block;'><a href='#switchStmt'>switchStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#tableSwitchStmt'>tableSwitchStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#ternary'>ternary</a></li>
+  <li class='hidden' style='display: block;'><a href='#throwOp'>throwOp</a></li>
+  <li class='hidden' style='display: block;'><a href='#throwStmt'>throwStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryCatch'>tryCatch</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryStmt'>tryStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#typeLiteral'>typeLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#uriLiteral'>uriLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#whileStmt'>whileStmt</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

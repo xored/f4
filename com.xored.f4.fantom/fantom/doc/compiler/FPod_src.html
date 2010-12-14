@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::FPod</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FPod.html'>FPod</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>final class</h2>
+<h1>compiler::FPod</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::FPod : <a href='CPod.html'>compiler::CPod</a>, <a href='FConst.html'>compiler::FConst</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   26 Dec 05  Brian Frank  Creation</span>
+<span class='y'>//   19 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** FPod is the read/write fcode representation of sys::Pod.  It's main job in</span>
+<span class='z'>** life is to manage all the pod-wide constant tables for names, literals,</span>
+<span class='z'>** type/slot references and type/slot definitions.</span>
+<span class='z'>**</span>
+<span class='k'>final</span> <span class='k'>class</span> FPod : CPod, FConst
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>CNamespace? ns, Str podName, Zip? zip<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>ns != <span class='k'>null</span><span class='b'>)</span> <span class='k'>this</span>.ns = ns
+    <span class='k'>this</span>.name       = podName
+    <span class='k'>this</span>.zip        = zip
+    <span class='k'>this</span>.names      = FTable.makeStrs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.typeRefs   = FTable.makeTypeRefs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.fieldRefs  = FTable.makeFieldRefs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.methodRefs = FTable.makeMethodRefs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.ints       = FTable.makeInts<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.floats     = FTable.makeFloats<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.decimals   = FTable.makeDecimals<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.strs       = FTable.makeStrs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.durations  = FTable.makeDurations<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.uris       = FTable.makeStrs<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    <span class='k'>this</span>.meta       = Str:Str<span class='b'>[</span>:<span class='b'>]</span>
+    <span class='k'>this</span>.index      = Str:Str<span class='b'>[</span>:<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CPod</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> CType? <span id='resolveType'>resolveType</span><span class='b'>(</span>Str name, Bool checked<span class='b'>)</span>
+  <span class='b'>{</span>
+    t := ftypesByName<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>t != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> t
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> UnknownTypeErr<span class='b'>(</span><span class='s'>"${this.name}::$name"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CType<span class='b'>[]</span> <span id='types'>types</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ftypes
+  <span class='b'>}</span>
+
+  CType? <span id='toType'>toType</span><span class='b'>(</span>Int index<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>index == 0xffff<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    r := typeRef<span class='b'>(</span>index<span class='b'>)</span>
+
+    sig := r.isGenericInstance ?
+           r.sig :
+           n<span class='b'>(</span>r.podName<span class='b'>)</span> + <span class='s'>"::"</span> + n<span class='b'>(</span>r.typeName<span class='b'>)</span> + r.sig
+    <span class='k'>return</span> ns.resolveType<span class='b'>(</span>sig<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  CType<span class='b'>[]</span> <span id='resolveTypes'>resolveTypes</span><span class='b'>(</span>Int<span class='b'>[]</span> indexes<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> indexes.map |Int index-&gt;CType| <span class='b'>{</span> toType<span class='b'>(</span>index<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Convenience</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Str <span id='n'>n</span><span class='b'>(</span>Int index<span class='b'>)</span>                <span class='b'>{</span> names<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  FTypeRef <span id='typeRef'>typeRef</span><span class='b'>(</span>Int index<span class='b'>)</span>     <span class='b'>{</span> typeRefs<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  FFieldRef <span id='fieldRef'>fieldRef</span><span class='b'>(</span>Int index<span class='b'>)</span>   <span class='b'>{</span> fieldRefs<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  FMethodRef <span id='methodRef'>methodRef</span><span class='b'>(</span>Int index<span class='b'>)</span> <span class='b'>{</span> methodRefs<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Int <span id='integer'>integer</span><span class='b'>(</span>Int index<span class='b'>)</span>          <span class='b'>{</span> ints<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Float <span id='float'>float</span><span class='b'>(</span>Int index<span class='b'>)</span>          <span class='b'>{</span> floats<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Decimal <span id='decimal'>decimal</span><span class='b'>(</span>Int index<span class='b'>)</span>      <span class='b'>{</span> decimals<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Str <span id='str'>str</span><span class='b'>(</span>Int index<span class='b'>)</span>              <span class='b'>{</span> strs<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Duration <span id='duration'>duration</span><span class='b'>(</span>Int index<span class='b'>)</span>    <span class='b'>{</span> durations<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+  Str <span id='uri'>uri</span><span class='b'>(</span>Int index<span class='b'>)</span>              <span class='b'>{</span> uris<span class='b'>[</span>index<span class='b'>]</span> <span class='b'>}</span>
+
+  Str <span id='typeRefStr'>typeRefStr</span><span class='b'>(</span>Int index<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> typeRef<span class='b'>(</span>index<span class='b'>)</span>.format<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  Str <span id='fieldRefStr'>fieldRefStr</span><span class='b'>(</span>Int index<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> fieldRef<span class='b'>(</span>index<span class='b'>)</span>.format<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  Str <span id='methodRefStr'>methodRefStr</span><span class='b'>(</span>Int index<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> methodRef<span class='b'>(</span>index<span class='b'>)</span>.format<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Compile Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Int <span id='addName'>addName</span><span class='b'>(</span>Str val<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> names.add<span class='b'>(</span>val<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Int <span id='addTypeRef'>addTypeRef</span><span class='b'>(</span>CType t<span class='b'>)</span>
+  <span class='b'>{</span>
+    p   := addName<span class='b'>(</span>t.pod.name<span class='b'>)</span>
+    n   := addName<span class='b'>(</span>t.name<span class='b'>)</span>
+    sig := <span class='s'>""</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.isParameterized<span class='b'>)</span> sig = t.signature
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>t.isNullable<span class='b'>)</span> sig = <span class='s'>"?"</span>
+    <span class='k'>return</span> typeRefs.add<span class='b'>(</span>FTypeRef<span class='b'>(</span>p, n, sig<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  Int <span id='addFieldRef'>addFieldRef</span><span class='b'>(</span>CField field<span class='b'>)</span>
+  <span class='b'>{</span>
+    p := addTypeRef<span class='b'>(</span>field.parent<span class='b'>)</span>
+    n := addName<span class='b'>(</span>field.name<span class='b'>)</span>
+    t := addTypeRef<span class='b'>(</span>field.fieldType<span class='b'>)</span>
+    <span class='k'>return</span> fieldRefs.add<span class='b'>(</span>FFieldRef<span class='b'>(</span>p, n, t<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  Int <span id='addMethodRef'>addMethodRef</span><span class='b'>(</span>CMethod method, Int? argCount := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if this is a generic instantiation, we want to call</span>
+    <span class='y'>// against the original generic method using it's raw</span>
+    <span class='y'>// types, since that is how the system library will</span>
+    <span class='y'>// implement the type</span>
+    <span class='k'>if</span> <span class='b'>(</span>method.isParameterized<span class='b'>)</span> method = method.generic
+
+    p := addTypeRef<span class='b'>(</span>method.parent<span class='b'>)</span>
+    n := addName<span class='b'>(</span>method.name<span class='b'>)</span>
+    r := addTypeRef<span class='b'>(</span>method.inheritedReturnType.raw<span class='b'>)</span>  <span class='y'>// CLR can't deal with covariance</span>
+    Int<span class='b'>[]</span> params := method.params.map |CParam x-&gt;Int| <span class='b'>{</span> addTypeRef<span class='b'>(</span>x.paramType.raw<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>argCount != <span class='k'>null</span> &amp;&amp; argCount &lt; params.size<span class='b'>)</span>
+      params = params<span class='b'>[</span>0..&lt;argCount<span class='b'>]</span>
+    <span class='k'>return</span> methodRefs.add<span class='b'>(</span>FMethodRef<span class='b'>(</span>p, n, r, params<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  Void <span id='dump'>dump</span><span class='b'>(</span>OutStream out := Env.cur.out<span class='b'>)</span>
+  <span class='b'>{</span>
+    p := FPrinter<span class='b'>(</span><span class='k'>this</span>, out<span class='b'>)</span>
+    p.showCode = <span class='k'>true</span>
+    p.ftypes
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Read</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the just the pod and type meta-data, but</span>
+  <span class='z'>** not each type's full definition</span>
+  <span class='z'>**</span>
+  Void <span id='read'>read</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// echo("     FPod.reading [$zip.file]...")</span>
+
+    <span class='y'>// read pod meta-data</span>
+    meta = <span class='k'>this</span>.in<span class='b'>(</span><span class='u'>`/meta.props`</span><span class='b'>)</span>.readProps
+    name = meta.get<span class='b'>(</span><span class='s'>"pod.name"</span><span class='b'>)</span> ?: <span class='k'>throw</span> IOErr<span class='b'>(</span><span class='s'>"Missing meta pod.name"</span><span class='b'>)</span>
+    version = Version<span class='b'>(</span>meta.get<span class='b'>(</span><span class='s'>"pod.version"</span><span class='b'>))</span>
+    d := meta.get<span class='b'>(</span><span class='s'>"pod.depends"</span><span class='b'>)</span>
+    depends = d.isEmpty ? Depend<span class='b'>[</span>,<span class='b'>]</span> : d.split<span class='b'>(</span><span class='s'>';'</span><span class='b'>)</span>.map |s-&gt;Depend| <span class='b'>{</span> Depend<span class='b'>(</span>s<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// read tables</span>
+    names.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/names.def`</span><span class='b'>))</span>
+    typeRefs.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/typeRefs.def`</span><span class='b'>))</span>
+    fieldRefs.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/fieldRefs.def`</span><span class='b'>))</span>
+    methodRefs.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/methodRefs.def`</span><span class='b'>))</span>
+    ints.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/ints.def`</span><span class='b'>))</span>
+    floats.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/floats.def`</span><span class='b'>))</span>
+    decimals.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/decimals.def`</span><span class='b'>))</span>
+    strs.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/strs.def`</span><span class='b'>))</span>
+    durations.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/durations.def`</span><span class='b'>))</span>
+    uris.read<span class='b'>(</span>in<span class='b'>(</span><span class='u'>`/fcode/uris.def`</span><span class='b'>))</span>
+
+    <span class='y'>// read type meta-data</span>
+    in := <span class='k'>this</span>.in<span class='b'>(</span><span class='u'>`/fcode/types.def`</span><span class='b'>)</span>
+    ftypes = FType<span class='b'>[</span>,<span class='b'>]</span>
+    ftypesByName = Str:FType<span class='b'>[</span>:<span class='b'>]</span>
+    in.readU2.times
+    <span class='b'>{</span>
+      ftype := FType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>.readMeta<span class='b'>(</span>in<span class='b'>)</span>
+      ftypes.add<span class='b'>(</span>ftype<span class='b'>)</span>
+      ftypesByName<span class='b'>[</span>ftype.name<span class='b'>]</span> = ftype
+      ns.typeCache<span class='b'>[</span>ftype.qname<span class='b'>]</span> = ftype
+    <span class='b'>}</span>
+    in.close
+
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the entire pod into memory (including full type specifications)</span>
+  <span class='z'>**</span>
+  Void <span id='readFully'>readFully</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    ftypes.each |FType t| <span class='b'>{</span> t.read <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Write</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write the tables and type files out to zip storage</span>
+  <span class='z'>**</span>
+  Void <span id='write'>write</span><span class='b'>(</span>Zip zip := <span class='k'>this</span>.zip<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.zip = zip
+
+    <span class='y'>// write pod meta, index props</span>
+    writeMeta<span class='b'>(</span><span class='u'>`/meta.props`</span><span class='b'>)</span>
+    writeIndex<span class='b'>(</span><span class='u'>`/index.props`</span><span class='b'>)</span>
+
+    <span class='y'>// write non-empty tables</span>
+    <span class='k'>if</span> <span class='b'>(</span>!names.isEmpty<span class='b'>)</span>      names.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/names.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!typeRefs.isEmpty<span class='b'>)</span>   typeRefs.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/typeRefs.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!fieldRefs.isEmpty<span class='b'>)</span>  fieldRefs.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/fieldRefs.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!methodRefs.isEmpty<span class='b'>)</span> methodRefs.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/methodRefs.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!ints.isEmpty<span class='b'>)</span>       ints.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/ints.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!floats.isEmpty<span class='b'>)</span>     floats.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/floats.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!decimals.isEmpty<span class='b'>)</span>   decimals.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/decimals.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!strs.isEmpty<span class='b'>)</span>       strs.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/strs.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!durations.isEmpty<span class='b'>)</span>  durations.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/durations.def`</span><span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>!uris.isEmpty<span class='b'>)</span>       uris.write<span class='b'>(</span>out<span class='b'>(</span><span class='u'>`/fcode/uris.def`</span><span class='b'>))</span>
+
+    <span class='y'>// write type meta-data</span>
+    out := <span class='k'>this</span>.out<span class='b'>(</span><span class='u'>`/fcode/types.def`</span><span class='b'>)</span>
+    out.writeI2<span class='b'>(</span>ftypes.size<span class='b'>)</span>
+    ftypes.each |FType t| <span class='b'>{</span> t.writeMeta<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+    out.close
+
+    <span class='y'>// write type full fcode</span>
+    ftypes.each |FType t| <span class='b'>{</span> t.write <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='writeMeta'>writeMeta</span><span class='b'>(</span>Uri uri<span class='b'>)</span>
+  <span class='b'>{</span>
+    out := out<span class='b'>(</span>uri<span class='b'>)</span>
+    out.writeProps<span class='b'>(</span>meta<span class='b'>)</span>
+    out.close
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='writeIndex'>writeIndex</span><span class='b'>(</span>Uri uri<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>index.isEmpty<span class='b'>)</span> <span class='k'>return</span>
+    out := out<span class='b'>(</span>uri<span class='b'>)</span>
+    index.each |v, n|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>v <span class='k'>is</span> Str<span class='b'>)</span>
+        prop<span class='b'>(</span>out, n, v<span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='b'>((</span>Str<span class='b'>[])</span>v<span class='b'>)</span>.each |vi| <span class='b'>{</span> prop<span class='b'>(</span>out, n, vi<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    out.close
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='prop'>prop</span><span class='b'>(</span>OutStream out, Str n, Str v<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span>n.toCode<span class='b'>(</span><span class='k'>null</span>, <span class='k'>true</span><span class='b'>))</span>
+       .print<span class='b'>(</span><span class='s'>"="</span><span class='b'>)</span>
+       .print<span class='b'>(</span>v.toCode<span class='b'>(</span><span class='k'>null</span>, <span class='k'>true</span><span class='b'>))</span>
+       .print<span class='b'>(</span><span class='s'>"\n"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Zip</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get input stream to read the specified file from zip storage.</span>
+  <span class='z'>**</span>
+  InStream? <span id='in'>in</span><span class='b'>(</span>Uri uri<span class='b'>)</span>
+  <span class='b'>{</span>
+    file := zip.contents<span class='b'>[</span>uri<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>file == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> file.in
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get output stream to write the specified file to zip storage.</span>
+  <span class='z'>**</span>
+  OutStream <span id='out'>out</span><span class='b'>(</span>Uri uri<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> zip.writeNext<span class='b'>(</span>uri<span class='b'>)</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> CNamespace <span id='ns'>ns</span>    <span class='y'>// compiler's namespace</span>
+  <span class='k'>override</span> Str <span id='name'>name</span>         <span class='y'>// pod's unique name</span>
+  <span class='k'>override</span> Version <span id='version'>version</span>  <span class='y'>// pod version</span>
+  Depend<span class='b'>[]</span>? <span id='depends'>depends</span>         <span class='y'>// pod dependencies</span>
+  Str:Str <span id='meta'>meta</span>              <span class='y'>// pod meta</span>
+  Str:Obj <span id='index'>index</span>             <span class='y'>// pod index</span>
+  Zip? <span id='zip'>zip</span>                  <span class='y'>// zipped storage</span>
+  FType<span class='b'>[]</span>? <span id='ftypes'>ftypes</span>           <span class='y'>// pod's declared types</span>
+  FTable <span id='names'>names</span>              <span class='y'>// identifier names: foo</span>
+  FTable <span id='typeRefs'>typeRefs</span>           <span class='y'>// types refs:   [pod,type,sig]</span>
+  FTable <span id='fieldRefs'>fieldRefs</span>          <span class='y'>// fields refs:  [parent,name,type]</span>
+  FTable <span id='methodRefs'>methodRefs</span>         <span class='y'>// methods refs: [parent,name,ret,params]</span>
+  FTable <span id='ints'>ints</span>               <span class='y'>// Int literals</span>
+  FTable <span id='floats'>floats</span>             <span class='y'>// Float literals</span>
+  FTable <span id='decimals'>decimals</span>           <span class='y'>// Decimal literals</span>
+  FTable <span id='strs'>strs</span>               <span class='y'>// Str literals</span>
+  FTable <span id='durations'>durations</span>          <span class='y'>// Duration literals</span>
+  FTable <span id='uris'>uris</span>               <span class='y'>// Uri literals</span>
+  <span class='b'>[</span>Str:FType<span class='b'>]</span>? <span id='ftypesByName'>ftypesByName</span> <span class='y'>// if loaded</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FPod.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#addFieldRef'>addFieldRef</a></li>
+  <li style='display: block;'><a href='#addMethodRef'>addMethodRef</a></li>
+  <li style='display: block;'><a href='#addName'>addName</a></li>
+  <li style='display: block;'><a href='#addTypeRef'>addTypeRef</a></li>
+  <li style='display: block;'><a href='#decimal'>decimal</a></li>
+  <li style='display: block;'><a href='#decimals'>decimals</a></li>
+  <li style='display: block;'><a href='#depends'>depends</a></li>
+  <li style='display: block;'><a href='#dump'>dump</a></li>
+  <li style='display: block;'><a href='#duration'>duration</a></li>
+  <li style='display: block;'><a href='#durations'>durations</a></li>
+  <li style='display: block;'><a href='#fieldRef'>fieldRef</a></li>
+  <li style='display: block;'><a href='#fieldRefStr'>fieldRefStr</a></li>
+  <li style='display: block;'><a href='#fieldRefs'>fieldRefs</a></li>
+  <li style='display: block;'><a href='#float'>float</a></li>
+  <li style='display: block;'><a href='#floats'>floats</a></li>
+  <li style='display: block;'><a href='#ftypes'>ftypes</a></li>
+  <li style='display: block;'><a href='#ftypesByName'>ftypesByName</a></li>
+  <li style='display: block;'><a href='#in'>in</a></li>
+  <li style='display: block;'><a href='#index'>index</a></li>
+  <li style='display: block;'><a href='#integer'>integer</a></li>
+  <li style='display: block;'><a href='#ints'>ints</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#meta'>meta</a></li>
+  <li style='display: block;'><a href='#methodRef'>methodRef</a></li>
+  <li style='display: block;'><a href='#methodRefStr'>methodRefStr</a></li>
+  <li style='display: block;'><a href='#methodRefs'>methodRefs</a></li>
+  <li style='display: block;'><a href='#n'>n</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#names'>names</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#out'>out</a></li>
+  <li class='hidden' style='display: block;'><a href='#prop'>prop</a></li>
+  <li style='display: block;'><a href='#read'>read</a></li>
+  <li style='display: block;'><a href='#readFully'>readFully</a></li>
+  <li style='display: block;'><a href='#resolveType'>resolveType</a></li>
+  <li style='display: block;'><a href='#resolveTypes'>resolveTypes</a></li>
+  <li style='display: block;'><a href='#str'>str</a></li>
+  <li style='display: block;'><a href='#strs'>strs</a></li>
+  <li style='display: block;'><a href='#toType'>toType</a></li>
+  <li style='display: block;'><a href='#typeRef'>typeRef</a></li>
+  <li style='display: block;'><a href='#typeRefStr'>typeRefStr</a></li>
+  <li style='display: block;'><a href='#typeRefs'>typeRefs</a></li>
+  <li style='display: block;'><a href='#types'>types</a></li>
+  <li style='display: block;'><a href='#uri'>uri</a></li>
+  <li style='display: block;'><a href='#uris'>uris</a></li>
+  <li style='display: block;'><a href='#version'>version</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeIndex'>writeIndex</a></li>
+  <li class='hidden' style='display: block;'><a href='#writeMeta'>writeMeta</a></li>
+  <li style='display: block;'><a href='#zip'>zip</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

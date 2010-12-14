@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>docCompiler::PodIndexGenerator</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docCompiler</a></li>
+  <li>&gt;</li>
+  <li><a href='PodIndexGenerator.html'>PodIndexGenerator</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>docCompiler::PodIndexGenerator</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../fandoc/HtmlDocWriter.html'>fandoc::HtmlDocWriter</a>
+    <a href='HtmlGenerator.html'>docCompiler::HtmlGenerator</a>
+      docCompiler::PodIndexGenerator</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   5 May 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+<span class='k'>using</span> fandoc
+
+<span class='z'>**</span>
+<span class='z'>** PodIndexGenerator generates the index file for a pod.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> PodIndexGenerator : HtmlGenerator
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>DocCompiler compiler, Loc loc, OutStream out<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler, loc, out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pod = compiler.pod
+    <span class='k'>this</span>.types = pod.types.rw.findAll |t| <span class='b'>{</span> showType<span class='b'>(</span>t<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>this</span>.types = types.sort |a,b| <span class='b'>{</span> a.name.compareIgnoreCase<span class='b'>(</span>b.name<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Generator</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** Doc title.</span>
+  <span class='k'>override</span> Str <span id='title'>title</span><span class='b'>()</span> <span class='b'>{</span> pod.name <span class='b'>}</span>
+
+  <span class='z'>** Doc header.</span>
+  <span class='k'>override</span> Void <span id='header'>header</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.printLine<span class='b'>(</span>
+      <span class='s'>"&lt;ul&gt;
+        &lt;li&gt;&lt;a href='../index.html'&gt;$docHome&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&amp;gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href='index.html'&gt;$pod.name&lt;/a&gt;&lt;/li&gt;
+       &lt;/ul&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Doc content.</span>
+  <span class='k'>override</span> Void <span id='content'>content</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;div class='type'&gt;"</span><span class='b'>)</span>
+    writeOverview
+    writeDoc
+    writeTypes
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;/div&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Write pod overview.</span>
+  Void <span id='writeOverview'>writeOverview</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.printLine<span class='b'>(</span>
+      <span class='s'>"&lt;div class='overview'&gt;
+        &lt;h2&gt;pod&lt;/h2&gt;
+        &lt;h1&gt;$pod.name&lt;/h1&gt;
+       &lt;/div&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Write pod fandoc if applicable.</span>
+  Void <span id='writeDoc'>writeDoc</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    meta := pod.meta<span class='b'>[</span><span class='s'>"pod.summary"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>meta == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;div class='detail'&gt;$meta&lt;/div&gt;"</span><span class='b'>)</span>
+
+    <span class='x'>/*
+    // check for fandoc
+    file := pod.file(`/doc/pod.fandoc`, false)
+    if (file == null) return
+
+    // compile fandoc
+    doc := FandocParser().parse(pod.name, file.in)
+    if (doc.children.isEmpty) return
+
+    // only display first paragraph
+    out.print("&lt;div class='detail'&gt;")
+    p := doc.children.find |n| { n is Para }
+    p?.write(this)
+    out.printLine("&lt;/div&gt;")
+    */</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Write type listing for this pod.</span>
+  Void <span id='writeTypes'>writeTypes</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// sort by type</span>
+    mixins  := Type<span class='b'>[</span>,<span class='b'>]</span>
+    classes := Type<span class='b'>[</span>,<span class='b'>]</span>
+    enums   := Type<span class='b'>[</span>,<span class='b'>]</span>
+    facets  := Type<span class='b'>[</span>,<span class='b'>]</span>
+    errs    := Type<span class='b'>[</span>,<span class='b'>]</span>
+    types.each |t|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.isMixin<span class='b'>)</span> <span class='b'>{</span> mixins.add<span class='b'>(</span>t<span class='b'>)</span>; <span class='k'>return</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.isEnum<span class='b'>)</span>  <span class='b'>{</span> enums.add<span class='b'>(</span>t<span class='b'>)</span>; <span class='k'>return</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.isFacet<span class='b'>)</span> <span class='b'>{</span> facets.add<span class='b'>(</span>t<span class='b'>)</span>; <span class='k'>return</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.fits<span class='b'>(</span>Err#<span class='b'>))</span> <span class='b'>{</span> errs.add<span class='b'>(</span>t<span class='b'>)</span>; <span class='k'>return</span> <span class='b'>}</span>
+      classes.add<span class='b'>(</span>t<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// list types</span>
+    typeTable<span class='b'>(</span><span class='s'>"Mixins"</span>, mixins<span class='b'>)</span>
+    typeTable<span class='b'>(</span><span class='s'>"Classes"</span>, classes<span class='b'>)</span>
+    typeTable<span class='b'>(</span><span class='s'>"Enums"</span>, enums<span class='b'>)</span>
+    typeTable<span class='b'>(</span><span class='s'>"Facets"</span>, facets<span class='b'>)</span>
+    typeTable<span class='b'>(</span><span class='s'>"Errs"</span>, errs<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Write out type-group table.</span>
+  Void <span id='typeTable'>typeTable</span><span class='b'>(</span>Str header, Type<span class='b'>[]</span> list<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>list.isEmpty<span class='b'>)</span> <span class='k'>return</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;h2&gt;$header&lt;/h2&gt;"</span><span class='b'>)</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;table&gt;"</span><span class='b'>)</span>
+    list.each |t,i|
+    <span class='b'>{</span>
+      <span class='y'>// apply zebra-stripping</span>
+      cls := i % 2 == 0 ? <span class='s'>"even"</span> : <span class='s'>"odd"</span>
+      uri := compiler.uriMapper.map<span class='b'>(</span>t.qname, loc<span class='b'>)</span>
+      out.printLine<span class='b'>(</span>
+        <span class='s'>"&lt;tr class='$cls'&gt;
+          &lt;td&gt;&lt;a href='$uri'&gt;$t.name&lt;/a&gt;&lt;/td&gt;
+          &lt;td&gt;"</span><span class='b'>)</span>
+
+      <span class='y'>// display type name along with first sentence of fandoc</span>
+      doc := t.doc
+      <span class='k'>if</span> <span class='b'>(</span>doc != <span class='k'>null</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>try</span>
+        <span class='b'>{</span>
+          doc = HtmlDocUtil.firstSentence<span class='b'>(</span>doc<span class='b'>)</span>
+          fandoc := FandocParser.make.parse<span class='b'>(</span><span class='s'>"API for $t"</span>, doc.in<span class='b'>)</span>
+          para := fandoc.children.first <span class='k'>as</span> Para
+          para.children.each |DocNode child| <span class='b'>{</span> child.write<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+        <span class='b'>}</span>
+        <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+        <span class='b'>{</span>
+          compiler.log.err<span class='b'>(</span><span class='s'>"Failed to generate fandoc for $t.qname"</span><span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      out.printLine<span class='b'>(</span><span class='s'>"&lt;/td&gt;"</span><span class='b'>)</span>
+      out.printLine<span class='b'>(</span><span class='s'>"&lt;/tr&gt;"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;/table&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>** Doc sidebar.</span>
+  <span class='k'>override</span> Void <span id='sidebar'>sidebar</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// pod-level metadata</span>
+    out.printLine<span class='b'>(</span>
+      <span class='s'>"&lt;h2&gt;Pod&lt;/h2&gt;
+        &lt;ul class='clean'&gt;
+         &lt;li&gt;&lt;a href='pod-doc.html'&gt;PodDoc&lt;/a&gt;
+        &lt;/ul&gt;"</span><span class='b'>)</span>
+
+    <span class='y'>// all-type listing</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;h2&gt;All Types&lt;/h2&gt;"</span><span class='b'>)</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;ul class='clean'&gt;"</span><span class='b'>)</span>
+    types.each |t|
+    <span class='b'>{</span>
+      uri := compiler.uriMapper.map<span class='b'>(</span>t.qname, loc<span class='b'>)</span>
+      out.printLine<span class='b'>(</span><span class='s'>"&lt;li&gt;&lt;a href='$uri'&gt;$t.name&lt;/a&gt;&lt;/li&gt;"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.printLine<span class='b'>(</span><span class='s'>"&lt;/ul&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Pod <span id='pod'>pod</span>
+  Type<span class='b'>[]</span> <span id='types'>types</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='PodIndexGenerator.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#content'>content</a></li>
+  <li style='display: block;'><a href='#header'>header</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#sidebar'>sidebar</a></li>
+  <li style='display: block;'><a href='#title'>title</a></li>
+  <li style='display: block;'><a href='#typeTable'>typeTable</a></li>
+  <li style='display: block;'><a href='#types'>types</a></li>
+  <li style='display: block;'><a href='#writeDoc'>writeDoc</a></li>
+  <li style='display: block;'><a href='#writeOverview'>writeOverview</a></li>
+  <li style='display: block;'><a href='#writeTypes'>writeTypes</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docCompiler 1.0.56
+[11-Nov-2010 Thu 10:08:23AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

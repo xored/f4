@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>inet::SocketOptions</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>inet</a></li>
+  <li>&gt;</li>
+  <li><a href='SocketOptions.html'>SocketOptions</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>final class</h2>
+<h1>inet::SocketOptions</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  inet::SocketOptions</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   9 Feb 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** SocketOptions groups together all the socket options used to tune a</span>
+<span class='z'>** TcpSocket, TcpListener, or UdpSocket.  See the options method of each</span>
+<span class='z'>** of those classes for which options apply.  Accessing an unsupported</span>
+<span class='z'>** option for a particular socket type will throw UnsupportedErr.</span>
+<span class='z'>**</span>
+<span class='k'>final</span> <span class='k'>class</span> SocketOptions
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attach this options instance to the specific socket (we just</span>
+  <span class='z'>** use an Obj because everything is dynamically typed)</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Obj socket<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.socket = socket;
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Copy From</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Set all of this instance's options from the specified options.</span>
+  <span class='z'>**</span>
+  Void <span id='copyFrom'>copyFrom</span><span class='b'>(</span>SocketOptions options<span class='b'>)</span>
+  <span class='b'>{</span>
+    Type.of<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>.fields.each |Field f|
+    <span class='b'>{</span>
+      <span class='k'>try</span>
+        f.set<span class='b'>(</span><span class='k'>this</span>, f.get<span class='b'>(</span>options<span class='b'>))</span>
+      <span class='k'>catch</span> <span class='b'>(</span>UnsupportedErr e<span class='b'>)</span>
+        <span class='b'>{}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Streaming Options</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The size in bytes for the sys::InStream buffer.  A value of 0 or</span>
+  <span class='z'>** null disables input stream buffing.  This field may only be set before</span>
+  <span class='z'>** the socket is connected otherwise Err is thrown.</span>
+  <span class='z'>**</span>
+  Int? <span id='inBufferSize'>inBufferSize</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getInBufferSize <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setInBufferSize<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The size in bytes for the sys::OutStream buffer.  A value of 0 or</span>
+  <span class='z'>** null disables output stream buffing.  This field may only be set before</span>
+  <span class='z'>** the socket is connected otherwise Err is thrown.</span>
+  <span class='z'>**</span>
+  Int? <span id='outBufferSize'>outBufferSize</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getOutBufferSize <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setOutBufferSize<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Socket Options</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_BROADCAST socket option.</span>
+  <span class='z'>**</span>
+  Bool <span id='broadcast'>broadcast</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Bool<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getBroadcast <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setBroadcast<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_KEEPALIVE socket option.</span>
+  <span class='z'>**</span>
+  Bool <span id='keepAlive'>keepAlive</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Bool<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getKeepAlive <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setKeepAlive<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_RCVBUF option for the size in bytes of the IP stack buffers.</span>
+  <span class='z'>**</span>
+  Int <span id='receiveBufferSize'>receiveBufferSize</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getReceiveBufferSize <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setReceiveBufferSize<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_SNDBUF option for the size in bytes of the IP stack buffers.</span>
+  <span class='z'>**</span>
+  Int <span id='sendBufferSize'>sendBufferSize</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getSendBufferSize <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setSendBufferSize<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_REUSEADDR socket option is used to control the time</span>
+  <span class='z'>** wait state of a closed socket.</span>
+  <span class='z'>**</span>
+  Bool <span id='reuseAddr'>reuseAddr</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Bool<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getReuseAddr <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setReuseAddr<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_LINGER socket option controls the linger time or set</span>
+  <span class='z'>** to null to disable linger.</span>
+  <span class='z'>**</span>
+  Duration? <span id='linger'>linger</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Duration?<span class='b'>)</span>wrap |-&gt;Obj?| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getLinger<span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setLinger<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** SO_TIMEOUT socket option controls the amount of time this socket</span>
+  <span class='z'>** will block on a read call before throwing an IOErr timeout exception.</span>
+  <span class='z'>** Null is used to indicate an infinite timeout.</span>
+  <span class='z'>**</span>
+  Duration? <span id='receiveTimeout'>receiveTimeout</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Duration?<span class='b'>)</span>wrap |-&gt;Obj?| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getReceiveTimeout <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setReceiveTimeout<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** TCP_NODELAY socket option specifies that send not be delayed</span>
+  <span class='z'>** to merge packets (Nagle's algorthm).</span>
+  <span class='z'>**</span>
+  Bool <span id='noDelay'>noDelay</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Bool<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getNoDelay <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setNoDelay<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The type-of-class byte in the IP packet header.</span>
+  <span class='z'>**</span>
+  <span class='z'>** For IPv4 this value is detailed in RFC 1349 as the following bitset:</span>
+  <span class='z'>**  - IPTOS_LOWCOST     (0x02)</span>
+  <span class='z'>**  - IPTOS_RELIABILITY (0x04)</span>
+  <span class='z'>**  - IPTOS_THROUGHPUT  (0x08)</span>
+  <span class='z'>**  - IPTOS_LOWDELAY    (0x10)</span>
+  <span class='z'>**</span>
+  <span class='z'>** For IPv6 this is the value placed into the sin6_flowinfo header field.</span>
+  <span class='z'>**</span>
+  Int <span id='trafficClass'>trafficClass</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> <span class='k'>return</span> <span class='b'>(</span>Int<span class='b'>)</span>wrap |-&gt;Obj| <span class='b'>{</span> <span class='k'>return</span> socket-&gt;getTrafficClass <span class='b'>}</span> <span class='b'>}</span>
+    set <span class='b'>{</span> newVal := it; wrap |-&gt;| <span class='b'>{</span> socket-&gt;setTrafficClass<span class='b'>(</span>newVal<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Wrap</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>internal</span> Obj? <span id='wrap'>wrap</span><span class='b'>(</span>|-&gt;Obj?| m<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> m<span class='b'>()</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>UnknownSlotErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> UnsupportedErr<span class='b'>(</span><span class='s'>"Option not supported for ${Type.of(socket)}"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Obj <span id='socket'>socket</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='SocketOptions.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#broadcast'>broadcast</a></li>
+  <li style='display: block;'><a href='#copyFrom'>copyFrom</a></li>
+  <li style='display: block;'><a href='#inBufferSize'>inBufferSize</a></li>
+  <li style='display: block;'><a href='#keepAlive'>keepAlive</a></li>
+  <li style='display: block;'><a href='#linger'>linger</a></li>
+  <li class='hidden' style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#noDelay'>noDelay</a></li>
+  <li style='display: block;'><a href='#outBufferSize'>outBufferSize</a></li>
+  <li style='display: block;'><a href='#receiveBufferSize'>receiveBufferSize</a></li>
+  <li style='display: block;'><a href='#receiveTimeout'>receiveTimeout</a></li>
+  <li style='display: block;'><a href='#reuseAddr'>reuseAddr</a></li>
+  <li style='display: block;'><a href='#sendBufferSize'>sendBufferSize</a></li>
+  <li class='hidden' style='display: block;'><a href='#socket'>socket</a></li>
+  <li style='display: block;'><a href='#trafficClass'>trafficClass</a></li>
+  <li class='hidden' style='display: block;'><a href='#wrap'>wrap</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+inet 1.0.56
+[11-Nov-2010 Thu 10:08:20AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

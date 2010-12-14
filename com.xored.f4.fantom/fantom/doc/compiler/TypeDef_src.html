@@ -1,0 +1,496 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::TypeDef</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='TypeDef.html'>TypeDef</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::TypeDef</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Node.html'>compiler::Node</a>
+    <a href='DefNode.html'>compiler::DefNode</a>
+      compiler::TypeDef : <a href='CType.html'>compiler::CType</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   15 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//    3 Jun 06  Brian Frank  Ported from Java to Fantom - Megan's b-day!</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** TypeDef models a type definition for a class, mixin or enum</span>
+<span class='z'>**</span>
+<span class='k'>class</span> TypeDef : DefNode, CType
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>CNamespace ns, Loc loc, CompilationUnit unit, Str name, Int flags := 0<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.ns          = ns
+    <span class='k'>this</span>.pod         = unit.pod
+    <span class='k'>this</span>.unit        = unit
+    <span class='k'>this</span>.name        = name
+    <span class='k'>this</span>.qname       = pod.name + <span class='s'>"::"</span> + name
+    <span class='k'>this</span>.flags       = flags
+    <span class='k'>this</span>.isVal       = CType.isValType<span class='b'>(</span>qname<span class='b'>)</span>
+    <span class='k'>this</span>.mixins      = CType<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>this</span>.enumDefs    = EnumDef<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>this</span>.slotMap     = Str:CSlot<span class='b'>[</span>:<span class='b'>]</span>
+    <span class='k'>this</span>.slotDefMap  = Str:SlotDef<span class='b'>[</span>:<span class='b'>]</span>
+    <span class='k'>this</span>.slotDefList = SlotDef<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>this</span>.closures    = ClosureExpr<span class='b'>[</span>,<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CType</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Str <span id='signature'>signature</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> qname <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isNullable'>isNullable</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toNullable'>toNullable</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> NullableType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Bool <span id='isGeneric'>isGeneric</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isParameterized'>isParameterized</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+  <span class='k'>override</span> Bool <span id='isGenericParameter'>isGenericParameter</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> <span class='k'>once</span> CType <span id='toListOf'>toListOf</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> ListType<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this type is the anonymous class of a closure</span>
+  <span class='z'>**</span>
+  Bool <span id='isClosure'>isClosure</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> closure != <span class='k'>null</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Slots</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return all the all slots (inherited and defined)</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str:CSlot <span id='slots'>slots</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> slotMap <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Cached COperators map</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> <span class='k'>once</span> COperators <span id='operators'>operators</span><span class='b'>()</span> <span class='b'>{</span> COperators<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a slot to the type definition.  The method is used to add</span>
+  <span class='z'>** SlotDefs declared by this type as well as slots inherited by</span>
+  <span class='z'>** this type.</span>
+  <span class='z'>**</span>
+  Void <span id='addSlot'>addSlot</span><span class='b'>(</span>CSlot s, Int? slotDefIndex := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// if MethodDef</span>
+    m := s <span class='k'>as</span> MethodDef
+    <span class='k'>if</span> <span class='b'>(</span>m != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// static initializes are just temporarily added to the</span>
+      <span class='y'>// slotDefList but never into the name map - we just need</span>
+      <span class='y'>// to keep them in declared order until they get collapsed</span>
+      <span class='y'>// and removed in the Normalize step</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.isStaticInit<span class='b'>)</span>
+      <span class='b'>{</span>
+        slotDefList.add<span class='b'>(</span>m<span class='b'>)</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// field accessors are added only to slotDefList,</span>
+      <span class='y'>// name lookup is always the field itself</span>
+      <span class='k'>if</span> <span class='b'>(</span>m.isFieldAccessor<span class='b'>)</span>
+      <span class='b'>{</span>
+        slotDefList.add<span class='b'>(</span>m<span class='b'>)</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// sanity check</span>
+    name := s.name
+    <span class='k'>if</span> <span class='b'>(</span>hasSlot<span class='b'>(</span>name<span class='b'>))</span>
+      <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Internal error: duplicate slot $name [$loc.toLocStr]"</span><span class='b'>)</span>
+
+    <span class='y'>// add to all slots table</span>
+    slotMap<span class='b'>[</span>name<span class='b'>]</span> = s
+
+    <span class='y'>// if my own SlotDef</span>
+    def := s <span class='k'>as</span> SlotDef
+    <span class='k'>if</span> <span class='b'>(</span>def != <span class='k'>null</span> &amp;&amp; def.parent === <span class='k'>this</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// add to my slot definitions</span>
+      slotDefMap<span class='b'>[</span>name<span class='b'>]</span> = def
+      <span class='k'>if</span> <span class='b'>(</span>slotDefIndex == <span class='k'>null</span><span class='b'>)</span>
+        slotDefList.add<span class='b'>(</span>def<span class='b'>)</span>
+      <span class='k'>else</span>
+        slotDefList.insert<span class='b'>(</span>slotDefIndex, def<span class='b'>)</span>
+
+      <span class='y'>// if non-const FieldDef, then add getter/setter methods</span>
+      <span class='k'>if</span> <span class='b'>(</span>s <span class='k'>is</span> FieldDef<span class='b'>)</span>
+      <span class='b'>{</span>
+        f := <span class='b'>(</span>FieldDef<span class='b'>)</span>s
+        <span class='k'>if</span> <span class='b'>(</span>f.get != <span class='k'>null</span><span class='b'>)</span> addSlot<span class='b'>(</span>f.get<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>f.set != <span class='k'>null</span><span class='b'>)</span> addSlot<span class='b'>(</span>f.set<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Replace oldSlot with newSlot in my slot tables.</span>
+  <span class='z'>**</span>
+  Void <span id='replaceSlot'>replaceSlot</span><span class='b'>(</span>CSlot oldSlot, CSlot newSlot<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// sanity checks</span>
+    <span class='k'>if</span> <span class='b'>(</span>oldSlot.name != newSlot.name<span class='b'>)</span>
+      <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Internal error: not same names: $oldSlot != $newSlot [$loc.toLocStr]"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>slotMap<span class='b'>[</span>oldSlot.name<span class='b'>]</span> !== oldSlot<span class='b'>)</span>
+      <span class='k'>throw</span> Err<span class='b'>(</span><span class='s'>"Internal error: old slot not mapped: $oldSlot [$loc.toLocStr]"</span><span class='b'>)</span>
+
+    <span class='y'>// remap in slotMap table</span>
+    name := oldSlot.name
+    slotMap<span class='b'>[</span>name<span class='b'>]</span> = newSlot
+
+    <span class='y'>// if old is SlotDef</span>
+    oldDef := oldSlot <span class='k'>as</span> SlotDef
+    <span class='k'>if</span> <span class='b'>(</span>oldDef != <span class='k'>null</span> &amp;&amp; oldDef.parent === <span class='k'>this</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      slotDefMap<span class='b'>[</span>name<span class='b'>]</span> = oldDef
+      slotDefList.remove<span class='b'>(</span>oldDef<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if new is SlotDef</span>
+    newDef := newSlot <span class='k'>as</span> SlotDef
+    <span class='k'>if</span> <span class='b'>(</span>newDef != <span class='k'>null</span> &amp;&amp; newDef.parent === <span class='k'>this</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      slotDefMap<span class='b'>[</span>name<span class='b'>]</span> = newDef
+      slotDefList.add<span class='b'>(</span>newDef<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get static initializer if one is defined.</span>
+  <span class='z'>**</span>
+  MethodDef? <span id='staticInit'>staticInit</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> slotDefMap<span class='b'>[</span><span class='s'>"static\$init"</span><span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If during parse we added any static initializer methods,</span>
+  <span class='z'>** now is the time to remove them all and replace them with a</span>
+  <span class='z'>** single collapsed MethodDef (processed in Normalize step)</span>
+  <span class='z'>**</span>
+  Void <span id='normalizeStaticInits'>normalizeStaticInits</span><span class='b'>(</span>MethodDef m<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// remove any temps we had in slotDefList</span>
+    slotDefList = slotDefList.exclude |SlotDef s-&gt;Bool|
+    <span class='b'>{</span>
+      <span class='k'>return</span> MethodDef.isNameStaticInit<span class='b'>(</span>s.name<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// fix enclosingSlot of closures used in those temp statics</span>
+    closures.each |ClosureExpr c|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>c.enclosingSlot <span class='k'>is</span> MethodDef &amp;&amp; <span class='b'>((</span>MethodDef<span class='b'>)</span>c.enclosingSlot<span class='b'>)</span>.isStaticInit<span class='b'>)</span>
+        c.enclosingSlot = m
+    <span class='b'>}</span>
+
+    <span class='y'>// now we add into all slot tables</span>
+    slotMap<span class='b'>[</span>m.name<span class='b'>]</span> = m
+    slotDefMap<span class='b'>[</span>m.name<span class='b'>]</span> = m
+    slotDefList.add<span class='b'>(</span>m<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// SlotDefs</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this class has a slot definition for specified name.</span>
+  <span class='z'>**</span>
+  Bool <span id='hasSlotDef'>hasSlotDef</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> slotDefMap.containsKey<span class='b'>(</span>name<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return SlotDef for specified name or null.</span>
+  <span class='z'>**</span>
+  SlotDef? <span id='slotDef'>slotDef</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> slotDefMap<span class='b'>[</span>name<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return FieldDef for specified name or null.</span>
+  <span class='z'>**</span>
+  FieldDef? <span id='fieldDef'>fieldDef</span> <span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='b'>(</span>FieldDef<span class='b'>)</span>slotDefMap<span class='b'>[</span>name<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return MethodDef for specified name or null.</span>
+  <span class='z'>**</span>
+  MethodDef? <span id='methodDef'>methodDef</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='b'>(</span>MethodDef<span class='b'>)</span>slotDefMap<span class='b'>[</span>name<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the SlotDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  SlotDef<span class='b'>[]</span> <span id='slotDefs'>slotDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> slotDefList
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the FieldDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  FieldDef<span class='b'>[]</span> <span id='fieldDefs'>fieldDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='b'>(</span>FieldDef<span class='b'>[])</span>slotDefList.findType<span class='b'>(</span>FieldDef#<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the static FieldDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  FieldDef<span class='b'>[]</span> <span id='staticFieldDefs'>staticFieldDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> fieldDefs.findAll |FieldDef f-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> f.isStatic <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the instance FieldDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  FieldDef<span class='b'>[]</span> <span id='instanceFieldDefs'>instanceFieldDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> fieldDefs.findAll |FieldDef f-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> !f.isStatic <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the MethodDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  MethodDef<span class='b'>[]</span> <span id='methodDefs'>methodDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='b'>(</span>MethodDef<span class='b'>[])</span>slotDefList.findType<span class='b'>(</span>MethodDef#<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the constructor MethodDefs declared within this TypeDef.</span>
+  <span class='z'>**</span>
+  MethodDef<span class='b'>[]</span> <span id='ctorDefs'>ctorDefs</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> methodDefs.findAll |MethodDef m-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> m.isCtor <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Enum</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return EnumDef for specified name or null.</span>
+  <span class='z'>**</span>
+  <span class='k'>public</span> EnumDef? <span id='enumDef'>enumDef</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> enumDefs.find |EnumDef def-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> def.name == name <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Tree</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='walk'>walk</span><span class='b'>(</span>Visitor v, VisitDepth depth<span class='b'>)</span>
+  <span class='b'>{</span>
+    v.enterUnit<span class='b'>(</span>unit<span class='b'>)</span>
+    v.enterTypeDef<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    walkFacets<span class='b'>(</span>v, depth<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>depth &gt;= VisitDepth.slotDef<span class='b'>)</span>
+    <span class='b'>{</span>
+      slotDefs.each |SlotDef slot| <span class='b'>{</span> slot.walk<span class='b'>(</span>v, depth<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+    v.visitTypeDef<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    v.exitTypeDef<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span>
+    v.exitUnit<span class='b'>(</span>unit<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Debug</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> Void <span id='print'>print</span><span class='b'>(</span>AstWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.nl
+    printFacets<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>isMixin<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"mixin $qname"</span><span class='b'>)</span>.nl
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>isEnum<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"enum $qname"</span><span class='b'>)</span>.nl
+    <span class='k'>else</span>
+      out.w<span class='b'>(</span><span class='s'>"class $qname"</span><span class='b'>)</span>.nl
+
+    <span class='k'>if</span> <span class='b'>(</span>base != <span class='k'>null</span> || !mixins.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>" : "</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>base != <span class='k'>null</span><span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>" $base"</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>!mixins.isEmpty<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>", "</span><span class='b'>)</span>.w<span class='b'>(</span>mixins.join<span class='b'>(</span><span class='s'>", "</span><span class='b'>))</span>.nl
+    <span class='b'>}</span>
+
+    out.w<span class='b'>(</span><span class='s'>"{"</span><span class='b'>)</span>.nl
+    out.indent
+    enumDefs.each |EnumDef e| <span class='b'>{</span> e.print<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+    slotDefs.each |SlotDef s| <span class='b'>{</span> s.print<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+    out.unindent
+    out.w<span class='b'>(</span><span class='s'>"}"</span><span class='b'>)</span>.nl
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> <span class='k'>readonly</span> CNamespace <span id='ns'>ns</span>  <span class='y'>// compiler's namespace</span>
+  <span class='k'>readonly</span> CompilationUnit <span id='unit'>unit</span>    <span class='y'>// parent unit</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> CPod <span id='pod'>pod</span>       <span class='y'>// parent pod</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str <span id='name'>name</span>       <span class='y'>// simple class name</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Str <span id='qname'>qname</span>      <span class='y'>// podName::name</span>
+  <span class='k'>override</span> <span class='k'>readonly</span> Bool <span id='isVal'>isVal</span>     <span class='y'>// is this a value type (Bool, Int, etc)</span>
+  Bool <span id='baseSpecified'>baseSpecified</span> := <span class='k'>true</span>       <span class='y'>// was base assigned from source code</span>
+  <span class='k'>override</span> CType? <span id='base'>base</span>             <span class='y'>// extends class</span>
+  <span class='k'>override</span> CType<span class='b'>[]</span> <span id='mixins'>mixins</span>          <span class='y'>// mixin types</span>
+  EnumDef<span class='b'>[]</span> <span id='enumDefs'>enumDefs</span>               <span class='y'>// declared enumerated pairs (only if enum)</span>
+  ClosureExpr<span class='b'>[]</span> <span id='closures'>closures</span>           <span class='y'>// closures where I am enclosing type (Parse)</span>
+  ClosureExpr? <span id='closure'>closure</span>             <span class='y'>// if I am a closure anonymous class</span>
+  <span class='k'>private</span> Str:CSlot <span id='slotMap'>slotMap</span>        <span class='y'>// all slots</span>
+  <span class='k'>private</span> Str:SlotDef <span id='slotDefMap'>slotDefMap</span>   <span class='y'>// declared slot definitions</span>
+  <span class='k'>private</span> SlotDef<span class='b'>[]</span> <span id='slotDefList'>slotDefList</span>    <span class='y'>// declared slot definitions</span>
+  FacetDef<span class='b'>[]</span>? <span id='indexedFacets'>indexedFacets</span>        <span class='y'>// used by WritePod</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='TypeDef.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#addSlot'>addSlot</a></li>
+  <li style='display: block;'><a href='#base'>base</a></li>
+  <li style='display: block;'><a href='#baseSpecified'>baseSpecified</a></li>
+  <li style='display: block;'><a href='#closure'>closure</a></li>
+  <li style='display: block;'><a href='#closures'>closures</a></li>
+  <li style='display: block;'><a href='#ctorDefs'>ctorDefs</a></li>
+  <li style='display: block;'><a href='#enumDef'>enumDef</a></li>
+  <li style='display: block;'><a href='#enumDefs'>enumDefs</a></li>
+  <li style='display: block;'><a href='#fieldDef'>fieldDef</a></li>
+  <li style='display: block;'><a href='#fieldDefs'>fieldDefs</a></li>
+  <li style='display: block;'><a href='#hasSlotDef'>hasSlotDef</a></li>
+  <li style='display: block;'><a href='#indexedFacets'>indexedFacets</a></li>
+  <li style='display: block;'><a href='#instanceFieldDefs'>instanceFieldDefs</a></li>
+  <li style='display: block;'><a href='#isClosure'>isClosure</a></li>
+  <li style='display: block;'><a href='#isGeneric'>isGeneric</a></li>
+  <li style='display: block;'><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li style='display: block;'><a href='#isNullable'>isNullable</a></li>
+  <li style='display: block;'><a href='#isParameterized'>isParameterized</a></li>
+  <li style='display: block;'><a href='#isVal'>isVal</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#methodDef'>methodDef</a></li>
+  <li style='display: block;'><a href='#methodDefs'>methodDefs</a></li>
+  <li style='display: block;'><a href='#mixins'>mixins</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#normalizeStaticInits'>normalizeStaticInits</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#operators'>operators</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#print'>print</a></li>
+  <li style='display: block;'><a href='#qname'>qname</a></li>
+  <li style='display: block;'><a href='#replaceSlot'>replaceSlot</a></li>
+  <li style='display: block;'><a href='#signature'>signature</a></li>
+  <li style='display: block;'><a href='#slotDef'>slotDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotDefList'>slotDefList</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotDefMap'>slotDefMap</a></li>
+  <li style='display: block;'><a href='#slotDefs'>slotDefs</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotMap'>slotMap</a></li>
+  <li style='display: block;'><a href='#slots'>slots</a></li>
+  <li style='display: block;'><a href='#staticFieldDefs'>staticFieldDefs</a></li>
+  <li style='display: block;'><a href='#staticInit'>staticInit</a></li>
+  <li style='display: block;'><a href='#toListOf'>toListOf</a></li>
+  <li style='display: block;'><a href='#toNullable'>toNullable</a></li>
+  <li style='display: block;'><a href='#unit'>unit</a></li>
+  <li style='display: block;'><a href='#walk'>walk</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CompilerSupport</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CompilerSupport.html'>CompilerSupport</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::CompilerSupport</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::CompilerSupport</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   18 May 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** CompilerSupport provides lots of convenience methods for classes</span>
+<span class='z'>** used during the compiler pipeline.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> CompilerSupport
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Constructor takes the associated Compiler</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.c = compiler
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Convenience</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the compiler.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Compiler <span id='compiler'>compiler</span><span class='b'>()</span> <span class='b'>{</span> c <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for compiler.ns</span>
+  <span class='z'>**</span>
+  CNamespace <span id='ns'>ns</span><span class='b'>()</span> <span class='b'>{</span> c.ns <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for compiler.pod</span>
+  <span class='z'>**</span>
+  PodDef <span id='pod'>pod</span><span class='b'>()</span> <span class='b'>{</span> c.pod <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for compiler.pod.units</span>
+  <span class='z'>**</span>
+  CompilationUnit<span class='b'>[]</span> <span id='units'>units</span><span class='b'>()</span> <span class='b'>{</span> c.pod.units <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get default compilation unit to use for synthetic definitions</span>
+  <span class='z'>** such as wrapper types.</span>
+  <span class='z'>**</span>
+  CompilationUnit <span id='syntheticsUnit'>syntheticsUnit</span><span class='b'>()</span> <span class='b'>{</span> c.pod.units.first <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for compiler.types</span>
+  <span class='z'>**</span>
+  TypeDef<span class='b'>[]</span> <span id='types'>types</span><span class='b'>()</span> <span class='b'>{</span> c.types <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for compiler.log</span>
+  <span class='z'>**</span>
+  CompilerLog <span id='log'>log</span><span class='b'>()</span> <span class='b'>{</span> c.log <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a synthetic type</span>
+  <span class='z'>**</span>
+  Void <span id='addTypeDef'>addTypeDef</span><span class='b'>(</span>TypeDef t<span class='b'>)</span>
+  <span class='b'>{</span>
+    t.unit.types.add<span class='b'>(</span>t<span class='b'>)</span>
+    pod.typeDefs<span class='b'>[</span>t.name<span class='b'>]</span> = t
+    c.types.add<span class='b'>(</span>t<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Remove a synthetic type</span>
+  <span class='z'>**</span>
+  Void <span id='removeTypeDef'>removeTypeDef</span><span class='b'>(</span>TypeDef t<span class='b'>)</span>
+  <span class='b'>{</span>
+    t.unit.types.removeSame<span class='b'>(</span>t<span class='b'>)</span>
+    pod.typeDefs.remove<span class='b'>(</span>t.name<span class='b'>)</span>
+    c.types.removeSame<span class='b'>(</span>t<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Errors</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create, log, and return a CompilerErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> CompilerErr <span id='err'>err</span><span class='b'>(</span>Str msg, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>suppressErr<span class='b'>)</span> <span class='k'>throw</span> SuppressedErr.make
+    <span class='k'>return</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span>msg, loc<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create, log, and return a warning CompilerErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> CompilerErr <span id='warn'>warn</span><span class='b'>(</span>Str msg, Loc? loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>suppressErr<span class='b'>)</span> <span class='k'>throw</span> SuppressedErr.make
+    <span class='k'>return</span> errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span>msg, loc, <span class='k'>null</span>, LogLevel.warn<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Log, store, and return the specified CompilerErr.</span>
+  <span class='z'>**</span>
+  CompilerErr <span id='errReport'>errReport</span><span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+  <span class='b'>{</span>
+    c.log.compilerErr<span class='b'>(</span>e<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>e.isWarn<span class='b'>)</span>
+      c.warns.add<span class='b'>(</span>e<span class='b'>)</span>
+    <span class='k'>else</span>
+      c.errs.add<span class='b'>(</span>e<span class='b'>)</span>
+    <span class='k'>return</span> e
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If any errors are accumulated, then throw the first one</span>
+  <span class='z'>**</span>
+  Void <span id='bombIfErr'>bombIfErr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>!c.errs.isEmpty<span class='b'>)</span>
+      <span class='k'>throw</span> c.errs.first
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> Compiler <span id='c'>c</span>           <span class='y'>// parent compiler instance</span>
+  Bool <span id='suppressErr'>suppressErr</span> := <span class='k'>false</span>    <span class='y'>// throw SuppressedErr instead of CompilerErr</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** SuppressedErr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>const</span> <span class='k'>class</span> SuppressedErr : Err
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>()</span> : <span class='k'>super</span><span class='b'>(</span><span class='s'>""</span>, <span class='k'>null</span><span class='b'>)</span> <span class='b'>{}</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='CompilerSupport.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#addTypeDef'>addTypeDef</a></li>
+  <li style='display: block;'><a href='#bombIfErr'>bombIfErr</a></li>
+  <li class='hidden' style='display: block;'><a href='#c'>c</a></li>
+  <li style='display: block;'><a href='#compiler'>compiler</a></li>
+  <li style='display: block;'><a href='#err'>err</a></li>
+  <li style='display: block;'><a href='#errReport'>errReport</a></li>
+  <li style='display: block;'><a href='#log'>log</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#removeTypeDef'>removeTypeDef</a></li>
+  <li style='display: block;'><a href='#suppressErr'>suppressErr</a></li>
+  <li style='display: block;'><a href='#syntheticsUnit'>syntheticsUnit</a></li>
+  <li style='display: block;'><a href='#types'>types</a></li>
+  <li style='display: block;'><a href='#units'>units</a></li>
+  <li style='display: block;'><a href='#warn'>warn</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

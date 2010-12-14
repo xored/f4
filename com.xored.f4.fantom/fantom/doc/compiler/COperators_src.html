@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::COperators</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='COperators.html'>COperators</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::COperators</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::COperators</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2010, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   9 Nov 10  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** COperators is used to manage methods annoated with the</span>
+<span class='z'>** Operator facet for efficient operator method resolution.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> COperators
+<span class='b'>{</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>CType parent<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.parent = parent
+    parent.slots.each |slot|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>slot <span class='k'>is</span> CMethod &amp;&amp; slot.hasFacet<span class='b'>(</span><span class='s'>"sys::Operator"</span><span class='b'>))</span>
+      <span class='b'>{</span>
+        prefix := toPrefix<span class='b'>(</span>slot.name<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>prefix == <span class='k'>null</span><span class='b'>)</span> echo<span class='b'>(</span><span class='s'>"WARN: operator method has invalid perfix: $slot.qname"</span><span class='b'>)</span>
+        <span class='k'>else</span>
+        <span class='b'>{</span>
+          acc := byPrefix<span class='b'>[</span>prefix<span class='b'>]</span>
+          <span class='k'>if</span> <span class='b'>(</span>acc == <span class='k'>null</span><span class='b'>)</span> byPrefix<span class='b'>[</span>prefix<span class='b'>]</span> = acc = CMethod<span class='b'>[</span>,<span class='b'>]</span>
+          acc.add<span class='b'>(</span>slot<span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Given a method name get the operator prefix:</span>
+  <span class='z'>**   "plus"     =&gt;  "plus"</span>
+  <span class='z'>**   "plusInt"  =&gt;  "plus"</span>
+  <span class='z'>**   "fooBar"   =&gt;  null</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str? <span id='toPrefix'>toPrefix</span><span class='b'>(</span>Str methodName<span class='b'>)</span>
+  <span class='b'>{</span>
+    exacts<span class='b'>[</span>methodName<span class='b'>]</span> ?: prefixes.find |p| <span class='b'>{</span> methodName.startsWith<span class='b'>(</span>p<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  CMethod<span class='b'>[]</span> <span id='find'>find</span><span class='b'>(</span>Str prefix<span class='b'>)</span>
+  <span class='b'>{</span>
+    byPrefix<span class='b'>[</span>prefix<span class='b'>]</span> ?: CMethod#.emptyList
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Str<span class='b'>[]</span> <span id='prefixes'>prefixes</span> := <span class='b'>[</span><span class='s'>"get"</span>, <span class='s'>"plus"</span>, <span class='s'>"minus"</span>, <span class='s'>"mult"</span>, <span class='s'>"div"</span>, <span class='s'>"mod"</span><span class='b'>]</span>
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Str:Str <span id='exacts'>exacts</span> := Str:Str<span class='b'>[</span>:<span class='b'>]</span>.setList<span class='b'>(</span>prefixes<span class='b'>)</span>.setList<span class='b'>([</span><span class='s'>"set"</span>, <span class='s'>"negate"</span>, <span class='s'>"increment"</span>, <span class='s'>"decrement"</span><span class='b'>])</span>
+
+  <span class='k'>readonly</span> CType <span id='parent'>parent</span>
+  <span class='k'>private</span> <span class='k'>readonly</span> Str:CMethod<span class='b'>[]</span> <span id='byPrefix'>byPrefix</span> := <span class='b'>[</span>:<span class='b'>]</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='COperators.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden' style='display: block;'><a href='#byPrefix'>byPrefix</a></li>
+  <li class='hidden' style='display: block;'><a href='#exacts'>exacts</a></li>
+  <li style='display: block;'><a href='#find'>find</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#parent'>parent</a></li>
+  <li class='hidden' style='display: block;'><a href='#prefixes'>prefixes</a></li>
+  <li style='display: block;'><a href='#toPrefix'>toPrefix</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

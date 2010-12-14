@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Hello World</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docIntro</a></li>
+  <li>&gt;</li>
+  <li><a href='HelloWorld.html'>Hello World</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='WhyFantom.html'><img src='../go-previous.png' alt='prev' /></a> <a href='WhyFantom.html'>Why Fantom</a></div>
+<div class='next'><a href='Roadmap.html'>Roadmap</a> <a href='Roadmap.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Hello World</h1>
+
+<h1 id='setup'>Setup </h1>
+
+<p>Fantom is distributed as a simple zip file you will need to unzip to your local machine.  Make sure the correct binary directory is included in your path:</p>
+
+<pre>{fan.home}/bin</pre>
+
+<p>When you first install Fantom it will automatically try to run using your currently configured Java VM (requires Java 1.5 or greater). If things are working correctly you should be able to run "fan -version":</p>
+
+<pre>C:\dev\fan\bin>fan -version
+Fantom Launcher
+Copyright (c) 2006-2010, Brian Frank and Andy Frank
+Licensed under the Academic Free License version 3.0
+
+Java Runtime:
+  java.vm.name:    Java HotSpot(TM) Client VM
+  java.vm.vendor:  Sun Microsystems Inc.
+  java.vm.version: 1.6.0_03-b05
+  java.home:       C:\Program Files\Java\jre1.6.0_03
+  fan.home:        c:\dev\fan
+  sys.version:     1.0.19</pre>
+
+<p>If that doesn't work then try these options:</p>
+
+<ol style='list-style-type:decimal'>
+<li>Review <a href='../docTools/Setup.html'>setup</a> instructions</li>
+
+<li>Install Java 1.5 or greater and retry</li>
+
+<li>Explicitly <a href='../docTools/Setup.html#javaRuntime'>configure</a> where your JVM is installed</li>
+
+<li><a href='../docTools/Setup.html#runtime'>Switch</a> to use the .NET runtime</li>
+
+<li>Turn on <a href='../docTools/Setup.html#debugging'>launcher debugging</a></li>
+</ol>
+
+<h1 id='fansh'>Fantom Shell </h1>
+
+<p>The Fantom shell is a command line tool for evaluating expressions and statements.  It is a great way to test things out.  To launch the shell run the <code>fansh</code> executable and call the <code><a href='../sys/Obj.html#echo'>Obj.echo</a></code> method:</p>
+
+<pre>C:\dev\fan\bin>fansh
+Fantom Shell v1.0.22 ('?' for help)
+fansh> echo("hello world #1")
+hello world #1
+fansh> quit</pre>
+
+<p>Checkout <a href='../docTools/Fansh.html'>docTools::Fansh</a> for more details on the Fantom shell.</p>
+
+<h1 id='script'>Fantom Script </h1>
+
+<p>You can also execute any file with the ".fan" extension as a script file.  The script must contain a full class definition with a method called "main".  Create a file called "hello.fan":</p>
+
+<pre>class Hello
+{
+  static Void main() { echo("hello world #2") }
+}</pre>
+
+<p>Pass the script file name to the <code>fan</code> executable:</p>
+
+<pre>C:\dev\fan\bin>fan hello.fan
+hello world #2</pre>
+
+<p>Note that unlike Java or C# the arguments aren't required to be passed as a parameter to main.  You can declare a <code>Str[]</code> parameter if you want or you can access them via <code><a href='../sys/Env.html#args'>Env.args</a></code>.</p>
+
+<p>Checkout <a href='../docTools/Fan.html'>docTools::Fan</a> for more details running Fantom scripts. Also see <a href='../docTools/Setup.html#executableUnix'>unix setup</a> and <a href='../docTools/Setup.html#executableWindows'>windows setup</a> to make fan scripts executable without calling the launcher explicitly.</p>
+
+<h1 id='pod'>Fantom Pod </h1>
+
+<p>For production systems, you typically organize your code into precompiled modules called <a href='../docLang/Structure.html#pods'>pods</a>.  Pods are built using Fantom's <a href='../docTools/Build.html'>build toolkit</a>.  To build a new pod called "hello" create a directory structure organized as follows:</p>
+
+<pre>hello/
+  build.fan
+  fan/
+    Main.fan</pre>
+
+<p>The contents of "build.fan" is the build script which defines your pod's metadata:</p>
+
+<pre>class Build : build::BuildPod
+{
+  new make()
+  {
+    podName = "hello"
+    summary = "hello world pod"
+    depends = ["sys 1.0"]
+    srcDirs = [`fan/`]
+  }
+}</pre>
+
+<p>The "fan/Main.fan" file declares a single class called "Main":</p>
+
+<pre>class Main
+{
+  static Void main() { echo("hello world #3") }
+}</pre>
+
+<p>The build file itself is just a normal Fantom script file which will compile the pod:</p>
+
+<pre>C:\dev\fan\src\hello>fan build.fan
+compile [hello]
+  Compile [hello]
+    FindSourceFiles [1 files]
+    WritePod [/C:/dev/fan/lib/fan/hello.pod]
+BUILD SUCCESS [70ms]!</pre>
+
+<p>If you look in your "lib/fan" directory you should now see a file called "hello.pod".  Assuming you called your method "main" in a class called "Main" you can run the main method using the <code>fan</code> executable:</p>
+
+<pre>C:\dev\fan>fan hello
+hello world #3
+
+C:\dev\fan>fan hello::Main
+hello world #3
+
+C:\dev\fan>fan hello::Main.main
+hello world #3</pre>
+
+<p>Checkout <a href='../docTools/Fan.html'>docTools::Fan</a> for more details running methods in a pod, and <a href='../docTools/Build.html'>docTools::Build</a> for details on the build toolkit.</p>
+
+<h1 id='fwt'>Fantom FWT </h1>
+
+<p>The <a href='../fwt/index.html'>Fantom Widget Toolkit</a> makes it easy to create desktop applications.  The following script will launch a simple window (this script is available under "examples/fwt/hello.fan"):</p>
+
+<pre>using fwt
+class FwtHello : Test
+{
+  Void main()
+  {
+    Window { Label { text = "Hello world" }, }.open
+  }
+}</pre>
+
+<p>Fantom makes declarative work like UI definition easy because <a href='../docLang/Serialization.html'>serialized objects</a> can be used as normal expressions.</p>
+
+<h1 id='webapp'>Fantom WebApp </h1>
+
+<p>To create a very simple hello world web application we can create a daemon boot script which launches Fantom's built-in web server with a simple hello WebMod.</p>
+
+<p>Let's look at some example code (this script is available under "examples/web/hello.fan"):</p>
+
+<pre>using util
+using web
+using wisp
+
+class WebHello : AbstractMain
+{
+  @Opt { help = "http port" }
+  Int port := 8080
+
+  override Int run()
+  {
+    wisp := WispService
+    {
+      it.port = this.port
+      it.root = HelloMod()
+    }
+    return runServices([wisp])
+  }
+}
+
+const class HelloMod : WebMod
+{
+  override Void onGet()
+  {
+    res.headers["Content-Type"] = "text/plain; charset=utf-8"
+    res.out.print("hello world #4")
+  }
+}</pre>
+
+<p>The boot script contains two classes.  The first class <code>WebHello</code> subclasses <code><a href='../util/AbstractMain.html'>AbstractMain</a></code> which provides the standard plumbing for writing main routines.  It's primary purpose is to configure the web server to run on port 8080 and to use a simple webmod which defines how to process HTTP requests.</p>
+
+<p>The <code>HelloMod</code> class subclasses <a href='../web/pod-doc.html#webmod'>WebMod</a> which is Fantom's "servlet" API for servicing web requests.  It doesn't do much - sets the content type and writes the response text.</p>
+
+<p>If you run this script:</p>
+
+<pre>C:\dev\fan\bin>fan ../examples/web/hello.fan
+[09:57:40 11-Apr-08] [info] [fand] booting...
+[09:57:40 11-Apr-08] [info] [web] WispService started on port 8080</pre>
+
+<p>You should be able to hit <a href='http://localhost:8080/'>http://localhost:8080/</a> with your browser!</p>
+<div class='prevNext'>
+<div class='prev'><a href='WhyFantom.html'><img src='../go-previous.png' alt='prev' /></a> <a href='WhyFantom.html'>Why Fantom</a></div>
+<div class='next'><a href='Roadmap.html'>Roadmap</a> <a href='Roadmap.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#setup'>Setup </a></li><li><a href='#fansh'>Fantom Shell </a></li><li><a href='#script'>Fantom Script </a></li><li><a href='#pod'>Fantom Pod </a></li><li><a href='#fwt'>Fantom FWT </a></li><li><a href='#webapp'>Fantom WebApp </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docIntro 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

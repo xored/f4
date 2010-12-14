@@ -1,0 +1,60 @@
+//
+// Config: sys
+//
+// History:
+//   01 Dec 05  Brian Frank  Creation
+//
+
+//////////////////////////////////////////////////////////////////////////
+// Fan
+//////////////////////////////////////////////////////////////////////////
+
+// Runtime - either "java" or "dotnet"
+runtime=java
+
+// Default timezone to use for VM - can be either the simple name
+// or the full name.  If not set explicitly, then the we will
+// attempt to query the timezone from the Java or .NET runtime
+// This property can only be configured by bootstrap homeDir.
+// timezone=New_York
+
+// If debug is set to true, then the runtime emits debug
+// information such as the LocalVariableTable for debuggers
+// This property can only be configured by bootstrap homeDir.
+// debug=true
+
+//////////////////////////////////////////////////////////////////////////
+// Java Runtime
+//////////////////////////////////////////////////////////////////////////
+
+// Set this property to specify a jvm.dll path to explicitly
+// select the jvm runtime to use; if not set then we lookup
+// the Java VM to use in the registry under:
+//   \HKEY_LOCAL_MACHINE\Software\JavaSoft\JavaRuntimeEnvironment.CurrentVersion
+// java.jvm=C:\\Program Files\\Java\\jre1.5.0_06\\bin\\client\\jvm.dll
+// java.jvm=E:\\tools\\jdk16\\jre\\bin\\server\\jvm.dll
+
+// Set this property to pass additional command line options to the Java VM.
+// The options should be listed together separated with a space.
+java.options=-Xmx512M
+
+//////////////////////////////////////////////////////////////////////////
+// Bootstrap Build
+//////////////////////////////////////////////////////////////////////////
+
+// we substitute the runtime used for these build scripts
+// which are used to boot build the core pods needed to
+// build the rest of the system - we assume that a previous
+// stable "released" version of fan is installed at /dev/rel/
+// used only for Windows launcher, Unix uses fansubstitute script
+runtime.substitutes=                                     \
+  /E:/fan/src/buildall.fan           = E:\\rel  \
+  /E:/fan/src/buildboot.fan          = E:\\rel  \
+  /E:/fan/src/sys/build.fan          = E:\\rel  \
+  /E:/fan/src/sys/java/build.fan     = E:\\rel  \
+  /E:/fan/src/sys/js/build.fan       = E:\\rel  \
+  /E:/fan/src/sys/dotnet/build.fan   = E:\\rel  \
+  /E:/fan/src/compiler/build.fan     = E:\\rel  \
+  /E:/fan/src/compilerJava/build.fan = E:\\rel  \
+  /E:/fan/src/build/build.fan        = E:\\rel
+

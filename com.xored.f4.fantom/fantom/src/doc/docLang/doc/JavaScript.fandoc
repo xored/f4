@@ -1,0 +1,32 @@
+**************************************************************************
+** title:      JavaScript
+** author:     Andy Frank
+** created:    17 Apr 09
+** copyright:  Copyright (c) 2009, Brian Frank and Andy Frank
+** license:    Licensed under the Academic Free License version 3.0
+**************************************************************************
+
+Overview [#overview]
+********************
+Fantom provides support for compiling to JavaScript and running in
+JavaScript VMs such as web browsers.  Most of the sys API is available,
+however not all pods and APIs are accessible due to limitations of the
+JavaScript VM enviornment.
+
+Js Facet [#jsFacet]
+*******************
+You must explictly mark types you intend to compile to JavaScript using
+the `sys::Js` facet:
+
+  @Js
+  class GonnaBeJs
+  {
+    Void sayHi() { Win.cur.alert("Hello!") }
+  }
+
+Natives [#natives]
+******************
+To compile JavaScript natives, add the source directories to your
+build script using the [jsDirs]`build::BuildPod.jsDirs` field.
+See [Build Pod]`docTools::Build#buildPod` for an example.
+

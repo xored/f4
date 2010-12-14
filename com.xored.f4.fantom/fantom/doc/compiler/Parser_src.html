@@ -1,0 +1,2586 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::Parser</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='Parser.html'>Parser</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::Parser</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='CompilerSupport.html'>compiler::CompilerSupport</a>
+    compiler::Parser</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   15 Sep 05  Brian Frank  Creation</span>
+<span class='y'>//    6 Jun 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Parser is responsible for parsing a list of tokens into the</span>
+<span class='z'>** abstract syntax tree.  At this point the CompilationUnit, Usings,</span>
+<span class='z'>** and TypeDefs are already populated by the ScanForUsingAndTypes</span>
+<span class='z'>** step.</span>
+<span class='z'>**</span>
+<span class='k'>public</span> <span class='k'>class</span> Parser : CompilerSupport
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct the parser for the specified compilation unit.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Compiler compiler, CompilationUnit unit, ClosureExpr<span class='b'>[]</span> closures<span class='b'>)</span>
+    : <span class='k'>super</span><span class='b'>(</span>compiler<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.unit      = unit
+    <span class='k'>this</span>.tokens    = unit.tokens
+    <span class='k'>this</span>.numTokens = unit.tokens.size
+    <span class='k'>this</span>.closures  = closures
+    reset<span class='b'>(</span>0<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Top level parse a compilation unit:</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;compilationUnit&gt; :=  [&lt;usings&gt;] &lt;typeDef&gt;*</span>
+  <span class='z'>**</span>
+  Void <span id='parse'>parse</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    usings
+    <span class='k'>while</span> <span class='b'>(</span>curt !== Token.eof<span class='b'>)</span> typeDef
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Usings</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse &lt;using&gt;* - note that we are just skipping them because</span>
+  <span class='z'>** they are already parsed by ScanForUsingsAndTypes.</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;using&gt;       :=  &lt;usingPod&gt; | &lt;usingType&gt; | &lt;usingAs&gt;</span>
+  <span class='z'>**   &lt;usingPod&gt;    :=  "using" &lt;podSpec&gt; &lt;eos&gt;</span>
+  <span class='z'>**   &lt;usingType&gt;   :=  "using" &lt;podSpec&gt; "::" &lt;id&gt; &lt;eos&gt;</span>
+  <span class='z'>**   &lt;usingAs&gt;     :=  "using" &lt;podSpec&gt; "::" &lt;id&gt; "as" &lt;id&gt; &lt;eos&gt;</span>
+  <span class='z'>**   &lt;podSpec&gt;     :=  &lt;id&gt; | &lt;str&gt; | &lt;ffiPodSpec&gt;</span>
+  <span class='z'>**   &lt;ffiPodSpec&gt;  := "[" &lt;id&gt; "]" &lt;id&gt; ("." &lt;id&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='usings'>usings</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt == Token.usingKeyword<span class='b'>)</span>
+      skipUsing
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='skipUsing'>skipUsing</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    consume<span class='b'>(</span>Token.usingKeyword<span class='b'>)</span>
+
+    <span class='y'>// &lt;str&gt; | &lt;id&gt; | "[" &lt;id&gt; "]" &lt;id&gt; ("." &lt;id&gt;)*</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.strLiteral<span class='b'>)</span> consume
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbracket<span class='b'>)</span> <span class='b'>{</span> consume; consumeId; consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span> <span class='b'>}</span>
+      consumeId
+      <span class='k'>while</span> <span class='b'>(</span>curt === Token.dot<span class='b'>)</span> <span class='b'>{</span> consume; consumeId <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.doubleColon<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume; consumeId
+      <span class='k'>while</span> <span class='b'>(</span>curt === Token.dollar<span class='b'>)</span> <span class='b'>{</span> consume; <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span> consumeId <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.asKeyword<span class='b'>)</span> <span class='b'>{</span> consume; consumeId <span class='b'>}</span>
+    <span class='b'>}</span>
+    endOfStmt
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// TypeDef</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** TypeDef:</span>
+  <span class='z'>**   &lt;typeDef&gt;      :=  &lt;classDef&gt; | &lt;mixinDef&gt; | &lt;enumDef&gt; | &lt;facetDef&gt;</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;classDef&gt;     :=  &lt;classHeader&gt; &lt;classBody&gt;</span>
+  <span class='z'>**   &lt;classHeader&gt;  :=  [&lt;doc&gt;] &lt;facets&gt; &lt;typeFlags&gt; "class" [&lt;inheritance&gt;]</span>
+  <span class='z'>**   &lt;classFlags&gt;   :=  [&lt;protection&gt;] ["abstract"] ["final"]</span>
+  <span class='z'>**   &lt;classBody&gt;    :=  "{" &lt;slotDefs&gt; "}"</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;enumDef&gt;      :=  &lt;enumHeader&gt; &lt;enumBody&gt;</span>
+  <span class='z'>**   &lt;enumHeader&gt;   :=  [&lt;doc&gt;] &lt;facets&gt; &lt;protection&gt; "enum" [&lt;inheritance&gt;]</span>
+  <span class='z'>**   &lt;enumBody&gt;     :=  "{" &lt;enumDefs&gt; &lt;slotDefs&gt; "}"</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;facetDef      :=  &lt;facetHeader&gt; &lt;enumBody&gt;</span>
+  <span class='z'>**   &lt;facetHeader&gt;  :=  [&lt;doc&gt;] &lt;facets&gt; [&lt;protection&gt;] "facet" "class" &lt;id&gt; [&lt;inheritance&gt;]</span>
+  <span class='z'>**   &lt;facetBody&gt;    :=  "{" &lt;slotDefs&gt; "}"</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;mixinDef&gt;     :=  &lt;enumHeader&gt; &lt;enumBody&gt;</span>
+  <span class='z'>**   &lt;mixinHeader&gt;  :=  [&lt;doc&gt;] &lt;facets&gt; &lt;protection&gt; "mixin" [&lt;inheritance&gt;]</span>
+  <span class='z'>**   &lt;mixinBody&gt;    :=  "{" &lt;slotDefs&gt; "}"</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;protection&gt;   :=  "public" | "protected" | "private" | "internal"</span>
+  <span class='z'>**   &lt;inheritance&gt;  :=  ":" &lt;typeList&gt;</span>
+  <span class='z'>**</span>
+  Void <span id='typeDef'>typeDef</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// [&lt;doc&gt;]</span>
+    doc := doc<span class='b'>()</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.eof<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='y'>// &lt;facets&gt;</span>
+    facets := facets<span class='b'>()</span>
+
+    <span class='y'>// &lt;flags&gt;</span>
+    flags := flags<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>ProtectionMask.not<span class='b'>)</span> == 0<span class='b'>)</span> flags = flags.or<span class='b'>(</span>FConst.Public<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>compiler.isSys<span class='b'>)</span> flags = flags.or<span class='b'>(</span>FConst.Native<span class='b'>)</span>
+
+    <span class='y'>// local working variables</span>
+    loc     := cur
+    isMixin := <span class='k'>false</span>
+    isEnum  := <span class='k'>false</span>
+
+    <span class='y'>// mixin</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.mixinKeyword<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"The 'abstract' modifier is implied on mixin"</span>, loc<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Final<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Cannot use 'final' modifier on mixin"</span>, loc<span class='b'>)</span>
+      flags = flags.or<span class='b'>(</span>FConst.Mixin + FConst.Abstract<span class='b'>)</span>
+      isMixin = <span class='k'>true</span>
+      consume
+    <span class='b'>}</span>
+
+    <span class='y'>// class</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// enum class</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; cur.val == <span class='s'>"enum"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Const<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"The 'const' modifier is implied on enum"</span>, loc<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Final<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"The 'final' modifier is implied on enum"</span>, loc<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Cannot use 'abstract' modifier on enum"</span>, loc<span class='b'>)</span>
+        flags = flags.or<span class='b'>(</span>FConst.Enum + FConst.Const + FConst.Final<span class='b'>)</span>
+        isEnum = <span class='k'>true</span>
+        consume
+      <span class='b'>}</span>
+      <span class='y'>// facet class</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; cur.val == <span class='s'>"facet"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Const<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"The 'const' modifier is implied on facet"</span>, loc<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Final<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"The 'final' modifier is implied on facet"</span>, loc<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Cannot use 'abstract' modifier on facet"</span>, loc<span class='b'>)</span>
+        flags = flags.or<span class='b'>(</span>FConst.Facet + FConst.Const + FConst.Final<span class='b'>)</span>
+        consume
+      <span class='b'>}</span>
+      consume<span class='b'>(</span>Token.classKeyword<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// name</span>
+    name := consumeId
+    <span class='y'>// lookup TypeDef</span>
+    def := unit.types.find |TypeDef def-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> def.name == name <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>def == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Invalid class definition"</span>, cur<span class='b'>)</span>
+
+    <span class='y'>// populate it's doc, facets, and flags</span>
+    def.doc    = doc
+    def.facets = facets
+    def.flags  = flags
+    <span class='k'>if</span> <span class='b'>(</span>def.isFacet<span class='b'>)</span> def.mixins.add<span class='b'>(</span>ns.facetType<span class='b'>)</span>
+
+    <span class='y'>// inheritance</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.colon<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// first inheritance type can be extends or mixin</span>
+      consume
+      first := inheritType
+      <span class='k'>if</span> <span class='b'>(</span>!first.isMixin<span class='b'>)</span>
+        def.base = first
+      <span class='k'>else</span>
+        def.mixins.add<span class='b'>(</span>first<span class='b'>)</span>
+
+      <span class='y'>// additional mixins</span>
+      <span class='k'>while</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        def.mixins.add<span class='b'>(</span>inheritType<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if no inheritance specified then apply default base class</span>
+    <span class='k'>if</span> <span class='b'>(</span>def.base == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      def.baseSpecified = <span class='k'>false</span>
+      <span class='k'>if</span> <span class='b'>(</span>isEnum<span class='b'>)</span>
+        def.base = ns.enumType
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>def.qname != <span class='s'>"sys::Obj"</span><span class='b'>)</span>
+        def.base = ns.objType
+    <span class='b'>}</span>
+
+    <span class='y'>// start class body</span>
+    consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+
+    <span class='y'>// if enum, parse values</span>
+    <span class='k'>if</span> <span class='b'>(</span>isEnum<span class='b'>)</span> enumDefs<span class='b'>(</span>def<span class='b'>)</span>
+
+    <span class='y'>// slots</span>
+    curType = def
+    closureCount = 0
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      doc = <span class='k'>this</span>.doc
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbrace<span class='b'>)</span> <span class='k'>break</span>
+      slot := slotDef<span class='b'>(</span>def, doc<span class='b'>)</span>
+
+      <span class='y'>// do duplicate name error checking here</span>
+      <span class='k'>if</span> <span class='b'>(</span>def.hasSlotDef<span class='b'>(</span>slot.name<span class='b'>))</span>
+      <span class='b'>{</span>
+        err<span class='b'>(</span><span class='s'>"Duplicate slot name '$slot.name'"</span>, slot.loc<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        def.addSlot<span class='b'>(</span>slot<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    closureCount = <span class='k'>null</span>
+    curType = <span class='k'>null</span>
+
+    <span class='y'>// end of class body</span>
+    consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CType <span id='inheritType'>inheritType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    t := typeRef
+    <span class='k'>if</span> <span class='b'>(</span>t == ns.facetType<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Cannot inherit 'Facet' explicitly"</span>, t.loc<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>t == ns.enumType<span class='b'>)</span>  err<span class='b'>(</span><span class='s'>"Cannot inherit 'Enum' explicitly"</span>, t.loc<span class='b'>)</span>
+    <span class='k'>return</span> t
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Flags</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse any list of flags in any order, we will check invalid</span>
+  <span class='z'>** combinations in the CheckErrors step.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Int <span id='flags'>flags</span><span class='b'>(</span>Bool normalize := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+    flags := 0
+    protection := <span class='k'>false</span>
+    <span class='k'>for</span> <span class='b'>(</span>done := <span class='k'>false</span>; !done; <span class='b'>)</span>
+    <span class='b'>{</span>
+      oldFlags := flags
+      <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Token.abstractKeyword:  flags = flags.or<span class='b'>(</span>FConst.Abstract<span class='b'>)</span>
+        <span class='k'>case</span> Token.constKeyword:     flags = flags.or<span class='b'>(</span>FConst.Const<span class='b'>)</span>
+        <span class='k'>case</span> Token.finalKeyword:     flags = flags.or<span class='b'>(</span>FConst.Final<span class='b'>)</span>
+        <span class='k'>case</span> Token.internalKeyword:  flags = flags.or<span class='b'>(</span>FConst.Internal<span class='b'>)</span>;  protection = <span class='k'>true</span>
+        <span class='k'>case</span> Token.nativeKeyword:    flags = flags.or<span class='b'>(</span>FConst.Native<span class='b'>)</span>
+        <span class='k'>case</span> Token.newKeyword:       flags = flags.or<span class='b'>(</span>FConst.Ctor<span class='b'>)</span>
+        <span class='k'>case</span> Token.onceKeyword:      flags = flags.or<span class='b'>(</span>Once<span class='b'>)</span> <span class='y'>// Parser only flag</span>
+        <span class='k'>case</span> Token.overrideKeyword:  flags = flags.or<span class='b'>(</span>FConst.Override<span class='b'>)</span>
+        <span class='k'>case</span> Token.privateKeyword:   flags = flags.or<span class='b'>(</span>FConst.Private<span class='b'>)</span>;   protection = <span class='k'>true</span>
+        <span class='k'>case</span> Token.protectedKeyword: flags = flags.or<span class='b'>(</span>FConst.Protected<span class='b'>)</span>; protection = <span class='k'>true</span>
+        <span class='k'>case</span> Token.publicKeyword:    flags = flags.or<span class='b'>(</span>FConst.Public<span class='b'>)</span>;    protection = <span class='k'>true</span>
+        <span class='k'>case</span> Token.readonlyKeyword:  flags = flags.or<span class='b'>(</span>Readonly<span class='b'>)</span> <span class='y'>// Parser only flag</span>
+        <span class='k'>case</span> Token.staticKeyword:    flags = flags.or<span class='b'>(</span>FConst.Static<span class='b'>)</span>
+        <span class='k'>case</span> Token.virtualKeyword:   flags = flags.or<span class='b'>(</span>FConst.Virtual<span class='b'>)</span>
+        <span class='k'>default</span>:                     done = <span class='k'>true</span>
+      <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>done<span class='b'>)</span> <span class='k'>break</span>
+      <span class='k'>if</span> <span class='b'>(</span>oldFlags == flags<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Repeated modifier"</span><span class='b'>)</span>
+      oldFlags = flags
+      consume
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0 &amp;&amp; flags.and<span class='b'>(</span>FConst.Virtual<span class='b'>)</span> != 0<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Abstract implies virtual"</span>, loc<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Override<span class='b'>)</span> != 0 &amp;&amp; flags.and<span class='b'>(</span>FConst.Virtual<span class='b'>)</span> != 0<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Override implies virtual"</span>, loc<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>normalize<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>!protection<span class='b'>)</span> flags = flags.or<span class='b'>(</span>FConst.Public<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0<span class='b'>)</span> flags = flags.or<span class='b'>(</span>FConst.Virtual<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Override<span class='b'>)</span> != 0<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Final<span class='b'>)</span> != 0<span class='b'>)</span>
+          flags = flags.and<span class='b'>(</span>FConst.Final.not<span class='b'>)</span>
+        <span class='k'>else</span>
+          flags = flags.or<span class='b'>(</span>FConst.Virtual<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> flags
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Enum</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Enum definition list:</span>
+  <span class='z'>**   &lt;enumDefs&gt;  :=  &lt;enumDef&gt; ("," &lt;enumDef&gt;)* &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='enumDefs'>enumDefs</span><span class='b'>(</span>TypeDef def<span class='b'>)</span>
+  <span class='b'>{</span>
+    ordinal := 0
+    def.enumDefs.add<span class='b'>(</span>enumDef<span class='b'>(</span>ordinal++<span class='b'>))</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      enumDef := enumDef<span class='b'>(</span>ordinal++<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>def.enumDefs.any |EnumDef e-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> e.name == enumDef.name <span class='b'>})</span>
+        err<span class='b'>(</span><span class='s'>"Duplicate enum name '$enumDef.name'"</span>, enumDef.loc<span class='b'>)</span>
+      def.enumDefs.add<span class='b'>(</span>enumDef<span class='b'>)</span>
+    <span class='b'>}</span>
+    endOfStmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Enum definition:</span>
+  <span class='z'>**   &lt;enumDef&gt;  :=  &lt;id&gt; ["(" &lt;args&gt; ")"]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> EnumDef <span id='enumDef'>enumDef</span><span class='b'>(</span>Int ordinal<span class='b'>)</span>
+  <span class='b'>{</span>
+    doc := doc<span class='b'>()</span>
+
+    def := EnumDef<span class='b'>(</span>cur, doc, consumeId, ordinal<span class='b'>)</span>
+
+    <span class='y'>// optional ctor args</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt != Token.rparen<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          def.ctorArgs.add<span class='b'>(</span> expr <span class='b'>)</span>
+          <span class='k'>if</span> <span class='b'>(</span>curt === Token.rparen<span class='b'>)</span> <span class='k'>break</span>
+          consume<span class='b'>(</span>Token.comma<span class='b'>)</span>;
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> def
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Slots</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Slot definition:</span>
+  <span class='z'>**   &lt;slotDef&gt; :=  &lt;fieldDef&gt; | &lt;methodDef&gt; | &lt;ctorDef&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> SlotDef <span id='slotDef'>slotDef</span><span class='b'>(</span>TypeDef parent, Str<span class='b'>[]</span>? doc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// check for static {} class initialization</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.staticKeyword &amp;&amp; peekt === Token.lbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      loc := cur
+      consume
+      sInit := MethodDef.makeStaticInit<span class='b'>(</span>loc, parent, <span class='k'>null</span><span class='b'>)</span>
+      curSlot = sInit
+      sInit.code = block
+      curSlot = <span class='k'>null</span>
+      <span class='k'>return</span> sInit
+    <span class='b'>}</span>
+
+    <span class='y'>// all members start with facets, flags</span>
+    loc := cur
+    facets := facets<span class='b'>()</span>
+    flags := flags<span class='b'>()</span>
+
+    <span class='y'>// check if this is a Java style constructor, log error and parse like Fantom sytle ctor</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; cur.val == parent.name &amp;&amp; peekt == Token.lparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      err<span class='b'>(</span><span class='s'>"Invalid constructor syntax - use new keyword"</span><span class='b'>)</span>
+      <span class='k'>return</span> methodDef<span class='b'>(</span>loc, parent, doc, facets, flags.or<span class='b'>(</span>FConst.Ctor<span class='b'>)</span>, TypeRef<span class='b'>(</span>loc, ns.voidType<span class='b'>)</span>, consumeId<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for inferred typed field</span>
+    <span class='y'>// if = used rather than := then fieldDef() will log error</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; <span class='b'>(</span>peekt === Token.defAssign || peekt === Token.assign<span class='b'>))</span>
+    <span class='b'>{</span>
+      name := consumeId
+      <span class='k'>return</span> fieldDef<span class='b'>(</span>loc, parent, doc, facets, flags, <span class='k'>null</span>, name<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for constructor</span>
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Ctor<span class='b'>)</span> != 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      name := consumeId
+      <span class='k'>return</span> methodDef<span class='b'>(</span>loc, parent, doc, facets, flags, TypeRef<span class='b'>(</span>loc, ns.voidType<span class='b'>)</span>, name<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// otherwise must be field or method</span>
+    type := typeRef
+    name := consumeId
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> methodDef<span class='b'>(</span>loc, parent, doc, facets, flags, type, name<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> fieldDef<span class='b'>(</span>loc, parent, doc, facets, flags, type, name<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// FieldDef</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Field definition:</span>
+  <span class='z'>**   &lt;fieldDef&gt;     :=  &lt;facets&gt; &lt;fieldFlags&gt; [&lt;type&gt;] &lt;id&gt; [":=" &lt;expr&gt;]</span>
+  <span class='z'>**                      [ "{" [&lt;fieldGetter&gt;] [&lt;fieldSetter&gt;] "}" ] &lt;eos&gt;</span>
+  <span class='z'>**   &lt;fieldFlags&gt;   :=  [&lt;protection&gt;] ["readonly"] ["static"]</span>
+  <span class='z'>**   &lt;fieldGetter&gt;  :=  "get" (&lt;eos&gt; | &lt;block&gt;)</span>
+  <span class='z'>**   &lt;fieldSetter&gt;  :=  &lt;protection&gt; "set" (&lt;eos&gt; | &lt;block&gt;)</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> FieldDef <span id='fieldDef'>fieldDef</span><span class='b'>(</span>Loc loc, TypeDef parent, Str<span class='b'>[]</span>? doc, FacetDef<span class='b'>[]</span>? facets, Int flags, TypeRef? type, Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// define field itself</span>
+    field := FieldDef<span class='b'>(</span>loc, parent<span class='b'>)</span>
+    field.doc    = doc
+    field.facets = facets
+    field.flags  = flags.and<span class='b'>(</span>ParserFlagsMask.not<span class='b'>)</span>
+    field.name   = name
+    <span class='k'>if</span> <span class='b'>(</span>type != <span class='k'>null</span><span class='b'>)</span> field.fieldType = type
+
+    <span class='y'>// const always has storage, otherwise assume no storage</span>
+    <span class='y'>// until proved otherwise in ResolveExpr step or we</span>
+    <span class='y'>// auto-generate getters/setters</span>
+    <span class='k'>if</span> <span class='b'>(</span>field.isConst<span class='b'>)</span>
+      field.flags = field.flags.or<span class='b'>(</span>FConst.Storage<span class='b'>)</span>
+
+    <span class='y'>// field initializer</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.defAssign || curt === Token.assign<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.assign<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Must use := for field initialization"</span><span class='b'>)</span>
+      consume
+      curSlot = field
+      inFieldInit = <span class='k'>true</span>
+      field.init = expr
+      inFieldInit = <span class='k'>false</span>
+      curSlot = <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// disable type inference for now - doing inference for literals is</span>
+    <span class='y'>// pretty trivial, but other types is tricky;  I'm not sure it is such</span>
+    <span class='y'>// a hot idea anyways so it may just stay disabled forever</span>
+    <span class='k'>if</span> <span class='b'>(</span>type == <span class='k'>null</span><span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Type inference not supported for fields"</span>, loc<span class='b'>)</span>
+
+    <span class='y'>// if not const, define getter/setter methods</span>
+    <span class='k'>if</span> <span class='b'>(</span>!field.isConst<span class='b'>)</span> defGetAndSet<span class='b'>(</span>field<span class='b'>)</span>
+
+    <span class='y'>// explicit getter or setter</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+      getOrSet<span class='b'>(</span>field<span class='b'>)</span>
+      getOrSet<span class='b'>(</span>field<span class='b'>)</span>
+      consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// generate synthetic getter or setter code if necessary</span>
+    <span class='k'>if</span> <span class='b'>(</span>!field.isConst<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.get.code == <span class='k'>null</span><span class='b'>)</span> genSyntheticGet<span class='b'>(</span>field<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.set.code == <span class='k'>null</span><span class='b'>)</span> genSyntheticSet<span class='b'>(</span>field<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// const override has getter only</span>
+    <span class='k'>if</span> <span class='b'>(</span>field.isConst &amp;&amp; field.isOverride<span class='b'>)</span>
+    <span class='b'>{</span>
+      defGet<span class='b'>(</span>field<span class='b'>)</span>
+      genSyntheticGet<span class='b'>(</span>field<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// readonly is syntatic sugar for { private set }</span>
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>Readonly<span class='b'>)</span> != 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>field.isConst<span class='b'>)</span>
+        err<span class='b'>(</span><span class='s'>"Invalid combination of 'readonly' and 'const' modifiers"</span>, loc<span class='b'>)</span>
+      <span class='k'>else</span>
+        field.set.flags = field.set.flags.and<span class='b'>(</span>ProtectionMask<span class='b'>)</span>.or<span class='b'>(</span>FConst.Private<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    endOfStmt
+    <span class='k'>return</span> field
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='defGetAndSet'>defGetAndSet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    defGet<span class='b'>(</span>f<span class='b'>)</span>
+    defSet<span class='b'>(</span>f<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='defGet'>defGet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// getter MethodDef</span>
+    loc := f.loc
+    get := MethodDef<span class='b'>(</span>loc, f.parentDef<span class='b'>)</span>
+    get.accessorFor = f
+    get.flags = f.flags.or<span class='b'>(</span>FConst.Getter<span class='b'>)</span>
+    get.name  = f.name
+    get.ret   = f.fieldType
+    f.get = get
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='defSet'>defSet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// setter MethodDef</span>
+    loc := f.loc
+    set := MethodDef<span class='b'>(</span>loc, f.parentDef<span class='b'>)</span>
+    set.accessorFor = f
+    set.flags = f.flags.or<span class='b'>(</span>FConst.Setter<span class='b'>)</span>
+    set.name  = f.name
+    set.ret   = ns.voidType
+    set.params.add<span class='b'>(</span>ParamDef<span class='b'>(</span>loc, f.fieldType, <span class='s'>"it"</span><span class='b'>))</span>
+    f.set = set
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='genSyntheticGet'>genSyntheticGet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := f.loc
+    f.get.flags = f.get.flags.or<span class='b'>(</span>FConst.Synthetic<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!f.isAbstract &amp;&amp; !f.isNative<span class='b'>)</span>
+    <span class='b'>{</span>
+      f.flags = f.flags.or<span class='b'>(</span>FConst.Storage<span class='b'>)</span>
+      f.get.code = Block<span class='b'>(</span>loc<span class='b'>)</span>
+      f.get.code.add<span class='b'>(</span>ReturnStmt<span class='b'>(</span>loc, f.makeAccessorExpr<span class='b'>(</span>loc, <span class='k'>false</span><span class='b'>)))</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='genSyntheticSet'>genSyntheticSet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := f.loc
+    f.set.flags = f.set.flags.or<span class='b'>(</span>FConst.Synthetic<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!f.isAbstract &amp;&amp; !f.isNative<span class='b'>)</span>
+    <span class='b'>{</span>
+      f.flags = f.flags.or<span class='b'>(</span>FConst.Storage<span class='b'>)</span>
+      lhs := f.makeAccessorExpr<span class='b'>(</span>loc, <span class='k'>false</span><span class='b'>)</span>
+      rhs := UnknownVarExpr<span class='b'>(</span>loc, <span class='k'>null</span>, <span class='s'>"it"</span><span class='b'>)</span>
+      f.set.code = Block<span class='b'>(</span>loc<span class='b'>)</span>
+      f.set.code.add<span class='b'>(</span>BinaryExpr.makeAssign<span class='b'>(</span>lhs, rhs<span class='b'>)</span>.toStmt<span class='b'>)</span>
+      f.set.code.add<span class='b'>(</span>ReturnStmt<span class='b'>(</span>loc<span class='b'>))</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Void <span id='getOrSet'>getOrSet</span><span class='b'>(</span>FieldDef f<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+    accessorFlags := flags<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// get or set</span>
+      idLoc := cur
+      id := consumeId
+
+      <span class='k'>if</span> <span class='b'>(</span>id == <span class='s'>"get"</span><span class='b'>)</span>
+        curSlot = f.get
+      <span class='k'>else</span>
+        curSlot = f.set
+
+      <span class='y'>// { ...block... }</span>
+      Block? block := <span class='k'>null</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span>
+        block = <span class='k'>this</span>.block
+      <span class='k'>else</span>
+        endOfStmt
+
+      <span class='y'>// const field cannot have getter/setter</span>
+      <span class='k'>if</span> <span class='b'>(</span>f.isConst<span class='b'>)</span>
+      <span class='b'>{</span>
+        err<span class='b'>(</span><span class='s'>"Const field '$f.name' cannot have ${id}ter"</span>, idLoc<span class='b'>)</span>
+        <span class='k'>return</span>
+      <span class='b'>}</span>
+
+      <span class='y'>// map to get or set on FieldDef</span>
+      <span class='k'>if</span> <span class='b'>(</span>id == <span class='s'>"get"</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>accessorFlags != 0<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Cannot use modifiers on field getter"</span>, loc<span class='b'>)</span>
+        f.get.code  = block
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>id.equals<span class='b'>(</span><span class='s'>"set"</span><span class='b'>))</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>accessorFlags != 0<span class='b'>)</span>
+        <span class='b'>{</span>
+          <span class='k'>if</span> <span class='b'>(</span>accessorFlags.and<span class='b'>(</span>ProtectionMask<span class='b'>)</span> != 0<span class='b'>)</span>
+            err<span class='b'>(</span><span class='s'>"Cannot use modifiers on field setter except to narrow protection"</span>, loc<span class='b'>)</span>
+          f.set.flags = f.set.flags.and<span class='b'>(</span>ProtectionMask<span class='b'>)</span>.or<span class='b'>(</span>accessorFlags<span class='b'>)</span>
+        <span class='b'>}</span>
+        f.set.code = block
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        err<span class='b'>(</span><span class='s'>"Expected 'get' or 'set', not '$id'"</span>, idLoc<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// MethodDef</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Method definition:</span>
+  <span class='z'>**   &lt;methodDef&gt;      :=  &lt;facets&gt; &lt;methodFlags&gt; &lt;type&gt; &lt;id&gt; "(" &lt;params&gt; ")" &lt;methodBody&gt;</span>
+  <span class='z'>**   &lt;methodFlags&gt;    :=  [&lt;protection&gt;] ["virtual"] ["override"] ["abstract"] ["static"]</span>
+  <span class='z'>**   &lt;params&gt;         :=  [&lt;param&gt; ("," &lt;param&gt;)*]</span>
+  <span class='z'>**   &lt;param&gt;          :=  &lt;type&gt; &lt;id&gt; [":=" &lt;expr&gt;]</span>
+  <span class='z'>**   &lt;methodBody&gt;     :=  &lt;eos&gt; | ( "{" &lt;stmts&gt; "}" )</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> MethodDef <span id='methodDef'>methodDef</span><span class='b'>(</span>Loc loc, TypeDef parent, Str<span class='b'>[]</span>? doc, FacetDef<span class='b'>[]</span>? facets, Int flags, TypeRef ret, Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    method := MethodDef<span class='b'>(</span>loc, parent<span class='b'>)</span>
+    method.doc    = doc
+    method.facets = facets
+    method.flags  = flags
+    method.ret    = ret
+    method.name   = name
+
+    <span class='y'>// if This is returned, then we configure inheritedRet</span>
+    <span class='y'>// right off the bat (this is actual signature we will use)</span>
+    <span class='k'>if</span> <span class='b'>(</span>ret.isThis<span class='b'>)</span> method.inheritedRet = parent
+
+    <span class='y'>// enter scope</span>
+    curSlot = method
+
+    <span class='y'>// parameters</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.rparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        newParam := paramDef
+        <span class='k'>if</span> <span class='b'>(</span>method.params.any |ParamDef p-&gt;Bool| <span class='b'>{</span> <span class='k'>return</span> p.name == newParam.name <span class='b'>})</span>
+          err<span class='b'>(</span><span class='s'>"Duplicate parameter name '$newParam.name'"</span>, newParam.loc<span class='b'>)</span>
+        method.params.add<span class='b'>(</span>newParam<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>curt === Token.rparen<span class='b'>)</span> <span class='k'>break</span>
+        consume<span class='b'>(</span>Token.comma<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+
+    <span class='y'>// if no body expected</span>
+    <span class='k'>if</span> <span class='b'>(</span>parent.isNative<span class='b'>)</span> flags = flags.or<span class='b'>(</span>FConst.Native<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>flags.and<span class='b'>(</span>FConst.Abstract<span class='b'>)</span> != 0 || flags.and<span class='b'>(</span>FConst.Native<span class='b'>)</span> != 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span>
+      <span class='b'>{</span>
+        err<span class='b'>(</span><span class='s'>"Abstract and native methods cannot have method body"</span><span class='b'>)</span>
+        block  <span class='y'>// keep parsing</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        endOfStmt
+      <span class='b'>}</span>
+      <span class='k'>return</span> method
+    <span class='b'>}</span>
+
+    <span class='y'>// ctor chain</span>
+    <span class='k'>if</span> <span class='b'>((</span>flags.and<span class='b'>(</span>FConst.Ctor<span class='b'>)</span> != 0<span class='b'>)</span> &amp;&amp; <span class='b'>(</span>curt === Token.colon<span class='b'>))</span>
+      method.ctorChain = ctorChain<span class='b'>(</span>method<span class='b'>)</span>;
+
+    <span class='y'>// body</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt != Token.lbrace<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Expecting method body"</span><span class='b'>)</span>
+    <span class='k'>else</span>
+      method.code = block
+
+    <span class='y'>// exit scope</span>
+    curSlot = <span class='k'>null</span>
+
+    <span class='k'>return</span> method
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> ParamDef <span id='paramDef'>paramDef</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    param := ParamDef<span class='b'>(</span>cur, typeRef, consumeId<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.defAssign || curt === Token.assign<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.assign<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Must use := for parameter default"</span><span class='b'>)</span>;
+      consume
+      param.def = expr
+    <span class='b'>}</span>
+    <span class='k'>return</span> param
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> CallExpr <span id='ctorChain'>ctorChain</span><span class='b'>(</span>MethodDef method<span class='b'>)</span>
+  <span class='b'>{</span>
+    consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+    loc := cur
+
+    call := CallExpr<span class='b'>(</span>loc<span class='b'>)</span>
+    call.isCtorChain = <span class='k'>true</span>
+    <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> Token.superKeyword: consume; call.target = SuperExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      <span class='k'>case</span> Token.thisKeyword:  consume; call.target = ThisExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      <span class='k'>default</span>: <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting this or super for constructor chaining"</span>, loc<span class='b'>)</span>;
+    <span class='b'>}</span>
+
+    <span class='y'>// we can omit name if super</span>
+    <span class='k'>if</span> <span class='b'>(</span>call.target.id === ExprId.superExpr &amp;&amp; curt != Token.dot<span class='b'>)</span>
+    <span class='b'>{</span>
+      call.name = method.name
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.dot<span class='b'>)</span>
+      call.name = consumeId
+    <span class='b'>}</span>
+
+    <span class='y'>// TODO: omit args if pass thru?</span>
+    callArgs<span class='b'>(</span>call, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Facets</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Facet definition:</span>
+  <span class='z'>**   &lt;facets&gt;     := &lt;facet&gt;*</span>
+  <span class='z'>**   &lt;facet&gt;      := "@" &lt;simpleType&gt; [&lt;facetVals&gt;]</span>
+  <span class='z'>**   &lt;facetVals&gt;  := "{" &lt;facetVal&gt; (&lt;eos&gt; &lt;facetVal&gt;)* "}"</span>
+  <span class='z'>**   &lt;facetVal&gt;   := &lt;id&gt; "=" &lt;expr&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> FacetDef<span class='b'>[]</span>? <span id='facets'>facets</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.at<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    facets := FacetDef<span class='b'>[</span>,<span class='b'>]</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.at<span class='b'>)</span>
+    <span class='b'>{</span>
+      loc := cur
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt !== Token.identifier<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting identifier"</span><span class='b'>)</span>
+      type := ctype
+      f := FacetDef<span class='b'>(</span>loc, type<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+        <span class='k'>while</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span>
+        <span class='b'>{</span>
+          f.names.add<span class='b'>(</span>consumeId<span class='b'>)</span>
+          consume<span class='b'>(</span>Token.assign<span class='b'>)</span>
+          f.vals.add<span class='b'>(</span>expr<span class='b'>)</span>
+          endOfStmt
+        <span class='b'>}</span>
+        consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+      <span class='b'>}</span>
+      facets.add<span class='b'>(</span>f<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> facets
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Block</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Top level for blocks which must be surrounded by braces</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Block <span id='block'>block</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    verify<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+    <span class='k'>return</span> stmtOrBlock
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** &lt;block&gt;  :=  &lt;stmt&gt; | ( "{" &lt;stmts&gt; "}" )</span>
+  <span class='z'>** &lt;stmts&gt;  :=  &lt;stmt&gt;*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Block <span id='stmtOrBlock'>stmtOrBlock</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    block := Block<span class='b'>(</span>cur<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.lbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      block.stmts.add<span class='b'>(</span> stmt <span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+      <span class='k'>while</span> <span class='b'>(</span>curt != Token.rbrace<span class='b'>)</span>
+        block.stmts.add<span class='b'>(</span> stmt <span class='b'>)</span>
+      consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> block
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Statements</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Statement:</span>
+  <span class='z'>**   &lt;stmt&gt;  :=  &lt;break&gt; | &lt;continue&gt; | &lt;for&gt; | &lt;if&gt; | &lt;return&gt; | &lt;switch&gt; |</span>
+  <span class='z'>**               &lt;throw&gt; | &lt;while&gt; | &lt;try&gt; | &lt;exprStmt&gt; | &lt;localDef&gt; | &lt;itAdd&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Stmt <span id='stmt'>stmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// check for statement keywords</span>
+    <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> Token.breakKeyword:    <span class='k'>return</span> breakStmt
+      <span class='k'>case</span> Token.continueKeyword: <span class='k'>return</span> continueStmt
+      <span class='k'>case</span> Token.forKeyword:      <span class='k'>return</span> forStmt
+      <span class='k'>case</span> Token.ifKeyword:       <span class='k'>return</span> ifStmt
+      <span class='k'>case</span> Token.returnKeyword:   <span class='k'>return</span> returnStmt
+      <span class='k'>case</span> Token.switchKeyword:   <span class='k'>return</span> switchStmt
+      <span class='k'>case</span> Token.throwKeyword:    <span class='k'>return</span> throwStmt
+      <span class='k'>case</span> Token.tryKeyword:      <span class='k'>return</span> tryStmt
+      <span class='k'>case</span> Token.whileKeyword:    <span class='k'>return</span> whileStmt
+    <span class='b'>}</span>
+
+    <span class='y'>// at this point we either have an expr or local var declaration</span>
+    <span class='k'>return</span> exprOrLocalDefStmt<span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Expression or local variable declaration:</span>
+  <span class='z'>**   &lt;exprStmt&gt;  :=  &lt;expr&gt; &lt;eos&gt;</span>
+  <span class='z'>**   &lt;localDef&gt;  :=  [&lt;type&gt;] &lt;id&gt; [":=" &lt;expr&gt;] &lt;eos&gt;</span>
+  <span class='z'>**   &lt;itAdd&gt;     :=  &lt;expr&gt; ("," &lt;expr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Stmt <span id='exprOrLocalDefStmt'>exprOrLocalDefStmt</span><span class='b'>(</span>Bool isEndOfStmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// see if this statement begins with a type literal</span>
+    loc := cur
+    mark := pos
+    localType := tryType
+
+    <span class='y'>// type followed by identifier must be local variable declaration</span>
+    <span class='k'>if</span> <span class='b'>(</span>localType != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span> <span class='k'>return</span> localDefStmt<span class='b'>(</span>loc, localType, isEndOfStmt<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.defAssign<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected local variable identifier"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    reset<span class='b'>(</span>mark<span class='b'>)</span>
+
+    <span class='y'>// identifier followed by def assign is inferred typed local var declaration</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; peekt === Token.defAssign<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> localDefStmt<span class='b'>(</span>loc, <span class='k'>null</span>, isEndOfStmt<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if current is an identifer, save for special error handling</span>
+    Str? id := <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span> ? <span class='b'>(</span>Str<span class='b'>)</span>cur.val : <span class='k'>null</span>
+
+    <span class='y'>// otherwise assume it's a stand alone expression statement</span>
+    e := expr<span class='b'>()</span>
+
+    <span class='y'>// if expression statement ends with comma then this</span>
+    <span class='y'>// is syntax sugar for it.add(expr) ...</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span> e = itAdd<span class='b'>(</span>e<span class='b'>)</span>
+
+    <span class='y'>// return expression as statement</span>
+    stmt := ExprStmt<span class='b'>(</span>e<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!isEndOfStmt<span class='b'>)</span> <span class='k'>return</span> stmt
+    <span class='k'>if</span> <span class='b'>(</span>endOfStmt<span class='b'>(</span><span class='k'>null</span><span class='b'>))</span> <span class='k'>return</span> stmt
+
+    <span class='y'>// report error</span>
+    <span class='k'>if</span> <span class='b'>(</span>id != <span class='k'>null</span> &amp;&amp; curt === Token.identifier &amp;&amp; <span class='b'>(</span>peekt === Token.defAssign || peekt === Token.assign<span class='b'>))</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Unknown type '$id' for local declaration"</span>, loc<span class='b'>)</span>
+    <span class='k'>else</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected expression statement"</span>, loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Comma operator is sugar for it.add(target):</span>
+  <span class='z'>**   &lt;itAdd&gt;  :=  &lt;expr&gt; ("," &lt;expr&gt;)* &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='itAdd'>itAdd</span><span class='b'>(</span>Expr e<span class='b'>)</span>
+  <span class='b'>{</span>
+    e = CallExpr<span class='b'>(</span>e.loc, ItExpr<span class='b'>(</span>cur<span class='b'>)</span>, <span class='s'>"add"</span><span class='b'>)</span> <span class='b'>{</span> args.add<span class='b'>(</span>e<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.comma<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbrace || curt === Token.semicolon<span class='b'>)</span> <span class='k'>break</span>
+      e = CallExpr<span class='b'>(</span>cur, e, <span class='s'>"add"</span><span class='b'>)</span> <span class='b'>{</span> args.add<span class='b'>(</span>expr<span class='b'>())</span> <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbrace || curt === Token.semicolon<span class='b'>)</span> <span class='k'>break</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> e
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse local variable declaration, the current token must be</span>
+  <span class='z'>** the identifier of the local variable.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> LocalDefStmt <span id='localDefStmt'>localDefStmt</span><span class='b'>(</span>Loc loc, CType? localType, Bool isEndOfStmt<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// verify name doesn't conflict with an import type</span>
+    name := consumeId
+    conflict := unit.importedTypes<span class='b'>[</span>name<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>conflict != <span class='k'>null</span> &amp;&amp; conflict.size &gt; 0<span class='b'>)</span>
+      err<span class='b'>(</span><span class='s'>"Variable name conflicts with imported type '$conflict.first'"</span>, loc<span class='b'>)</span>
+
+    stmt := LocalDefStmt<span class='b'>(</span>loc, localType, name<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.defAssign || curt === Token.assign<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.assign<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Must use := for declaration assignments"</span><span class='b'>)</span>
+      consume
+      stmt.init = expr
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>isEndOfStmt<span class='b'>)</span> endOfStmt
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If/else statement:</span>
+  <span class='z'>**   &lt;if&gt;  :=  "if" "(" &lt;expr&gt; ")" &lt;block&gt; [ "else" &lt;block&gt; ]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> IfStmt <span id='ifStmt'>ifStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    consume<span class='b'>(</span>Token.ifKeyword<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+    cond := expr
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    trueBlock := stmtOrBlock
+    stmt := IfStmt<span class='b'>(</span>loc, cond, trueBlock<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.elseKeyword<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.elseKeyword<span class='b'>)</span>
+      stmt.falseBlock = stmtOrBlock
+    <span class='b'>}</span>
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return statement:</span>
+  <span class='z'>**   &lt;return&gt;  :=  "return" [&lt;expr&gt;] &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ReturnStmt <span id='returnStmt'>returnStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    stmt := ReturnStmt<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.returnKeyword<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>!endOfStmt<span class='b'>(</span><span class='k'>null</span><span class='b'>))</span>
+    <span class='b'>{</span>
+      stmt.expr = expr
+      endOfStmt
+    <span class='b'>}</span>
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Throw statement:</span>
+  <span class='z'>**   &lt;throw&gt;  :=  "throw" &lt;expr&gt; &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ThrowStmt <span id='throwStmt'>throwStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    consume<span class='b'>(</span>Token.throwKeyword<span class='b'>)</span>
+    stmt := ThrowStmt<span class='b'>(</span>loc, expr<span class='b'>)</span>
+    endOfStmt
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** While statement:</span>
+  <span class='z'>**   &lt;while&gt;  :=  "while" "(" &lt;expr&gt; ")" &lt;block&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> WhileStmt <span id='whileStmt'>whileStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    consume<span class='b'>(</span>Token.whileKeyword<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+    cond := expr
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    <span class='k'>return</span> WhileStmt<span class='b'>(</span>loc, cond, stmtOrBlock<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** For statement:</span>
+  <span class='z'>**   &lt;for&gt;      :=  "for" "(" [&lt;forInit&gt;] ";" &lt;expr&gt; ";" &lt;expr&gt; ")" &lt;block&gt;</span>
+  <span class='z'>**   &lt;forInit&gt;  :=  &lt;expr&gt; | &lt;localDef&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ForStmt <span id='forStmt'>forStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    stmt := ForStmt<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.forKeyword<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.semicolon<span class='b'>)</span> stmt.init = exprOrLocalDefStmt<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span>
+    consume<span class='b'>(</span>Token.semicolon<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt != Token.semicolon<span class='b'>)</span> stmt.condition = expr
+    consume<span class='b'>(</span>Token.semicolon<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt != Token.rparen<span class='b'>)</span> stmt.update = expr
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+
+    stmt.block = stmtOrBlock
+
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Break statement:</span>
+  <span class='z'>**   &lt;break&gt;  :=  "break" &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> BreakStmt <span id='breakStmt'>breakStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    stmt := BreakStmt<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.breakKeyword<span class='b'>)</span>
+    endOfStmt
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Continue statement:</span>
+  <span class='z'>**   &lt;continue&gt;  :=  "continue" &lt;eos&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ContinueStmt <span id='continueStmt'>continueStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    stmt := ContinueStmt<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.continueKeyword<span class='b'>)</span>
+    endOfStmt
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Try-catch-finally statement:</span>
+  <span class='z'>**   &lt;try&gt;       :=  "try" "{" &lt;stmt&gt;* "}" &lt;catch&gt;* [&lt;finally&gt;]</span>
+  <span class='z'>**   &lt;catch&gt;     :=  "catch" [&lt;catchDef&gt;] "{" &lt;stmt&gt;* "}"</span>
+  <span class='z'>**   &lt;catchDef&gt;  :=  "(" &lt;type&gt; &lt;id&gt; ")"</span>
+  <span class='z'>**   &lt;finally&gt;   :=  "finally" "{" &lt;stmt&gt;* "}"</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> TryStmt <span id='tryStmt'>tryStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    stmt := TryStmt<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.tryKeyword<span class='b'>)</span>
+    stmt.block = stmtOrBlock
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.catchKeyword &amp;&amp; curt !== Token.finallyKeyword<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting catch or finally block"</span><span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.catchKeyword<span class='b'>)</span>
+    <span class='b'>{</span>
+      stmt.catches.add<span class='b'>(</span>tryCatch<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.finallyKeyword<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      stmt.finallyBlock = stmtOrBlock
+    <span class='b'>}</span>
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Catch <span id='tryCatch'>tryCatch</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    c := Catch<span class='b'>(</span>cur<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.catchKeyword<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+      c.errType = typeRef
+      c.errVariable = consumeId
+      consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    c.block = stmtOrBlock
+
+    <span class='y'>// insert implicit local variable declaration</span>
+    <span class='k'>if</span> <span class='b'>(</span>c.errVariable != <span class='k'>null</span><span class='b'>)</span>
+      c.block.stmts.insert<span class='b'>(</span>0, LocalDefStmt.makeCatchVar<span class='b'>(</span>c<span class='b'>))</span>
+
+    <span class='k'>return</span> c
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Switch statement:</span>
+  <span class='z'>**   &lt;switch&gt;   :=  "switch" "(" &lt;expr&gt; ")" "{" &lt;case&gt;* [&lt;default&gt;] "}"</span>
+  <span class='z'>**   &lt;case&gt;     :=  "case" &lt;expr&gt; ":" &lt;stmts&gt;</span>
+  <span class='z'>**   &lt;default&gt;  :=  "default" ":" &lt;stmts&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> SwitchStmt <span id='switchStmt'>switchStmt</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    consume<span class='b'>(</span>Token.switchKeyword<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+    stmt := SwitchStmt<span class='b'>(</span>loc, expr<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt != Token.rbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.caseKeyword<span class='b'>)</span>
+      <span class='b'>{</span>
+        c := Case<span class='b'>(</span>cur<span class='b'>)</span>
+        <span class='k'>while</span> <span class='b'>(</span>curt === Token.caseKeyword<span class='b'>)</span>
+        <span class='b'>{</span>
+          consume
+          c.cases.add<span class='b'>(</span>expr<span class='b'>)</span>
+          consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+        <span class='b'>}</span>
+        <span class='k'>if</span> <span class='b'>(</span>curt !== Token.defaultKeyword<span class='b'>)</span> <span class='y'>// optimize away case fall-thru to default</span>
+        <span class='b'>{</span>
+          c.block = switchBlock
+          stmt.cases.add<span class='b'>(</span>c<span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>curt === Token.defaultKeyword<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>stmt.defaultBlock != <span class='k'>null</span><span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Duplicate default blocks"</span><span class='b'>)</span>
+        consume
+        consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+        stmt.defaultBlock = switchBlock
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected case or default statement"</span><span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+    endOfStmt
+    <span class='k'>return</span> stmt
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Block <span id='switchBlock'>switchBlock</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    block := Block<span class='b'>(</span>cur<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt !== Token.caseKeyword &amp;&amp; curt != Token.defaultKeyword &amp;&amp; curt !== Token.rbrace<span class='b'>)</span>
+      block.stmts.add<span class='b'>(</span>stmt<span class='b'>)</span>
+    <span class='k'>return</span> block
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Expr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Expression:</span>
+  <span class='z'>**   &lt;expr&gt;  :=  &lt;assignExpr&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='expr'>expr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> assignExpr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Assignment expression:</span>
+  <span class='z'>**   &lt;assignExpr&gt;     :=  &lt;ifExpr&gt; [&lt;assignOp&gt; &lt;assignExpr&gt;]</span>
+  <span class='z'>**   &lt;assignOp&gt;       :=  "=" | "*=" | "/=" | "%=" | "+=" | "-="</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='assignExpr'>assignExpr</span><span class='b'>(</span>Expr? expr := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// this is tree if built to the right (others to the left)</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr == <span class='k'>null</span><span class='b'>)</span> expr = ifExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt.isAssign<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.assign<span class='b'>)</span>
+        <span class='k'>return</span> BinaryExpr<span class='b'>(</span>expr, consume.kind, assignExpr<span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='k'>return</span> ShortcutExpr.makeBinary<span class='b'>(</span>expr, consume.kind, assignExpr<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Ternary/Elvis expressions:</span>
+  <span class='z'>**   &lt;ifExpr&gt;       :=  &lt;ternaryExpr&gt; | &lt;elvisExpr&gt;</span>
+  <span class='z'>**   &lt;ternaryExpr&gt;  :=  &lt;condOrExpr&gt; ["?" &lt;ifExprBody&gt; ":" &lt;ifExprBody&gt;]</span>
+  <span class='z'>**   &lt;elvisExpr&gt;    :=  &lt;condOrExpr&gt; "?:" &lt;ifExprBody&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='ifExpr'>ifExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := condOrExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.question<span class='b'>)</span>
+    <span class='b'>{</span>
+      condition := expr
+      consume<span class='b'>(</span>Token.question<span class='b'>)</span>
+      trueExpr := ifExprBody
+      consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+      falseExpr := ifExprBody
+      expr = TernaryExpr<span class='b'>(</span>condition, trueExpr, falseExpr<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>curt === Token.elvis<span class='b'>)</span>
+    <span class='b'>{</span>
+      lhs := expr
+      consume
+      rhs := ifExprBody
+      expr = BinaryExpr<span class='b'>(</span>lhs, Token.elvis, rhs<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If expression body (ternary/elvis):</span>
+  <span class='z'>**   &lt;ifExprBody&gt;   :=  &lt;condOrExpr&gt; | &lt;ifExprThrow&gt;</span>
+  <span class='z'>**   &lt;ifExprThrow&gt;  :=  "throw" &lt;expr&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='ifExprBody'>ifExprBody</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.throwKeyword<span class='b'>)</span>
+    <span class='b'>{</span>
+      loc := cur
+      consume<span class='b'>(</span>Token.throwKeyword<span class='b'>)</span>
+      <span class='k'>return</span> ThrowExpr<span class='b'>(</span>loc, expr<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> condOrExpr
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Conditional or expression:</span>
+  <span class='z'>**   &lt;condOrExpr&gt;  :=  &lt;condAndExpr&gt;  ("||" &lt;condAndExpr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='condOrExpr'>condOrExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := condAndExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.doublePipe<span class='b'>)</span>
+    <span class='b'>{</span>
+      cond := CondExpr<span class='b'>(</span>expr, cur.kind<span class='b'>)</span>
+      <span class='k'>while</span> <span class='b'>(</span>curt === Token.doublePipe<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        cond.operands.add<span class='b'>(</span>condAndExpr<span class='b'>)</span>
+      <span class='b'>}</span>
+      expr = cond
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Conditional and expression:</span>
+  <span class='z'>**   &lt;condAndExpr&gt;  :=  &lt;equalityExpr&gt; ("&amp;&amp;" &lt;equalityExpr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='condAndExpr'>condAndExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := equalityExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.doubleAmp<span class='b'>)</span>
+    <span class='b'>{</span>
+      cond := CondExpr<span class='b'>(</span>expr, cur.kind<span class='b'>)</span>
+      <span class='k'>while</span> <span class='b'>(</span>curt === Token.doubleAmp<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        cond.operands.add<span class='b'>(</span>equalityExpr<span class='b'>)</span>
+      <span class='b'>}</span>
+      expr = cond
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Equality expression:</span>
+  <span class='z'>**   &lt;equalityExpr&gt;  :=  &lt;relationalExpr&gt; [("==" | "!=" | "===" | "!==") &lt;relationalExpr&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='equalityExpr'>equalityExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := relationalExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.eq   || curt === Token.notEq ||
+        curt === Token.same || curt === Token.notSame<span class='b'>)</span>
+    <span class='b'>{</span>
+      lhs := expr
+      tok := consume.kind
+      rhs := relationalExpr
+
+      <span class='y'>// optimize for null literal</span>
+      <span class='k'>if</span> <span class='b'>(</span>lhs.id === ExprId.nullLiteral || rhs.id === ExprId.nullLiteral<span class='b'>)</span>
+      <span class='b'>{</span>
+        id := <span class='b'>(</span>tok === Token.eq || tok === Token.same<span class='b'>)</span> ? ExprId.cmpNull : ExprId.cmpNotNull
+        operand := <span class='b'>(</span>lhs.id === ExprId.nullLiteral<span class='b'>)</span> ? rhs : lhs
+        expr = UnaryExpr<span class='b'>(</span>lhs.loc, id, tok, operand<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>tok === Token.same || tok === Token.notSame<span class='b'>)</span>
+          expr = BinaryExpr<span class='b'>(</span>lhs, tok, rhs<span class='b'>)</span>
+        <span class='k'>else</span>
+          expr = ShortcutExpr.makeBinary<span class='b'>(</span>lhs, tok, rhs<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Relational expression:</span>
+  <span class='z'>**   &lt;relationalExpr&gt; :=  &lt;typeCheckExpr&gt; | &lt;compareExpr&gt;</span>
+  <span class='z'>**   &lt;typeCheckExpr&gt;  :=  &lt;rangeExpr&gt; [("is" | "as" | "isnot") &lt;type&gt;]</span>
+  <span class='z'>**   &lt;compareExpr&gt;    :=  &lt;rangeExpr&gt; [("&lt;" | "&lt;=" | "&gt;" | "&gt;=" | "&lt;=&gt;") &lt;rangeExpr&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='relationalExpr'>relationalExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := rangeExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.isKeyword || curt === Token.isnotKeyword ||
+        curt === Token.asKeyword ||
+        curt === Token.lt || curt === Token.ltEq ||
+        curt === Token.gt || curt === Token.gtEq ||
+        curt === Token.cmp<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Token.isKeyword:
+          consume
+          expr = TypeCheckExpr<span class='b'>(</span>expr.loc, ExprId.isExpr, expr, ctype<span class='b'>)</span>
+        <span class='k'>case</span> Token.isnotKeyword:
+          consume
+          expr = TypeCheckExpr<span class='b'>(</span>expr.loc, ExprId.isnotExpr, expr, ctype<span class='b'>)</span>
+        <span class='k'>case</span> Token.asKeyword:
+          consume
+          expr = TypeCheckExpr<span class='b'>(</span>expr.loc, ExprId.asExpr, expr, ctype<span class='b'>)</span>
+        <span class='k'>default</span>:
+          expr = ShortcutExpr.makeBinary<span class='b'>(</span>expr, consume.kind, rangeExpr<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Range expression:</span>
+  <span class='z'>**   &lt;rangeExpr&gt;  :=  &lt;bitOrExpr&gt; ((".." | "...") &lt;bitOrExpr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='rangeExpr'>rangeExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := addExpr
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.dotDot || curt === Token.dotDotLt<span class='b'>)</span>
+    <span class='b'>{</span>
+      start := expr
+      exclusive := consume.kind === Token.dotDotLt
+      end := addExpr
+      <span class='k'>return</span> RangeLiteralExpr<span class='b'>(</span>expr.loc, ns.rangeType, start, end, exclusive<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Additive expression:</span>
+  <span class='z'>**   &lt;addExpr&gt;  :=  &lt;multExpr&gt; (("+" | "-") &lt;multExpr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='addExpr'>addExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := multExpr
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.plus || curt === Token.minus<span class='b'>)</span>
+      expr = ShortcutExpr.makeBinary<span class='b'>(</span>expr, consume.kind, multExpr<span class='b'>)</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Multiplicative expression:</span>
+  <span class='z'>**   &lt;multExpr&gt;  :=  &lt;parenExpr&gt; (("*" | "/" | "%") &lt;parenExpr&gt;)*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='multExpr'>multExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    expr := parenExpr
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.star || curt === Token.slash || curt === Token.percent<span class='b'>)</span>
+      expr = ShortcutExpr.makeBinary<span class='b'>(</span>expr, consume.kind, parenExpr<span class='b'>)</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Paren grouped expression:</span>
+  <span class='z'>**   &lt;parenExpr&gt;    :=  &lt;unaryExpr&gt; | &lt;castExpr&gt; | &lt;groupedExpr&gt;</span>
+  <span class='z'>**   &lt;castExpr&gt;     :=  "(" &lt;type&gt; ")" &lt;parenExpr&gt;</span>
+  <span class='z'>**   &lt;groupedExpr&gt;  :=  "(" &lt;expr&gt; ")" &lt;termChain&gt;*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='parenExpr'>parenExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.lparen &amp;&amp; curt !== Token.lparenSynthetic<span class='b'>)</span>
+      <span class='k'>return</span> unaryExpr
+
+    <span class='y'>// consume opening paren (or synthetic paren)</span>
+    loc := cur
+    consume<span class='b'>()</span>
+
+    <span class='y'>// In Fantom just like C# and Java, a paren could mean</span>
+    <span class='y'>// either a cast or a parenthesized expression</span>
+    mark := pos
+    castType := tryType
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.rparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> TypeCheckExpr<span class='b'>(</span>loc, ExprId.coerce, parenExpr, castType<span class='b'>)</span>
+    <span class='b'>}</span>
+    reset<span class='b'>(</span>mark<span class='b'>)</span>
+
+    <span class='y'>// this is just a normal parenthesized expression</span>
+    expr := expr
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      chained := termChainExpr<span class='b'>(</span>expr<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>chained == <span class='k'>null</span><span class='b'>)</span> <span class='k'>break</span>
+      expr = chained
+    <span class='b'>}</span>
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Unary expression:</span>
+  <span class='z'>**   &lt;unaryExpr&gt;    :=  &lt;prefixExpr&gt; | &lt;termExpr&gt; | &lt;postfixExpr&gt;</span>
+  <span class='z'>**   &lt;prefixExpr&gt;   :=  ("!" | "+" | "-" | "~" | "++" | "--") &lt;parenExpr&gt;</span>
+  <span class='z'>**   &lt;postfixExpr&gt;  :=  &lt;termExpr&gt; ("++" | "--")</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='unaryExpr'>unaryExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    tok := cur
+    tokt := curt
+
+    <span class='k'>if</span> <span class='b'>(</span>tokt === Token.bang<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> UnaryExpr<span class='b'>(</span>loc, tokt.toExprId, tokt, parenExpr<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>tokt === Token.plus<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> parenExpr <span class='y'>// optimize +expr to just expr</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>tokt === Token.minus<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> ShortcutExpr.makeUnary<span class='b'>(</span>loc, tokt, parenExpr<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>tokt.isIncrementOrDecrement<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> ShortcutExpr.makeUnary<span class='b'>(</span>loc, tokt, parenExpr<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    expr := termExpr
+
+    <span class='y'>// postfix ++/-- must be on the same line</span>
+    tokt = curt
+    tok = cur
+    <span class='k'>if</span> <span class='b'>(</span>tokt.isIncrementOrDecrement &amp;&amp; !tok.newline<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      shortcut := ShortcutExpr.makeUnary<span class='b'>(</span>loc, tokt, expr<span class='b'>)</span>
+      shortcut.isPostfixLeave = <span class='k'>true</span>
+      <span class='k'>return</span> shortcut
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> expr
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Term Expr</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** A term is a base terminal such as a variable, call, or literal,</span>
+  <span class='z'>** optionally followed by a chain of accessor expressions - such</span>
+  <span class='z'>** as "x.y[z](a, b)".</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;termExpr&gt;  :=  &lt;termBase&gt; &lt;termChain&gt;*</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='termExpr'>termExpr</span><span class='b'>(</span>Expr? target := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>target == <span class='k'>null</span><span class='b'>)</span> target = termBaseExpr
+    <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      chained := termChainExpr<span class='b'>(</span>target<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>chained == <span class='k'>null</span><span class='b'>)</span> <span class='k'>break</span>
+      target = chained
+    <span class='b'>}</span>
+    <span class='k'>return</span> target
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Atomic base of a termExpr</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;termBase&gt;    :=  &lt;literal&gt; | &lt;idExpr&gt; | &lt;closure&gt; | &lt;dsl&gt;</span>
+  <span class='z'>**   &lt;literal&gt;     :=  "null" | "this" | "super" | &lt;bool&gt; | &lt;int&gt; |</span>
+  <span class='z'>**                     &lt;float&gt; | &lt;str&gt; | &lt;duration&gt; | &lt;list&gt; | &lt;map&gt; | &lt;uri&gt; |</span>
+  <span class='z'>**                     &lt;typeLiteral&gt; | &lt;slotLiteral&gt;</span>
+  <span class='z'>**   &lt;typeLiteral&gt; :=  &lt;type&gt; "#"</span>
+  <span class='z'>**   &lt;slotLiteral&gt; :=  [&lt;type&gt;] "#" &lt;id&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='termBaseExpr'>termBaseExpr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+
+    ctype := tryType
+    <span class='k'>if</span> <span class='b'>(</span>ctype != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> typeBaseExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+
+    <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> Token.amp:             <span class='k'>return</span> idExpr<span class='b'>(</span><span class='k'>null</span>, <span class='k'>false</span>, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>case</span> Token.identifier:      <span class='k'>return</span> idExpr<span class='b'>(</span><span class='k'>null</span>, <span class='k'>false</span>, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>case</span> Token.intLiteral:      <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.intLiteral, ns.intType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.floatLiteral:    <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.floatLiteral, ns.floatType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.decimalLiteral:  <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.decimalLiteral, ns.decimalType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.strLiteral:      <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.strLiteral, ns.strType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.durationLiteral: <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.durationLiteral, ns.durationType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.uriLiteral:      <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.uriLiteral, ns.uriType, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.localeLiteral:   <span class='k'>return</span> LocaleLiteralExpr<span class='b'>(</span>loc, consume.val<span class='b'>)</span>
+      <span class='k'>case</span> Token.lbracket:        <span class='k'>return</span> collectionLiteralExpr<span class='b'>(</span>loc, <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>case</span> Token.falseKeyword:    consume; <span class='k'>return</span> LiteralExpr.makeFalse<span class='b'>(</span>loc, ns<span class='b'>)</span>
+      <span class='k'>case</span> Token.nullKeyword:     consume; <span class='k'>return</span> LiteralExpr.makeNull<span class='b'>(</span>loc, ns<span class='b'>)</span>
+      <span class='k'>case</span> Token.superKeyword:    consume; <span class='k'>return</span> SuperExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      <span class='k'>case</span> Token.thisKeyword:     consume; <span class='k'>return</span> ThisExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      <span class='k'>case</span> Token.itKeyword:       consume; <span class='k'>return</span> ItExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      <span class='k'>case</span> Token.trueKeyword:     consume; <span class='k'>return</span> LiteralExpr.makeTrue<span class='b'>(</span>loc, ns<span class='b'>)</span>
+      <span class='k'>case</span> Token.pound:           consume; <span class='k'>return</span> SlotLiteralExpr<span class='b'>(</span>loc, curType, consumeId<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected expression, not '"</span> + cur + <span class='s'>"'"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Handle a term expression which begins with a type literal.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='typeBaseExpr'>typeBaseExpr</span><span class='b'>(</span>Loc loc, CType ctype<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// type or slot literal</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.pound<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier &amp;&amp; !cur.newline<span class='b'>)</span>
+        <span class='k'>return</span> SlotLiteralExpr<span class='b'>(</span>loc, ctype, consumeId<span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='k'>return</span> LiteralExpr<span class='b'>(</span>loc, ExprId.typeLiteral, ns.typeType, ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// dot is named super or static call chain</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.dot<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.superKeyword<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        <span class='k'>return</span> SuperExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        <span class='k'>return</span> idExpr<span class='b'>(</span>StaticTargetExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>, <span class='k'>false</span>, <span class='k'>false</span><span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// dsl</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.dsl<span class='b'>)</span>
+    <span class='b'>{</span>
+      srcLoc := Loc<span class='b'>(</span>cur.file, cur.line, cur.col+2<span class='b'>)</span>
+      dslVal := cur <span class='k'>as</span> TokenValDsl
+      <span class='k'>return</span> DslExpr<span class='b'>(</span>loc, ctype, srcLoc, consume.val<span class='b'>)</span>
+      <span class='b'>{</span>
+        leadingTabs = dslVal.leadingTabs
+        leadingSpaces = dslVal.leadingSpaces
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// list/map literal with explicit type</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbracket<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> collectionLiteralExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// closure</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.lbrace &amp;&amp; ctype <span class='k'>is</span> FuncType<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> closure<span class='b'>(</span>loc, <span class='b'>(</span>FuncType<span class='b'>)</span>ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// simple literal type(arg)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.lparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      construction := CallExpr<span class='b'>(</span>loc, StaticTargetExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>, <span class='s'>"&lt;ctor&gt;"</span>, ExprId.construction<span class='b'>)</span>
+      callArgs<span class='b'>(</span>construction<span class='b'>)</span>
+      <span class='k'>return</span> construction
+    <span class='b'>}</span>
+
+    <span class='y'>// constructor it-block {...}</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.lbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// if not inside a field/method we have complex literal for facet</span>
+      <span class='k'>if</span> <span class='b'>(</span>curSlot == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> complexLiteral<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+
+      <span class='y'>// shortcut for make with optional it-block</span>
+      ctor := CallExpr<span class='b'>(</span>loc, StaticTargetExpr<span class='b'>(</span>loc, ctype<span class='b'>)</span>, <span class='s'>"make"</span><span class='b'>)</span>
+      itBlock := tryItBlock
+      <span class='k'>if</span> <span class='b'>(</span>itBlock != <span class='k'>null</span><span class='b'>)</span> ctor.args.add<span class='b'>(</span>itBlock<span class='b'>)</span>
+      <span class='k'>return</span> ctor
+    <span class='b'>}</span>
+
+    <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Unexpected type literal"</span>, loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** A chain expression is a piece of a term expression that may</span>
+  <span class='z'>** be chained together such as "call.var[x]".  If the specified</span>
+  <span class='z'>** target expression contains a chained access, then return the new</span>
+  <span class='z'>** expression, otherwise return null.</span>
+  <span class='z'>**</span>
+  <span class='z'>**   &lt;termChain&gt;      :=  &lt;compiledCall&gt; | &lt;dynamicCall&gt; | &lt;indexExpr&gt;</span>
+  <span class='z'>**   &lt;compiledCall&gt;   :=  "." &lt;idExpr&gt;</span>
+  <span class='z'>**   &lt;dynamicCall&gt;    :=  "-&gt;" &lt;idExpr&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr? <span id='termChainExpr'>termChainExpr</span><span class='b'>(</span>Expr target<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+
+    <span class='y'>// handle various call operators: . -&gt; ?. ?-&gt;</span>
+    <span class='k'>switch</span> <span class='b'>(</span>curt<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// if ".id" field access or ".id" call</span>
+      <span class='k'>case</span> Token.dot: consume;  <span class='k'>return</span> idExpr<span class='b'>(</span>target, <span class='k'>false</span>, <span class='k'>false</span><span class='b'>)</span>
+
+      <span class='y'>// if "-&gt;id" dynamic call</span>
+      <span class='k'>case</span> Token.arrow: consume; <span class='k'>return</span> idExpr<span class='b'>(</span>target, <span class='k'>true</span>, <span class='k'>false</span><span class='b'>)</span>
+
+      <span class='y'>// if "?.id" safe call</span>
+      <span class='k'>case</span> Token.safeDot: consume; <span class='k'>return</span> idExpr<span class='b'>(</span>target, <span class='k'>false</span>, <span class='k'>true</span><span class='b'>)</span>
+
+      <span class='y'>// if "?-&gt;id" safe dynamic call</span>
+      <span class='k'>case</span> Token.safeArrow: consume; <span class='k'>return</span> idExpr<span class='b'>(</span>target, <span class='k'>true</span>, <span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if target[...]</span>
+    <span class='k'>if</span> <span class='b'>(</span>cur.isIndexOpenBracket<span class='b'>)</span> <span class='k'>return</span> indexExpr<span class='b'>(</span>target<span class='b'>)</span>
+
+    <span class='y'>// if target(...)</span>
+    <span class='k'>if</span> <span class='b'>(</span>cur.isCallOpenParen<span class='b'>)</span> <span class='k'>return</span> callOp<span class='b'>(</span>target<span class='b'>)</span>
+
+    <span class='y'>// if target {...}</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      itBlock := tryItBlock
+      <span class='k'>if</span> <span class='b'>(</span>itBlock != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> itBlock.toWith<span class='b'>(</span>target<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// otherwise the expression should be finished</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Term Expr Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Identifier expression:</span>
+  <span class='z'>**   &lt;idExpr&gt;  :=  &lt;local&gt; | &lt;field&gt; | &lt;call&gt;</span>
+  <span class='z'>**   &lt;local&gt;   :=  &lt;id&gt;</span>
+  <span class='z'>**   &lt;field&gt;   :=  ["*"] &lt;id&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='idExpr'>idExpr</span><span class='b'>(</span>Expr? target, Bool dynamicCall, Bool safeCall<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+
+    <span class='k'>if</span> <span class='b'>(</span>curt == Token.amp<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> UnknownVarExpr.makeStorage<span class='b'>(</span>loc, target, consumeId<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>peek.isCallOpenParen<span class='b'>)</span>
+    <span class='b'>{</span>
+      call := callExpr<span class='b'>(</span>target<span class='b'>)</span>
+      call.isDynamic = dynamicCall
+      call.isSafe = safeCall
+      <span class='k'>return</span> call
+    <span class='b'>}</span>
+
+    name := consumeId
+
+    <span class='y'>// if we have a closure then this is a call with one arg of a closure</span>
+    closure := tryClosure
+    <span class='k'>if</span> <span class='b'>(</span>closure != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      call := CallExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      call.target    = target
+      call.name      = name
+      call.isDynamic = dynamicCall
+      call.isSafe    = safeCall
+      call.noParens  = <span class='k'>true</span>
+      call.args.add<span class='b'>(</span>closure<span class='b'>)</span>
+      <span class='k'>return</span> call
+    <span class='b'>}</span>
+
+    <span class='y'>// if dynamic call then we know this is a call not a field</span>
+    <span class='k'>if</span> <span class='b'>(</span>dynamicCall<span class='b'>)</span>
+    <span class='b'>{</span>
+      call := CallExpr<span class='b'>(</span>loc<span class='b'>)</span>
+      call.target    = target
+      call.name      = name
+      call.isDynamic = <span class='k'>true</span>
+      call.isSafe    = safeCall
+      call.noParens  = <span class='k'>true</span>
+      <span class='k'>return</span> call
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> UnknownVarExpr<span class='b'>(</span>loc, target, name<span class='b'>)</span> <span class='b'>{</span> isSafe = safeCall <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Call expression:</span>
+  <span class='z'>**   &lt;call&gt;  :=  &lt;id&gt; ["(" &lt;args&gt; ")"] [&lt;closure&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CallExpr <span id='callExpr'>callExpr</span><span class='b'>(</span>Expr? target<span class='b'>)</span>
+  <span class='b'>{</span>
+    call := CallExpr<span class='b'>(</span>cur<span class='b'>)</span>
+    call.target  = target
+    call.name    = consumeId
+    callArgs<span class='b'>(</span>call<span class='b'>)</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse args with known parens:</span>
+  <span class='z'>**   &lt;args&gt;  := [&lt;expr&gt; ("," &lt;expr&gt;)*] [&lt;closure&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='callArgs'>callArgs</span><span class='b'>(</span>CallExpr call, Bool closureOk := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    consume<span class='b'>(</span>Token.lparen<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt != Token.rparen<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        call.args.add<span class='b'>(</span>expr<span class='b'>)</span>
+        <span class='k'>if</span> <span class='b'>(</span>curt === Token.rparen<span class='b'>)</span> <span class='k'>break</span>
+        consume<span class='b'>(</span>Token.comma<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rparen<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>closureOk<span class='b'>)</span>
+    <span class='b'>{</span>
+      closure := tryClosure
+      <span class='k'>if</span> <span class='b'>(</span>closure != <span class='k'>null</span><span class='b'>)</span> call.args.add<span class='b'>(</span>closure<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Call operator:</span>
+  <span class='z'>**   &lt;callOp&gt;  := "(" &lt;args&gt; ")" [&lt;closure&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='callOp'>callOp</span><span class='b'>(</span>Expr target<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+    call := CallExpr<span class='b'>(</span>loc<span class='b'>)</span>
+    call.isCallOp = <span class='k'>true</span>
+    call.target = target
+    callArgs<span class='b'>(</span>call<span class='b'>)</span>
+    call.name = <span class='s'>"call"</span>
+    <span class='k'>return</span> call
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Index expression:</span>
+  <span class='z'>**   &lt;indexExpr&gt;  := "[" &lt;expr&gt; "]"</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='indexExpr'>indexExpr</span><span class='b'>(</span>Expr target<span class='b'>)</span>
+  <span class='b'>{</span>
+    loc := cur
+    consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+
+    <span class='y'>// otherwise this must be a standard single key index</span>
+    expr := expr
+    consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+    <span class='k'>return</span> ShortcutExpr.makeGet<span class='b'>(</span>loc, target, expr<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Collection "Literals"</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Collection literal:</span>
+  <span class='z'>**   &lt;list&gt;       :=  [&lt;type&gt;] "[" &lt;listItems&gt; "]"</span>
+  <span class='z'>**   &lt;listItems&gt;  :=  "," | (&lt;expr&gt; ("," &lt;expr&gt;)*)</span>
+  <span class='z'>**   &lt;map&gt;        :=  [&lt;mapType&gt;] "[" &lt;mapItems&gt; "]"</span>
+  <span class='z'>**   &lt;mapItems&gt;   :=  ":" | (&lt;mapPair&gt; ("," &lt;mapPair&gt;)*)</span>
+  <span class='z'>**   &lt;mapPair&gt;    :=  &lt;expr&gt; ":" &lt;expr&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='collectionLiteralExpr'>collectionLiteralExpr</span><span class='b'>(</span>Loc loc, CType? explicitType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// empty list [,]</span>
+    <span class='k'>if</span> <span class='b'>(</span>peekt === Token.comma<span class='b'>)</span>
+      <span class='k'>return</span> listLiteralExpr<span class='b'>(</span>loc, explicitType, <span class='k'>null</span><span class='b'>)</span>
+
+    <span class='y'>// empty map [:]</span>
+    <span class='k'>if</span> <span class='b'>(</span>peekt === Token.colon<span class='b'>)</span>
+      <span class='k'>return</span> mapLiteralExpr<span class='b'>(</span>loc, explicitType, <span class='k'>null</span><span class='b'>)</span>
+
+    <span class='y'>// opening bracket</span>
+    consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+
+    <span class='y'>// [] is error</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbracket<span class='b'>)</span>
+    <span class='b'>{</span>
+      err<span class='b'>(</span><span class='s'>"Invalid list literal; use '[,]' for empty Obj[] list"</span>, loc<span class='b'>)</span>
+      consume
+      <span class='k'>return</span> ListLiteralExpr<span class='b'>(</span>loc<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// read first expression</span>
+    first := expr
+
+    <span class='y'>// at this point we can determine if it is a list or a map</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.colon<span class='b'>)</span>
+      <span class='k'>return</span> mapLiteralExpr<span class='b'>(</span>loc, explicitType, first<span class='b'>)</span>
+    <span class='k'>else</span>
+      <span class='k'>return</span> listLiteralExpr<span class='b'>(</span>loc, explicitType, first<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse List literal; if first is null then</span>
+  <span class='z'>**   cur must be on lbracket</span>
+  <span class='z'>** else</span>
+  <span class='z'>**   cur must be on comma after first item</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ListLiteralExpr <span id='listLiteralExpr'>listLiteralExpr</span><span class='b'>(</span>Loc loc, CType? explicitType, Expr? first<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// explicitType is type of List:  Str[,]</span>
+    <span class='k'>if</span> <span class='b'>(</span>explicitType != <span class='k'>null</span><span class='b'>)</span>
+      explicitType = explicitType.toListOf
+
+    list := ListLiteralExpr<span class='b'>(</span>loc, <span class='b'>(</span>ListType?<span class='b'>)</span>explicitType<span class='b'>)</span>
+
+    <span class='y'>// if first is null, must be on lbracket</span>
+    <span class='k'>if</span> <span class='b'>(</span>first == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+
+      <span class='y'>// if [,] empty list</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+        <span class='k'>return</span> list
+      <span class='b'>}</span>
+
+      first = expr
+    <span class='b'>}</span>
+
+    list.vals.add<span class='b'>(</span>first<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbracket<span class='b'>)</span> <span class='k'>break</span> <span class='y'>// allow extra trailing comma</span>
+      list.vals.add<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+    <span class='k'>return</span> list
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse Map literal; if first is null:</span>
+  <span class='z'>**   cur must be on lbracket</span>
+  <span class='z'>** else</span>
+  <span class='z'>**   cur must be on colon of first key/value pair</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> MapLiteralExpr <span id='mapLiteralExpr'>mapLiteralExpr</span><span class='b'>(</span>Loc loc, CType? explicitType, Expr? first<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// explicitType is *the* map type: Str:Str[,]</span>
+    <span class='k'>if</span> <span class='b'>(</span>explicitType != <span class='k'>null</span> &amp;&amp; explicitType isnot MapType<span class='b'>)</span>
+    <span class='b'>{</span>
+      err<span class='b'>(</span><span class='s'>"Invalid map type '$explicitType' for map literal"</span>, loc<span class='b'>)</span>
+      explicitType = <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    map := MapLiteralExpr<span class='b'>(</span>loc, <span class='b'>(</span>MapType?<span class='b'>)</span>explicitType<span class='b'>)</span>
+
+    <span class='y'>// if first is null, must be on lbracket</span>
+    <span class='k'>if</span> <span class='b'>(</span>first == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+
+      <span class='y'>// if [,] empty list</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.colon<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume
+        consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+        <span class='k'>return</span> map
+      <span class='b'>}</span>
+
+      first = expr
+    <span class='b'>}</span>
+
+    map.keys.add<span class='b'>(</span>first<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+    map.vals.add<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbracket<span class='b'>)</span> <span class='k'>break</span> <span class='y'>// allow extra trailing comma</span>
+      map.keys.add<span class='b'>(</span>expr<span class='b'>)</span>
+      consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+      map.vals.add<span class='b'>(</span>expr<span class='b'>)</span>
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+    <span class='k'>return</span> map
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Closure</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to parse a closure expression or return null if we</span>
+  <span class='z'>** aren't positioned at the start of a closure expression.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ClosureExpr? <span id='tryClosure'>tryClosure</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+
+    <span class='y'>// if curly brace, then this is it-block closure</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbrace<span class='b'>)</span> <span class='k'>return</span> tryItBlock
+
+    <span class='y'>// if not pipe then not closure</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.pipe<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+
+    <span class='y'>// otherwise this can only be a FuncType declaration,</span>
+    <span class='y'>// so give it a whirl, and bail if that fails</span>
+    mark := pos
+    funcType := tryType <span class='k'>as</span> FuncType
+    <span class='k'>if</span> <span class='b'>(</span>funcType == <span class='k'>null</span><span class='b'>)</span> <span class='b'>{</span> reset<span class='b'>(</span>mark<span class='b'>)</span>; <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+
+    <span class='y'>// if we don't see opening brace for body - no go</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.lbrace<span class='b'>)</span> <span class='b'>{</span> reset<span class='b'>(</span>mark<span class='b'>)</span>; <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+
+    <span class='k'>return</span> closure<span class='b'>(</span>loc, funcType<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse it-block closure.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ClosureExpr? <span id='tryItBlock'>tryItBlock</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// field initializers look like an it-block, but</span>
+    <span class='y'>// we can safely peek to see if the next token is "get",</span>
+    <span class='y'>// "set", or a field getter/setter keyword like "private"</span>
+    <span class='k'>if</span> <span class='b'>(</span>inFieldInit<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>peek.kind.isProtectionKeyword<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+      <span class='k'>if</span> <span class='b'>(</span>peek.kind === Token.staticKeyword<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+      <span class='k'>if</span> <span class='b'>(</span>peek.kind === Token.readonlyKeyword<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+      <span class='k'>if</span> <span class='b'>(</span>peekt == Token.identifier<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>peek.val == <span class='s'>"get"</span> || peek.val == <span class='s'>"set"</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    ib := closure<span class='b'>(</span>cur, ns.itBlockType<span class='b'>)</span>
+    ib.isItBlock = <span class='k'>true</span>
+    ib.itType = ns.error
+    <span class='k'>return</span> ib
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse body of closure expression and return ClosureExpr.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> ClosureExpr <span id='closure'>closure</span><span class='b'>(</span>Loc loc, FuncType funcType<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curSlot == <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Unexpected closure"</span><span class='b'>)</span>
+
+    <span class='y'>// closure anonymous class name: class$slot$count</span>
+    name := <span class='s'>"${curType.name}\$${curSlot.name}\$${closureCount++}"</span>
+
+    <span class='y'>// verify func types has named parameters</span>
+    <span class='k'>if</span> <span class='b'>(</span>funcType.unnamed<span class='b'>)</span> err<span class='b'>(</span><span class='s'>"Closure parameters must be named"</span>, loc<span class='b'>)</span>
+
+    <span class='y'>// create closure</span>
+    closure := ClosureExpr<span class='b'>(</span>loc, curType, curSlot, curClosure, funcType, name<span class='b'>)</span>
+
+    <span class='y'>// save all closures in global list and list per type</span>
+    closures.add<span class='b'>(</span>closure<span class='b'>)</span>
+    curType.closures.add<span class='b'>(</span>closure<span class='b'>)</span>
+
+    <span class='y'>// parse block; temporarily change curClosure</span>
+    oldClosure := curClosure
+    curClosure = closure
+    closure.code = block
+    curClosure = oldClosure
+
+    <span class='k'>return</span> closure
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** This is used to parse an it-block outside of the scope of a</span>
+  <span class='z'>** field or method definition.  It is used to parse complex literals</span>
+  <span class='z'>** declared in a facet without mucking up the closure code path.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Expr <span id='complexLiteral'>complexLiteral</span><span class='b'>(</span>Loc loc, CType ctype<span class='b'>)</span>
+  <span class='b'>{</span>
+    complex := ComplexLiteral<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+    consume<span class='b'>(</span>Token.lbrace<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt !== Token.rbrace<span class='b'>)</span>
+    <span class='b'>{</span>
+      complex.names.add<span class='b'>(</span>consumeId<span class='b'>)</span>
+      consume<span class='b'>(</span>Token.assign<span class='b'>)</span>
+      complex.vals.add<span class='b'>(</span>expr<span class='b'>)</span>
+      endOfStmt
+    <span class='b'>}</span>
+    consume<span class='b'>(</span>Token.rbrace<span class='b'>)</span>
+    <span class='k'>return</span> complex
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Types</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a type production into a CType and wrap it as AST TypeRef.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> TypeRef <span id='typeRef'>typeRef</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    Loc loc := cur
+    <span class='k'>return</span> TypeRef<span class='b'>(</span>loc, ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If the current stream of tokens can be parsed as a</span>
+  <span class='z'>** valid type production return it.  Otherwise leave</span>
+  <span class='z'>** the parser positioned on the current token.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CType? <span id='tryType'>tryType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// types can only begin with identifier, | or [</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.identifier &amp;&amp; curt !== Token.pipe &amp;&amp; curt !== Token.lbracket<span class='b'>)</span>
+      <span class='k'>return</span> <span class='k'>null</span>
+
+    oldSuppress := suppressErr
+    suppressErr = <span class='k'>true</span>
+    mark := pos
+    CType? type := <span class='k'>null</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      type = ctype<span class='b'>()</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>SuppressedErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+    <span class='b'>}</span>
+    suppressErr = oldSuppress
+    <span class='k'>if</span> <span class='b'>(</span>type == <span class='k'>null</span><span class='b'>)</span> reset<span class='b'>(</span>mark<span class='b'>)</span>
+    <span class='k'>return</span> type
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Type signature:</span>
+  <span class='z'>**   &lt;type&gt;      :=  &lt;simpleType&gt; | &lt;listType&gt; | &lt;mapType&gt; | &lt;funcType&gt;</span>
+  <span class='z'>**   &lt;listType&gt;  :=  &lt;type&gt; "[]"</span>
+  <span class='z'>**   &lt;mapType&gt;   :=  ["["] &lt;type&gt; ":" &lt;type&gt; ["]"]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CType <span id='ctype'>ctype</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    CType? t := <span class='k'>null</span>
+
+    <span class='y'>// Types can begin with:</span>
+    <span class='y'>//   - id</span>
+    <span class='y'>//   - [k:v]</span>
+    <span class='y'>//   - |a, b -&gt; r|</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span>
+    <span class='b'>{</span>
+      t = simpleType
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>curt === Token.lbracket<span class='b'>)</span>
+    <span class='b'>{</span>
+      loc := consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+      t = ctype
+      consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>!<span class='b'>(</span>t <span class='k'>is</span> MapType<span class='b'>))</span> err<span class='b'>(</span><span class='s'>"Invalid map type"</span>, loc<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>curt === Token.pipe<span class='b'>)</span>
+    <span class='b'>{</span>
+      t = funcType
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expecting type name"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for ? nullable</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.question &amp;&amp; !cur.whitespace<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.question<span class='b'>)</span>
+      t = t.toNullable
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.question &amp;&amp; !cur.whitespace<span class='b'>)</span>
+        <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Type cannot have multiple '?'"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// trailing [] for lists</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.lbracket &amp;&amp; peekt === Token.rbracket<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.lbracket<span class='b'>)</span>
+      consume<span class='b'>(</span>Token.rbracket<span class='b'>)</span>
+      t = t.toListOf
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.question &amp;&amp; !cur.whitespace<span class='b'>)</span>
+      <span class='b'>{</span>
+        consume<span class='b'>(</span>Token.question<span class='b'>)</span>
+        t = t.toNullable
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for type?:type map (illegal)</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.elvis &amp;&amp; !cur.whitespace<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Map type cannot have nullable key type"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for ":" for map type</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.colon<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.isNullable<span class='b'>)</span> <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Map type cannot have nullable key type"</span><span class='b'>)</span>
+      consume<span class='b'>(</span>Token.colon<span class='b'>)</span>
+      key := t
+      val := ctype
+      t = MapType<span class='b'>(</span>key, val<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check for ? nullable</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.question &amp;&amp; !cur.whitespace<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume<span class='b'>(</span>Token.question<span class='b'>)</span>
+      t = t.toNullable
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> t
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Simple type signature:</span>
+  <span class='z'>**   &lt;simpleType&gt;  :=  &lt;id&gt; ["::" &lt;id&gt;]</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CType <span id='simpleType'>simpleType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    loc := cur
+    id := consumeId
+
+    <span class='y'>// fully qualified</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.doubleColon<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>return</span> ResolveImports.resolveQualified<span class='b'>(</span><span class='k'>this</span>, id, consumeId, loc<span class='b'>)</span> ?: ns.voidType
+    <span class='b'>}</span>
+
+    <span class='y'>// unqualified name, lookup in imported types</span>
+    types := unit.importedTypes<span class='b'>[</span>id<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>types == <span class='k'>null</span> || types.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// handle sys generic parameters</span>
+      <span class='k'>if</span> <span class='b'>(</span>compiler.isSys &amp;&amp; id.size == 1<span class='b'>)</span>
+        <span class='k'>return</span> ns.genericParameter<span class='b'>(</span>id<span class='b'>)</span>
+
+      <span class='y'>// not found in imports</span>
+      err<span class='b'>(</span><span class='s'>"Unknown type '$id'"</span>, loc<span class='b'>)</span>
+      <span class='k'>return</span> ns.voidType
+    <span class='b'>}</span>
+
+    <span class='y'>// if more then one, first try to exclude those internal to other pods</span>
+    <span class='k'>if</span> <span class='b'>(</span>types.size &gt; 1<span class='b'>)</span> types = types.exclude |t| <span class='b'>{</span> t.isInternal &amp;&amp; t.pod.name != compiler.pod.name <span class='b'>}</span>
+
+    <span class='y'>// if more then one its ambiguous (use errReport to avoid suppression)</span>
+    <span class='k'>if</span> <span class='b'>(</span>types.size &gt; 1<span class='b'>)</span>
+      errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Ambiguous type: "</span> + types.join<span class='b'>(</span><span class='s'>", "</span><span class='b'>)</span>, loc<span class='b'>))</span>
+
+    <span class='y'>// got it</span>
+    <span class='k'>return</span> types.first
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Method type signature:</span>
+  <span class='z'>**   &lt;funcType&gt;       :=  "|" ("-&gt;" | &lt;funcTypeSig&gt;) "|"</span>
+  <span class='z'>**   &lt;funcTypeSig&gt;    :=  &lt;formals&gt; ["-&gt;" &lt;type&gt;]</span>
+  <span class='z'>**   &lt;formals&gt;        :=  [&lt;formal&gt; ("," &lt;formal&gt;)*]</span>
+  <span class='z'>**   &lt;formal&gt;         :=  &lt;formFull&gt; | &lt;formalInferred&gt; | &lt;formalTypeOnly&gt;</span>
+  <span class='z'>**   &lt;formalFull&gt;     :=  &lt;type&gt; &lt;id&gt;</span>
+  <span class='z'>**   &lt;formalInferred&gt; :=  &lt;id&gt;</span>
+  <span class='z'>**   &lt;formalTypeOnly&gt; :=  &lt;type&gt;</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> CType <span id='funcType'>funcType</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    params := CType<span class='b'>[</span>,<span class='b'>]</span>
+    names  := Str<span class='b'>[</span>,<span class='b'>]</span>
+    ret := ns.voidType
+
+    <span class='y'>// opening pipe</span>
+    consume<span class='b'>(</span>Token.pipe<span class='b'>)</span>
+
+    <span class='y'>// params, must be one if no -&gt;</span>
+    inferred := <span class='k'>false</span>
+    unnamed := <span class='b'>[</span><span class='k'>false</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.arrow<span class='b'>)</span> inferred = funcTypeFormal<span class='b'>(</span>params, names, unnamed<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.comma<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      inferred = inferred.or<span class='b'>(</span>funcTypeFormal<span class='b'>(</span>params, names, unnamed<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if we see ?-&gt; in a function type, that means |X?-&gt;ret|</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.safeArrow &amp;&amp; !params.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      params<span class='b'>[</span>-1<span class='b'>]</span> = params<span class='b'>[</span>-1<span class='b'>]</span>.toNullable
+      consume
+      ret = ctype
+    <span class='b'>}</span>
+
+    <span class='y'>// optional arrow</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.arrow<span class='b'>)</span>
+    <span class='b'>{</span>
+      consume
+      <span class='k'>if</span> <span class='b'>(</span>curt !== Token.pipe || cur.whitespace<span class='b'>)</span>
+        ret = ctype
+      <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>!params.isEmpty<span class='b'>)</span> <span class='y'>// use errReport to avoid suppression</span>
+        errReport<span class='b'>(</span>CompilerErr<span class='b'>(</span><span class='s'>"Expecting function return type"</span>, cur<span class='b'>))</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// closing pipe</span>
+    consume<span class='b'>(</span>Token.pipe<span class='b'>)</span>
+
+    ft := FuncType<span class='b'>(</span>params, names, ret<span class='b'>)</span>
+    ft.inferredSignature = inferred
+    ft.unnamed = unnamed.first
+    <span class='k'>return</span> ft
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Bool <span id='funcTypeFormal'>funcTypeFormal</span><span class='b'>(</span>CType<span class='b'>[]</span> params, Str<span class='b'>[]</span> names, Bool<span class='b'>[]</span> unnamed<span class='b'>)</span>
+  <span class='b'>{</span>
+    t := tryType
+    <span class='k'>if</span> <span class='b'>(</span>t != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      params.add<span class='b'>(</span>t<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>curt === Token.identifier<span class='b'>)</span>
+      <span class='b'>{</span>
+        names.add<span class='b'>(</span>consumeId<span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+      <span class='b'>{</span>
+        names.add<span class='b'>(</span><span class='s'>"_"</span> + <span class='b'>(</span><span class='s'>'a'</span>+names.size<span class='b'>)</span>.toChar<span class='b'>)</span>
+        unnamed<span class='b'>[</span>0<span class='b'>]</span> = <span class='k'>true</span>
+      <span class='b'>}</span>
+      <span class='k'>return</span> <span class='k'>false</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      params.add<span class='b'>(</span>ns.objType.toNullable<span class='b'>)</span>
+      names.add<span class='b'>(</span>consumeId<span class='b'>)</span>
+      <span class='k'>return</span> <span class='k'>true</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Misc</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse fandoc or retur null</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Str<span class='b'>[]</span>? <span id='doc'>doc</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    Str<span class='b'>[]</span>? doc := <span class='k'>null</span>
+    <span class='k'>while</span> <span class='b'>(</span>curt === Token.docComment<span class='b'>)</span>
+      doc = <span class='b'>(</span>Str<span class='b'>[])</span>consume<span class='b'>(</span>Token.docComment<span class='b'>)</span>.val
+    <span class='k'>return</span> doc
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Errors</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>override</span> CompilerErr <span id='err'>err</span><span class='b'>(</span>Str msg, Loc? loc := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>loc == <span class='k'>null</span><span class='b'>)</span> loc = cur
+    <span class='k'>return</span> <span class='k'>super</span>.err<span class='b'>(</span>msg, loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Tokens</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Verify current is an identifier, consume it, and return it.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Str <span id='consumeId'>consumeId</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== Token.identifier<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected identifier, not '$cur'"</span><span class='b'>)</span>
+    <span class='k'>return</span> consume.val
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Check that the current token matches the specified</span>
+  <span class='z'>** type, but do not consume it.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='verify'>verify</span><span class='b'>(</span>Token kind<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt !== kind<span class='b'>)</span>
+      <span class='k'>throw</span> err<span class='b'>(</span><span class='s'>"Expected '$kind.symbol', not '$cur'"</span><span class='b'>)</span>;
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Consume the current token and return consumed token.</span>
+  <span class='z'>** If kind is non-null then verify first</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> TokenVal <span id='consume'>consume</span><span class='b'>(</span>Token? kind := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// verify if not null</span>
+    <span class='k'>if</span> <span class='b'>(</span>kind != <span class='k'>null</span><span class='b'>)</span> verify<span class='b'>(</span>kind<span class='b'>)</span>
+
+    <span class='y'>// save the current we are about to consume for return</span>
+    result := cur
+
+    <span class='y'>// get the next token from the buffer, if pos is past numTokens,</span>
+    <span class='y'>// then always use the last token which will be eof</span>
+    TokenVal? next;
+    pos++;
+    <span class='k'>if</span> <span class='b'>(</span>pos+1 &lt; numTokens<span class='b'>)</span>
+      next = tokens<span class='b'>[</span>pos+1<span class='b'>]</span>  <span class='y'>// next peek is cur+1</span>
+    <span class='k'>else</span>
+      next = tokens<span class='b'>[</span>numTokens-1<span class='b'>]</span>
+
+    <span class='k'>this</span>.cur   = peek
+    <span class='k'>this</span>.peek  = next
+    <span class='k'>this</span>.curt  = cur.kind
+    <span class='k'>this</span>.peekt = peek.kind
+
+    <span class='k'>return</span> result
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Statements can be terminated with a semicolon, end of line</span>
+  <span class='z'>** or } end of block.   Return true on success.  On failure</span>
+  <span class='z'>** return false if errMsg is null or log/throw an exception.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='endOfStmt'>endOfStmt</span><span class='b'>(</span>Str? errMsg := <span class='s'>"Expected end of statement: semicolon, newline, or end of block; not '$cur'"</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>cur.newline<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.semicolon<span class='b'>)</span> <span class='b'>{</span> consume; <span class='k'>return</span> <span class='k'>true</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.rbrace<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>curt === Token.eof<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>if</span> <span class='b'>(</span>errMsg == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>throw</span> err<span class='b'>(</span>errMsg<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Reset the current position to the specified tokens index.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='reset'>reset</span><span class='b'>(</span>Int pos<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pos   = pos
+    <span class='k'>this</span>.cur   = tokens<span class='b'>[</span>pos<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>pos+1 &lt; numTokens<span class='b'>)</span>
+      <span class='k'>this</span>.peek  = tokens<span class='b'>[</span>pos+1<span class='b'>]</span>
+    <span class='k'>else</span>
+      <span class='k'>this</span>.peek  = tokens<span class='b'>[</span>pos<span class='b'>]</span>
+    <span class='k'>this</span>.curt  = cur.kind
+    <span class='k'>this</span>.peekt = peek.kind
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Parser Flags</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='y'>// These are flags used only by the parser we merge with FConst</span>
+  <span class='y'>// flags by starting from most significant bit and working down</span>
+  <span class='k'>const</span> <span class='k'>static</span> Int <span id='Once'>Once</span>     := 0x8000_0000
+  <span class='k'>const</span> <span class='k'>static</span> Int <span id='Readonly'>Readonly</span> := 0x4000_0000
+  <span class='k'>const</span> <span class='k'>static</span> Int <span id='ParserFlagsMask'>ParserFlagsMask</span> := Readonly
+
+  <span class='y'>// Bitwise and this mask to clear all protection scope flags</span>
+  <span class='k'>const</span> <span class='k'>static</span> Int <span id='ProtectionMask'>ProtectionMask</span> := <span class='b'>(</span>FConst.Public<span class='b'>)</span>.or<span class='b'>(</span>FConst.Protected<span class='b'>)</span>.or<span class='b'>(</span>FConst.Private<span class='b'>)</span>.or<span class='b'>(</span>FConst.Internal<span class='b'>)</span>.not
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> CompilationUnit <span id='unit'>unit</span>    <span class='y'>// compilation unit to generate</span>
+  <span class='k'>private</span> TokenVal<span class='b'>[]</span> <span id='tokens'>tokens</span>       <span class='y'>// tokens all read in</span>
+  <span class='k'>private</span> Int <span id='numTokens'>numTokens</span>           <span class='y'>// number of tokens</span>
+  <span class='k'>private</span> Int <span id='pos'>pos</span>                 <span class='y'>// offset into tokens for cur</span>
+  <span class='k'>private</span> TokenVal? <span id='cur'>cur</span>           <span class='y'>// current token</span>
+  <span class='k'>private</span> Token? <span id='curt'>curt</span>             <span class='y'>// current token type</span>
+  <span class='k'>private</span> TokenVal? <span id='peek'>peek</span>          <span class='y'>// next token</span>
+  <span class='k'>private</span> Token? <span id='peekt'>peekt</span>            <span class='y'>// next token type</span>
+  <span class='k'>private</span> Bool <span id='inFieldInit'>inFieldInit</span>        <span class='y'>// are we currently in a field initializer</span>
+  <span class='k'>private</span> TypeDef? <span id='curType'>curType</span>        <span class='y'>// current TypeDef scope</span>
+  <span class='k'>private</span> SlotDef? <span id='curSlot'>curSlot</span>        <span class='y'>// current SlotDef scope</span>
+  <span class='k'>private</span> ClosureExpr? <span id='curClosure'>curClosure</span> <span class='y'>// current ClosureExpr if inside closure</span>
+  <span class='k'>private</span> Int? <span id='closureCount'>closureCount</span>       <span class='y'>// number of closures parsed inside curSlot</span>
+  <span class='k'>private</span> ClosureExpr<span class='b'>[]</span> <span id='closures'>closures</span>  <span class='y'>// list of all closures parsed</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Parser.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#Once'>Once</a></li>
+  <li style='display: block;'><a href='#ParserFlagsMask'>ParserFlagsMask</a></li>
+  <li style='display: block;'><a href='#ProtectionMask'>ProtectionMask</a></li>
+  <li style='display: block;'><a href='#Readonly'>Readonly</a></li>
+  <li class='hidden' style='display: block;'><a href='#addExpr'>addExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#assignExpr'>assignExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#block'>block</a></li>
+  <li class='hidden' style='display: block;'><a href='#breakStmt'>breakStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#callArgs'>callArgs</a></li>
+  <li class='hidden' style='display: block;'><a href='#callExpr'>callExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#callOp'>callOp</a></li>
+  <li class='hidden' style='display: block;'><a href='#closure'>closure</a></li>
+  <li class='hidden' style='display: block;'><a href='#closureCount'>closureCount</a></li>
+  <li class='hidden' style='display: block;'><a href='#closures'>closures</a></li>
+  <li class='hidden' style='display: block;'><a href='#collectionLiteralExpr'>collectionLiteralExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#complexLiteral'>complexLiteral</a></li>
+  <li class='hidden' style='display: block;'><a href='#condAndExpr'>condAndExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#condOrExpr'>condOrExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#consume'>consume</a></li>
+  <li class='hidden' style='display: block;'><a href='#consumeId'>consumeId</a></li>
+  <li class='hidden' style='display: block;'><a href='#continueStmt'>continueStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#ctorChain'>ctorChain</a></li>
+  <li class='hidden' style='display: block;'><a href='#ctype'>ctype</a></li>
+  <li class='hidden' style='display: block;'><a href='#cur'>cur</a></li>
+  <li class='hidden' style='display: block;'><a href='#curClosure'>curClosure</a></li>
+  <li class='hidden' style='display: block;'><a href='#curSlot'>curSlot</a></li>
+  <li class='hidden' style='display: block;'><a href='#curType'>curType</a></li>
+  <li class='hidden' style='display: block;'><a href='#curt'>curt</a></li>
+  <li class='hidden' style='display: block;'><a href='#defGet'>defGet</a></li>
+  <li class='hidden' style='display: block;'><a href='#defGetAndSet'>defGetAndSet</a></li>
+  <li class='hidden' style='display: block;'><a href='#defSet'>defSet</a></li>
+  <li class='hidden' style='display: block;'><a href='#doc'>doc</a></li>
+  <li class='hidden' style='display: block;'><a href='#endOfStmt'>endOfStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#enumDef'>enumDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#enumDefs'>enumDefs</a></li>
+  <li class='hidden' style='display: block;'><a href='#equalityExpr'>equalityExpr</a></li>
+  <li style='display: block;'><a href='#err'>err</a></li>
+  <li class='hidden' style='display: block;'><a href='#expr'>expr</a></li>
+  <li class='hidden' style='display: block;'><a href='#exprOrLocalDefStmt'>exprOrLocalDefStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#facets'>facets</a></li>
+  <li class='hidden' style='display: block;'><a href='#fieldDef'>fieldDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#flags'>flags</a></li>
+  <li class='hidden' style='display: block;'><a href='#forStmt'>forStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#funcType'>funcType</a></li>
+  <li class='hidden' style='display: block;'><a href='#funcTypeFormal'>funcTypeFormal</a></li>
+  <li class='hidden' style='display: block;'><a href='#genSyntheticGet'>genSyntheticGet</a></li>
+  <li class='hidden' style='display: block;'><a href='#genSyntheticSet'>genSyntheticSet</a></li>
+  <li class='hidden' style='display: block;'><a href='#getOrSet'>getOrSet</a></li>
+  <li class='hidden' style='display: block;'><a href='#idExpr'>idExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#ifExpr'>ifExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#ifExprBody'>ifExprBody</a></li>
+  <li class='hidden' style='display: block;'><a href='#ifStmt'>ifStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#inFieldInit'>inFieldInit</a></li>
+  <li class='hidden' style='display: block;'><a href='#indexExpr'>indexExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#inheritType'>inheritType</a></li>
+  <li class='hidden' style='display: block;'><a href='#itAdd'>itAdd</a></li>
+  <li class='hidden' style='display: block;'><a href='#listLiteralExpr'>listLiteralExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#localDefStmt'>localDefStmt</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#mapLiteralExpr'>mapLiteralExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#methodDef'>methodDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#multExpr'>multExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#numTokens'>numTokens</a></li>
+  <li class='hidden' style='display: block;'><a href='#paramDef'>paramDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#parenExpr'>parenExpr</a></li>
+  <li style='display: block;'><a href='#parse'>parse</a></li>
+  <li class='hidden' style='display: block;'><a href='#peek'>peek</a></li>
+  <li class='hidden' style='display: block;'><a href='#peekt'>peekt</a></li>
+  <li class='hidden' style='display: block;'><a href='#pos'>pos</a></li>
+  <li class='hidden' style='display: block;'><a href='#rangeExpr'>rangeExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#relationalExpr'>relationalExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#reset'>reset</a></li>
+  <li class='hidden' style='display: block;'><a href='#returnStmt'>returnStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#simpleType'>simpleType</a></li>
+  <li class='hidden' style='display: block;'><a href='#skipUsing'>skipUsing</a></li>
+  <li class='hidden' style='display: block;'><a href='#slotDef'>slotDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#stmt'>stmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#stmtOrBlock'>stmtOrBlock</a></li>
+  <li class='hidden' style='display: block;'><a href='#switchBlock'>switchBlock</a></li>
+  <li class='hidden' style='display: block;'><a href='#switchStmt'>switchStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#termBaseExpr'>termBaseExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#termChainExpr'>termChainExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#termExpr'>termExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#throwStmt'>throwStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#tokens'>tokens</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryCatch'>tryCatch</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryClosure'>tryClosure</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryItBlock'>tryItBlock</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryStmt'>tryStmt</a></li>
+  <li class='hidden' style='display: block;'><a href='#tryType'>tryType</a></li>
+  <li class='hidden' style='display: block;'><a href='#typeBaseExpr'>typeBaseExpr</a></li>
+  <li style='display: block;'><a href='#typeDef'>typeDef</a></li>
+  <li class='hidden' style='display: block;'><a href='#typeRef'>typeRef</a></li>
+  <li class='hidden' style='display: block;'><a href='#unaryExpr'>unaryExpr</a></li>
+  <li class='hidden' style='display: block;'><a href='#unit'>unit</a></li>
+  <li class='hidden' style='display: block;'><a href='#usings'>usings</a></li>
+  <li class='hidden' style='display: block;'><a href='#verify'>verify</a></li>
+  <li class='hidden' style='display: block;'><a href='#whileStmt'>whileStmt</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

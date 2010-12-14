@@ -1,0 +1,579 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CType.html'>CType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>mixin</h2>
+<h1>compiler::CType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::CType</pre>
+</div>
+<div class='detail'>
+
+<p>CType is a "compiler type" which is class used for representing the Fantom type system in the compiler.  CTypes map to types within the compilation units themsevles as TypeDef and TypeRef or to precompiled types in imported pods via ReflectType or FType.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='base' class='method'>base<a href='CType_src.html#base'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CType.html'>CType</a>? base()</code></p>
+
+<p>The direct super class of this type (null for Obj).</p>
+</dd>
+<dt id='bridge' class='method'>bridge<a href='CType_src.html#bridge'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CBridge.html'>CBridge</a>? bridge()</code></p>
+
+<p>If this is a foreign function return the bridge.</p>
+</dd>
+<dt id='common' class='method'>common<a href='CType_src.html#common'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='CType.html'>CType</a> common(<a href='CNamespace.html'>CNamespace</a> ns, <a href='CType.html'>CType</a>[] types)</code></p>
+
+<p>Given a list of types, compute the most specific type which they all share, or at worst return sys::Obj.  This method does not take into account mixins, only extends class inheritance.</p>
+</dd>
+<dt id='commonClass' class='method hidden'>commonClass<a href='CType_src.html#commonClass'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='CType.html'>CType</a> commonClass(<a href='CNamespace.html'>CNamespace</a> ns, <a href='CType.html'>CType</a>[] types)</code></p>
+</dd>
+<dt id='commonExact' class='method hidden'>commonExact<a href='CType_src.html#commonExact'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='CType.html'>CType</a> commonExact(<a href='CNamespace.html'>CNamespace</a> ns, <a href='CType.html'>CType</a>[] types, <a href='CType.html'>CType</a> fallback)</code></p>
+</dd>
+<dt id='commonList' class='method hidden'>commonList<a href='CType_src.html#commonList'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='CType.html'>CType</a> commonList(<a href='CNamespace.html'>CNamespace</a> ns, <a href='ListType.html'>ListType</a>[] types)</code></p>
+</dd>
+<dt id='commonMixin' class='method hidden'>commonMixin<a href='CType_src.html#commonMixin'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='CType.html'>CType</a> commonMixin(<a href='CNamespace.html'>CNamespace</a> ns, <a href='CType.html'>CType</a>[] types)</code></p>
+</dd>
+<dt id='commonParameterized' class='method hidden'>commonParameterized<a href='CType_src.html#commonParameterized'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='CType.html'>CType</a> commonParameterized(<a href='CNamespace.html'>CNamespace</a> ns, <a href='CType.html'>CType</a>[] types)</code></p>
+</dd>
+<dt id='ctors' class='method'>ctors<a href='CType_src.html#ctors'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CMethod.html'>CMethod</a>[] ctors()</code></p>
+
+<p>List of the all constructors.</p>
+</dd>
+<dt id='deref' class='method'>deref<a href='CType_src.html#deref'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CType.html'>CType</a> deref()</code></p>
+
+<p>If this is a TypeRef, return what it references</p>
+</dd>
+<dt id='equals' class='method'>equals<a href='CType_src.html#equals'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> equals(<a href='../sys/Obj.html'>Obj</a>? t)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#equals'>sys::Obj.equals</a></p>
+</div>
+
+<p>Equality based on signature.</p>
+</dd>
+<dt id='facet' class='method'>facet<a href='CType_src.html#facet'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CFacet.html'>CFacet</a>? facet(<a href='../sys/Str.html'>Str</a> qname)</code></p>
+
+<p>Get the facet keyed by given type, or null if not defined.</p>
+</dd>
+<dt id='field' class='method'>field<a href='CType_src.html#field'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CField.html'>CField</a>? field(<a href='../sys/Str.html'>Str</a> name)</code></p>
+
+<p>Lookup a field by name (null if method).</p>
+</dd>
+<dt id='fields' class='method'>fields<a href='CType_src.html#fields'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CField.html'>CField</a>[] fields()</code></p>
+
+<p>List of the all defined fields (including inherited fields).</p>
+</dd>
+<dt id='fits' class='method'>fits<a href='CType_src.html#fits'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> fits(<a href='CType.html'>CType</a> t)</code></p>
+
+<p>Does this type implement the specified type.  If true, then this type is assignable to the specified type (although the converse is not necessarily true).  All types (including mixin types) fit sys::Obj.</p>
+</dd>
+<dt id='fitsAny' class='method'>fitsAny<a href='CType_src.html#fitsAny'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> fitsAny(<a href='CType.html'>CType</a>[] types)</code></p>
+
+<p>Return if this type fits any of the types in the specified list.</p>
+</dd>
+<dt id='flags' class='method'>flags<a href='CType_src.html#flags'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Int.html'>Int</a> flags()</code></p>
+
+<p>Get the flags bitmask.</p>
+</dd>
+<dt id='foreignInheritance' class='method'>foreignInheritance<a href='CType_src.html#foreignInheritance'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CType.html'>CType</a>? foreignInheritance()</code></p>
+
+<p>If this TypeDef extends from a FFI class or implements any FFI mixins, then return the FFI type otherwise return null.</p>
+</dd>
+<dt id='hasFacet' class='method'>hasFacet<a href='CType_src.html#hasFacet'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> hasFacet(<a href='../sys/Str.html'>Str</a> qname)</code></p>
+
+<p>Return if the given facet is defined.</p>
+</dd>
+<dt id='hasSlot' class='method'>hasSlot<a href='CType_src.html#hasSlot'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> hasSlot(<a href='../sys/Str.html'>Str</a> name)</code></p>
+
+<p>Return if this type contains a slot by the specified name.</p>
+</dd>
+<dt id='hash' class='method'>hash<a href='CType_src.html#hash'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Int.html'>Int</a> hash()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#hash'>sys::Obj.hash</a></p>
+</div>
+
+<p>Hash on signature.</p>
+</dd>
+<dt id='inferredAs' class='method'>inferredAs<a href='CType_src.html#inferredAs'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CType.html'>CType</a> inferredAs()</code></p>
+
+<p>If this type is being used for type inference then get the type as it should be inferred.  Typically we just return this. However some FFI types such as <code>[java]::int</code> are never used on the stack directly and are inferred to be <code>sys::Int</code>.</p>
+</dd>
+<dt id='isAbstract' class='method'>isAbstract<a href='CType_src.html#isAbstract'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isAbstract()</code></p>
+
+<p>Return if this Type is abstract and cannot be instantiated.  This method will always return true if the type is a mixin.</p>
+</dd>
+<dt id='isBool' class='method'>isBool<a href='CType_src.html#isBool'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isBool()</code></p>
+</dd>
+<dt id='isClass' class='method'>isClass<a href='CType_src.html#isClass'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isClass()</code></p>
+
+<p>Return if this Type is a class (as opposed to enum or mixin)</p>
+</dd>
+<dt id='isConst' class='method'>isConst<a href='CType_src.html#isConst'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isConst()</code></p>
+
+<p>Return if this Type is const and immutable.</p>
+</dd>
+<dt id='isConstFieldType' class='method'>isConstFieldType<a href='CType_src.html#isConstFieldType'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isConstFieldType()</code></p>
+
+<p>Is this type ok to use as a const field?  Any const type fine, plus we allow Obj, List, Map, and Func since they will implicitly have toImmutable called on them.</p>
+</dd>
+<dt id='isDecimal' class='method'>isDecimal<a href='CType_src.html#isDecimal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isDecimal()</code></p>
+</dd>
+<dt id='isEnum' class='method'>isEnum<a href='CType_src.html#isEnum'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isEnum()</code></p>
+
+<p>Return if this Type is an sys::Enum</p>
+</dd>
+<dt id='isFacet' class='method'>isFacet<a href='CType_src.html#isFacet'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isFacet()</code></p>
+
+<p>Return if this Type is an sys::Facet</p>
+</dd>
+<dt id='isFinal' class='method'>isFinal<a href='CType_src.html#isFinal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isFinal()</code></p>
+
+<p>Return if this Type is final and cannot be subclassed.</p>
+</dd>
+<dt id='isFloat' class='method'>isFloat<a href='CType_src.html#isFloat'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isFloat()</code></p>
+</dd>
+<dt id='isForeign' class='method'>isForeign<a href='CType_src.html#isForeign'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isForeign()</code></p>
+
+<p>If this a foreign function interface type.</p>
+</dd>
+<dt id='isFunc' class='method'>isFunc<a href='CType_src.html#isFunc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isFunc()</code></p>
+</dd>
+<dt id='isGeneric' class='method'>isGeneric<a href='CType_src.html#isGeneric'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Bool.html'>Bool</a> isGeneric()</code></p>
+
+<p>A generic type means that one or more of my slots contain signatures using a generic parameter (such as V or K).  Fantom supports three built-in generic types: List, Map, and Func.  A generic instance (such as Str[]) is NOT a generic type (all of its generic parameters have been filled in). User defined generic types are not supported in Fan.</p>
+</dd>
+<dt id='isGenericParameter' class='method'>isGenericParameter<a href='CType_src.html#isGenericParameter'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Bool.html'>Bool</a> isGenericParameter()</code></p>
+
+<p>Return if this type is a generic parameter (such as V or K) in a generic type (List, Map, or Method).  Generic parameters serve as place holders for the parameterization of the generic type. Fantom has a predefined set of generic parameters which are always defined in the sys pod with a one character name.</p>
+</dd>
+<dt id='isInt' class='method'>isInt<a href='CType_src.html#isInt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isInt()</code></p>
+</dd>
+<dt id='isInternal' class='method'>isInternal<a href='CType_src.html#isInternal'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isInternal()</code></p>
+
+<p>Is this an internally scoped class</p>
+</dd>
+<dt id='isList' class='method'>isList<a href='CType_src.html#isList'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isList()</code></p>
+</dd>
+<dt id='isMap' class='method'>isMap<a href='CType_src.html#isMap'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isMap()</code></p>
+</dd>
+<dt id='isMixin' class='method'>isMixin<a href='CType_src.html#isMixin'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isMixin()</code></p>
+
+<p>Return if this Type is a mixin type and cannot be instantiated.</p>
+</dd>
+<dt id='isNative' class='method'>isNative<a href='CType_src.html#isNative'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isNative()</code></p>
+
+<p>Is the entire class implemented in native code?</p>
+</dd>
+<dt id='isNothing' class='method'>isNothing<a href='CType_src.html#isNothing'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isNothing()</code></p>
+</dd>
+<dt id='isNullable' class='method'>isNullable<a href='CType_src.html#isNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Bool.html'>Bool</a> isNullable()</code></p>
+
+<p>Is this is a nullable type (marked with trailing ?)</p>
+</dd>
+<dt id='isObj' class='method'>isObj<a href='CType_src.html#isObj'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isObj()</code></p>
+</dd>
+<dt id='isParameterized' class='method'>isParameterized<a href='CType_src.html#isParameterized'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Bool.html'>Bool</a> isParameterized()</code></p>
+
+<p>A parameterized type is a type which has parameterized a generic type and replaced all the generic parameter types with generic argument types.  The type Str[] is a parameterized type of the generic type List (V is replaced with Str).  A parameterized type always has a signature which is different from the qname.</p>
+</dd>
+<dt id='isPublic' class='method'>isPublic<a href='CType_src.html#isPublic'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isPublic()</code></p>
+
+<p>Is this a public scoped class</p>
+</dd>
+<dt id='isRange' class='method'>isRange<a href='CType_src.html#isRange'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isRange()</code></p>
+</dd>
+<dt id='isStr' class='method'>isStr<a href='CType_src.html#isStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isStr()</code></p>
+</dd>
+<dt id='isSupported' class='method'>isSupported<a href='CType_src.html#isSupported'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isSupported()</code></p>
+
+<p>Return if type is supported by the Fantom type system.  For example the Java FFI will correctly model a Java multi-dimensional array during compilation, however there is no Fantom representation.  We check for supported types during CheckErrors when accessing fields and methods.</p>
+</dd>
+<dt id='isSynthetic' class='method'>isSynthetic<a href='CType_src.html#isSynthetic'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isSynthetic()</code></p>
+
+<p>Is this a compiler generated synthetic class</p>
+</dd>
+<dt id='isThis' class='method'>isThis<a href='CType_src.html#isThis'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isThis()</code></p>
+</dd>
+<dt id='isType' class='method'>isType<a href='CType_src.html#isType'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isType()</code></p>
+</dd>
+<dt id='isVal' class='method'>isVal<a href='CType_src.html#isVal'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Bool.html'>Bool</a> isVal()</code></p>
+
+<p>Is this is a value type (Bool, Int, or Float and their nullables)</p>
+</dd>
+<dt id='isValType' class='method'>isValType<a href='CType_src.html#isValType'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='../sys/Bool.html'>Bool</a> isValType(<a href='../sys/Str.html'>Str</a> qname)</code></p>
+
+<p>Static utility for value type</p>
+</dd>
+<dt id='isValid' class='method'>isValid<a href='CType_src.html#isValid'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> isValid()</code></p>
+
+<p>Is this a valid type usable anywhere (such as local var)</p>
+</dd>
+<dt id='isVoid' class='method'>isVoid<a href='CType_src.html#isVoid'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> isVoid()</code></p>
+</dd>
+<dt id='method' class='method'>method<a href='CType_src.html#method'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CMethod.html'>CMethod</a>? method(<a href='../sys/Str.html'>Str</a> name)</code></p>
+
+<p>Lookup a method by name (null if field).</p>
+</dd>
+<dt id='methods' class='method'>methods<a href='CType_src.html#methods'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CMethod.html'>CMethod</a>[] methods()</code></p>
+
+<p>List of the all defined methods (including inherited methods).</p>
+</dd>
+<dt id='mixins' class='method'>mixins<a href='CType_src.html#mixins'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CType.html'>CType</a>[] mixins()</code></p>
+
+<p>Return the mixins directly implemented by this type.</p>
+</dd>
+<dt id='name' class='method'>name<a href='CType_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Str.html'>Str</a> name()</code></p>
+
+<p>Simple name of the type such as "Str".</p>
+</dd>
+<dt id='ns' class='method'>ns<a href='CType_src.html#ns'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CNamespace.html'>CNamespace</a> ns()</code></p>
+
+<p>Associated namespace for this type representation</p>
+</dd>
+<dt id='operators' class='method'>operators<a href='CType_src.html#operators'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='COperators.html'>COperators</a> operators()</code></p>
+
+<p>Get operators lookup structure</p>
+</dd>
+<dt id='parameterizeThis' class='method'>parameterizeThis<a href='CType_src.html#parameterizeThis'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CType.html'>CType</a> parameterizeThis(<a href='CType.html'>CType</a> thisType)</code></p>
+
+<p>If this is a parameterized type which uses <code>This</code>, then replace <code>This</code> with the specified type.</p>
+</dd>
+<dt id='pod' class='method'>pod<a href='CType_src.html#pod'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CPod.html'>CPod</a> pod()</code></p>
+
+<p>Parent pod which defines this type.</p>
+</dd>
+<dt id='qname' class='method'>qname<a href='CType_src.html#qname'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Str.html'>Str</a> qname()</code></p>
+
+<p>Qualified name such as "sys:Str".</p>
+</dd>
+<dt id='raw' class='method'>raw<a href='CType_src.html#raw'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CType.html'>CType</a> raw()</code></p>
+
+<p>If this type is a generic parameter (V, L, etc), then return the actual type for the native implementation.  For example V is Obj, and L is List.  This is the type we actually use when constructing a signature for the invoke opcode.</p>
+</dd>
+<dt id='signature' class='method'>signature<a href='CType_src.html#signature'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Str.html'>Str</a> signature()</code></p>
+
+<p>This is the full signature of the type.</p>
+</dd>
+<dt id='slot' class='method'>slot<a href='CType_src.html#slot'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CSlot.html'>CSlot</a>? slot(<a href='../sys/Str.html'>Str</a> name)</code></p>
+
+<p>Lookup a slot by name.  If the slot doesn't exist then return null.</p>
+</dd>
+<dt id='slots' class='method'>slots<a href='CType_src.html#slots'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Str.html'>Str</a>:<a href='CSlot.html'>CSlot</a> slots()</code></p>
+
+<p>Map of the all defined slots, both fields and methods (including inherited slots).</p>
+</dd>
+<dt id='toListOf' class='method'>toListOf<a href='CType_src.html#toListOf'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CType.html'>CType</a> toListOf()</code></p>
+
+<p>Create a parameterized List of this type.</p>
+</dd>
+<dt id='toNonNullable' class='method'>toNonNullable<a href='CType_src.html#toNonNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='CType.html'>CType</a> toNonNullable()</code></p>
+
+<p>Get this type as a non-nullable (if nullable)</p>
+</dd>
+<dt id='toNullable' class='method'>toNullable<a href='CType_src.html#toNullable'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='CType.html'>CType</a> toNullable()</code></p>
+
+<p>Get this type as a nullable type (marked with trailing ?)</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='CType_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return signature</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='CType_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#base'>base</a></li>
+  <li><a href='#bridge'>bridge</a></li>
+  <li><a href='#common'>common</a></li>
+  <li class='hidden'><a href='#commonClass'>commonClass</a></li>
+  <li class='hidden'><a href='#commonExact'>commonExact</a></li>
+  <li class='hidden'><a href='#commonList'>commonList</a></li>
+  <li class='hidden'><a href='#commonMixin'>commonMixin</a></li>
+  <li class='hidden'><a href='#commonParameterized'>commonParameterized</a></li>
+  <li><a href='#ctors'>ctors</a></li>
+  <li><a href='#deref'>deref</a></li>
+  <li><a href='#equals'>equals</a></li>
+  <li><a href='#facet'>facet</a></li>
+  <li><a href='#field'>field</a></li>
+  <li><a href='#fields'>fields</a></li>
+  <li><a href='#fits'>fits</a></li>
+  <li><a href='#fitsAny'>fitsAny</a></li>
+  <li><a href='#flags'>flags</a></li>
+  <li><a href='#foreignInheritance'>foreignInheritance</a></li>
+  <li><a href='#hasFacet'>hasFacet</a></li>
+  <li><a href='#hasSlot'>hasSlot</a></li>
+  <li><a href='#hash'>hash</a></li>
+  <li><a href='#inferredAs'>inferredAs</a></li>
+  <li><a href='#isAbstract'>isAbstract</a></li>
+  <li><a href='#isBool'>isBool</a></li>
+  <li><a href='#isClass'>isClass</a></li>
+  <li><a href='#isConst'>isConst</a></li>
+  <li><a href='#isConstFieldType'>isConstFieldType</a></li>
+  <li><a href='#isDecimal'>isDecimal</a></li>
+  <li><a href='#isEnum'>isEnum</a></li>
+  <li><a href='#isFacet'>isFacet</a></li>
+  <li><a href='#isFinal'>isFinal</a></li>
+  <li><a href='#isFloat'>isFloat</a></li>
+  <li><a href='#isForeign'>isForeign</a></li>
+  <li><a href='#isFunc'>isFunc</a></li>
+  <li><a href='#isGeneric'>isGeneric</a></li>
+  <li><a href='#isGenericParameter'>isGenericParameter</a></li>
+  <li><a href='#isInt'>isInt</a></li>
+  <li><a href='#isInternal'>isInternal</a></li>
+  <li><a href='#isList'>isList</a></li>
+  <li><a href='#isMap'>isMap</a></li>
+  <li><a href='#isMixin'>isMixin</a></li>
+  <li><a href='#isNative'>isNative</a></li>
+  <li><a href='#isNothing'>isNothing</a></li>
+  <li><a href='#isNullable'>isNullable</a></li>
+  <li><a href='#isObj'>isObj</a></li>
+  <li><a href='#isParameterized'>isParameterized</a></li>
+  <li><a href='#isPublic'>isPublic</a></li>
+  <li><a href='#isRange'>isRange</a></li>
+  <li><a href='#isStr'>isStr</a></li>
+  <li><a href='#isSupported'>isSupported</a></li>
+  <li><a href='#isSynthetic'>isSynthetic</a></li>
+  <li><a href='#isThis'>isThis</a></li>
+  <li><a href='#isType'>isType</a></li>
+  <li><a href='#isVal'>isVal</a></li>
+  <li><a href='#isValType'>isValType</a></li>
+  <li><a href='#isValid'>isValid</a></li>
+  <li><a href='#isVoid'>isVoid</a></li>
+  <li><a href='#method'>method</a></li>
+  <li><a href='#methods'>methods</a></li>
+  <li><a href='#mixins'>mixins</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#ns'>ns</a></li>
+  <li><a href='#operators'>operators</a></li>
+  <li><a href='#parameterizeThis'>parameterizeThis</a></li>
+  <li><a href='#pod'>pod</a></li>
+  <li><a href='#qname'>qname</a></li>
+  <li><a href='#raw'>raw</a></li>
+  <li><a href='#signature'>signature</a></li>
+  <li><a href='#slot'>slot</a></li>
+  <li><a href='#slots'>slots</a></li>
+  <li><a href='#toListOf'>toListOf</a></li>
+  <li><a href='#toNonNullable'>toNonNullable</a></li>
+  <li><a href='#toNullable'>toNullable</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fandoc::FandocParser</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fandoc</a></li>
+  <li>&gt;</li>
+  <li><a href='FandocParser.html'>FandocParser</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fandoc::FandocParser</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  fandoc::FandocParser</pre>
+</div>
+<div class='detail'>
+
+<p>FandocParser translate fandoc text into an in-memory representation of the document.</p>
+
+<p>See <a href='pod-doc.html#api'>pod doc</a> for usage.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='block' class='method hidden'>block<a href='FandocParser_src.html#block'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> block(<a href='../sys/Int.html'>Int</a> indent)</code></p>
+</dd>
+<dt id='blockquote' class='method hidden'>blockquote<a href='FandocParser_src.html#blockquote'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> blockquote()</code></p>
+</dd>
+<dt id='consume' class='method hidden'>consume<a href='FandocParser_src.html#consume'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> consume()</code></p>
+
+<p>Consume the current line and advance to the next line</p>
+</dd>
+<dt id='cur' class='field hidden'>cur<a href='FandocParser_src.html#cur'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>? cur</code></p>
+</dd>
+<dt id='curIndent' class='field hidden'>curIndent<a href='FandocParser_src.html#curIndent'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> curIndent</code></p>
+</dd>
+<dt id='curLine' class='field hidden'>curLine<a href='FandocParser_src.html#curLine'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> curLine</code></p>
+</dd>
+<dt id='curStart' class='field hidden'>curStart<a href='FandocParser_src.html#curStart'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> curStart</code></p>
+</dd>
+<dt id='curt' class='field hidden'>curt<a href='FandocParser_src.html#curt'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='LineType.html'>LineType</a>? curt</code></p>
+</dd>
+<dt id='err' class='method hidden'>err<a href='FandocParser_src.html#err'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> err(<a href='../sys/Str.html'>Str</a> msg, <a href='../sys/Int.html'>Int</a> line, <a href='../sys/Err.html'>Err</a>? cause := null)</code></p>
+
+<p>Log an error</p>
+</dd>
+<dt id='errReport' class='method hidden'>errReport<a href='FandocParser_src.html#errReport'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> errReport(<a href='FandocErr.html'>FandocErr</a> err)</code></p>
+
+<p>Log an error</p>
+</dd>
+<dt id='errs' class='field'>errs<a href='FandocParser_src.html#errs'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='FandocErr.html'>FandocErr</a>[] errs := FandocErr[,]</code></p>
+
+<p>List of errors detected</p>
+</dd>
+<dt id='filename' class='field hidden'>filename<a href='FandocParser_src.html#filename'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Str.html'>Str</a> filename := ""</code></p>
+</dd>
+<dt id='formattedText' class='method hidden'>formattedText<a href='FandocParser_src.html#formattedText'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> formattedText(<a href='DocElem.html'>DocElem</a> elem)</code></p>
+</dd>
+<dt id='header' class='method hidden'>header<a href='FandocParser_src.html#header'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> header(<a href='Doc.html'>Doc</a> doc)</code></p>
+</dd>
+<dt id='heading' class='method hidden'>heading<a href='FandocParser_src.html#heading'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> heading()</code></p>
+</dd>
+<dt id='isOrderedListMark' class='method hidden'>isOrderedListMark<a href='FandocParser_src.html#isOrderedListMark'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>static private <a href='../sys/Bool.html'>Bool</a> isOrderedListMark(<a href='../sys/Str.html'>Str</a> line, <a href='../sys/Int.html'>Int</a> i)</code></p>
+
+<p>Return if line starting at index i is an ordered list item:</p>
+
+<pre>number* "." sp  (digits)
+letter  "." sp  (a-z | A-Z single letter only)
+roman*  "." sp  (ivx | IVX combos)</pre>
+</dd>
+<dt id='lineIndex' class='field hidden'>lineIndex<a href='FandocParser_src.html#lineIndex'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> lineIndex</code></p>
+</dd>
+<dt id='lines' class='field hidden'>lines<a href='FandocParser_src.html#lines'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>[]? lines</code></p>
+</dd>
+<dt id='listItems' class='method hidden'>listItems<a href='FandocParser_src.html#listItems'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> listItems(<a href='DocElem.html'>DocElem</a> list, <a href='LineType.html'>LineType</a> listType, <a href='../sys/Int.html'>Int</a> listIndent)</code></p>
+</dd>
+<dt id='main' class='method'>main<a href='FandocParser_src.html#main'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='../sys/Void.html'>Void</a> main(<a href='../sys/Str.html'>Str</a>[] args := Env.cur().args())</code></p>
+</dd>
+<dt id='numLines' class='field hidden'>numLines<a href='FandocParser_src.html#numLines'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> numLines</code></p>
+</dd>
+<dt id='ol' class='method hidden'>ol<a href='FandocParser_src.html#ol'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> ol()</code></p>
+</dd>
+<dt id='para' class='method hidden'>para<a href='FandocParser_src.html#para'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> para()</code></p>
+</dd>
+<dt id='parse' class='method'>parse<a href='FandocParser_src.html#parse'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Doc.html'>Doc</a> parse(<a href='../sys/Str.html'>Str</a> filename, <a href='../sys/InStream.html'>InStream</a> in, <a href='../sys/Bool.html'>Bool</a> close := true)</code></p>
+
+<p>Parse the document from the specified in stream into an in-memory tree structure.  If close is true, the stream is guaranteed to be closed.</p>
+</dd>
+<dt id='parseHeader' class='field'>parseHeader<a href='FandocParser_src.html#parseHeader'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> parseHeader := true</code></p>
+
+<p>If true, then leading lines starting with <code>**</code> are parsed as header</p>
+</dd>
+<dt id='parseStr' class='method'>parseStr<a href='FandocParser_src.html#parseStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Doc.html'>Doc</a> parseStr(<a href='../sys/Str.html'>Str</a> plaintext)</code></p>
+
+<p>Parse a string into its in-memory document tree structure.</p>
+</dd>
+<dt id='peek' class='field hidden'>peek<a href='FandocParser_src.html#peek'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>? peek</code></p>
+</dd>
+<dt id='peekIndent' class='field hidden'>peekIndent<a href='FandocParser_src.html#peekIndent'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> peekIndent</code></p>
+</dd>
+<dt id='peekStart' class='field hidden'>peekStart<a href='FandocParser_src.html#peekStart'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Int.html'>Int</a> peekStart</code></p>
+</dd>
+<dt id='peekt' class='field hidden'>peekt<a href='FandocParser_src.html#peekt'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='LineType.html'>LineType</a>? peekt</code></p>
+</dd>
+<dt id='pre' class='method hidden'>pre<a href='FandocParser_src.html#pre'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> pre()</code></p>
+</dd>
+<dt id='preExplicit' class='method hidden'>preExplicit<a href='FandocParser_src.html#preExplicit'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> preExplicit()</code></p>
+</dd>
+<dt id='readLines' class='method hidden'>readLines<a href='FandocParser_src.html#readLines'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> readLines(<a href='../sys/InStream.html'>InStream</a> in, <a href='../sys/Bool.html'>Bool</a> close)</code></p>
+
+<p>Read all the lines into memory and close stream if required.</p>
+</dd>
+<dt id='silent' class='field'>silent<a href='FandocParser_src.html#silent'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> silent := false</code></p>
+
+<p>If not silent, then errors are dumped to stdout</p>
+</dd>
+<dt id='skipBlankLines' class='method hidden'>skipBlankLines<a href='FandocParser_src.html#skipBlankLines'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Void.html'>Void</a> skipBlankLines()</code></p>
+
+<p>Skip any blank lines</p>
+</dd>
+<dt id='topBlock' class='method hidden'>topBlock<a href='FandocParser_src.html#topBlock'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> topBlock()</code></p>
+</dd>
+<dt id='ul' class='method hidden'>ul<a href='FandocParser_src.html#ul'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='DocElem.html'>DocElem</a> ul()</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='FandocParser_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden'><a href='#block'>block</a></li>
+  <li class='hidden'><a href='#blockquote'>blockquote</a></li>
+  <li class='hidden'><a href='#consume'>consume</a></li>
+  <li class='hidden'><a href='#cur'>cur</a></li>
+  <li class='hidden'><a href='#curIndent'>curIndent</a></li>
+  <li class='hidden'><a href='#curLine'>curLine</a></li>
+  <li class='hidden'><a href='#curStart'>curStart</a></li>
+  <li class='hidden'><a href='#curt'>curt</a></li>
+  <li class='hidden'><a href='#err'>err</a></li>
+  <li class='hidden'><a href='#errReport'>errReport</a></li>
+  <li><a href='#errs'>errs</a></li>
+  <li class='hidden'><a href='#filename'>filename</a></li>
+  <li class='hidden'><a href='#formattedText'>formattedText</a></li>
+  <li class='hidden'><a href='#header'>header</a></li>
+  <li class='hidden'><a href='#heading'>heading</a></li>
+  <li class='hidden'><a href='#isOrderedListMark'>isOrderedListMark</a></li>
+  <li class='hidden'><a href='#lineIndex'>lineIndex</a></li>
+  <li class='hidden'><a href='#lines'>lines</a></li>
+  <li class='hidden'><a href='#listItems'>listItems</a></li>
+  <li><a href='#main'>main</a></li>
+  <li class='hidden'><a href='#numLines'>numLines</a></li>
+  <li class='hidden'><a href='#ol'>ol</a></li>
+  <li class='hidden'><a href='#para'>para</a></li>
+  <li><a href='#parse'>parse</a></li>
+  <li><a href='#parseHeader'>parseHeader</a></li>
+  <li><a href='#parseStr'>parseStr</a></li>
+  <li class='hidden'><a href='#peek'>peek</a></li>
+  <li class='hidden'><a href='#peekIndent'>peekIndent</a></li>
+  <li class='hidden'><a href='#peekStart'>peekStart</a></li>
+  <li class='hidden'><a href='#peekt'>peekt</a></li>
+  <li class='hidden'><a href='#pre'>pre</a></li>
+  <li class='hidden'><a href='#preExplicit'>preExplicit</a></li>
+  <li class='hidden'><a href='#readLines'>readLines</a></li>
+  <li><a href='#silent'>silent</a></li>
+  <li class='hidden'><a href='#skipBlankLines'>skipBlankLines</a></li>
+  <li class='hidden'><a href='#topBlock'>topBlock</a></li>
+  <li class='hidden'><a href='#ul'>ul</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fandoc 1.0.56
+[11-Nov-2010 Thu 10:08:22AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

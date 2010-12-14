@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>demo_24::Boot</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>examples</a></li>
+  <li>&gt;</li>
+  <li><a href='Boot.html'>web-demo.html</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='src'>
+<pre>
+<span>#! /usr/bin/env fan
+</span>
+<span class='k'>using</span> util
+<span class='k'>using</span> web
+<span class='k'>using</span> webmod
+<span class='k'>using</span> wisp
+<span class='k'>using</span> compiler
+
+<span class='z'>**</span>
+<span class='z'>** Samples for web and webmod pods.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> Boot : AbstractMain
+<span class='b'>{</span>
+  @Opt <span class='b'>{</span> help = <span class='s'>"http port"</span> <span class='b'>}</span>
+  Int port := 8080
+
+  <span class='k'>override</span> Int <span id='run'>run</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// create log dir if it doesn't exist</span>
+    logDir := homeDir + <span class='u'>`demo/logs/`</span>
+    <span class='k'>if</span> <span class='b'>(</span>!logDir.exists<span class='b'>)</span> logDir.create
+
+    <span class='y'>// install sys log handler</span>
+    sysLogger := FileLogger <span class='b'>{</span> dir = logDir; filename = <span class='s'>"sys.log"</span> <span class='b'>}</span>
+    Log.addHandler |rec| <span class='b'>{</span> sysLogger.writeLogRec<span class='b'>(</span>rec<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// check if doc directory exists</span>
+    docDir := Env.cur.homeDir + <span class='u'>`doc/`</span>
+    <span class='k'>if</span> <span class='b'>(</span>!docDir.exists<span class='b'>)</span> docDir = homeDir + <span class='u'>`demo/`</span>
+
+    <span class='y'>// configure our web pipeline</span>
+    pipeline := PipelineMod
+    <span class='b'>{</span>
+      <span class='y'>// pipeline steps</span>
+      steps =
+      <span class='b'>[</span>
+        RouteMod
+        <span class='b'>{</span>
+          routes =
+          <span class='b'>[</span>
+            <span class='s'>"index"</span>:  FileMod <span class='b'>{</span> file = homeDir + <span class='u'>`demo/index.html`</span> <span class='b'>}</span>,
+            <span class='s'>"flag"</span>:   FileMod <span class='b'>{</span> file = <span class='u'>`fan://icons/x32/flag.png`</span>.get <span class='b'>}</span>,
+            <span class='s'>"doc"</span>:    FileMod <span class='b'>{</span> file = docDir <span class='b'>}</span>,
+            <span class='s'>"logs"</span>:   FileMod <span class='b'>{</span> file = logDir <span class='b'>}</span>,
+            <span class='s'>"upload"</span>: ScriptMod <span class='b'>{</span> file = homeDir + <span class='u'>`demo/upload.fan`</span> <span class='b'>}</span>,
+            <span class='s'>"dump"</span>:   ScriptMod <span class='b'>{</span> file = homeDir + <span class='u'>`demo/dump.fan`</span> <span class='b'>}</span>,
+          <span class='b'>]</span>
+        <span class='b'>}</span>
+      <span class='b'>]</span>
+
+      <span class='y'>// steps to run after every request</span>
+      after =
+      <span class='b'>[</span>
+        LogMod <span class='b'>{</span> dir = logDir; filename = <span class='s'>"web.log"</span> <span class='b'>}</span>
+      <span class='b'>]</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// run WispService</span>
+    <span class='k'>return</span> runServices<span class='b'>([</span> WispService <span class='b'>{</span> it.port = <span class='k'>this</span>.port; root = pipeline <span class='b'>}</span> <span class='b'>])</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**</span>
+<span class='z'>** Shows how to load a WebMod from a script file which</span>
+<span class='z'>** is re-compiled on the fly every time it changes.</span>
+<span class='z'>**</span>
+<span class='k'>const</span> <span class='k'>class</span> ScriptMod : WebMod
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>|This|? f<span class='b'>)</span> <span class='b'>{</span> f?.call<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>const</span> File? file
+  <span class='k'>override</span> Void onService<span class='b'>()</span>
+  <span class='b'>{</span>
+    errLog := Buf<span class='b'>()</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      t := Env.cur.compileScript<span class='b'>(</span>file, <span class='b'>[</span><span class='s'>"logOut"</span>:errLog.out<span class='b'>])</span>
+      t.make-&gt;onService
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>CompilerErr e<span class='b'>)</span>
+    <span class='b'>{</span>
+      e.trace
+      res.headers<span class='b'>[</span><span class='s'>"Content-Type"</span><span class='b'>]</span> = <span class='s'>"text/plain"</span>
+      res.out.print<span class='b'>(</span>errLog.flip.readAllStr<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#port'>port</a></li>
+  <li style='display: block;'><a href='#run'>run</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+[11-Nov-2010 Thu 10:09:03AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

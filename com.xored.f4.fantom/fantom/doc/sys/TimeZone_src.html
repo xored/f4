@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::TimeZone</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='TimeZone.html'>TimeZone</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>sys::TimeZone</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::TimeZone</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   28 Sep 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** TimeZone represents a region's offset from UTC and its daylight</span>
+<span class='z'>** savings time rules.  TimeZones are historical - UTC offset and DST</span>
+<span class='z'>** rules may change depending on the year.  The Fantom implementation of</span>
+<span class='z'>** historical time zones is optimized to handle only year boundaries (so</span>
+<span class='z'>** some historical changes which don't occur on year boundaries may</span>
+<span class='z'>** not be 100% accurate).</span>
+<span class='z'>**</span>
+<span class='z'>** The Fantom time zone database and naming model is based on the</span>
+<span class='z'>** [ZoneInfo database]`http://www.twinsun.com/tz/tz-link.htm` used</span>
+<span class='z'>** by UNIX and Java (also known as the Olson database).  All time</span>
+<span class='z'>** zones have both a simple `name` and a `fullName`.  The 'fullName'</span>
+<span class='z'>** is the full identifier used in the zoneinfo database such as</span>
+<span class='z'>** "America/New_York".  The simple name is the city name only</span>
+<span class='z'>** such as "New_York".</span>
+<span class='z'>**</span>
+<span class='z'>** Also see [docLang]`docLang::DateTime`.</span>
+<span class='z'>**</span>
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> TimeZone
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List the names of all the time zones available in the</span>
+  <span class='z'>** local time zone database.  This database is stored in</span>
+  <span class='z'>** "{home}/lib/timezone.ftz" as a binary file.  This</span>
+  <span class='z'>** list contains only the simple names such as "New_York"</span>
+  <span class='z'>** and "London".</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str<span class='b'>[]</span> <span id='listNames'>listNames</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List all zoneinfo (Olson database) full names of the</span>
+  <span class='z'>** time zones available in the local time zone database.</span>
+  <span class='z'>** This list is the full names only such as "America/New_York"</span>
+  <span class='z'>** and "Europe/London".</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Str<span class='b'>[]</span> <span id='listFullNames'>listFullNames</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find a time zone by name from the built-in database.</span>
+  <span class='z'>** Either the simple name like "New_York" or the zoneinfo</span>
+  <span class='z'>** full name "America/New_York" may be used.  If the time zone</span>
+  <span class='z'>** doesn't exist and checked is false then return</span>
+  <span class='z'>** null, otherwise throw ParseErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> TimeZone? <span id='fromStr'>fromStr</span><span class='b'>(</span>Str name, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** UTC time zone instance is "Etc/Utc".</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> TimeZone <span id='utc'>utc</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Relative time zone instance is "Etc/Rel".  The relative timezone</span>
+  <span class='z'>** has a zero offset like UTC, but is used to normalize by time of</span>
+  <span class='z'>** day versus absolute time.  See `DateTime.toRel` and</span>
+  <span class='z'>** [docLang]`docLang::DateTime#relTimeZone`.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> TimeZone <span id='rel'>rel</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the current default TimeZone of the VM.  The default</span>
+  <span class='z'>** timezone is configured by the Java or .NET runtime or it</span>
+  <span class='z'>** can be manually configured in "etc/sys/config.props" with the</span>
+  <span class='z'>** key "timezone" and any value accepted by `fromStr`.  Once</span>
+  <span class='z'>** Fantom is booted, the default timezone cannot be changed.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> TimeZone <span id='cur'>cur</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default value is UTC.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> TimeZone <span id='defVal'>defVal</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Private constructor.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>new</span> <span id='privateMake'>privateMake</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the identifier of this time zone in the time zone</span>
+  <span class='z'>** database.  Name is the city name portion of the zoneinfo</span>
+  <span class='z'>** `fullName` identifier such as "New_York" or "London".</span>
+  <span class='z'>**</span>
+  Str <span id='name'>name</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the full name of this time zone as defined by the zoneinfo</span>
+  <span class='z'>** database.  These names are formatted as "contintent/location"</span>
+  <span class='z'>** where location is a major city within the time zone region.</span>
+  <span class='z'>** Examples of full names are "America/New_York" and "Europe/London".</span>
+  <span class='z'>**</span>
+  Str <span id='fullName'>fullName</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the duration of time added to UTC to compute standard time</span>
+  <span class='z'>** in this time zone.  The offset is independent of daylight savings</span>
+  <span class='z'>** time - during daylight savings the actual offset is this value</span>
+  <span class='z'>** plus `dstOffset`.</span>
+  <span class='z'>**</span>
+  Duration <span id='offset'>offset</span><span class='b'>(</span>Int year<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the duration of time which will be added to local standard</span>
+  <span class='z'>** time to get wall time during daylight savings time (often 1hr).</span>
+  <span class='z'>** If daylight savings time is not observed then return null.</span>
+  <span class='z'>**</span>
+  Duration? <span id='dstOffset'>dstOffset</span><span class='b'>(</span>Int year<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the abbreviated name during standard time.</span>
+  <span class='z'>**</span>
+  Str <span id='stdAbbr'>stdAbbr</span><span class='b'>(</span>Int year<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the abbreviated name during daylight savings time</span>
+  <span class='z'>** or null if daylight savings time not observed.</span>
+  <span class='z'>**</span>
+  Str? <span id='dstAbbr'>dstAbbr</span><span class='b'>(</span>Int year<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return `name`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='TimeZone.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#cur'>cur</a></li>
+  <li style='display: block;'><a href='#defVal'>defVal</a></li>
+  <li style='display: block;'><a href='#dstAbbr'>dstAbbr</a></li>
+  <li style='display: block;'><a href='#dstOffset'>dstOffset</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#fullName'>fullName</a></li>
+  <li style='display: block;'><a href='#listFullNames'>listFullNames</a></li>
+  <li style='display: block;'><a href='#listNames'>listNames</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#offset'>offset</a></li>
+  <li class='hidden' style='display: block;'><a href='#privateMake'>privateMake</a></li>
+  <li style='display: block;'><a href='#rel'>rel</a></li>
+  <li style='display: block;'><a href='#stdAbbr'>stdAbbr</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#utc'>utc</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

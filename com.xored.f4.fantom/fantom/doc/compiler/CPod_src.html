@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::CPod</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='CPod.html'>CPod</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>mixin</h2>
+<h1>compiler::CPod</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::CPod</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   4 Jun 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** CPod is a "compiler pod" used for representing a Pod in the compiler.</span>
+<span class='z'>**</span>
+<span class='k'>mixin</span> CPod
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Associated namespace for this pod representation</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> CNamespace <span id='ns'>ns</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the pod name</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Str <span id='name'>name</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the pod version or null if unknown.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Version <span id='version'>version</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List of the all defined types.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> CType<span class='b'>[]</span> <span id='types'>types</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Lookup a type by its simple name.  If the type doesn't</span>
+  <span class='z'>** exist and checked is true then throw UnknownTypeErr</span>
+  <span class='z'>** otherwise return null.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> CType? <span id='resolveType'>resolveType</span><span class='b'>(</span>Str name, Bool checked<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If this a foreign function interface pod.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Bool <span id='isForeign'>isForeign</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>false</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If this a foreign function interface return the bridge.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> CBridge? <span id='bridge'>bridge</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Hash on name.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> name.hash
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Equality based on pod name.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? t<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span><span class='k'>this</span> === t<span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    that := t <span class='k'>as</span> CPod
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> name == that.name
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return name</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> <span class='k'>final</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> name
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='CPod.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#bridge'>bridge</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#isForeign'>isForeign</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#ns'>ns</a></li>
+  <li style='display: block;'><a href='#resolveType'>resolveType</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#types'>types</a></li>
+  <li style='display: block;'><a href='#version'>version</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

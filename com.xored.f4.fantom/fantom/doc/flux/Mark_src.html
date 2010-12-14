@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::Mark</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='Mark.html'>Mark</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>flux::Mark</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  flux::Mark</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   17 Sep 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> concurrent
+<span class='k'>using</span> fwt
+
+<span class='z'>**</span>
+<span class='z'>** Mark is used to identify a uri with an optional</span>
+<span class='z'>** line and column position.</span>
+<span class='z'>**</span>
+<span class='k'>const</span> <span class='k'>class</span> Mark
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default constructor with it-block.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>|This| f<span class='b'>)</span> <span class='b'>{</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Attempt to parse an arbitrary line of text into a mark.</span>
+  <span class='z'>** We attempt to match anything that looks like a absolute</span>
+  <span class='z'>** file name.  If we match a filename, then we look for an</span>
+  <span class='z'>** optional line and column number no more than a few chars</span>
+  <span class='z'>** from the filename.  This will correctly handle output from</span>
+  <span class='z'>** various compilers including Fantom compilers, javac, and the</span>
+  <span class='z'>** C# compiler.  Return null if file path found.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Mark? <span id='fromStr'>fromStr</span><span class='b'>(</span>Str text<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> MarkParser<span class='b'>(</span>text<span class='b'>)</span>.parse
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Uri of the resource</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Uri <span id='uri'>uri</span> := <span class='u'>``</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** One based line number or null if unknown.</span>
+  <span class='z'>** Note that fwt widgets are zero based.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int? <span id='line'>line</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** One based line column or null if unknown</span>
+  <span class='z'>** Note that fwt widgets are zero based.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int? <span id='col'>col</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Hash code is based on uri, line, and col.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    hash := uri.hash
+    <span class='k'>if</span> <span class='b'>(</span>line != <span class='k'>null</span><span class='b'>)</span> hash = hash.xor<span class='b'>(</span>line.shiftl<span class='b'>(</span>21<span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>col != <span class='k'>null</span><span class='b'>)</span>  hash = hash.xor<span class='b'>(</span>col.shiftl<span class='b'>(</span>11<span class='b'>))</span>
+    <span class='k'>return</span> hash
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Equality is based on uri, line, and col.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? that<span class='b'>)</span>
+  <span class='b'>{</span>
+    x := that <span class='k'>as</span> Mark
+    <span class='k'>if</span> <span class='b'>(</span>x == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> uri == x.uri &amp;&amp; line == x.line &amp;&amp; col == x.col
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare URIs, then lines, then columns</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='compare'>compare</span><span class='b'>(</span>Obj that<span class='b'>)</span>
+  <span class='b'>{</span>
+    x := <span class='b'>(</span>Mark<span class='b'>)</span>that
+    cmp := uri &lt;=&gt; x.uri
+    <span class='k'>if</span> <span class='b'>(</span>cmp == 0<span class='b'>)</span> cmp = line &lt;=&gt; x.line
+    <span class='k'>if</span> <span class='b'>(</span>cmp == 0<span class='b'>)</span> cmp = col &lt;=&gt; x.col
+    <span class='k'>return</span> cmp
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return string formatted as "uri:line:col" where the</span>
+  <span class='z'>** line and col are optional if null.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    s := uri.toStr
+    <span class='k'>if</span> <span class='b'>(</span>line != <span class='k'>null</span><span class='b'>)</span> s += <span class='s'>":$line"</span>
+    <span class='k'>if</span> <span class='b'>(</span>col != <span class='k'>null</span><span class='b'>)</span>  s += <span class='s'>":$col"</span>
+    <span class='k'>return</span> s
+  <span class='b'>}</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** MarkParser</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** MarkParser is used to implement Mark.fromStr.</span>
+<span class='z'>** It also keeps track of the string indices for</span>
+<span class='z'>** the filename so console can shrink it.</span>
+<span class='z'>**</span>
+<span class='k'>internal</span> <span class='k'>class</span> MarkParser
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>Str text<span class='b'>)</span> <span class='b'>{</span> <span class='k'>this</span>.text = text <span class='b'>}</span>
+
+  Mark? parse<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='k'>return</span> doParse
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      e.trace
+      <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> Mark? doParse<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// use case insensitive compare on windows</span>
+    text := <span class='k'>this</span>.text
+    <span class='k'>if</span> <span class='b'>(</span>Desktop.isWindows<span class='b'>)</span> text = text.lower
+
+    <span class='y'>// attempt to match one of the root indices</span>
+    Str? root := <span class='k'>null</span>
+    Int? s := <span class='k'>null</span>
+    rootDirs.each |Str rootDir|
+    <span class='b'>{</span>
+      x := text.index<span class='b'>(</span>rootDir<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>x == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span>
+      <span class='k'>if</span> <span class='b'>(</span>s == <span class='k'>null</span> || x &lt; s<span class='b'>)</span> <span class='b'>{</span> s = x; root = rootDir <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>s == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+
+    <span class='y'>// match up anything that looks like a directory</span>
+    e := s + root.size
+    <span class='k'>if</span> <span class='b'>(</span>text.size &lt;= e<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    f := File.os<span class='b'>(</span>text<span class='b'>[</span>s..e<span class='b'>])</span>
+    <span class='k'>while</span> <span class='b'>(</span>text<span class='b'>[</span>e<span class='b'>]</span> == <span class='s'>'/'</span> || text<span class='b'>[</span>e<span class='b'>]</span> == <span class='s'>'\\'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      slash := Desktop.isWindows ? text.index<span class='b'>(</span><span class='s'>"\\"</span>, e+1<span class='b'>)</span> : <span class='k'>null</span>
+      <span class='k'>if</span> <span class='b'>(</span>slash == <span class='k'>null</span><span class='b'>)</span> slash = text.index<span class='b'>(</span><span class='s'>"/"</span>, e+1<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>slash == <span class='k'>null</span><span class='b'>)</span> <span class='k'>break</span>
+      testf := File.os<span class='b'>(</span>text<span class='b'>[</span>s..slash<span class='b'>])</span>
+      <span class='k'>if</span> <span class='b'>(</span>!testf.exists<span class='b'>)</span> <span class='k'>break</span>
+      f = testf
+      e = slash
+    <span class='b'>}</span>
+
+    <span class='y'>// try and find the longest matching file name in that directory</span>
+    rest := text<span class='b'>[</span>e+1..-1<span class='b'>]</span>
+    Str<span class='b'>[]</span> names := f.list.map |File x-&gt;Str| <span class='b'>{</span> Desktop.isWindows ? x.name.lower : x.name <span class='b'>}</span>
+    names.sortr |Str a, Str b-&gt;Int| <span class='b'>{</span> a.size &lt;=&gt; b.size <span class='b'>}</span>
+    Str? n := names.eachWhile |Str n-&gt;Str?| <span class='b'>{</span> rest.startsWith<span class='b'>(</span>n<span class='b'>)</span> ? n : <span class='k'>null</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>n != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      f = File.make<span class='b'>(</span>f.uri + n.toUri, <span class='k'>false</span><span class='b'>)</span>
+      e += n.size
+    <span class='b'>}</span>
+    fileStart = s
+    fileEnd = e
+
+    <span class='y'>// we now have our uri</span>
+    Uri? uri := <span class='k'>null</span>
+    <span class='k'>try</span> <span class='b'>{</span> uri = f.normalize.uri <span class='b'>}</span> <span class='k'>catch</span> <span class='b'>{</span> <span class='k'>return</span> <span class='k'>null</span> <span class='b'>}</span>
+
+    <span class='y'>// try to find a number for line</span>
+    Int? num := <span class='k'>null</span>
+    <span class='k'>for</span> <span class='b'>(</span>i:=e+1; i&lt;e+8 &amp;&amp; i&lt;text.size; ++i<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>text<span class='b'>[</span>i<span class='b'>]</span>.isDigit<span class='b'>)</span> <span class='b'>{</span> num=i; <span class='k'>break</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>num == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> Mark <span class='b'>{</span> it.uri = uri <span class='b'>}</span>
+
+    <span class='y'>// parse out line number</span>
+    line := text<span class='b'>[</span>num<span class='b'>]</span> - <span class='s'>'0'</span>
+    <span class='k'>while</span> <span class='b'>(</span>++num &lt; text.size &amp;&amp; text<span class='b'>[</span>num<span class='b'>]</span>.isDigit<span class='b'>)</span>
+      line = line*10 + <span class='b'>(</span>text<span class='b'>[</span>num<span class='b'>]</span> - <span class='s'>'0'</span><span class='b'>)</span>
+
+    <span class='y'>// try to find a column number</span>
+    e = num; num = <span class='k'>null</span>;
+    <span class='k'>for</span> <span class='b'>(</span>i:=e; i&lt;e+8 &amp;&amp; i&lt;text.size; ++i<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>text<span class='b'>[</span>i<span class='b'>]</span>.isDigit<span class='b'>)</span> <span class='b'>{</span> num=i; <span class='k'>break</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>num == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> Mark <span class='b'>{</span> it.uri = uri; it.line = line <span class='b'>}</span>
+
+    <span class='y'>// parse out line number</span>
+    col := text<span class='b'>[</span>num<span class='b'>]</span> - <span class='s'>'0'</span>
+    <span class='k'>while</span> <span class='b'>(</span>++num &lt; text.size &amp;&amp; text<span class='b'>[</span>num<span class='b'>]</span>.isDigit<span class='b'>)</span>
+      col = col*10 + <span class='b'>(</span>text<span class='b'>[</span>num<span class='b'>]</span> - <span class='s'>'0'</span><span class='b'>)</span>
+
+    <span class='k'>return</span> Mark <span class='b'>{</span> it.uri = uri; it.line = line; it.col = col <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a listing of the file system root paths</span>
+  <span class='z'>** to use for matching absolute filepaths.</span>
+  <span class='z'>**</span>
+  <span class='k'>internal</span> <span class='k'>static</span> Str<span class='b'>[]</span> rootDirs<span class='b'>()</span>
+  <span class='b'>{</span>
+    Str<span class='b'>[]</span>? roots := Actor.locals<span class='b'>[</span><span class='s'>"flux.Mark.roots"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>roots == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      roots = Str<span class='b'>[</span>,<span class='b'>]</span>
+      File.osRoots.each |File f|
+      <span class='b'>{</span>
+        f.list.each |File x|
+        <span class='b'>{</span>
+          path := x.osPath
+          <span class='k'>if</span> <span class='b'>(</span>Desktop.isWindows<span class='b'>)</span> path = path.lower
+          roots.add<span class='b'>(</span>path<span class='b'>)</span>
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      roots.sortr |Str a, Str b-&gt;Int| <span class='b'>{</span> a.size &lt;=&gt; b.size <span class='b'>}</span>
+      Actor.locals<span class='b'>[</span><span class='s'>"flux.Mark.roots"</span><span class='b'>]</span> = roots
+    <span class='b'>}</span>
+    <span class='k'>return</span> roots
+  <span class='b'>}</span>
+
+  Str? text
+  Int fileStart := -1
+  Int fileEnd := -1
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Mark.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#col'>col</a></li>
+  <li style='display: block;'><a href='#compare'>compare</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#line'>line</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#uri'>uri</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

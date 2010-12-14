@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::OutStream</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='OutStream.html'>OutStream</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>sys::OutStream</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::OutStream</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Mar 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** OutStream is used to write binary and text data</span>
+<span class='z'>** to an output stream.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> OutStream
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Constructor for an OutStream which wraps another stream.</span>
+  <span class='z'>** All writes to this stream will be routed to the specified</span>
+  <span class='z'>** inner stream.</span>
+  <span class='z'>**</span>
+  <span class='z'>** If out is null, then it is the subclass responsibility to</span>
+  <span class='z'>** handle writes by overriding the following methods: `write`</span>
+  <span class='z'>** and `writeBuf`.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>OutStream? out<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Virtuals</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write a byte to the output stream.  Throw IOErr on error.</span>
+  <span class='z'>** Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='write'>write</span><span class='b'>(</span>Int byte<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write n bytes from the specified Buf at it's current position to</span>
+  <span class='z'>** this output stream.  If n is defaulted to buf.remaining(), then</span>
+  <span class='z'>** everything left in the buffer is drained to this output stream.</span>
+  <span class='z'>** The buf's position is advanced n bytes upon return.  Throw</span>
+  <span class='z'>** IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='writeBuf'>writeBuf</span><span class='b'>(</span>Buf buf, Int n := buf.remaining<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Flush the stream so any buffered bytes are written out.  Default</span>
+  <span class='z'>** implementation does nothing.  Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='flush'>flush</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If this output stream is mapped to a file device, then</span>
+  <span class='z'>** synchronize all memory buffers to the physical storage device.</span>
+  <span class='z'>** Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='sync'>sync</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Close the output stream.  This method is guaranteed to never</span>
+  <span class='z'>** throw an IOErr.  Return true if the stream was closed successfully</span>
+  <span class='z'>** or false if the stream was closed abnormally.  Default implementation</span>
+  <span class='z'>** does nothing and returns true.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Bool <span id='close'>close</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Binary Data</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Byte order mode for binary writes.</span>
+  <span class='z'>** Default is `Endian.big` (network byte order).</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Endian <span id='endian'>endian</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write two bytes as a 16-bit number using configured `endian`.  This method</span>
+  <span class='z'>** may be paired with `InStream.readU2` or `InStream.readS2`.  Throw IOErr</span>
+  <span class='z'>** on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeI2'>writeI2</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write four bytes as a 32-bit number using configured `endian`.  This</span>
+  <span class='z'>** method may be paired with `InStream.readU4` or `InStream.readS4`.  Throw</span>
+  <span class='z'>** IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeI4'>writeI4</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write eight bytes as a 64-bit number using configured `endian`.  This</span>
+  <span class='z'>** is paired with `InStream.readS8`.  Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeI8'>writeI8</span><span class='b'>(</span>Int n<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write four bytes as a 32-bit floating point number using configured `endian`</span>
+  <span class='z'>** order according to `Float.bits32`.  This is paired with `InStream.readF4`.</span>
+  <span class='z'>** Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeF4'>writeF4</span><span class='b'>(</span>Float r<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write eight bytes as a 64-bit floating point number using configured `endian`</span>
+  <span class='z'>** order according to `Float.bits`.  This is paired with `InStream.readF8`.</span>
+  <span class='z'>** Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeF8'>writeF8</span><span class='b'>(</span>Float r<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write a decimal as a string according to `writeUtf`.</span>
+  <span class='z'>**</span>
+  This <span id='writeDecimal'>writeDecimal</span><span class='b'>(</span>Decimal d<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write one byte, one if true or zero if false.  This method is paired</span>
+  <span class='z'>** with `InStream.readBool`.  Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeBool'>writeBool</span><span class='b'>(</span>Bool b<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write a Str in modified UTF-8 format according the 'java.io.DataOutput'</span>
+  <span class='z'>** specification.  This method is paired with `InStream.readUtf`.  Throw</span>
+  <span class='z'>** IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeUtf'>writeUtf</span><span class='b'>(</span>Str s<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Text Data</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The current charset used to encode Unicode characters into</span>
+  <span class='z'>** bytes.  The default charset should always be UTF-8.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Charset <span id='charset'>charset</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write one or more bytes to the stream for the specified Unicode</span>
+  <span class='z'>** character based on the current charset encoding.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeChar'>writeChar</span><span class='b'>(</span>Int char<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write the Unicode characters in the specified string to the</span>
+  <span class='z'>** stream using the current charset encoding.  Off specifies</span>
+  <span class='z'>** the index offset to start writing characters and len the</span>
+  <span class='z'>** number of characters in str to write.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeChars'>writeChars</span><span class='b'>(</span>Str str, Int off := 0, Int len := str.size-off<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for 'writeChars(obj.toStr)'.  If obj is null,</span>
+  <span class='z'>** then print the string "null".  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='print'>print</span><span class='b'>(</span>Obj? s<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Convenience for 'writeChars(obj.toStr + "\n")'.  If obj</span>
+  <span class='z'>** is null then print the string "null\n".  Return this.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> This <span id='printLine'>printLine</span><span class='b'>(</span>Obj? obj := <span class='s'>""</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write a serialized object from the stream according to</span>
+  <span class='z'>** the Fantom [serialization format]`docLang::Serialization`.</span>
+  <span class='z'>** Throw IOErr on error.  Return this.</span>
+  <span class='z'>**</span>
+  <span class='z'>** The options may be used to specify the format of the output:</span>
+  <span class='z'>**   - "indent": Int specifies how many spaces to indent</span>
+  <span class='z'>**     each level.  Default is 0.</span>
+  <span class='z'>**   - "skipDefaults": Bool specifies if we should skip fields</span>
+  <span class='z'>**     at their default values.  Field values are compared according</span>
+  <span class='z'>**     to the 'equals' method.  Default is false.</span>
+  <span class='z'>**   - "skipErrors": Bool specifies if we should skip objects which</span>
+  <span class='z'>**     aren't serializable. If true then we output null and a comment.</span>
+  <span class='z'>**     Default is false.</span>
+  <span class='z'>**</span>
+  This <span id='writeObj'>writeObj</span><span class='b'>(</span>Obj? obj, <span class='b'>[</span>Str:Obj<span class='b'>]</span>? options := <span class='k'>null</span><span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Utils</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write the given map of Str name/value pairs to the output stream</span>
+  <span class='z'>** according to the Fantom props file format (see `InStream.readProps` for</span>
+  <span class='z'>** full specification).  The props are written using UTF-8 regardless</span>
+  <span class='z'>** of this stream's current charset.  If close argument is true, then</span>
+  <span class='z'>** automatically close the stream.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeProps'>writeProps</span><span class='b'>(</span>Str:Str props, Bool close := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write a string to this output stream using XML escape sequences.</span>
+  <span class='z'>** By default only the '&lt; &gt; &amp;' characters are escaped. You can</span>
+  <span class='z'>** use the following flags to escape additional characters:</span>
+  <span class='z'>**   - `xmlEscNewlines`: escape the '\n' and '\r' characters</span>
+  <span class='z'>**   - `xmlEscQuotes`: escape the single and double quote characters</span>
+  <span class='z'>**   - `xmlEscUnicode`: escape any character greater than 0x7f</span>
+  <span class='z'>**</span>
+  <span class='z'>** Any control character less than 0x20 which is not '\t', '\n' or</span>
+  <span class='z'>** '\r' is always escaped with a numeric reference.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='writeXml'>writeXml</span><span class='b'>(</span>Str str, Int mode := 0<span class='b'>)</span>
+
+  <span class='z'>** XML escape newline characters.  See `writeXml`.</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='xmlEscNewlines'>xmlEscNewlines</span> := 0x01
+
+  <span class='z'>** XML escape single and double quotes.  See `writeXml`.</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='xmlEscQuotes'>xmlEscQuotes</span> := 0x02
+
+  <span class='z'>** XML escape any character greater then 0x7f.  See `writeXml`.</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='xmlEscUnicode'>xmlEscUnicode</span> := 0x04
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** SysOutStream</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>class</span> SysOutStream : OutStream
+<span class='b'>{</span>
+  <span class='k'>override</span> This write<span class='b'>(</span>Int byte<span class='b'>)</span>
+  <span class='k'>override</span> This writeBuf<span class='b'>(</span>Buf buf, Int n<span class='b'>)</span>
+  <span class='k'>override</span> This flush<span class='b'>()</span>
+  <span class='k'>override</span> Bool close<span class='b'>()</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='OutStream.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#charset'>charset</a></li>
+  <li style='display: block;'><a href='#close'>close</a></li>
+  <li style='display: block;'><a href='#endian'>endian</a></li>
+  <li style='display: block;'><a href='#flush'>flush</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#print'>print</a></li>
+  <li style='display: block;'><a href='#printLine'>printLine</a></li>
+  <li style='display: block;'><a href='#sync'>sync</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+  <li style='display: block;'><a href='#writeBool'>writeBool</a></li>
+  <li style='display: block;'><a href='#writeBuf'>writeBuf</a></li>
+  <li style='display: block;'><a href='#writeChar'>writeChar</a></li>
+  <li style='display: block;'><a href='#writeChars'>writeChars</a></li>
+  <li style='display: block;'><a href='#writeDecimal'>writeDecimal</a></li>
+  <li style='display: block;'><a href='#writeF4'>writeF4</a></li>
+  <li style='display: block;'><a href='#writeF8'>writeF8</a></li>
+  <li style='display: block;'><a href='#writeI2'>writeI2</a></li>
+  <li style='display: block;'><a href='#writeI4'>writeI4</a></li>
+  <li style='display: block;'><a href='#writeI8'>writeI8</a></li>
+  <li style='display: block;'><a href='#writeObj'>writeObj</a></li>
+  <li style='display: block;'><a href='#writeProps'>writeProps</a></li>
+  <li style='display: block;'><a href='#writeUtf'>writeUtf</a></li>
+  <li style='display: block;'><a href='#writeXml'>writeXml</a></li>
+  <li style='display: block;'><a href='#xmlEscNewlines'>xmlEscNewlines</a></li>
+  <li style='display: block;'><a href='#xmlEscQuotes'>xmlEscQuotes</a></li>
+  <li style='display: block;'><a href='#xmlEscUnicode'>xmlEscUnicode</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

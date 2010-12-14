@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>flux::View</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>flux</a></li>
+  <li>&gt;</li>
+  <li><a href='View.html'>View</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>flux::View</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../fwt/Widget.html'>fwt::Widget</a>
+    <a href='../fwt/Pane.html'>fwt::Pane</a>
+      <a href='../fwt/ContentPane.html'>fwt::ContentPane</a>
+        flux::View</pre>
+</div>
+<p><code class='sig'>@<a href='../sys/Serializable.html'>Serializable</a> {
+simple=false
+collection=false
+}<br/>
+</code></p>
+<div class='detail'>
+
+<p>View is a plugin designed to view or edit a <code><a href='Resource.html'>Resource</a></code>.</p>
+
+<p>See <a href='pod-doc.html#views'>pod doc</a> for details.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='buildStatusBar' class='method'>buildStatusBar<a href='View_src.html#buildStatusBar'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../fwt/Widget.html'>Widget</a>? buildStatusBar()</code></p>
+
+<p>Build a view specific status bar to merge into the frame. This method is called after <a href='View.html#onLoad'>onLoad</a>, but before mounting. Return null for no status bar.</p>
+</dd>
+<dt id='buildToolBar' class='method'>buildToolBar<a href='View_src.html#buildToolBar'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../fwt/Widget.html'>Widget</a>? buildToolBar()</code></p>
+
+<p>Build a view specific toolbar to merge into the frame. This method is called after <a href='View.html#onLoad'>onLoad</a>, but before mounting. Return null for no toolbar.  See <code><a href='Frame.html#command'>flux::Frame.command</a></code> if you wish to use predefined commands like cut/copy/paste.</p>
+</dd>
+<dt id='commandStack' class='field'>commandStack<a href='View_src.html#commandStack'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../fwt/CommandStack.html'>CommandStack</a> commandStack</code></p>
+
+<p>Get the command history for undo/redo.</p>
+</dd>
+<dt id='commandStackModified' class='method hidden'>commandStackModified<a href='View_src.html#commandStackModified'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> commandStackModified()</code></p>
+</dd>
+<dt id='dirty' class='field'>dirty<a href='View_src.html#dirty'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> dirty := false</code></p>
+
+<p>The dirty state indicates if unsaved changes have been made to the view.  Views should set dirty to true on modification.  Dirty is automatically cleared <a href='View.html#onSave'>onSave</a>.</p>
+</dd>
+<dt id='frame' class='field'>frame<a href='View_src.html#frame'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Frame.html'>Frame</a>? frame { internal set }</code></p>
+
+<p>Get the top level flux frame associated with this view.</p>
+</dd>
+<dt id='make' class='method'>make<a href='View_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make()</code></p>
+
+<p>Constructor.</p>
+</dd>
+<dt id='onActive' class='method'>onActive<a href='View_src.html#onActive'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onActive()</code></p>
+
+<p>Callback when the view is selected as the current tab. This method should be used to enable predefined commands such as find or replace which the view will handle.</p>
+</dd>
+<dt id='onCommand' class='method'>onCommand<a href='View_src.html#onCommand'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onCommand(<a href='../sys/Str.html'>Str</a> id, <a href='../fwt/Event.html'>Event</a>? event)</code></p>
+
+<p>Callback when predefined view managed commands such as find and replace are invoked. Before view managed commands are routed to the view, they must be enabled in the onActive callback.  A convenient technique is to route to handler methods via trap:</p>
+
+<pre>trap("on${id.capitalize}", [event])</pre>
+</dd>
+<dt id='onGotoMark' class='method'>onGotoMark<a href='View_src.html#onGotoMark'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onGotoMark(<a href='Mark.html'>Mark</a> mark)</code></p>
+
+<p>Callback when the view should jump to the specified mark.  The mark's uri will always be the same as this view's resource.  But the mark might also specify a specific line number and column number.</p>
+</dd>
+<dt id='onInactive' class='method'>onInactive<a href='View_src.html#onInactive'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onInactive()</code></p>
+
+<p>Callback when the view is deactivated because the user has selected another tab.</p>
+</dd>
+<dt id='onLoad' class='method'>onLoad<a href='View_src.html#onLoad'>Source</a></dt>
+<dd>
+<p><code class='sig'>abstract <a href='../sys/Void.html'>Void</a> onLoad()</code></p>
+
+<p>Callback to load the <a href='View.html#resource'>resource</a>.  At this point the view can access <a href='View.html#frame'>frame</a>, but has not been mounted yet.</p>
+</dd>
+<dt id='onMarks' class='method'>onMarks<a href='View_src.html#onMarks'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onMarks(<a href='Mark.html'>Mark</a>[] marks)</code></p>
+
+<p>Callback when the frame's list of marks is updated. This callback can be used for the view to highlight mark locations.  The list of marks is the same as <code><a href='Frame.html#marks'>flux::Frame.marks</a></code> and might contain marks outside of this view's uri.</p>
+</dd>
+<dt id='onSave' class='method'>onSave<a href='View_src.html#onSave'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onSave()</code></p>
+
+<p>Callback to save the view's modification to the <a href='View.html#resource'>resource</a>. Save is only called for a dirty view.</p>
+</dd>
+<dt id='onUnload' class='method'>onUnload<a href='View_src.html#onUnload'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> onUnload()</code></p>
+
+<p>Callback when the view is being unloaded.</p>
+</dd>
+<dt id='reload' class='method'>reload<a href='View_src.html#reload'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> reload()</code></p>
+
+<p>Reload this view.</p>
+</dd>
+<dt id='resource' class='field'>resource<a href='View_src.html#resource'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Resource.html'>Resource</a>? resource { internal set }</code></p>
+
+<p>Current resource loaded into this view.</p>
+</dd>
+<dt id='tab' class='field hidden'>tab<a href='View_src.html#tab'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='ViewTab.html'>ViewTab</a>? tab</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='View_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#buildStatusBar'>buildStatusBar</a></li>
+  <li><a href='#buildToolBar'>buildToolBar</a></li>
+  <li><a href='#commandStack'>commandStack</a></li>
+  <li class='hidden'><a href='#commandStackModified'>commandStackModified</a></li>
+  <li><a href='#dirty'>dirty</a></li>
+  <li><a href='#frame'>frame</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#onActive'>onActive</a></li>
+  <li><a href='#onCommand'>onCommand</a></li>
+  <li><a href='#onGotoMark'>onGotoMark</a></li>
+  <li><a href='#onInactive'>onInactive</a></li>
+  <li><a href='#onLoad'>onLoad</a></li>
+  <li><a href='#onMarks'>onMarks</a></li>
+  <li><a href='#onSave'>onSave</a></li>
+  <li><a href='#onUnload'>onUnload</a></li>
+  <li><a href='#reload'>reload</a></li>
+  <li><a href='#resource'>resource</a></li>
+  <li class='hidden'><a href='#tab'>tab</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+flux 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

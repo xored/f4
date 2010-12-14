@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fluxText::TextEditor</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fluxText</a></li>
+  <li>&gt;</li>
+  <li><a href='TextEditor.html'>TextEditor</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fluxText::TextEditor</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../fwt/Widget.html'>fwt::Widget</a>
+    <a href='../fwt/Pane.html'>fwt::Pane</a>
+      <a href='../fwt/ContentPane.html'>fwt::ContentPane</a>
+        <a href='../flux/View.html'>flux::View</a>
+          fluxText::TextEditor</pre>
+</div>
+<p><code class='sig'>@<a href='../sys/Serializable.html'>Serializable</a> {
+simple=false
+collection=false
+}<br/>
+</code></p>
+<div class='detail'>
+
+<p>TextEditor provides a syntax color coded editor for working with text files.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='buildStatusBar' class='method'>buildStatusBar<a href='TextEditor_src.html#buildStatusBar'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../fwt/Widget.html'>Widget</a>? buildStatusBar()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#buildStatusBar'>flux::View.buildStatusBar</a></p>
+<p>Doc inherited from <a href='../flux/View.html#buildStatusBar'>flux::View.buildStatusBar</a></p>
+</div>
+
+<p>Build a view specific status bar to merge into the frame. This method is called after <a href='TextEditor.html#onLoad'>onLoad</a>, but before mounting. Return null for no status bar.</p>
+</dd>
+<dt id='buildToolBar' class='method'>buildToolBar<a href='TextEditor_src.html#buildToolBar'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../fwt/Widget.html'>Widget</a>? buildToolBar()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#buildToolBar'>flux::View.buildToolBar</a></p>
+<p>Doc inherited from <a href='../flux/View.html#buildToolBar'>flux::View.buildToolBar</a></p>
+</div>
+
+<p>Build a view specific toolbar to merge into the frame. This method is called after <a href='TextEditor.html#onLoad'>onLoad</a>, but before mounting. Return null for no toolbar.  See <code><a href='../flux/Frame.html#command'>flux::Frame.command</a></code> if you wish to use predefined commands like cut/copy/paste.</p>
+</dd>
+<dt id='caretField' class='field hidden'>caretField<a href='TextEditor_src.html#caretField'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../fwt/Label.html'>Label</a> caretField := Label()</code></p>
+</dd>
+<dt id='charset' class='field'>charset<a href='TextEditor_src.html#charset'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Charset.html'>Charset</a> charset := this.options.charset</code></p>
+</dd>
+<dt id='charsetField' class='field hidden'>charsetField<a href='TextEditor_src.html#charsetField'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../fwt/Label.html'>Label</a> charsetField := Label()</code></p>
+</dd>
+<dt id='controller' class='field hidden'>controller<a href='TextEditor_src.html#controller'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='TextEditorController.html'>TextEditorController</a>? controller</code></p>
+</dd>
+<dt id='doc' class='field'>doc<a href='TextEditor_src.html#doc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Doc.html'>Doc</a>? doc</code></p>
+</dd>
+<dt id='file' class='field'>file<a href='TextEditor_src.html#file'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/File.html'>File</a>? file</code></p>
+</dd>
+<dt id='fileTimeAtLoad' class='field hidden'>fileTimeAtLoad<a href='TextEditor_src.html#fileTimeAtLoad'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/DateTime.html'>DateTime</a>? fileTimeAtLoad</code></p>
+</dd>
+<dt id='find' class='field hidden'>find<a href='TextEditor_src.html#find'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='FindBar.html'>FindBar</a>? find</code></p>
+</dd>
+<dt id='loadDoc' class='method hidden'>loadDoc<a href='TextEditor_src.html#loadDoc'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> loadDoc()</code></p>
+</dd>
+<dt id='onActive' class='method'>onActive<a href='TextEditor_src.html#onActive'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onActive()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onActive'>flux::View.onActive</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onActive'>flux::View.onActive</a></p>
+</div>
+
+<p>Callback when the view is selected as the current tab. This method should be used to enable predefined commands such as find or replace which the view will handle.</p>
+</dd>
+<dt id='onCommand' class='method'>onCommand<a href='TextEditor_src.html#onCommand'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onCommand(<a href='../sys/Str.html'>Str</a> id, <a href='../fwt/Event.html'>Event</a>? event)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onCommand'>flux::View.onCommand</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onCommand'>flux::View.onCommand</a></p>
+</div>
+
+<p>Callback when predefined view managed commands such as find and replace are invoked. Before view managed commands are routed to the view, they must be enabled in the onActive callback.  A convenient technique is to route to handler methods via trap:</p>
+
+<pre>trap("on${id.capitalize}", [event])</pre>
+</dd>
+<dt id='onGotoMark' class='method'>onGotoMark<a href='TextEditor_src.html#onGotoMark'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onGotoMark(<a href='../flux/Mark.html'>Mark</a> mark)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onGotoMark'>flux::View.onGotoMark</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onGotoMark'>flux::View.onGotoMark</a></p>
+</div>
+
+<p>Callback when the view should jump to the specified mark.  The mark's uri will always be the same as this view's resource.  But the mark might also specify a specific line number and column number.</p>
+</dd>
+<dt id='onInactive' class='method'>onInactive<a href='TextEditor_src.html#onInactive'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onInactive()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onInactive'>flux::View.onInactive</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onInactive'>flux::View.onInactive</a></p>
+</div>
+
+<p>Callback when the view is deactivated because the user has selected another tab.</p>
+</dd>
+<dt id='onLoad' class='method'>onLoad<a href='TextEditor_src.html#onLoad'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onLoad()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onLoad'>flux::View.onLoad</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onLoad'>flux::View.onLoad</a></p>
+</div>
+
+<p>Callback to load the <a href='../flux/View.html#resource'>resource</a>.  At this point the view can access <a href='../flux/View.html#frame'>frame</a>, but has not been mounted yet.</p>
+</dd>
+<dt id='onMarks' class='method'>onMarks<a href='TextEditor_src.html#onMarks'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onMarks(<a href='../flux/Mark.html'>Mark</a>[] marks)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onMarks'>flux::View.onMarks</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onMarks'>flux::View.onMarks</a></p>
+</div>
+
+<p>Callback when the frame's list of marks is updated. This callback can be used for the view to highlight mark locations.  The list of marks is the same as <code><a href='../flux/Frame.html#marks'>flux::Frame.marks</a></code> and might contain marks outside of this view's uri.</p>
+</dd>
+<dt id='onSave' class='method'>onSave<a href='TextEditor_src.html#onSave'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> onSave()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../flux/View.html#onSave'>flux::View.onSave</a></p>
+<p>Doc inherited from <a href='../flux/View.html#onSave'>flux::View.onSave</a></p>
+</div>
+
+<p>Callback to save the view's modification to the <a href='../flux/View.html#resource'>resource</a>. Save is only called for a dirty view.</p>
+</dd>
+<dt id='options' class='field'>options<a href='TextEditor_src.html#options'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='TextEditorOptions.html'>TextEditorOptions</a> options := TextEditorOptions.load</code></p>
+</dd>
+<dt id='readAllLines' class='method hidden'>readAllLines<a href='TextEditor_src.html#readAllLines'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='../sys/Str.html'>Str</a>[]? readAllLines()</code></p>
+</dd>
+<dt id='richText' class='field'>richText<a href='TextEditor_src.html#richText'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../fwt/RichText.html'>RichText</a>? richText</code></p>
+</dd>
+<dt id='rules' class='field'>rules<a href='TextEditor_src.html#rules'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='SyntaxRules.html'>SyntaxRules</a>? rules</code></p>
+</dd>
+<dt id='syntax' class='field'>syntax<a href='TextEditor_src.html#syntax'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='SyntaxOptions.html'>SyntaxOptions</a> syntax := SyntaxOptions.load</code></p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='TextEditor_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#buildStatusBar'>buildStatusBar</a></li>
+  <li><a href='#buildToolBar'>buildToolBar</a></li>
+  <li class='hidden'><a href='#caretField'>caretField</a></li>
+  <li><a href='#charset'>charset</a></li>
+  <li class='hidden'><a href='#charsetField'>charsetField</a></li>
+  <li class='hidden'><a href='#controller'>controller</a></li>
+  <li><a href='#doc'>doc</a></li>
+  <li><a href='#file'>file</a></li>
+  <li class='hidden'><a href='#fileTimeAtLoad'>fileTimeAtLoad</a></li>
+  <li class='hidden'><a href='#find'>find</a></li>
+  <li class='hidden'><a href='#loadDoc'>loadDoc</a></li>
+  <li><a href='#onActive'>onActive</a></li>
+  <li><a href='#onCommand'>onCommand</a></li>
+  <li><a href='#onGotoMark'>onGotoMark</a></li>
+  <li><a href='#onInactive'>onInactive</a></li>
+  <li><a href='#onLoad'>onLoad</a></li>
+  <li><a href='#onMarks'>onMarks</a></li>
+  <li><a href='#onSave'>onSave</a></li>
+  <li><a href='#options'>options</a></li>
+  <li class='hidden'><a href='#readAllLines'>readAllLines</a></li>
+  <li><a href='#richText'>richText</a></li>
+  <li><a href='#rules'>rules</a></li>
+  <li><a href='#syntax'>syntax</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fluxText 1.0.56
+[11-Nov-2010 Thu 10:08:27AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

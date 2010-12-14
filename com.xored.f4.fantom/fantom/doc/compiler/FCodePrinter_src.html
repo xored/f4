@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::FCodePrinter</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FCodePrinter.html'>FCodePrinter</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::FCodePrinter</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::FCodePrinter : <a href='FConst.html'>compiler::FConst</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   26 Dec 05  Brian Frank  Creation</span>
+<span class='y'>//   20 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** FCodePrinter prints a human readable syntax for fcode</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FCodePrinter : FConst
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>FPod pod, OutStream out := Env.cur.out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.pod = pod
+    <span class='k'>this</span>.out = out
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Print</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Void <span id='code'>code</span><span class='b'>(</span>Buf buf<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      <span class='k'>this</span>.buf = buf.seek<span class='b'>(</span>0<span class='b'>)</span>
+
+      <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        op := buf.read
+        <span class='k'>if</span> <span class='b'>(</span>op == <span class='k'>null</span><span class='b'>)</span> <span class='k'>break</span>
+        <span class='k'>this</span>.op<span class='b'>(</span>FOp.vals<span class='b'>[</span>op<span class='b'>])</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      e.trace
+    <span class='b'>}</span>
+
+    out.flush
+    <span class='k'>this</span>.buf = <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  Void <span id='op'>op</span><span class='b'>(</span>FOp op<span class='b'>)</span>
+  <span class='b'>{</span>
+    print<span class='b'>(</span><span class='s'>"    "</span> + buf.pos.minus<span class='b'>(</span>1<span class='b'>)</span>.toStr.justr<span class='b'>(</span>3<span class='b'>)</span> + <span class='s'>": "</span> + op.name.justl<span class='b'>(</span>19<span class='b'>)</span> + <span class='s'>" "</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>op == FOp.Switch<span class='b'>)</span> printSwitch
+    <span class='k'>else</span> <span class='k'>switch</span> <span class='b'>(</span>op.arg<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> FOpArg.None:      print
+      <span class='k'>case</span> FOpArg.Int:       i := buf.readU2; print<span class='b'>(</span>pod.integer<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Float:     i := buf.readU2; print<span class='b'>(</span>pod.float<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Decimal:   i := buf.readU2; print<span class='b'>(</span>pod.decimal<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Str:       i := buf.readU2; print<span class='b'>(</span>pod.str<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Duration:  i := buf.readU2; print<span class='b'>(</span>pod.duration<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Uri:       i := buf.readU2; print<span class='b'>(</span>pod.uri<span class='b'>(</span>i<span class='b'>)</span>.toStr + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Register:  i := buf.readU2; print<span class='b'>(</span>i<span class='b'>)</span>
+      <span class='k'>case</span> FOpArg.TypeRef:   i := buf.readU2; print<span class='b'>(</span>pod.typeRefStr<span class='b'>(</span>i<span class='b'>)</span> + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.FieldRef:  i := buf.readU2; print<span class='b'>(</span>pod.fieldRefStr<span class='b'>(</span>i<span class='b'>)</span> + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.MethodRef: i := buf.readU2; print<span class='b'>(</span>pod.methodRefStr<span class='b'>(</span>i<span class='b'>)</span> + index<span class='b'>(</span>i<span class='b'>))</span>
+      <span class='k'>case</span> FOpArg.Jump:      i := buf.readU2; print<span class='b'>(</span>i<span class='b'>)</span>
+      <span class='k'>case</span> FOpArg.TypePair:
+        i1 := buf.readU2
+        i2 := buf.readU2
+        print<span class='b'>(</span>pod.typeRefStr<span class='b'>(</span>i1<span class='b'>)</span> + index<span class='b'>(</span>i1<span class='b'>))</span>
+        <span class='k'>if</span> <span class='b'>(</span>op == FOp.Coerce<span class='b'>)</span> print<span class='b'>(</span><span class='s'>" =&gt; "</span><span class='b'>)</span>; <span class='k'>else</span> print<span class='b'>(</span><span class='s'>" &lt;=&gt; "</span><span class='b'>)</span>
+        print<span class='b'>(</span>pod.typeRefStr<span class='b'>(</span>i2<span class='b'>)</span> + index<span class='b'>(</span>i2<span class='b'>))</span>
+      <span class='k'>default</span>:       <span class='k'>throw</span> Err<span class='b'>(</span>op.arg.toStr<span class='b'>)</span>
+    <span class='b'>}</span>
+    printLine
+  <span class='b'>}</span>
+
+  Void <span id='printSwitch'>printSwitch</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    buf.readU2.times |Int i|
+    <span class='b'>{</span>
+      printLine
+      print<span class='b'>(</span><span class='s'>"          "</span> + i + <span class='s'>" -&gt; "</span> + buf.readU2<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Print</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  Str <span id='index'>index</span><span class='b'>(</span>Int index<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>showIndex<span class='b'>)</span> <span class='k'>return</span> <span class='s'>"["</span> + index + <span class='s'>"]"</span>
+    <span class='k'>return</span> <span class='s'>""</span>
+  <span class='b'>}</span>
+
+  FCodePrinter <span id='print'>print</span><span class='b'>(</span>Obj obj := <span class='s'>""</span><span class='b'>)</span> <span class='b'>{</span> out.print<span class='b'>(</span>obj<span class='b'>)</span>; <span class='k'>return</span> <span class='k'>this</span> <span class='b'>}</span>
+  FCodePrinter <span id='printLine'>printLine</span><span class='b'>(</span>Obj obj := <span class='s'>""</span><span class='b'>)</span> <span class='b'>{</span> out.printLine<span class='b'>(</span>obj<span class='b'>)</span>; <span class='k'>return</span> <span class='k'>this</span> <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  FPod <span id='pod'>pod</span>
+  OutStream <span id='out'>out</span>
+  Bool <span id='showIndex'>showIndex</span>
+  Buf? <span id='buf'>buf</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FCodePrinter.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#buf'>buf</a></li>
+  <li style='display: block;'><a href='#code'>code</a></li>
+  <li style='display: block;'><a href='#index'>index</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#op'>op</a></li>
+  <li style='display: block;'><a href='#out'>out</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#print'>print</a></li>
+  <li style='display: block;'><a href='#printLine'>printLine</a></li>
+  <li style='display: block;'><a href='#printSwitch'>printSwitch</a></li>
+  <li style='display: block;'><a href='#showIndex'>showIndex</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

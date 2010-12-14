@@ -1,0 +1,319 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::GridPane</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='GridPane.html'>GridPane</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fwt::GridPane</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='Widget.html'>fwt::Widget</a>
+    <a href='Pane.html'>fwt::Pane</a>
+      fwt::GridPane</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+
+<span class='z'>**</span>
+<span class='z'>** GridPane is a container which lays out its children in a grid</span>
+<span class='z'>** from left to right with a new row started based on 'numCols'.</span>
+<span class='z'>**</span>
+<span class='z'>** TODO: this API going to change, most likely there will be a</span>
+<span class='z'>**   switch to per col/per row configuration</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> collection = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>class</span> GridPane : Pane
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Number of columns before wrapping to a new row.</span>
+  <span class='z'>** Default is 1.</span>
+  <span class='z'>**</span>
+  Int <span id='numCols'>numCols</span> := 1
+
+  <span class='z'>**</span>
+  <span class='z'>** Horizontal gap is number of pixels between left and</span>
+  <span class='z'>** right edges of adjacent cells.  Default is 4.</span>
+  <span class='z'>**</span>
+  Int <span id='hgap'>hgap</span> := 4
+
+  <span class='z'>**</span>
+  <span class='z'>** Vertical gap is number of pixels between bottom and</span>
+  <span class='z'>** top edges of adjacent cells.  Default is 4.</span>
+  <span class='z'>**</span>
+  Int <span id='vgap'>vgap</span> := 4
+
+  <span class='z'>**</span>
+  <span class='z'>** Horizontal alignment of the individual cells.  Defaults to left.</span>
+  <span class='z'>**</span>
+  Halign <span id='halignCells'>halignCells</span> := Halign.left
+
+  <span class='z'>**</span>
+  <span class='z'>** Vertical alignment of the individual cells.  Defaults to center.</span>
+  <span class='z'>**</span>
+  Valign <span id='valignCells'>valignCells</span> := Valign.center
+
+  <span class='z'>**</span>
+  <span class='z'>** Horizontal alignment of the entire pane - this defines where</span>
+  <span class='z'>** the extra horizontal space beyond the preferred width goes.</span>
+  <span class='z'>** This field only makes sense when `expandCol` is null.</span>
+  <span class='z'>** Defaults to left.</span>
+  <span class='z'>**</span>
+  Halign <span id='halignPane'>halignPane</span> := Halign.left
+
+  <span class='z'>**</span>
+  <span class='z'>** Vertial alignment of the entire pane - this defines where</span>
+  <span class='z'>** the extra vertial space beyond the preferred height goes.</span>
+  <span class='z'>** This field only makes sense when `expandRow` is null.</span>
+  <span class='z'>** Defaults to top.</span>
+  <span class='z'>**</span>
+  Valign <span id='valignPane'>valignPane</span> := Valign.top
+
+  <span class='z'>**</span>
+  <span class='z'>** If non-null, then this is a zero based row number to assign</span>
+  <span class='z'>** any extra height available beyond the preferred height.  A</span>
+  <span class='z'>** negative number indexes from the last row.  Default is null.</span>
+  <span class='z'>**</span>
+  Int? <span id='expandRow'>expandRow</span> := <span class='k'>null</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If non-null, then this is a zero based column number to assign</span>
+  <span class='z'>** any extra width available beyond the preferred width.  A</span>
+  <span class='z'>** negative number indexes from the last column.  Default is null.</span>
+  <span class='z'>**</span>
+  Int? <span id='expandCol'>expandCol</span> := <span class='k'>null</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If true, then all columns are given a uniform width which</span>
+  <span class='z'>** is computed from the widest column.  If false then columns</span>
+  <span class='z'>** might be laid out with variable widths based on the width</span>
+  <span class='z'>** of the cells.  Default is false.</span>
+  <span class='z'>**</span>
+  Bool <span id='uniformCols'>uniformCols</span> := <span class='k'>false</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** If true, then all rows are given a uniform height which</span>
+  <span class='z'>** is computed from the highest row.  If false then rows</span>
+  <span class='z'>** might be laid out with variable heights based on the highest</span>
+  <span class='z'>** of the cells.  Default is false.</span>
+  <span class='z'>**</span>
+  Bool <span id='uniformRows'>uniformRows</span>:= <span class='k'>false</span>
+
+  <span class='k'>override</span> Size <span id='prefSize'>prefSize</span><span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> GridPaneSizes<span class='b'>(</span><span class='k'>this</span>, children<span class='b'>)</span>.prefPane
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void <span id='onLayout'>onLayout</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// compute max width of each column, and max height of each row</span>
+    kids := children
+    sizes := GridPaneSizes<span class='b'>(</span><span class='k'>this</span>, kids<span class='b'>)</span>
+    psize := <span class='k'>this</span>.size
+    actualw := psize.w; actualh := psize.h
+    prefw := sizes.prefPane.w; prefh := sizes.prefPane.h
+
+    <span class='y'>// compute expand row/col</span>
+    expandRow := <span class='k'>this</span>.expandRow
+    expandCol := <span class='k'>this</span>.expandCol
+    <span class='k'>if</span> <span class='b'>(</span>expandRow != <span class='k'>null</span> &amp;&amp; expandRow &lt; 0<span class='b'>)</span> expandRow  = sizes.numRows+expandRow
+    <span class='k'>if</span> <span class='b'>(</span>expandCol != <span class='k'>null</span> &amp;&amp; expandCol &lt; 0<span class='b'>)</span> expandCol  = numCols+expandCol
+    expandRowh := 0.max<span class='b'>(</span>actualh-prefh<span class='b'>)</span>
+    expandColw := 0.max<span class='b'>(</span>actualw-prefw<span class='b'>)</span>
+
+    <span class='y'>// compute left hand corner of grid pane</span>
+    startx := 0; starty := 0
+    <span class='k'>if</span> <span class='b'>(</span>expandCol == <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>switch</span> <span class='b'>(</span>halignPane<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Halign.center: startx = expandColw/2
+        <span class='k'>case</span> Halign.right:  startx = expandColw
+      <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>expandRow == <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>switch</span> <span class='b'>(</span>valignPane<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Valign.center: starty = expandRowh/2
+        <span class='k'>case</span> Valign.bottom: starty = expandRowh
+      <span class='b'>}</span>
+
+    <span class='y'>// layout children</span>
+    col := 0; row := 0
+    x := startx; y := starty
+    kids.each |Widget kid, Int i|
+    <span class='b'>{</span>
+      pref := sizes.prefs<span class='b'>[</span>i<span class='b'>]</span>
+      kx := x
+      ky := y
+      kw := pref.w
+      kh := pref.h
+      rowh := sizes.rowh<span class='b'>[</span>row<span class='b'>]</span>
+      colw := sizes.colw<span class='b'>[</span>col<span class='b'>]</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>row == expandRow<span class='b'>)</span> rowh += expandRowh
+      <span class='k'>if</span> <span class='b'>(</span>col == expandCol<span class='b'>)</span> colw += expandColw
+
+      <span class='k'>switch</span> <span class='b'>(</span>halignCells<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Halign.center: kx = x + <span class='b'>(</span>colw-kw<span class='b'>)</span>/2
+        <span class='k'>case</span> Halign.right:  kx = x + <span class='b'>(</span>colw-kw<span class='b'>)</span>
+        <span class='k'>case</span> Halign.fill:   kw = colw
+      <span class='b'>}</span>
+
+      <span class='k'>switch</span> <span class='b'>(</span>valignCells<span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>case</span> Valign.center: ky = y + <span class='b'>(</span>rowh-kh<span class='b'>)</span>/2
+        <span class='k'>case</span> Valign.bottom: ky = y + <span class='b'>(</span>rowh-kh<span class='b'>)</span>
+        <span class='k'>case</span> Valign.fill:   kh = rowh
+      <span class='b'>}</span>
+
+      kid.pos = Point<span class='b'>(</span>kx,ky<span class='b'>)</span>
+      kid.size = Size<span class='b'>(</span>kw,kh<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>++col &gt;= numCols<span class='b'>)</span> <span class='b'>{</span> x = startx; y += rowh + vgap; col = 0; row++ <span class='b'>}</span>
+      <span class='k'>else</span> <span class='b'>{</span> x += colw + hgap <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+@Js
+<span class='k'>internal</span> <span class='k'>class</span> GridPaneSizes
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>GridPane grid, Widget<span class='b'>[]</span> kids<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// short-circuit if no kids</span>
+    <span class='k'>if</span> <span class='b'>(</span>kids.isEmpty<span class='b'>)</span>
+    <span class='b'>{</span>
+      prefPane = Size.defVal
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// compute colw and rowh lists</span>
+    col := 0; row := 0
+    kids.each |Widget kid|
+    <span class='b'>{</span>
+      pref := kid.visible ? kid.prefSize : Size.defVal
+      prefs.add<span class='b'>(</span>pref<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>col &gt;= colw.size<span class='b'>)</span> colw.add<span class='b'>(</span>pref.w<span class='b'>)</span>
+      <span class='k'>else</span> colw<span class='b'>[</span>col<span class='b'>]</span> = colw<span class='b'>[</span>col<span class='b'>]</span>.max<span class='b'>(</span>pref.w<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>row &gt;= rowh.size<span class='b'>)</span> rowh.add<span class='b'>(</span>pref.h<span class='b'>)</span>
+      <span class='k'>else</span> rowh<span class='b'>[</span>row<span class='b'>]</span> = rowh<span class='b'>[</span>row<span class='b'>]</span>.max<span class='b'>(</span>pref.h<span class='b'>)</span>
+
+      <span class='k'>if</span> <span class='b'>(</span>++col &gt;= grid.numCols<span class='b'>)</span> <span class='b'>{</span> col = 0; row++ <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// if uniform rows/cols</span>
+    <span class='k'>if</span> <span class='b'>(</span>grid.uniformCols<span class='b'>)</span> <span class='b'>{</span> max := colw.max; colw.size.times |Int i| <span class='b'>{</span> colw<span class='b'>[</span>i<span class='b'>]</span> = max <span class='b'>}</span> <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>grid.uniformRows<span class='b'>)</span> <span class='b'>{</span> max := rowh.max; rowh.size.times |Int i| <span class='b'>{</span> rowh<span class='b'>[</span>i<span class='b'>]</span> = max <span class='b'>}</span> <span class='b'>}</span>
+
+    <span class='y'>// compute prefw</span>
+    prefw := <span class='b'>(</span>grid.numCols - 1<span class='b'>)</span> * grid.hgap
+    grid.numCols.times |Int c| <span class='b'>{</span> prefw += colw<span class='b'>[</span>c<span class='b'>]</span> <span class='b'>}</span>
+
+    <span class='y'>// compute prefh</span>
+    prefh := <span class='b'>(</span>numRows - 1<span class='b'>)</span> * grid.vgap
+    numRows.times |Int r| <span class='b'>{</span> prefh += rowh<span class='b'>[</span>r<span class='b'>]</span> <span class='b'>}</span>
+
+    <span class='y'>// prefPane</span>
+    prefPane = Size<span class='b'>(</span>prefw, prefh<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Int numRows<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> rowh.size <span class='b'>}</span>
+
+  Int<span class='b'>[]</span> colw := Int<span class='b'>[</span>,<span class='b'>]</span>     <span class='y'>// widths of each column</span>
+  Int<span class='b'>[]</span> rowh := Int<span class='b'>[</span>,<span class='b'>]</span>     <span class='y'>// heights of each row</span>
+  Size<span class='b'>[]</span> prefs := Size<span class='b'>[</span>,<span class='b'>]</span>  <span class='y'>// calcualted prefSize of each widget</span>
+  Size prefPane            <span class='y'>// pref size of whole grid</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='GridPane.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#expandCol'>expandCol</a></li>
+  <li style='display: block;'><a href='#expandRow'>expandRow</a></li>
+  <li style='display: block;'><a href='#halignCells'>halignCells</a></li>
+  <li style='display: block;'><a href='#halignPane'>halignPane</a></li>
+  <li style='display: block;'><a href='#hgap'>hgap</a></li>
+  <li style='display: block;'><a href='#numCols'>numCols</a></li>
+  <li style='display: block;'><a href='#onLayout'>onLayout</a></li>
+  <li style='display: block;'><a href='#prefSize'>prefSize</a></li>
+  <li style='display: block;'><a href='#uniformCols'>uniformCols</a></li>
+  <li style='display: block;'><a href='#uniformRows'>uniformRows</a></li>
+  <li style='display: block;'><a href='#valignCells'>valignCells</a></li>
+  <li style='display: block;'><a href='#valignPane'>valignPane</a></li>
+  <li style='display: block;'><a href='#vgap'>vgap</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

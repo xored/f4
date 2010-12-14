@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>gfx::Pen</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>gfx</a></li>
+  <li>&gt;</li>
+  <li><a href='Pen.html'>Pen</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>gfx::Pen</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  gfx::Pen</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   11 Jul 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Pen defines how a shape is stroked.</span>
+<span class='z'>**</span>
+@Js
+@Serializable <span class='b'>{</span> simple = <span class='k'>true</span> <span class='b'>}</span>
+<span class='k'>const</span> <span class='k'>class</span> Pen
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Width of the stroke, default is 1.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int <span id='width'>width</span> := 1
+
+  <span class='z'>**</span>
+  <span class='z'>** Defines how two ends of unjoined segements are stroked.</span>
+  <span class='z'>** Valid values are `capSquare`, `capButt`, and `capRound`.</span>
+  <span class='z'>** Default is capSquare.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int <span id='cap'>cap</span> := capSquare
+
+  <span class='z'>** Constant for `cap`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='capSquare'>capSquare</span> := 0
+  <span class='z'>** Constant for `cap`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='capButt'>capButt</span>  := 1
+  <span class='z'>** Constant for `cap`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='capRound'>capRound</span> := 2
+
+  <span class='z'>**</span>
+  <span class='z'>** Defines how two path segments are joined at the endpoints.</span>
+  <span class='z'>** Valid values are `joinMiter`, `joinRound`, and `joinBevel`.</span>
+  <span class='z'>** Default is joinMiter.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int <span id='join'>join</span> := joinMiter
+
+  <span class='z'>** Constant for `join`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='joinMiter'>joinMiter</span> := 0
+  <span class='z'>** Constant for `join`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='joinBevel'>joinBevel</span> := 1
+  <span class='z'>** Constant for `join`</span>
+  <span class='k'>static</span> <span class='k'>const</span> Int <span id='joinRound'>joinRound</span> := 3
+
+  <span class='z'>**</span>
+  <span class='z'>** Dash pattern as on/off again lengths.  If null</span>
+  <span class='z'>** then shapes are stroked solid.</span>
+  <span class='z'>**</span>
+  <span class='z'>** Note: dashes not supported in javascript</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Int<span class='b'>[]</span>? <span id='dash'>dash</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Default pen is width of 1 with capSquare and joinMiter.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> <span class='k'>const</span> Pen <span id='defVal'>defVal</span> := make <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with it-block</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>|This| f<span class='b'>)</span> <span class='b'>{</span> f<span class='b'>(</span><span class='k'>this</span><span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a pen from string (see `toStr`).  If invalid</span>
+  <span class='z'>** and checked is true then throw ParseErr otherwise</span>
+  <span class='z'>** return null.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Pen? <span id='fromStr'>fromStr</span><span class='b'>(</span>Str str, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      Int? w := <span class='k'>null</span>
+      c := capSquare
+      j := joinMiter
+      Int<span class='b'>[]</span>? d := <span class='k'>null</span>
+
+      b := str.index<span class='b'>(</span><span class='s'>"["</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>b != <span class='k'>null</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        d = Int<span class='b'>[</span>,<span class='b'>]</span>
+        str<span class='b'>[</span>b+1..&lt;str.index<span class='b'>(</span><span class='s'>"]"</span><span class='b'>)]</span>.split<span class='b'>(</span><span class='s'>','</span><span class='b'>)</span>.each |Str tok| <span class='b'>{</span> d.add<span class='b'>(</span>tok.toInt<span class='b'>)</span> <span class='b'>}</span>
+        str = str<span class='b'>[</span>0..&lt;b<span class='b'>]</span>.trim
+      <span class='b'>}</span>
+
+      str.split.each |Str s|
+      <span class='b'>{</span>
+        <span class='k'>switch</span> <span class='b'>(</span>s<span class='b'>)</span>
+        <span class='b'>{</span>
+          <span class='k'>case</span> <span class='s'>"capSquare"</span>: c = capSquare
+          <span class='k'>case</span> <span class='s'>"capButt"</span>:   c = capButt
+          <span class='k'>case</span> <span class='s'>"capRound"</span>:  c = capRound
+          <span class='k'>case</span> <span class='s'>"joinMiter"</span>: j = joinMiter
+          <span class='k'>case</span> <span class='s'>"joinBevel"</span>: j = joinBevel
+          <span class='k'>case</span> <span class='s'>"joinRound"</span>: j = joinRound
+          <span class='k'>default</span>:          w = s.toInt
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+
+      <span class='k'>return</span> Pen <span class='b'>{</span> it.width = w; it.cap = c; it.join = j; it.dash = d <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>{}</span>
+    <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span> <span class='k'>throw</span> ParseErr<span class='b'>(</span><span class='s'>"Invalid Pen: $str"</span><span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Hash the fields.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='hash'>hash</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    h := width.xor<span class='b'>(</span>cap.shiftl<span class='b'>(</span>16<span class='b'>))</span>.xor<span class='b'>(</span>join.shiftl<span class='b'>(</span>20<span class='b'>))</span>
+    <span class='k'>if</span> <span class='b'>(</span>dash != <span class='k'>null</span><span class='b'>)</span> h = h.xor<span class='b'>(</span>dash.hash.shiftl<span class='b'>(</span>32<span class='b'>))</span>
+    <span class='k'>return</span> h
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Equality is based on Pen's fields.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? obj<span class='b'>)</span>
+  <span class='b'>{</span>
+    that := obj <span class='k'>as</span> Pen
+    <span class='k'>if</span> <span class='b'>(</span>that == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+    <span class='k'>return</span> <span class='k'>this</span>.width == that.width &amp;&amp;
+           <span class='k'>this</span>.cap   == that.cap   &amp;&amp;
+           <span class='k'>this</span>.join  == that.join  &amp;&amp;
+           <span class='k'>this</span>.dash  == that.dash
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return "square", "butt", "round"</span>
+  <span class='z'>**</span>
+  Str <span id='capToStr'>capToStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>cap<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> capSquare: <span class='k'>return</span> <span class='s'>"square"</span>
+      <span class='k'>case</span> capButt:   <span class='k'>return</span> <span class='s'>"butt"</span>
+      <span class='k'>case</span> capRound:  <span class='k'>return</span> <span class='s'>"round"</span>
+      <span class='k'>default</span>:        <span class='k'>throw</span> Err<span class='b'>()</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return "miter", "round", "bevel"</span>
+  <span class='z'>**</span>
+  Str <span id='joinToStr'>joinToStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>join<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> joinMiter: <span class='k'>return</span> <span class='s'>"miter"</span>
+      <span class='k'>case</span> joinRound: <span class='k'>return</span> <span class='s'>"round"</span>
+      <span class='k'>case</span> joinBevel: <span class='k'>return</span> <span class='s'>"bevel"</span>
+      <span class='k'>default</span>:        <span class='k'>throw</span> Err<span class='b'>()</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return '"width cap join dash"' such as '"2 capButt joinBevel [1,1]"'.</span>
+  <span class='z'>** Omit cap, join, or dash if at defaults.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    s := width.toStr
+
+    <span class='k'>switch</span> <span class='b'>(</span>cap<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> capButt:  s += <span class='s'>" capButt"</span>
+      <span class='k'>case</span> capRound: s += <span class='s'>" capRound"</span>
+    <span class='b'>}</span>
+
+    <span class='k'>switch</span> <span class='b'>(</span>join<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> joinBevel: s += <span class='s'>" joinBevel"</span>
+      <span class='k'>case</span> joinRound: s += <span class='s'>" joinRound"</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>dash != <span class='k'>null</span><span class='b'>)</span> s += <span class='s'>" ["</span> + dash.join<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span> + <span class='s'>"]"</span>
+    <span class='k'>return</span> s
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Pen.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#cap'>cap</a></li>
+  <li style='display: block;'><a href='#capButt'>capButt</a></li>
+  <li style='display: block;'><a href='#capRound'>capRound</a></li>
+  <li style='display: block;'><a href='#capSquare'>capSquare</a></li>
+  <li style='display: block;'><a href='#capToStr'>capToStr</a></li>
+  <li style='display: block;'><a href='#dash'>dash</a></li>
+  <li style='display: block;'><a href='#defVal'>defVal</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#hash'>hash</a></li>
+  <li style='display: block;'><a href='#join'>join</a></li>
+  <li style='display: block;'><a href='#joinBevel'>joinBevel</a></li>
+  <li style='display: block;'><a href='#joinMiter'>joinMiter</a></li>
+  <li style='display: block;'><a href='#joinRound'>joinRound</a></li>
+  <li style='display: block;'><a href='#joinToStr'>joinToStr</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#width'>width</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+gfx 1.0.56
+[11-Nov-2010 Thu 10:08:24AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

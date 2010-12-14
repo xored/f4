@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sql::Statement</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sql</a></li>
+  <li>&gt;</li>
+  <li><a href='Statement.html'>Statement</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>sql::Statement</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  sql::Statement</pre>
+</div>
+<div class='detail'>
+
+<p>Statement is an executable statement for a specific database. A statement may be executed immediately or prepared and executed later with parameters.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='close' class='method'>close<a href='Statement_src.html#close'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='../sys/Void.html'>Void</a> close()</code></p>
+
+<p>Close the statement.</p>
+</dd>
+<dt id='conn' class='field hidden'>conn<a href='Statement_src.html#conn'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal readonly <a href='Connection.html'>Connection</a> conn</code></p>
+
+<p>The connection that this statement uses.</p>
+</dd>
+<dt id='execute' class='method'>execute<a href='Statement_src.html#execute'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='../sys/Obj.html'>Obj</a> execute([<a href='../sys/Str.html'>Str</a>:<a href='../sys/Obj.html'>Obj</a>]? params := null)</code></p>
+
+<p>Execute a SQL statement and if applicable return a result. If the statement produced auto-generated keys, then return an Int[] list of the keys generated, otherwise return number of rows modified.</p>
+</dd>
+<dt id='limit' class='field'>limit<a href='Statement_src.html#limit'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='../sys/Int.html'>Int</a>? limit</code></p>
+
+<p>Maximum number of rows returned when this statement is executed.  If limit is exceeded rows are silently dropped. A value of null indicates no limit.</p>
+</dd>
+<dt id='make' class='method hidden'>make<a href='Statement_src.html#make'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new make(<a href='Connection.html'>Connection</a> conn, <a href='../sys/Str.html'>Str</a> sql)</code></p>
+
+<p>Make a new statement with the specified SQL text.</p>
+</dd>
+<dt id='prepare' class='method'>prepare<a href='Statement_src.html#prepare'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='../sys/This.html'>This</a> prepare()</code></p>
+
+<p>Prepare this statement by compiling for efficient execution.  Return this.</p>
+</dd>
+<dt id='query' class='method'>query<a href='Statement_src.html#query'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='Row.html'>Row</a>[] query([<a href='../sys/Str.html'>Str</a>:<a href='../sys/Obj.html'>Obj</a>]? params := null)</code></p>
+
+<p>Execute the statement and return the resulting <code>List</code> of <code>Rows</code>.  The <code>Cols</code> are available from <code>List.of.fields</code> or on <code>type.fields</code> of each row instance.</p>
+</dd>
+<dt id='queryEach' class='method'>queryEach<a href='Statement_src.html#queryEach'>Source</a></dt>
+<dd>
+<p><code class='sig'>native <a href='../sys/Void.html'>Void</a> queryEach([<a href='../sys/Str.html'>Str</a>:<a href='../sys/Obj.html'>Obj</a>]? params, |<a href='Row.html'>Row</a>| eachFunc)</code></p>
+
+<p>Execute the statement.  For each row in the result, invoke the specified function <code>each</code>.  The <code>Obj</code> passed to the <code>each</code> function will be of type <code>Row</code>.</p>
+</dd>
+<dt id='sql' class='field'>sql<a href='Statement_src.html#sql'>Source</a></dt>
+<dd>
+<p><code class='sig'>readonly <a href='../sys/Str.html'>Str</a> sql</code></p>
+
+<p>The SQL text used to create this statement.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Statement_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#close'>close</a></li>
+  <li class='hidden'><a href='#conn'>conn</a></li>
+  <li><a href='#execute'>execute</a></li>
+  <li><a href='#limit'>limit</a></li>
+  <li class='hidden'><a href='#make'>make</a></li>
+  <li><a href='#prepare'>prepare</a></li>
+  <li><a href='#query'>query</a></li>
+  <li><a href='#queryEach'>queryEach</a></li>
+  <li><a href='#sql'>sql</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sql 1.0.56
+[11-Nov-2010 Thu 10:08:23AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Type System</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='TypeSystem.html'>Type System</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Exceptions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Exceptions.html'>Exceptions</a></div>
+<div class='next'><a href='CompilationUnits.html'>Compilation Units</a> <a href='CompilationUnits.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Type System</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The Fantom type system serves two primary purposes:</p>
+
+<ul>
+<li>Encapsulation: a mechanism to group fields and methods together</li>
+
+<li>Contracts: a mechanism to model semantics</li>
+</ul>
+
+<h2 id='encapsulation'>Encapsulation </h2>
+
+<p>Types encapsulate a set of uniquely named <a href='Structure.html#slots'>slots</a>. There are two types of slots: <em>fields</em> store state and <em>methods</em> model behavior.  Grouping a set of slots together enables us to create packaged units of software which match our domain model.</p>
+
+<p>This encapsulations serves several purposes:</p>
+
+<ul>
+<li><a href='#contracts'>Contracts</a>: it enables the explicit contracts discussed next</li>
+
+<li><a href='Structure.html'>Structure</a>: it enables the three part namespace of <code>pod::type.slot</code></li>
+
+<li><a href='Inheritance.html'>Inheritance</a>: grouping slots together enable reuse through inheritance</li>
+</ul>
+
+<h2 id='contracts'>Contracts </h2>
+
+<p>Types are also used to specify an explicit and implicit <em>contract</em>.  The explicit contract specifies what the class can do by the set of fields and methods it exposes.  For example given a <code><a href='../sys/File.html'>sys::File</a></code>, we know that it will support an explicit set of methods like <code>exists</code>, <code>isDir</code>, and <code>size</code>.  This set of methods defines the contract for what we can and cannot do with a <code>File</code>.  The compiler can use this information to perform type checking and report errors if you are attempting to use unknown slots.  Sometimes you'll find compile time type checking gets in the way - in that case you simply switch from the <code>.</code> operator to the <code>-></code> operator to delay type checking until runtime (or do something clever in your <code><a href='../sys/Obj.html#trap'>trap</a></code> method).</p>
+
+<p>The implicit contract specifies semantics that a human can understand - if I tell you a variable is a <code>File</code>, then you probably have a good understanding of what that variable is modeling.  Programming is largely about mapping a problem domain into code - type systems help us annotate our code with domain specific terminology.</p>
+
+<h1 id='types'>Types </h1>
+
+<p>There are two kinds of types in Fantom:</p>
+
+<ul>
+<li>Classes</li>
+
+<li>Mixins</li>
+</ul>
+
+<h2 id='classes'>Classes </h2>
+
+<p>Classes are the primary mechanism for specifying types.  All objects are instances of exactly one class which can be queried at runtime via the <code><a href='../sys/Type.html#of'>sys::Type.of</a></code> method.  Classes support single <a href='Inheritance.html'>inheritance</a> just like Java or C#.</p>
+
+<h2 id='mixins'>Mixins </h2>
+
+<p>A mixin is a kind of type which is not designed to be used stand alone. Instead a mixin packages a group of slots together to be inherited into a class (or another mixin).</p>
+
+<p>Mixins are similar to interfaces in Java or C#, but much more flexible. A Java or C# interface is purely a type definition of abstract methods, it can't actually include any behavior itself.  Fantom mixins can declare concrete methods which provide a lot more power.</p>
+
+<p>You can't create instances of a mixin - they are an abstract type designed to provide reuse when inherited into classes.  Mixins also can't store state - although they can contain <a href='Fields.html#abstract'>abstract fields</a> to define a type contract which requires a field signature.</p>
+
+<h1 id='pureOO'>Pure Object Oriented </h1>
+
+<p>Fantom is fundamentally an object-oriented language.  It is "pure" in the sense that everything is an object including core types such as <code>Int</code>. For example, Java primitive types such as <code>boolean</code> and <code>int</code> do not subclass from <code>java.lang.Object</code> which creates a fractured type system. Fantom defines a unified class hierarchy with <code>sys::Obj</code> as the root. Since everything is an object, you can call methods on everything:</p>
+
+<pre>Type.of(false) =>  sys::Bool
+1972.isEven    =>  true
+'x'.toChar     =>  "x"</pre>
+
+<p>Arrays are another type system anomaly not supported by Fantom.  For example, in Java arrays are reference types which can be used as a <code>java.lang.Object</code> type, but they aren't proper classes with nice OO methods.  In most circumstances, the <code><a href='../sys/List.html'>sys::List</a></code> class is used instead of arrays.  Plus you will use <code><a href='../sys/Buf.html'>sys::Buf</a></code> instead of <code>byte[]</code> and <code><a href='../sys/StrBuf.html'>sys::StrBuf</a></code> instead of <code>char[]</code>.</p>
+
+<h1 id='nullableTypes'>Nullable Types </h1>
+
+<p>Types may be nullable or non-nullable. A non-nullable type is guaranteed to never store the null value. Nullable types are indicated with a trailing "?". This means non-nullable is the default unless otherwise specified:</p>
+
+<pre>Str   // never stores null
+Str?  // might store null</pre>
+
+<p>The compiler prevents obvious mistakes when using a nullable expression when a non-nullable type is expected:</p>
+
+<ul>
+<li>null literal</li>
+
+<li>safe invoke method call or field access</li>
+
+<li><code>as</code> operator</li>
+</ul>
+
+<p>Additional checks are implicitly done at runtime when coercing a nullable type to a non-nullable type.  This allows your code to fail fast at the point where null bug was introduced versus propagating into unrelated code.</p>
+
+<h1 id='valueTypes'>Value-Types </h1>
+
+<p>The special types <code>Bool</code>, <code>Int</code>, and <code>Float</code> are <em>value-types</em>.  These types are optimized by the runtime to be passed by value instead of as a reference to an object.  This allows Fantom to achieve the same performance as using primitives in Java and value-types in C#.</p>
+
+<p>Value-types can be nullable also.  For instance a variable declared to be <code>Int?</code> can store null.</p>
+
+<p>Value-types differ from reference types in that fields default to false/zero instead of null.  However the nullable versions of value-types do default to null.</p>
+
+<p>A mapping of Fantom types to their runtime representations:</p>
+
+<pre>Fantom   Default   Java                .NET
+------   -------   ----                ------
+Bool     false     boolean             bool
+Bool?    null      java.lang.Boolean   bool?
+Int      0         long                long
+Int?     null      java.lang.Long      long?
+Float    0.0f      double              double
+Float?   null      java.lang.Double    double?</pre>
+
+<p>By convention Fantom APIs use <code>null</code> to indicate an non-normal condition.  For example, often in a Java API which returns an <code>int</code> such as <code>String.indexOf()</code> or <code>InputStream.read()</code> a special value of -1 will be used to indicate a non-normal result.  This can be especially problematic when -1 is a valid result.  In Fantom APIs we return <code>Int?</code> and use <code>null</code> instead of a special value like -1.</p>
+
+<h1 id='staticallyType'>Statically Typed </h1>
+
+<p>Fantom is statically typed - all method and fields signatures require type declarations.  This is a religious issue for many developers, but we believe type declarations just add too much value for code analysis and readability to throw them out for a bit of code compression.</p>
+
+<p>However there are definitely times when a static type system gets in the way of an elegant solution.  So Fantom provides some dynamic typing features too:</p>
+
+<ul>
+<li>the <code>-></code> <a href='Methods.html#dynamicInvoke'>dynamic invoke</a> operator lets you call any method with runtime checking</li>
+
+<li>The compiler will <a href='#implicitCasts'>implicitly cast</a> in most cases for you</li>
+
+<li>Type inference is supported for <a href='Statements.html#localDef'>local variables</a>, <a href='Literals.html#list'>lists</a>, and <a href='Literals.html#map'>maps</a></li>
+</ul>
+
+<h1 id='implicitCasts'>Implicit Casts </h1>
+
+<p>Anyplace where a compile time type check would typically require a cast in Java or C#, the compiler will implicitly insert a cast for you.  The cast ensures that the JVM or CLR generates a runtime exception if the type check fails.  If the compiler knows that the types are incompatible, then it will generate a compile time error.</p>
+
+<p>Formally the rules are expressed as anytime where Type A is used and Type B is expected:</p>
+
+<ol style='list-style-type:decimal'>
+<li>If A.fits(B) the call is statically known to be correct</li>
+
+<li>Otherwise if B.fits(A) then we insert an implicit cast</li>
+
+<li>Otherwise it is a compile time error</li>
+</ol>
+
+<p>For example:</p>
+
+<pre>Int func(Int x) { ... }
+
+Int i := 5
+Num n := 5
+Str s := "foo"
+
+// statically correct as is: Int.fits(Int)
+func(i)  =>  func(i)
+
+// implicit cast inserted: Int.fits(Num)
+func(n)  =>  func((Int)n)
+
+// compile time error: !Int.fits(Str)
+func(s)  =>  error</pre>
+
+<p>This feature allows you to use <code>Obj</code> as a wildcard type which is assignable to anything.  This is often used with in conjunction with dynamic invokes which return <code>Obj?</code>:</p>
+
+<pre>Str name := x->person->name
+if (test->isTrue) {...}
+File(x->uri)</pre>
+
+<p>Coercion from a non-nullable type to a nullable type is safe.  A coercion from a nullable type to a non-nullable is implicitly allowed, but is checked at runtime:</p>
+
+<pre>Str? x := null
+Str  y := x      // implicit cast as y := (Str)x</pre>
+
+<p>The above code will compile with the impilicit cast.  However at runtime it will fail with a <code>NullErr</code>.</p>
+
+<h1 id='signatures'>Type Signatures </h1>
+
+<p>We call the syntax used to express a type declaration a <em>type signature</em>. Type signatures are used extensively in your source code, in the fcode formats, and in the reflection APIs.  The formal signature for a type is its qualified name or <a href='Structure.html#types'>qname</a>.  Although in source code, we typically use the simple name in combination with the <a href='CompilationUnits.html#using'>using</a> statement.  There is also a special syntax for expressing signatures of <a href='#generics'>generic types</a>.</p>
+
+<h1 id='collections'>Collections </h1>
+
+<p>There are two primary classes for managing collections: <code><a href='../sys/List.html'>sys::List</a></code> and <code><a href='../sys/Map.html'>sys::Map</a></code>.  Both of these types have a special literal syntax and a special type signature syntax.</p>
+
+<h2 id='list'>List </h2>
+
+<p>Lists are a sequential collection of objects with fast integer indexing. A Fantom list is very similar to an <code>ArrayList</code> in Java or C# with similar performance tradeoffs: fast indexing and appending, but slower inserts and removes from the middle.  Lists have a <a href='Literals.html#list'>literal</a> syntax and a special <a href='#listSignature'>type signature</a> syntax.</p>
+
+<h2 id='map'>Map </h2>
+
+<p>Maps are a hashmap of key-value pair, very similar to an <code>HashMap</code> or <code>Hashtable</code> in Java or C#.  Maps have a <a href='Literals.html#map'>literal</a> syntax and a special <a href='#mapSignature'>type signature</a> syntax.</p>
+
+<h1 id='generics'>Generics </h1>
+
+<p>Another feature eschewed by Fantom is user defined generics.  We fall into that camp which finds generics a wicked, complicated solution to a narrow range of problems.  For example generics are great for collections, but the mental gymnastics required to digest declarations like <code>Class Enum&lt;E extends Enum&lt;E>></code> are too much for us.</p>
+
+<p>Although there isn't a general purpose generics mechanism, Fantom does use generics in a limited fashion.  Specifically three classes use generics:</p>
+
+<ul>
+<li><a href='#listSignature'>List</a></li>
+
+<li><a href='#mapSignature'>Map</a></li>
+
+<li><a href='#funcSignature'>Func</a></li>
+</ul>
+
+<p>These are the only three <em>generic types</em> in Fantom.  Each generic type uses a set of <em>generic parameters</em> in its method signatures. Generic parameters are always one of the following single ASCII letters: <code>A-H</code>, <code>L</code>, <code>M</code>, <code>R</code>, and <code>V</code>.  The meaning of each generic parameter is discussed below.</p>
+
+<p>To use a generic we have to specify a type for each of the generic parameters - we call this process <em>parameterization</em>.  Fantom doesn't use a general purpose parameterization syntax like <code>List&lt;Str></code> as used by Java and C#.  Instead each of the three generic types has its own custom parameterization syntax discussed below.</p>
+
+<h2 id='listSignature'>List Type Signatures </h2>
+
+<p>The <code><a href='../sys/List.html'>sys::List</a></code> class uses two generic parameters:</p>
+
+<ul>
+<li><code>V</code>: type of item stored by the list</li>
+
+<li><code>L</code>: type of the parameterized list</li>
+</ul>
+
+<p>The parameterization syntax of <code>List</code> is designed to mimic the array syntax of Java and C#:</p>
+
+<pre>// format
+V[]
+
+// examples
+Str[]     // list of Strs
+Int?[]    // list of Int?
+Int[][]   // list of Int[] (list of a list of Ints)</pre>
+
+<p>The <code>L</code> generic parameter is used to indicate the parameterized type itself.  For example the following is the signature of the <code><a href='../sys/List.html#add'>sys::List.add</a></code> method:</p>
+
+<pre>L add(V item)</pre>
+
+<p>Given type <code>Str[]</code>, then <code>V</code> maps to <code>Str</code> and <code>L</code> maps to <code>Str[]</code>. So the <code>add</code> method for <code>Str[]</code> is parameterized as:</p>
+
+<pre>Str[] add(Str item)</pre>
+
+<h2 id='mapSignature'>Map Type Signatures </h2>
+
+<p>The <code><a href='../sys/Map.html'>sys::Map</a></code> class uses three generic parameters:</p>
+
+<ul>
+<li><code>K</code>: type of key stored by the map</li>
+
+<li><code>V</code>: type of value stored by the map</li>
+
+<li><code>M</code>: type of the parameterized map</li>
+</ul>
+
+<p>The parameterization syntax of <code>Map</code> is designed to mimic the <a href='Literals.html#map'>map literal</a> syntax:</p>
+
+<pre>// format
+[K:V]          // formal signature
+K:V            // brackets are optional in most cases
+
+// examples
+[Str:User]     // map of Users keyed by Str
+Str:User       // same as above without optional brackets
+Uri:File?      // map of File? keyed by Uri
+[Uri:File]?    // map of Uri:File where the entire map variable might be null
+Str:File[]     // map of File[] keyed by Str
+[Str:File][]   // list of Str:File (brackets not optional)</pre>
+
+<p>The formal syntax for <code>Map</code> parameterization is <code>[K:V]</code>.  Typically the brackets are optional, and by convention left off.  But in some complicated type declarations you will need to use the brackets such as the <code>[Str:File][]</code> example above.  Brackets are always used in APIs which return formal signatures.</p>
+
+<h2 id='funcSignature'>Func Type Signature </h2>
+
+<p>The <code><a href='../sys/Func.html'>sys::Func</a></code> class uses nine generic parameters:</p>
+
+<ul>
+<li><code>A</code> to <code>H</code>: the function parameter types</li>
+
+<li><code>R</code>: the function return types</li>
+</ul>
+
+<p>The parameterization syntax of <code>Func</code> is designed to match the syntax used by <a href='Closures.html'>closures</a>:</p>
+
+<pre>// format
+|A a, B b ... H h -> R|
+
+// examples
+|Int a, Int b->Str|  // function which takes two Int args and returns a Str
+|Int, Int->Str|      // same as above omitting parameter names
+|->Bool|             // function which takes zero args and returns Bool
+|Str s->Void|        // function which takes one Str arg and returns void
+|Str s|              // same as above, omitting optional void return
+|->Void|             // function which takes no arguments and returns void
+|->|                  // shortcut for above</pre>
+
+<p>Function signatures are used extensively in functional programming and closures.  It can be a bit tricky to grasp at first, but what we are parameterizing is the <code><a href='../sys/Func.html'>sys::Func</a></code> class itself - the arguments passed to the function and the return type.</p>
+
+<p>To understand this a bit better, let's consider a Java example.  We often want to declare the type of a "callback method" - in Java we typically do this by creating an interface.  We then use that interface type whenever we need to specify a method that requires that callback:</p>
+
+<pre>interface Comparator
+{
+  int compare(Object a, Object b);
+}
+
+void sort(Comparator comparator)</pre>
+
+<p>In Fantom we skip the interface part and just declare the callback type using an in-place function signature:</p>
+
+<pre>Void sort(|Obj a, Obj b->Int| comparator)</pre>
+
+<p>This signature says that <code>sort</code> takes one argument called <code>comparator</code> which references a <code>Func</code> that takes two <code>Objs</code> and returns an <code>Int</code>.</p>
+
+<p>But typically we are sorting a <code>List</code> which itself has been parameterized. <code>List</code> comes with a built-in <code><a href='../sys/List.html#sort'>sort</a></code> method which has the actual signature:</p>
+
+<pre>L sort(|V a, V b->Int| c := null)</pre>
+
+<p>This method combines List's generic <code>V</code> parameter with a function signature.  So given a list of type <code>Str[]</code>, then the parameterized version of <code>sort</code> would be:</p>
+
+<pre>Str[] sort(|Str a, Str b->Int| c := null)</pre>
+
+<p>Function signatures are covered in yet more detail in the <a href='Functions.html'>Functions</a> chapter.</p>
+<div class='prevNext'>
+<div class='prev'><a href='Exceptions.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Exceptions.html'>Exceptions</a></div>
+<div class='next'><a href='CompilationUnits.html'>Compilation Units</a> <a href='CompilationUnits.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a><ul>
+<li><a href='#encapsulation'>Encapsulation </a></li><li><a href='#contracts'>Contracts </a></li></ul>
+</li><li><a href='#types'>Types </a><ul>
+<li><a href='#classes'>Classes </a></li><li><a href='#mixins'>Mixins </a></li></ul>
+</li><li><a href='#pureOO'>Pure Object Oriented </a></li><li><a href='#nullableTypes'>Nullable Types </a></li><li><a href='#valueTypes'>Value-Types </a></li><li><a href='#staticallyType'>Statically Typed </a></li><li><a href='#implicitCasts'>Implicit Casts </a></li><li><a href='#signatures'>Type Signatures </a></li><li><a href='#collections'>Collections </a><ul>
+<li><a href='#list'>List </a></li><li><a href='#map'>Map </a></li></ul>
+</li><li><a href='#generics'>Generics </a><ul>
+<li><a href='#listSignature'>List Type Signatures </a></li><li><a href='#mapSignature'>Map Type Signatures </a></li><li><a href='#funcSignature'>Func Type Signature </a></li></ul>
+</li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

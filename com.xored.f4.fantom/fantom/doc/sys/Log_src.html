@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Log</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Log.html'>Log</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>sys::Log</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Log</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   3 Jul 06  Brian Frank  Creation</span>
+<span class='y'>//  21 Dec 07  Brian Frank  Revamp</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Log provides a simple, but standardized mechanism for logging.</span>
+<span class='z'>**</span>
+<span class='z'>** See `docLang::Logging` for details and [examples]`examples::sys-logging`.</span>
+<span class='z'>**</span>
+<span class='k'>const</span> <span class='k'>class</span> Log
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Factory</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return a list of all the active logs which</span>
+  <span class='z'>** have been registered since system startup.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Log<span class='b'>[]</span> <span id='list'>list</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find a registered log by name.  If the log doesn't exist and</span>
+  <span class='z'>** checked is false then return null, otherwise throw Err.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Log? <span id='find'>find</span><span class='b'>(</span>Str name, Bool checked := <span class='k'>true</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Find an existing registered log by name or if not found then</span>
+  <span class='z'>** create a new registered Log instance with the given name.</span>
+  <span class='z'>** Name must be valid according to `Uri.isName` otherwise</span>
+  <span class='z'>** NameErr is thrown.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Log <span id='get'>get</span><span class='b'>(</span>Str name<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a new log by name.  The log is added to the VM log registry</span>
+  <span class='z'>** only if 'register' is true.  If register is true and a log has already</span>
+  <span class='z'>** been created for the specified name then throw ArgErr.  Name must</span>
+  <span class='z'>** be valid according to `Uri.isName` otherwise NameErr is thrown.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Str name, Bool register<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return name of the log.</span>
+  <span class='z'>**</span>
+  Str <span id='name'>name</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return name.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Severity Level</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The log level field defines which log entries are reported</span>
+  <span class='z'>** versus ignored.  Anything which equals or is more severe than</span>
+  <span class='z'>** the log level is logged.  Anything less severe is ignored.</span>
+  <span class='z'>** If the level is set to silent, then logging is disabled.</span>
+  <span class='z'>**</span>
+  LogLevel <span id='level'>level</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if this log is enabled for the specified level.</span>
+  <span class='z'>**</span>
+  Bool <span id='isEnabled'>isEnabled</span><span class='b'>(</span>LogLevel level<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if error level is enabled.</span>
+  <span class='z'>**</span>
+  Bool <span id='isErr'>isErr</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if warn level is enabled.</span>
+  <span class='z'>**</span>
+  Bool <span id='isWarn'>isWarn</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if info level is enabled.</span>
+  <span class='z'>**</span>
+  Bool <span id='isInfo'>isInfo</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return if debug level is enabled.</span>
+  <span class='z'>**</span>
+  Bool <span id='isDebug'>isDebug</span><span class='b'>()</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Logging</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate a `LogLevel.err` log entry.</span>
+  <span class='z'>**</span>
+  Void <span id='err'>err</span><span class='b'>(</span>Str msg, Err? err := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate a `LogLevel.warn` log entry.</span>
+  <span class='z'>**</span>
+  Void <span id='warn'>warn</span><span class='b'>(</span>Str msg, Err? err := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate a `LogLevel.info` log entry.</span>
+  <span class='z'>**</span>
+  Void <span id='info'>info</span><span class='b'>(</span>Str msg, Err? err := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Generate a `LogLevel.debug` log entry.</span>
+  <span class='z'>**</span>
+  Void <span id='debug'>debug</span><span class='b'>(</span>Str msg, Err? err := <span class='k'>null</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Publish a log entry.  The convenience methods `err`, `warn`</span>
+  <span class='z'>** `info`, and `debug` all route to this method for centralized</span>
+  <span class='z'>** handling.  The standard implementation is to call each of the</span>
+  <span class='z'>** installed `handlers` if the specified level is enabled.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Void <span id='log'>log</span><span class='b'>(</span>LogRec rec<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Handlers</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List all the handler functions installed to process log events.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> |LogRec rec|<span class='b'>[]</span> <span id='handlers'>handlers</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Install a handler to receive callbacks on logging events.</span>
+  <span class='z'>** If the handler func is not immutable, then throw NotImmutableErr.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Void <span id='addHandler'>addHandler</span><span class='b'>(</span>|LogRec rec| handler<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Uninstall a log handler.</span>
+  <span class='z'>**</span>
+  <span class='k'>static</span> Void <span id='removeHandler'>removeHandler</span><span class='b'>(</span>|LogRec rec| handler<span class='b'>)</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Log.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#addHandler'>addHandler</a></li>
+  <li style='display: block;'><a href='#debug'>debug</a></li>
+  <li style='display: block;'><a href='#err'>err</a></li>
+  <li style='display: block;'><a href='#find'>find</a></li>
+  <li style='display: block;'><a href='#get'>get</a></li>
+  <li style='display: block;'><a href='#handlers'>handlers</a></li>
+  <li style='display: block;'><a href='#info'>info</a></li>
+  <li style='display: block;'><a href='#isDebug'>isDebug</a></li>
+  <li style='display: block;'><a href='#isEnabled'>isEnabled</a></li>
+  <li style='display: block;'><a href='#isErr'>isErr</a></li>
+  <li style='display: block;'><a href='#isInfo'>isInfo</a></li>
+  <li style='display: block;'><a href='#isWarn'>isWarn</a></li>
+  <li style='display: block;'><a href='#level'>level</a></li>
+  <li style='display: block;'><a href='#list'>list</a></li>
+  <li style='display: block;'><a href='#log'>log</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#removeHandler'>removeHandler</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#warn'>warn</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

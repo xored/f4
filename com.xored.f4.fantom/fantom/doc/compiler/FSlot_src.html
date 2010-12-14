@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::FSlot</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FSlot.html'>FSlot</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>compiler::FSlot</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::FSlot : <a href='CSlot.html'>compiler::CSlot</a>, <a href='FConst.html'>compiler::FConst</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   26 Dec 05  Brian Frank  Creation</span>
+<span class='y'>//   19 Aug 06  Brian Frank  Ported from Java to Fan</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** FSlot is the read/write fcode representation of sys::Slot.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> FSlot : CSlot, FConst
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>FType fparent<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.fparent = fparent
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CSlot</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  FPod <span id='pod'>pod</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> fparent.pod <span class='b'>}</span>
+  <span class='k'>override</span> CType <span id='parent'>parent</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> fparent <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='name'>name</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> fparent.fpod.n<span class='b'>(</span>nameIndex<span class='b'>)</span> <span class='b'>}</span>
+  <span class='k'>override</span> Str <span id='qname'>qname</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> fparent.qname + <span class='s'>"."</span> + name <span class='b'>}</span>
+
+  FAttr? <span id='attr'>attr</span><span class='b'>(</span>Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    fattrs.find |a| <span class='b'>{</span> fparent.pod.n<span class='b'>(</span>a.name<span class='b'>)</span> == name <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> CFacet? <span id='facet'>facet</span><span class='b'>(</span>Str qname<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>ffacets == <span class='k'>null</span><span class='b'>)</span> ffacets = FFacet.decode<span class='b'>(</span>fparent.pod, attr<span class='b'>(</span>FConst.FacetsAttr<span class='b'>))</span>
+    <span class='k'>return</span> ffacets.find |f| <span class='b'>{</span> f.qname == qname <span class='b'>}</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// IO</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>protected</span> Void <span id='writeCommon'>writeCommon</span><span class='b'>(</span>OutStream out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.writeI2<span class='b'>(</span>nameIndex<span class='b'>)</span>
+    out.writeI4<span class='b'>(</span>flags.and<span class='b'>(</span>FlagsMask<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>protected</span> Void <span id='readCommon'>readCommon</span><span class='b'>(</span>InStream in<span class='b'>)</span>
+  <span class='b'>{</span>
+    nameIndex = in.readU2
+    flags     = in.readU4
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>readonly</span> FType <span id='fparent'>fparent</span>  <span class='y'>// parent type</span>
+  <span class='k'>override</span> Int <span id='flags'>flags</span>      <span class='y'>// bitmask</span>
+  Int <span id='nameIndex'>nameIndex</span>           <span class='y'>// name index</span>
+  FAttr<span class='b'>[]</span>? <span id='fattrs'>fattrs</span>         <span class='y'>// meta-data attributes</span>
+  FFacet<span class='b'>[]</span>? <span id='ffacets'>ffacets</span>       <span class='y'>// facets</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FSlot.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#attr'>attr</a></li>
+  <li style='display: block;'><a href='#facet'>facet</a></li>
+  <li style='display: block;'><a href='#fattrs'>fattrs</a></li>
+  <li style='display: block;'><a href='#ffacets'>ffacets</a></li>
+  <li style='display: block;'><a href='#flags'>flags</a></li>
+  <li style='display: block;'><a href='#fparent'>fparent</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#nameIndex'>nameIndex</a></li>
+  <li style='display: block;'><a href='#parent'>parent</a></li>
+  <li style='display: block;'><a href='#pod'>pod</a></li>
+  <li style='display: block;'><a href='#qname'>qname</a></li>
+  <li style='display: block;'><a href='#readCommon'>readCommon</a></li>
+  <li style='display: block;'><a href='#writeCommon'>writeCommon</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:17AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

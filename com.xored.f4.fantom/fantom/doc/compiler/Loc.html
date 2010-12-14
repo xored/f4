@@ -1,0 +1,192 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compiler::Loc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compiler</a></li>
+  <li>&gt;</li>
+  <li><a href='Loc.html'>Loc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compiler::Loc</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  compiler::Loc</pre>
+</div>
+<div class='detail'>
+
+<p>Loc provides a source file, line number, and column number.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='col' class='field'>col<a href='Loc_src.html#col'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a>? col</code></p>
+</dd>
+<dt id='compare' class='method'>compare<a href='Loc_src.html#compare'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Int.html'>Int</a> compare(<a href='../sys/Obj.html'>Obj</a> that)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#compare'>sys::Obj.compare</a></p>
+<p>Doc inherited from <a href='../sys/Obj.html#compare'>sys::Obj.compare</a></p>
+</div>
+
+<p>Return a negative integer, zero, or a positive integer if this object is less than, equal to, or greater than the specified object:</p>
+
+<pre>this &lt; that   =>  &lt;0
+this == that  =>  0
+this > that   =>  >0</pre>
+
+<p>This method may also be accessed via the <code>&lt;</code> <code>&lt;=</code> <code>&lt;=></code> <code>>=</code> and <code>></code> shortcut operators.  If not overridden the default implementation compares the <a href='Loc.html#toStr'>toStr</a> representations.  Also see <a href='../docLang/Expressions.html#shortcuts'>docLang</a>.</p>
+
+<p>Examples:</p>
+
+<pre>3.compare(8)  =>  -1
+8.compare(3)  =>  1
+8.compare(8)  =>  0
+3 &lt;=> 8       =>  -1  // shortcut for 3.compare(8)</pre>
+</dd>
+<dt id='equals' class='method'>equals<a href='Loc_src.html#equals'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Bool.html'>Bool</a> equals(<a href='../sys/Obj.html'>Obj</a>? that)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#equals'>sys::Obj.equals</a></p>
+<p>Doc inherited from <a href='../sys/Obj.html#equals'>sys::Obj.equals</a></p>
+</div>
+
+<p>Compare this object to the specified for equality.  This method may be accessed via the == and != shortcut operators.  If not overridden the default implementation compares for reference equality using the === operator.  If this method is overridden, then hash() must also be overridden such that any two objects which return true for equals() must return the same value for hash().  This method must accept <code>null</code> and return false.</p>
+</dd>
+<dt id='file' class='field'>file<a href='Loc_src.html#file'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? file</code></p>
+</dd>
+<dt id='fileUri' class='method'>fileUri<a href='Loc_src.html#fileUri'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? fileUri()</code></p>
+</dd>
+<dt id='filename' class='method'>filename<a href='Loc_src.html#filename'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? filename()</code></p>
+</dd>
+<dt id='hash' class='method'>hash<a href='Loc_src.html#hash'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Int.html'>Int</a> hash()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#hash'>sys::Obj.hash</a></p>
+<p>Doc inherited from <a href='../sys/Obj.html#hash'>sys::Obj.hash</a></p>
+</div>
+
+<p>Return a unique hashcode for this object.  If a class overrides hash() then it must ensure if equals() returns true for any two objects then they have same hash code.</p>
+</dd>
+<dt id='line' class='field'>line<a href='Loc_src.html#line'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a>? line</code></p>
+</dd>
+<dt id='make' class='method'>make<a href='Loc_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/Str.html'>Str</a>? file, <a href='../sys/Int.html'>Int</a>? line := null, <a href='../sys/Int.html'>Int</a>? col := null)</code></p>
+</dd>
+<dt id='makeFile' class='method'>makeFile<a href='Loc_src.html#makeFile'>Source</a></dt>
+<dd>
+<p><code class='sig'>new makeFile(<a href='../sys/File.html'>File</a>? file, <a href='../sys/Int.html'>Int</a>? line := null, <a href='../sys/Int.html'>Int</a>? col := null)</code></p>
+</dd>
+<dt id='makeUninit' class='method'>makeUninit<a href='Loc_src.html#makeUninit'>Source</a></dt>
+<dd>
+<p><code class='sig'>new makeUninit()</code></p>
+</dd>
+<dt id='toLocStr' class='method'>toLocStr<a href='Loc_src.html#toLocStr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> toLocStr()</code></p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Loc_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+<p>Doc inherited from <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return a string representation of this object.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Loc_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#col'>col</a></li>
+  <li><a href='#compare'>compare</a></li>
+  <li><a href='#equals'>equals</a></li>
+  <li><a href='#file'>file</a></li>
+  <li><a href='#fileUri'>fileUri</a></li>
+  <li><a href='#filename'>filename</a></li>
+  <li><a href='#hash'>hash</a></li>
+  <li><a href='#line'>line</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#makeFile'>makeFile</a></li>
+  <li><a href='#makeUninit'>makeUninit</a></li>
+  <li><a href='#toLocStr'>toLocStr</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compiler 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>fwt::Command</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>fwt</a></li>
+  <li>&gt;</li>
+  <li><a href='Command.html'>Command</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>fwt::Command</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  fwt::Command</pre>
+</div>
+<p><code class='sig'>@<a href='../sys/Js.html'>Js</a> <br/>
+</code></p>
+<div class='detail'>
+
+<p>Command packages up the diplay name, icon, execution, and undo support for a user command.  You can create a command two ways:</p>
+
+<ol style='list-style-type:decimal'>
+<li>use a closure (or any function) for <a href='Command.html#onInvoke'>onInvoke</a></li>
+
+<li>subclass Command and override <a href='Command.html#invoked'>invoked</a></li>
+</ol>
+
+<p>If the command supports undo, then you must create a a subclass and override <a href='Command.html#undo'>undo</a>.</p>
+
+<p>Commands are often used to centralize control of multiple widgets.  For example if a Command is associated with both a menu item and a toolbar button, then disabling the command will disable both the menu item and toolbar button.</p>
+
+<p>See <a href='pod-doc.html#commands'>pod doc</a> for details.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='accelerator' class='field'>accelerator<a href='Command_src.html#accelerator'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Key.html'>Key</a>? accelerator</code></p>
+
+<p>Accelerator of the command or null.</p>
+</dd>
+<dt id='assocDialog' class='field hidden'>assocDialog<a href='Command_src.html#assocDialog'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='Dialog.html'>Dialog</a>? assocDialog</code></p>
+</dd>
+<dt id='enabled' class='field'>enabled<a href='Command_src.html#enabled'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> enabled := true</code></p>
+
+<p>The enable state of the command automatically controls the enabled state of all the registered widgets.</p>
+</dd>
+<dt id='icon' class='field'>icon<a href='Command_src.html#icon'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../gfx/Image.html'>Image</a>? icon</code></p>
+
+<p>Icon of the command or null.  Typically a 16x16.</p>
+</dd>
+<dt id='invoke' class='method'>invoke<a href='Command_src.html#invoke'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> invoke(<a href='Event.html'>Event</a>? event)</code></p>
+
+<p>Invoke the command.  If the user event is known then is passed, otherwise it might be null.</p>
+</dd>
+<dt id='invoked' class='method'>invoked<a href='Command_src.html#invoked'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual protected <a href='../sys/Void.html'>Void</a> invoked(<a href='Event.html'>Event</a>? event)</code></p>
+
+<p>Subclass hook to handle invoke event.</p>
+</dd>
+<dt id='make' class='method'>make<a href='Command_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/Str.html'>Str</a> name := "", <a href='../gfx/Image.html'>Image</a>? icon := null, |<a href='Event.html'>Event</a>|? onInvoke := null)</code></p>
+
+<p>Construct a command with the specified onInvoke function. If onInvoke is not specified, then the <a href='Command.html#invoke'>invoke</a> method must be overridden to execute the command.</p>
+</dd>
+<dt id='makeLocale' class='method'>makeLocale<a href='Command_src.html#makeLocale'>Source</a></dt>
+<dd>
+<p><code class='sig'>new makeLocale(<a href='../sys/Pod.html'>Pod</a> pod, <a href='../sys/Str.html'>Str</a> keyBase, |<a href='Event.html'>Event</a>|? onInvoke := null)</code></p>
+
+<p>Construct a localized command using the specified pod name and keyBase.  The command is initialized from the following <code><a href='../sys/Env.html#locale'>localized</a></code> properties:</p>
+
+<ul>
+<li>"{keyBase}.name.{plat}": text string for the command</li>
+
+<li>"{keyBase}.icon.{plat}": uri for the icon image</li>
+
+<li>"{keyBase}.accelerator.{plat}": string representation of Key</li>
+</ul>
+
+<p>The <code>{plat}</code> string comes from <code><a href='Desktop.html#platform'>Desktop.platform</a></code>.  If the paltform specific key is not found, then we attempt to fallback to a generic key.  For example:</p>
+
+<pre>back.name=Back
+back.accelerator=Alt+Left
+back.accelerator.mac=Command+[</pre>
+
+<p>On all platforms the command name would be "Back".  On Macs the accelerator would be <code>Command+[</code>, and all others it would be <code>Alt+Left</code>.  If running on a Mac and an explicit ".mac" property was not specified, then we automatically swizzle Ctrl to Command.</p>
+</dd>
+<dt id='mode' class='field'>mode<a href='Command_src.html#mode'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='CommandMode.html'>CommandMode</a> mode := CommandMode.push</code></p>
+
+<p>The command mode determines who associated widgets are visualized.  The CommandMode maps to the <code><a href='ButtonMode.html'>ButtonMode</a></code> and <code><a href='MenuItemMode.html'>MenuItemMode</a></code>.  The default is <code>push</code>.</p>
+</dd>
+<dt id='name' class='field'>name<a href='Command_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> name</code></p>
+
+<p>Name of the command.</p>
+</dd>
+<dt id='onInvoke' class='field'>onInvoke<a href='Command_src.html#onInvoke'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='../sys/Transient.html'>Transient</a> <br/>
+readonly <a href='EventListeners.html'>EventListeners</a> onInvoke := EventListeners()</code></p>
+
+<p>The function to invoke when the command is executed.  If empty, then <a href='Command.html#invoke'>invoke</a> must be overridden.</p>
+</dd>
+<dt id='onInvokeErr' class='method'>onInvokeErr<a href='Command_src.html#onInvokeErr'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual protected <a href='../sys/Void.html'>Void</a> onInvokeErr(<a href='Event.html'>Event</a>? event, <a href='../sys/Err.html'>Err</a> err)</code></p>
+
+<p>Subclass hook to handle when an exception is raised by invoke.  Default implementation raises an error dialog.</p>
+</dd>
+<dt id='redo' class='method'>redo<a href='Command_src.html#redo'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> redo()</code></p>
+
+<p>This method is invoked when the command invoked as a redo.  It is not called on the first invocation. Default calls <a href='Command.html#invoke'>invoke</a> with a null event.</p>
+</dd>
+<dt id='register' class='method'>register<a href='Command_src.html#register'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> register(<a href='Widget.html'>Widget</a> w)</code></p>
+
+<p>Register a widget with this command.  This is done automatically by the widget.  You only need to call this method if you are developing a custom widget.</p>
+</dd>
+<dt id='registry' class='field hidden'>registry<a href='Command_src.html#registry'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>private <a href='Widget.html'>Widget</a>[] registry := Widget[,]</code></p>
+</dd>
+<dt id='selected' class='field'>selected<a href='Command_src.html#selected'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Bool.html'>Bool</a> selected := false</code></p>
+
+<p>If this command is using toggle mode, then set the selected state and update all the registered widgets.</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Command_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Return name.</p>
+</dd>
+<dt id='undo' class='method'>undo<a href='Command_src.html#undo'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Void.html'>Void</a> undo()</code></p>
+
+<p>This method is invoked to undo the command.  This method is only used if <a href='Command.html#undoable'>undoable</a> returns true.</p>
+</dd>
+<dt id='undoable' class='method'>undoable<a href='Command_src.html#undoable'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='../sys/Bool.html'>Bool</a> undoable()</code></p>
+
+<p>Return if the command can be undone.  Default implementation returns true if the <a href='Command.html#undo'>undo</a> method has been overridden.</p>
+</dd>
+<dt id='unregister' class='method'>unregister<a href='Command_src.html#unregister'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> unregister(<a href='Widget.html'>Widget</a> w)</code></p>
+
+<p>Unregister a widget with this command.  This is done automatically by the widget.  You only need to call this method if you are developing a custom widget.</p>
+</dd>
+<dt id='widgets' class='method'>widgets<a href='Command_src.html#widgets'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Widget.html'>Widget</a>[] widgets()</code></p>
+
+<p>Get the associated widgets with this command.  Widgets are automatically associated with their command field is set.</p>
+</dd>
+<dt id='window' class='method'>window<a href='Command_src.html#window'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Window.html'>Window</a>? window()</code></p>
+
+<p>Get the window associated with this command.  If this command is being used as the action of a dialog, then return the dialog.  Otherwise try to map to a window via one of the widgets bound to this command.  Return null if no associated window can be found.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Command_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#accelerator'>accelerator</a></li>
+  <li class='hidden'><a href='#assocDialog'>assocDialog</a></li>
+  <li><a href='#enabled'>enabled</a></li>
+  <li><a href='#icon'>icon</a></li>
+  <li><a href='#invoke'>invoke</a></li>
+  <li><a href='#invoked'>invoked</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#makeLocale'>makeLocale</a></li>
+  <li><a href='#mode'>mode</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#onInvoke'>onInvoke</a></li>
+  <li><a href='#onInvokeErr'>onInvokeErr</a></li>
+  <li><a href='#redo'>redo</a></li>
+  <li><a href='#register'>register</a></li>
+  <li class='hidden'><a href='#registry'>registry</a></li>
+  <li><a href='#selected'>selected</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#undo'>undo</a></li>
+  <li><a href='#undoable'>undoable</a></li>
+  <li><a href='#unregister'>unregister</a></li>
+  <li><a href='#widgets'>widgets</a></li>
+  <li><a href='#window'>window</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+fwt 1.0.56
+[11-Nov-2010 Thu 10:08:25AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

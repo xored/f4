@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>web::FileWeblet</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>web</a></li>
+  <li>&gt;</li>
+  <li><a href='FileWeblet.html'>FileWeblet</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>web::FileWeblet</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  web::FileWeblet : <a href='Weblet.html'>web::Weblet</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2007, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   28 Jul 07  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** FileWeblet is used to service an HTTP request on a `sys::File`.</span>
+<span class='z'>** It handles all the dirty details for cache control, modification</span>
+<span class='z'>** time, ETags, etc.</span>
+<span class='z'>**</span>
+<span class='z'>** Current implementation supports ETags and Modification time</span>
+<span class='z'>** for cache validation.  It does not specify any cache control</span>
+<span class='z'>** directives.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FileWeblet : Weblet
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Constructor with file to service.</span>
+  <span class='z'>**</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>File file<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>file.isDir<span class='b'>)</span> <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"FileWeblet cannot process dir"</span><span class='b'>)</span>
+    <span class='k'>this</span>.file = file
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The file being serviced by this FileWeblet.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> File <span id='file'>file</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the modified time of the file floored to 1 second</span>
+  <span class='z'>** which is the most precise that HTTP can deal with.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> DateTime <span id='modified'>modified</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> file.modified.floor<span class='b'>(</span>1sec<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compute the ETag for the file being serviced which uniquely</span>
+  <span class='z'>** identifies the file version.  The default implementation is</span>
+  <span class='z'>** a hash of the modified time and the file size.  The result</span>
+  <span class='z'>** of this method must conform to the ETag syntax and be</span>
+  <span class='z'>** wrapped in quotes.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> Str <span id='etag'>etag</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='s'>"\""</span> + file.size.toHex + <span class='s'>"-"</span> + file.modified.ticks.toHex + <span class='s'>"\""</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Weblet</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Handle GET request for the file.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void <span id='onGet'>onGet</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// if file doesn't exist</span>
+    <span class='k'>if</span> <span class='b'>(</span>!file.exists<span class='b'>)</span> <span class='b'>{</span> res.sendErr<span class='b'>(</span>404<span class='b'>)</span>; <span class='k'>return</span> <span class='b'>}</span>
+
+    <span class='y'>// set identity headers</span>
+    res.headers<span class='b'>[</span><span class='s'>"ETag"</span><span class='b'>]</span> = etag
+    res.headers<span class='b'>[</span><span class='s'>"Last-Modified"</span><span class='b'>]</span> = modified.toHttpStr
+
+    <span class='y'>// check if we can return a 304 not modified</span>
+    <span class='k'>if</span> <span class='b'>(</span>checkNotModified<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='y'>// service a normal 200</span>
+    res.statusCode = 200
+    mime := file.mimeType
+    <span class='k'>if</span> <span class='b'>(</span>mime != <span class='k'>null</span><span class='b'>)</span> res.headers<span class='b'>[</span><span class='s'>"Content-Type"</span><span class='b'>]</span> = mime.toStr
+    res.headers<span class='b'>[</span><span class='s'>"Content-Length"</span><span class='b'>]</span> = file.size.toStr
+    file.in.pipe<span class='b'>(</span>res.out, file.size<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Check if the request passed headers indicating it has</span>
+  <span class='z'>** cached version of the file.  If the file has not been</span>
+  <span class='z'>** modified, then service the request as 304 and return</span>
+  <span class='z'>** true.  This method supports ETag "If-None-Match" and</span>
+  <span class='z'>** "If-Modified-Since" modification time.</span>
+  <span class='z'>**</span>
+  <span class='k'>virtual</span> <span class='k'>protected</span> Bool <span id='checkNotModified'>checkNotModified</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='y'>// check If-Match-None</span>
+    matchNone := req.headers<span class='b'>[</span><span class='s'>"If-None-Match"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>matchNone != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      etag := <span class='k'>this</span>.etag
+      match := WebUtil.parseList<span class='b'>(</span>matchNone<span class='b'>)</span>.any |Str s-&gt;Bool|
+      <span class='b'>{</span>
+        <span class='k'>return</span> s == etag || s == <span class='s'>"*"</span>
+      <span class='b'>}</span>
+      <span class='k'>if</span> <span class='b'>(</span>match<span class='b'>)</span>
+      <span class='b'>{</span>
+        res.statusCode = 304
+        <span class='k'>return</span> <span class='k'>true</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// check If-Modified-Since</span>
+    since := req.headers<span class='b'>[</span><span class='s'>"If-Modified-Since"</span><span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>since != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      sinceTime := DateTime.fromHttpStr<span class='b'>(</span>since, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>modified == sinceTime<span class='b'>)</span>
+      <span class='b'>{</span>
+        res.statusCode = 304
+        <span class='k'>return</span> <span class='k'>true</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// gotta do it the hard way</span>
+    <span class='k'>return</span> <span class='k'>false</span>
+  <span class='b'>}</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FileWeblet.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#checkNotModified'>checkNotModified</a></li>
+  <li style='display: block;'><a href='#etag'>etag</a></li>
+  <li style='display: block;'><a href='#file'>file</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#modified'>modified</a></li>
+  <li style='display: block;'><a href='#onGet'>onGet</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+web 1.0.56
+[11-Nov-2010 Thu 10:08:21AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

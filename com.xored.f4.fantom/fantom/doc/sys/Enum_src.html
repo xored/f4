@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Enum</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Enum.html'>Enum</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract const class</h2>
+<h1>sys::Enum</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Enum</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2006, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   16 Apr 06  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** Enum is the base class for enum classes defined using the 'enum'</span>
+<span class='z'>** keyword.  An enum models a fixed range of discrete values.  Each</span>
+<span class='z'>** value has an Int ordinal and a Str name.</span>
+<span class='z'>**</span>
+<span class='z'>** Every enum class implicitly has the following slots auto-generated</span>
+<span class='z'>** by the compiler:</span>
+<span class='z'>**   - a static const field for each name in the enum's range.</span>
+<span class='z'>**   - a static field called "vals" which contains the list of</span>
+<span class='z'>**     discrete values indexed by ordinal.</span>
+<span class='z'>**   - a static method called "fromStr" which maps an enum name</span>
+<span class='z'>**     to an enum instance</span>
+<span class='z'>**</span>
+<span class='z'>** See `docLang::Enums` for details.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>const</span> <span class='k'>class</span> Enum
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Protected constructor - for compiler use only.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Int ordinal, Str name<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Protected fromStr implementation - for compiler use only.</span>
+  <span class='z'>** A public static fromStr method is always auto-generated</span>
+  <span class='z'>** by the compiler for each enum.</span>
+  <span class='z'>**</span>
+  <span class='k'>protected</span> <span class='k'>static</span> Enum? <span id='doFromStr'>doFromStr</span><span class='b'>(</span>Type t, Str name, Bool checked<span class='b'>)</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Obj Overrides</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Enums are only equal if same instance using ===.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Bool <span id='equals'>equals</span><span class='b'>(</span>Obj? obj<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Compare based on ordinal value.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Int <span id='compare'>compare</span><span class='b'>(</span>Obj obj<span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Always returns name().</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+
+<span class='y'>/////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Access</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the programatic name for this enum.</span>
+  <span class='z'>**</span>
+  Str <span id='name'>name</span><span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return ordinal value which is a zero based index into values.</span>
+  <span class='z'>**</span>
+  Int <span id='ordinal'>ordinal</span><span class='b'>()</span>
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='Enum.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#compare'>compare</a></li>
+  <li style='display: block;'><a href='#doFromStr'>doFromStr</a></li>
+  <li style='display: block;'><a href='#equals'>equals</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#name'>name</a></li>
+  <li style='display: block;'><a href='#ordinal'>ordinal</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

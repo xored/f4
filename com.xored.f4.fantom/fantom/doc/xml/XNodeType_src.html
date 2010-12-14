@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml::XNodeType</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='XNodeType.html'>XNodeType</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final enum</h2>
+<h1>xml::XNodeType</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='../sys/Enum.html'>sys::Enum</a>
+    xml::XNodeType</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//    7 Nov 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** XNode is the base class for `XElem` and `XText`.</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> XNode
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the node type enum.  Note that XElem always</span>
+  <span class='z'>** returns 'elem', but that during pull parsing XParser</span>
+  <span class='z'>** will return 'elemStart' and 'elemEnd'.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> XNodeType nodeType<span class='b'>()</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the root document node or null if this node is</span>
+  <span class='z'>** not mounted under a XDoc instance.</span>
+  <span class='z'>**</span>
+  XDoc? doc<span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>for</span> <span class='b'>(</span>XNode? x := <span class='k'>this</span>; x != <span class='k'>null</span>; x = x.parent<span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>x <span class='k'>is</span> XDoc<span class='b'>)</span> <span class='k'>return</span> x
+    <span class='k'>return</span> <span class='k'>null</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the parent of this node or null if unmounted.</span>
+  <span class='z'>**</span>
+  XNode? parent <span class='b'>{</span> <span class='k'>internal</span> set <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Conveniece to `write` to an in-memory string.</span>
+  <span class='z'>**</span>
+  Str writeToStr<span class='b'>()</span>
+  <span class='b'>{</span>
+    s := StrBuf<span class='b'>()</span>
+    write<span class='b'>(</span>s.out<span class='b'>)</span>
+    <span class='k'>return</span> s.toStr
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write this node to the output stream.</span>
+  <span class='z'>**</span>
+  <span class='k'>abstract</span> Void write<span class='b'>(</span>OutStream out<span class='b'>)</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** XNodeType</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='z'>**</span>
+<span class='z'>** Enumerates the type of `XNode` and current node of `XParser`.</span>
+<span class='z'>**</span>
+<span class='k'>enum</span> <span class='k'>class</span> XNodeType
+<span class='b'>{</span>
+  <span class='z'>** Document node type by `XDoc.nodeType`</span>
+  <span id='doc'>doc</span>,
+
+  <span class='z'>** Element node type returned by `XElem.nodeType`</span>
+  <span id='elem'>elem</span>,
+
+  <span class='z'>** Text node type returned by `XText.nodeType`</span>
+  <span id='text'>text</span>,
+
+  <span class='z'>** Processing instruction node type returned by `XPi.nodeType`</span>
+  <span id='pi'>pi</span>,
+
+  <span class='z'>** Start of element used by XParser when pull parsing.</span>
+  <span id='elemStart'>elemStart</span>,
+
+  <span class='z'>** End of element used by XParser when pull parsing.</span>
+  <span id='elemEnd'>elemEnd</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='XNodeType.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#doc'>doc</a></li>
+  <li style='display: block;'><a href='#elem'>elem</a></li>
+  <li style='display: block;'><a href='#elemEnd'>elemEnd</a></li>
+  <li style='display: block;'><a href='#elemStart'>elemStart</a></li>
+  <li style='display: block;'><a href='#fromStr'>fromStr</a></li>
+  <li style='display: block;'><a href='#pi'>pi</a></li>
+  <li style='display: block;'><a href='#text'>text</a></li>
+  <li style='display: block;'><a href='#vals'>vals</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

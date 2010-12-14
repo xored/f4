@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Pods</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docLang</a></li>
+  <li>&gt;</li>
+  <li><a href='Pods.html'>Pods</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='CompilationUnits.html'><img src='../go-previous.png' alt='prev' /></a> <a href='CompilationUnits.html'>Compilation Units</a></div>
+<div class='next'><a href='Classes.html'>Classes</a> <a href='Classes.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Pods</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>Pods are the top of Fantom's namespace as well as the unit of deployment.  A pod's name is globally unique and is used to organize the top level of Fantom's namespace.  In this respect pods serve the purpose of both a Java package and a JAR file (or .NET namespace and DLL).</p>
+
+<h1 id='meta'>Pod Meta </h1>
+
+<p>Pods do not use <a href='Facets.html'>Facets</a> for metadata like types and slots.  Rather pod metadata is managed as name/value pairs.  Key metadata about your pod is defined in the <a href='../docTools/Build.html#buildPod'>build script</a>:</p>
+
+<pre>class Build : build::BuildPod
+{
+  new make()
+  {
+    podName = "myPod"
+    summary = "Summary description of my pod"
+    depends = ["sys 1.0", "web 1.0"]
+    meta    = ["acme.sku": "0xdeadbeef"]
+    srcDirs = [`fan/`]
+    resDirs = [`locale/`]
+  }
+}</pre>
+
+<p>During the build process fields like <code>podName</code> and <code>depends</code> are used by the compiler to generate the pod's metadata.  You can define your own additional name/value pairs with <code><a href='../build/BuildPod.html#meta'>BuildPod.meta</a></code>.  Plus the compiler will add its own metadata regarding when and where the pod was built.</p>
+
+<p>Metadata is stored "/meta.props" in the pod zip file. The <code><a href='../sys/Pod.html#meta'>Pod.meta</a></code> method is used to access a pod's metadata at runtime.  The following are the standardized keys:</p>
+
+<ul>
+<li><code>pod.name</code>: name of the pod</li>
+
+<li><code>pod.version</code>: <code><a href='../sys/Version.html'>Version</a></code> of the pod</li>
+
+<li><code>pod.depends</code>: list of semicolon separated <code><a href='../sys/Depend.html'>Depend</a></code> strings</li>
+
+<li><code>pod.summary</code>: overview decription for pod</li>
+
+<li><code>pod.isScript</code>: was the pod compiled in script mode</li>
+
+<li><code>pod.docSrc</code>: should documentation include source code, see <code><a href='../build/BuildPod.html#docSrc'>BuildPod</a></code></li>
+
+<li><code>pod.docApi</code>: should pod be included in documentation, see <code><a href='../build/BuildPod.html#docApi'>BuildPod</a></code></li>
+
+<li><code>fcode.version</code>: binary format version of the fcode</li>
+
+<li><code>build.time</code>: compile time formatted as <code><a href='../sys/DateTime.html#toStr'>DateTime</a></code></li>
+
+<li><code>build.platform</code>:  compile env platform formatted as <code><a href='../sys/Env.html#platform'>Env.platform</a></code></li>
+
+<li><code>build.host</code>: compile env host name, see <code><a href='../sys/Env.html#host'>Env.host</a></code></li>
+
+<li><code>build.user</code>: compile env user name, see <code><a href='../sys/Env.html#user'>Env.user</a></code></li>
+
+<li><code>build.compiler</code>: compiler pod version</li>
+</ul>
+<div class='prevNext'>
+<div class='prev'><a href='CompilationUnits.html'><img src='../go-previous.png' alt='prev' /></a> <a href='CompilationUnits.html'>Compilation Units</a></div>
+<div class='next'><a href='Classes.html'>Classes</a> <a href='Classes.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#meta'>Pod Meta </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docLang 1.0.56
+[11-Nov-2010 Thu 10:08:28AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

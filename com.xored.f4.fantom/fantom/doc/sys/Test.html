@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Test</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Test.html'>Test</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>abstract class</h2>
+<h1>sys::Test</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Test</pre>
+</div>
+<div class='detail'>
+
+<p>Test is the base for Fantom unit tests.</p>
+
+<p>See <a href='../docTools/Fant.html'>docTools::Fant</a>.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='curTestMethod' class='method'>curTestMethod<a href='Test_src.html#curTestMethod'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Method.html'>Method</a> curTestMethod()</code></p>
+
+<p>Get the current test method being executed or throw Err if not currently running a test.  This method is available during both <a href='Test.html#setup'>setup</a> and <a href='Test.html#teardown'>teardown</a> as well during the test itself.</p>
+</dd>
+<dt id='fail' class='method'>fail<a href='Test_src.html#fail'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> fail(<a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Throw a test failure exception.  If msg is non-null, include it in the failure exception.</p>
+</dd>
+<dt id='make' class='method'>make<a href='Test_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make()</code></p>
+
+<p>Protected constructor.</p>
+</dd>
+<dt id='setup' class='method'>setup<a href='Test_src.html#setup'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='Void.html'>Void</a> setup()</code></p>
+
+<p>Setup is called before running each test method.</p>
+</dd>
+<dt id='teardown' class='method'>teardown<a href='Test_src.html#teardown'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual <a href='Void.html'>Void</a> teardown()</code></p>
+
+<p>Teardown is called after running every test method.</p>
+</dd>
+<dt id='tempDir' class='method'>tempDir<a href='Test_src.html#tempDir'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='File.html'>File</a> tempDir()</code></p>
+
+<p>Return a temporary test directory which may used as a scratch directory.  This directory is guaranteed to be created and empty the first time this method is called for a given test run.  The test directory is "{Env.cur.tempDir}/test/".</p>
+</dd>
+<dt id='verify' class='method'>verify<a href='Test_src.html#verify'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verify(<a href='Bool.html'>Bool</a> cond, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that cond is true, otherwise throw a test failure exception.  If msg is non-null, include it in a failure exception.</p>
+</dd>
+<dt id='verifyEq' class='method'>verifyEq<a href='Test_src.html#verifyEq'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyEq(<a href='Obj.html'>Obj</a>? a, <a href='Obj.html'>Obj</a>? b, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a == b, otherwise throw a test failure exception. If both a and b are nonnull, then this method also ensures that a.hash == b.hash, because any two objects which return true for equals() must also return the same hash code.  If msg is non-null, include it in failure exception.</p>
+</dd>
+<dt id='verifyErr' class='method'>verifyErr<a href='Test_src.html#verifyErr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyErr(<a href='Type.html'>Type</a> errType, |<a href='Test.html'>Test</a>| c)</code></p>
+
+<p>Verify that the function throws an Err of the exact same type as err (compare using === operator).</p>
+
+<p>Examples:</p>
+
+<pre>verifyErr(ParseErr#) { Int.fromStr("@#!") }</pre>
+</dd>
+<dt id='verifyFalse' class='method'>verifyFalse<a href='Test_src.html#verifyFalse'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyFalse(<a href='Bool.html'>Bool</a> cond, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that cond is false, otherwise throw a test failure exception.  If msg is non-null, include it in a failure exception.</p>
+</dd>
+<dt id='verifyNotEq' class='method'>verifyNotEq<a href='Test_src.html#verifyNotEq'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyNotEq(<a href='Obj.html'>Obj</a>? a, <a href='Obj.html'>Obj</a>? b, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a != b, otherwise throw a test failure exception. If msg is non-null, include it in failure exception.</p>
+</dd>
+<dt id='verifyNotNull' class='method'>verifyNotNull<a href='Test_src.html#verifyNotNull'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyNotNull(<a href='Obj.html'>Obj</a>? a, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a is not null, otherwise throw a test failure exception.  If msg is non-null, include it in a failure exception.</p>
+</dd>
+<dt id='verifyNotSame' class='method'>verifyNotSame<a href='Test_src.html#verifyNotSame'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyNotSame(<a href='Obj.html'>Obj</a>? a, <a href='Obj.html'>Obj</a>? b, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a !== b, otherwise throw a test* failure exception. If msg is non-null, include it in failure exception.</p>
+</dd>
+<dt id='verifyNull' class='method'>verifyNull<a href='Test_src.html#verifyNull'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyNull(<a href='Obj.html'>Obj</a>? a, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a is null, otherwise throw a test failure exception.  If msg is non-null, include it in a failure exception.</p>
+</dd>
+<dt id='verifySame' class='method'>verifySame<a href='Test_src.html#verifySame'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifySame(<a href='Obj.html'>Obj</a>? a, <a href='Obj.html'>Obj</a>? b, <a href='Str.html'>Str</a>? msg := null)</code></p>
+
+<p>Verify that a === b, otherwise throw a test failure exception. If msg is non-null, include it in failure exception.</p>
+</dd>
+<dt id='verifyType' class='method'>verifyType<a href='Test_src.html#verifyType'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Void.html'>Void</a> verifyType(<a href='Obj.html'>Obj</a> obj, <a href='Type.html'>Type</a> t)</code></p>
+
+<p>Verify that <code>Type.of(obj)</code> equals the given type.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Test_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#curTestMethod'>curTestMethod</a></li>
+  <li><a href='#fail'>fail</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#setup'>setup</a></li>
+  <li><a href='#teardown'>teardown</a></li>
+  <li><a href='#tempDir'>tempDir</a></li>
+  <li><a href='#verify'>verify</a></li>
+  <li><a href='#verifyEq'>verifyEq</a></li>
+  <li><a href='#verifyErr'>verifyErr</a></li>
+  <li><a href='#verifyFalse'>verifyFalse</a></li>
+  <li><a href='#verifyNotEq'>verifyNotEq</a></li>
+  <li><a href='#verifyNotNull'>verifyNotNull</a></li>
+  <li><a href='#verifyNotSame'>verifyNotSame</a></li>
+  <li><a href='#verifyNull'>verifyNull</a></li>
+  <li><a href='#verifySame'>verifySame</a></li>
+  <li><a href='#verifyType'>verifyType</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sql::SqlService</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sql</a></li>
+  <li>&gt;</li>
+  <li><a href='SqlService.html'>SqlService</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>sql::SqlService</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  sql::SqlService : <a href='../sys/Service.html'>sys::Service</a></pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, John Sublett</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   12 Jan 08  John Sublett  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> concurrent
+
+<span class='z'>**</span>
+<span class='z'>** SqlService is the interface to a relational database.  It is const</span>
+<span class='z'>** and all state is stored as thread local variables.</span>
+<span class='z'>**</span>
+<span class='k'>const</span> <span class='k'>class</span> SqlService : Service
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Make a new SqlService.</span>
+  <span class='z'>**</span>
+  <span class='z'>** - 'connection' is the connection string.  For java this is the jdbc url.  For .NET</span>
+  <span class='z'>**   this is the connection string.</span>
+  <span class='z'>** - 'username' is the username for the database login.</span>
+  <span class='z'>** - 'password' is the password for the database login.</span>
+  <span class='z'>** - 'dialect' is the database specific dialect implementation.  If not</span>
+  <span class='z'>**   specified then GenericDialect is used.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>Str connection  := <span class='s'>""</span>,
+           Str? username   := <span class='s'>""</span>,
+           Str? password   := <span class='s'>""</span>,
+           Dialect dialect := GenericDialect<span class='b'>())</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.connection = connection
+    <span class='k'>this</span>.username   = username
+    <span class='k'>this</span>.password   = password
+    <span class='k'>this</span>.id         = <span class='s'>"SqlService-"</span> + Int.random.toHex
+    <span class='k'>this</span>.dialect    = dialect
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void <span id='onStart'>onStart</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    log.info<span class='b'>(</span><span class='s'>"SqlService started [$connection]"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Open the database.  This opens a connection to the database</span>
+  <span class='z'>** for the calling thread.  A database must be open before</span>
+  <span class='z'>** it can be accessed.  'open' may be called multiple times.</span>
+  <span class='z'>** Each time 'open' is called, a counter is incremented.  The</span>
+  <span class='z'>** database will not be closed until 'close' has been called</span>
+  <span class='z'>** for each call to 'open'.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='open'>open</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    Connection? conn := Actor.locals<span class='b'>[</span>id<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>conn == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      conn = Connection.open<span class='b'>(</span>connection, username, password, dialect<span class='b'>)</span>
+      Actor.locals<span class='b'>[</span>id<span class='b'>]</span> = conn
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      conn.increment
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get the connection to this database for the current thread.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Connection? <span id='threadConnection'>threadConnection</span><span class='b'>(</span>Bool checked := <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    Connection? conn := Actor.locals<span class='b'>[</span>id<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>conn == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span>
+        <span class='k'>throw</span> SqlErr<span class='b'>(</span><span class='s'>"Database is not open."</span><span class='b'>)</span>
+      <span class='k'>else</span>
+        <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>conn.isClosed<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>checked<span class='b'>)</span>
+      <span class='b'>{</span>
+        conn.close
+        Actor.locals.remove<span class='b'>(</span>id<span class='b'>)</span>
+        <span class='k'>throw</span> SqlErr<span class='b'>(</span><span class='s'>"Database has been closed."</span><span class='b'>)</span>
+      <span class='b'>}</span>
+      <span class='k'>else</span>
+        <span class='k'>return</span> <span class='k'>null</span>
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> conn
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Close the database.  A call to 'close' may not actually</span>
+  <span class='z'>** close the database.  It depends on how many times 'open' has</span>
+  <span class='z'>** been called for the current thread.  The database will</span>
+  <span class='z'>** not be closed until 'close' has been called once for every time</span>
+  <span class='z'>** that 'open' has been called.</span>
+  <span class='z'>**</span>
+  Void <span id='close'>close</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    Connection? conn := Actor.locals<span class='b'>[</span>id<span class='b'>]</span>
+    <span class='k'>if</span> <span class='b'>(</span>conn != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>conn.decrement == 0<span class='b'>)</span>
+      <span class='b'>{</span>
+        conn.close
+        Actor.locals.remove<span class='b'>(</span>id<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Test the closed state of the database.</span>
+  <span class='z'>**</span>
+  Bool <span id='isClosed'>isClosed</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    conn := threadConnection<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>conn == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>true</span>
+    <span class='k'>return</span> conn.isClosed
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Metadata</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Does the specified table exist in the database?</span>
+  <span class='z'>**</span>
+  Bool <span id='tableExists'>tableExists</span><span class='b'>(</span>Str tableName<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> threadConnection.tableExists<span class='b'>(</span>tableName<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** List the tables in the database.  Returns a list of the</span>
+  <span class='z'>** table names.</span>
+  <span class='z'>**</span>
+  Str<span class='b'>[]</span> <span id='tables'>tables</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> threadConnection.tables<span class='b'>()</span>;
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get a default row instance for the specified table.  The</span>
+  <span class='z'>** result has a field for each table column.</span>
+  <span class='z'>**</span>
+  Row <span id='tableRow'>tableRow</span><span class='b'>(</span>Str tableName<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> threadConnection.tableRow<span class='b'>(</span>tableName<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Statement</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a statement for this database.</span>
+  <span class='z'>**</span>
+  Statement <span id='sql'>sql</span><span class='b'>(</span>Str sql<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> threadConnection.sql<span class='b'>(</span>sql<span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Transactions</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The auto-commit state of this database.  If true, each</span>
+  <span class='z'>** statement is committed as it is executed.  If false, statements</span>
+  <span class='z'>** are grouped into transactions and committed when 'commit'</span>
+  <span class='z'>**</span>
+  Bool <span id='autoCommit'>autoCommit</span>
+  <span class='b'>{</span>
+    get <span class='b'>{</span> threadConnection.autoCommit <span class='b'>}</span>
+    set <span class='b'>{</span> threadConnection.autoCommit = it <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Commit all the changes made inside the current transaction.</span>
+  <span class='z'>**</span>
+  Void <span id='commit'>commit</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    threadConnection.commit
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Undo any changes made inside the current transaction.</span>
+  <span class='z'>**</span>
+  Void <span id='rollback'>rollback</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    threadConnection.rollback
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** Standard log for the sql service</span>
+  <span class='k'>static</span> <span class='k'>const</span> Log <span id='log'>log</span> := Log.get<span class='b'>(</span><span class='s'>"sql"</span><span class='b'>)</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The database dialect for this service.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Dialect <span id='dialect'>dialect</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The username used to connect to this database.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Str? <span id='username'>username</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The password used to connect to this database.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Str? <span id='password'>password</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The database specific string used to connect to the database.</span>
+  <span class='z'>**</span>
+  <span class='k'>const</span> Str <span id='connection'>connection</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Unique identifier for VM used to key thread locals</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> <span class='k'>const</span> Str <span id='id'>id</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='SqlService.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#autoCommit'>autoCommit</a></li>
+  <li style='display: block;'><a href='#close'>close</a></li>
+  <li style='display: block;'><a href='#commit'>commit</a></li>
+  <li style='display: block;'><a href='#connection'>connection</a></li>
+  <li style='display: block;'><a href='#dialect'>dialect</a></li>
+  <li class='hidden' style='display: block;'><a href='#id'>id</a></li>
+  <li style='display: block;'><a href='#isClosed'>isClosed</a></li>
+  <li style='display: block;'><a href='#log'>log</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#onStart'>onStart</a></li>
+  <li style='display: block;'><a href='#open'>open</a></li>
+  <li style='display: block;'><a href='#password'>password</a></li>
+  <li style='display: block;'><a href='#rollback'>rollback</a></li>
+  <li style='display: block;'><a href='#sql'>sql</a></li>
+  <li style='display: block;'><a href='#tableExists'>tableExists</a></li>
+  <li style='display: block;'><a href='#tableRow'>tableRow</a></li>
+  <li style='display: block;'><a href='#tables'>tables</a></li>
+  <li class='hidden' style='display: block;'><a href='#threadConnection'>threadConnection</a></li>
+  <li style='display: block;'><a href='#username'>username</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sql 1.0.56
+[11-Nov-2010 Thu 10:08:23AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

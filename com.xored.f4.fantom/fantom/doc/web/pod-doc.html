@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>web PodDoc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>web</a></li>
+  <li>&gt;</li>
+  <li><a href='pod-doc.html'>web PodDoc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+ <div class='overview'>
+  <h2>pod</h2>
+  <h1>web</h1>
+ </div>
+</div>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The <a href='index.html'>web</a> pod defines the standard APIs used to handle both client and server side HTTP requests.</p>
+
+<p>Client side HTTP requests:</p>
+
+<ul>
+<li><code><a href='WebClient.html'>WebClient</a></code>: manages client side of the HTTP protocol</li>
+</ul>
+
+<p>Server side web APIs are organized into the primary classes:</p>
+
+<ul>
+<li><code><a href='WebReq.html'>WebReq</a></code>: models an incoming web request such as the method, uri, request headers, and input stream.</li>
+
+<li><code><a href='WebRes.html'>WebRes</a></code>: models the outgoing web response such as the status code, response headers, and output stream.</li>
+
+<li><code><a href='Weblet.html'>Weblet</a></code>: an entity which processes a web request.</li>
+
+<li><code><a href='WebMod.html'>WebMod</a></code>: a web module which may be composed with other modules to built up a web solution.</li>
+</ul>
+
+<h1 id='webClient'>WebClient </h1>
+
+<p>The <code>WebClient</code> class is used to manage client side HTTP requests and responses.  The basic lifecycle of WebClient:</p>
+
+<ol style='list-style-type:decimal'>
+<li>configure request fields such as <code>reqUri</code>, <code>reqMethod</code>, and <code>reqHeaders</code></li>
+
+<li>send request headers via <code>writeReq</code></li>
+
+<li>optionally write request body via <code>reqOut</code></li>
+
+<li>read response status and headers via <code>readRes</code></li>
+
+<li>process response fields such as <code>resCode</code> and <code>resHeaders</code></li>
+
+<li>optionally read response body via <code>resIn</code></li>
+</ol>
+
+<p>Using the low level methods <code>writeReq</code> and <code>readRes</code> enables HTTP pipelining (multiple requests and responses on the same TCP socket connection).  There are also a series of convenience methods which make common cases easier.</p>
+
+<p>See <a href='../examples/web-client.html'>examples</a> for sample code.</p>
+
+<h1 id='weblet'>Weblets </h1>
+
+<p>Pretty much anything that touches a HTTP request should be implement <code><a href='Weblet.html'>web::Weblet</a></code>.  The lifecycle of a Weblet is quite simple:</p>
+
+<ul>
+<li>all web requests are guaranteed to be called on their own thread with the thread locals "web.req" and "web.res"</li>
+
+<li><code>req</code>/'res': the current thread's <code>WebReq</code> and <code>WebRes</code> are available with these methods - so there no need to pass the request and response around</li>
+
+<li><code>onService</code>: the <code>onService</code> method can be overridden directly to handle the request, or the default implementation will route to the <code>doGet</code>, <code>doPost</code>, etc methods</li>
+</ul>
+
+<h1 id='webReq'>WebReq </h1>
+
+<p>The <code><a href='WebReq.html'>web::WebReq</a></code> class models the request side of a HTTP request. Common methods you will use include:</p>
+
+<ul>
+<li><code><a href='WebReq.html#method'>method</a></code>: HTTP method such as "GET" or "POST"</li>
+
+<li><code><a href='WebReq.html#uri'>uri</a></code>: the request URI parsed into a <code><a href='../sys/Uri.html'>sys::Uri</a></code> which allows you access the parsed path and query segments.</li>
+
+<li><code><a href='WebReq.html#mod'>mod</a></code>: web module currently responsible for request</li>
+
+<li><code><a href='WebReq.html#modBase'>modBase</a></code>: URI used to route to current module</li>
+
+<li><code><a href='WebReq.html#modRel'>modRel</a></code>: module relative URI used for module internal processing</li>
+
+<li><code><a href='WebReq.html#headers'>headers</a></code>: a case insensitive <code>Str:Str</code> map of the request HTTP headers</li>
+
+<li><code><a href='WebReq.html#in'>in</a></code>: access to the raw input stream of the request</li>
+
+<li><code><a href='WebReq.html#form'>form</a></code>:  access to the parsed form data</li>
+
+<li><code><a href='WebReq.html#cookies'>cookies</a></code>: a <code>Str:Str</code> map of cookies</li>
+
+<li><code><a href='WebReq.html#session'>session</a></code>: a <code>Str:Obj</code> map used to stash stuff for the browser "connection" between HTTP requests</li>
+
+<li><code><a href='WebReq.html#stash'>stash</a></code>: a <code>Str:Obj</code> map used to stash stuff only for the life of request</li>
+</ul>
+
+<h1 id='webRes'>WebRes </h1>
+
+<p>The <code><a href='WebRes.html'>web::WebRes</a></code> class models the response side of a HTTP request. A <code>WebRes</code> has the following lifecycle:</p>
+
+<ul>
+<li><strong>Uncommitted</strong>: at this point nothing has been written back on the TCP socket and <code>statusCode</code>, <code>headers</code>, and <code>cookies</code> are still configurable</li>
+
+<li><strong>Committed</strong>: at this point the HTTP response headers have been written, and you can write the response content via the out stream.  Once a response is committed, attempts to access <code>statusCode</code>, <code>headers</code>, <code>cookies</code>, <code>redirect</code>, or <code>sendErr</code> will raise an exception</li>
+
+<li><strong>Done</strong>: at this point the response is complete - for example once the <code>redirect</code> or <code>sendErr</code> method is called, the response is done</li>
+</ul>
+
+<p>Common methods you will use include:</p>
+
+<ul>
+<li><code><a href='WebRes.html#statusCode'>statusCode</a></code>: sets the HTTP status code - must be set before commit</li>
+
+<li><code><a href='WebRes.html#headers'>headers</a></code>: a <code>Str:Str</code> map of HTTP headers - must be set before commit</li>
+
+<li><code><a href='WebRes.html#cookies'>cookies</a></code>: used to set the cookie header - must be set before commit</li>
+
+<li><code><a href='WebRes.html#out'>out</a></code>: the output stream for writing the content - first call commits the response</li>
+
+<li><code><a href='WebRes.html#isCommitted'>isCommitted</a></code>: check commit state</li>
+
+<li><code><a href='WebRes.html#isDone'>isDone</a></code>: check done state</li>
+
+<li><code><a href='WebRes.html#sendErr'>sendErr</a></code>: used to send an error status code</li>
+
+<li><code><a href='WebRes.html#redirect'>redirect</a></code>: used to send a redirect status code</li>
+</ul>
+
+<p>WebRes is a fairly low level API which requires the commit state model to avoid buffering the content.</p>
+
+<h1 id='sessions'>WebSessions </h1>
+
+<p>The <code><a href='WebSession.html'>web::WebSession</a></code> class models the client session which allows you to persist state between HTTP requests.  WebSessions in Fantom are cookie based using the cookie name "fanws".  The default session implementation stores sessions in memory for up to 24 hours, then clears them from the cache - session state is not persisted between VM restarts.</p>
+
+<p>WebSession provides a <code>Str:Obj?</code> map to store arbitrary name/value pairs. You can use the <code><a href='WebSession.html#map'>map</a></code>, <code><a href='WebSession.html#get'>get</a></code>, or <code><a href='WebSession.html#set'>set</a></code> methods to manage session state.  You can use <code><a href='WebSession.html#delete'>delete</a></code> to explicitly delete the session cookie and server side state.  The values stored in a WebSession should always be <a href='../docLang/Serialization.html'>serializable</a> objects.</p>
+
+<p>WebSessions are created and accessed via the <code><a href='WebReq.html#session'>WebReq.session</a></code> method.  The first time a session is accessed it sets the cookie header in the response - therefore sessions should always be accessed before the response is committed.  Deleting a session also requires setting the cookie header and must done before the response is committed.</p>
+
+<p>Example of storing a counter in a session:</p>
+
+<pre>override Void doGet()
+{
+  Int count := req.session.get("counter", 0)
+  req.session["counter"] = count + 1
+
+  res.headers["Content-Type"] = "text/plain"
+  res.statusCode = 200
+  res.out.printLine("session counter=$count")
+}</pre>
+
+<h1 id='webmod'>WebMods </h1>
+
+<p>The <code><a href='WebMod.html'>web::WebMod</a></code> class is the base class for plugging in web server modules.  WebMods are immutable Weblets which may be composed together to build higher level modules or to configure the entire web server.</p>
+
+<p>During processing of a given web request, there is always exactly one WebMod responsible for the request which is available via the <code><a href='WebReq.html#mod'>WebReq.mod</a></code> method.  The URI used to route to the module is accessed by <code><a href='WebReq.html#modBase'>WebReq.modBase</a></code>, and the remainder of the URI which is internal to the module via <code><a href='WebReq.html#modRel'>WebReq.modRel</a></code>.  Using these methods you can write modules which can be freely plugged anywhere into a server's URI namespace.</p>
+
+<p>WebMods receive the <code>onStart</code> and <code>onStop</code> callbacks when the web server is started and stopped.  These callbacks can be used to perform initialization and cleanup such as managing actors.</p>
+
+<p>The <code><a href='WebMod.html'>webmod</a></code> pod includes a library of modules which are designed to handle common tasks such publishing static files, routing, and pipelining.</p>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#webClient'>WebClient </a></li><li><a href='#weblet'>Weblets </a></li><li><a href='#webReq'>WebReq </a></li><li><a href='#webRes'>WebRes </a></li><li><a href='#sessions'>WebSessions </a></li><li><a href='#webmod'>WebMods </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+web 1.0.56
+[11-Nov-2010 Thu 10:08:21AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

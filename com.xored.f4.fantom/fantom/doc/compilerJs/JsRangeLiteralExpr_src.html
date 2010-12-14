@@ -1,0 +1,1049 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>compilerJs::JsRangeLiteralExpr</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>compilerJs</a></li>
+  <li>&gt;</li>
+  <li><a href='JsRangeLiteralExpr.html'>JsRangeLiteralExpr</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>compilerJs::JsRangeLiteralExpr</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='JsNode.html'>compilerJs::JsNode</a>
+    <a href='JsExpr.html'>compilerJs::JsExpr</a>
+      compilerJs::JsRangeLiteralExpr</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2009, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   9 Jul 09  Andy Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+
+<span class='z'>**</span>
+<span class='z'>** JsExpr</span>
+<span class='z'>**</span>
+<span class='k'>abstract</span> <span class='k'>class</span> JsExpr : JsNode
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='k'>static</span> JsExpr makeFor<span class='b'>(</span>JsCompilerSupport s, Expr expr<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>expr.id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.nullLiteral:     <span class='k'>return</span> JsNullLiteralExpr<span class='b'>(</span>s<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.trueLiteral:     <span class='k'>return</span> JsBoolLiteralExpr<span class='b'>(</span>s, <span class='k'>true</span><span class='b'>)</span>
+      <span class='k'>case</span> ExprId.falseLiteral:    <span class='k'>return</span> JsBoolLiteralExpr<span class='b'>(</span>s, <span class='k'>false</span><span class='b'>)</span>
+      <span class='k'>case</span> ExprId.intLiteral:      <span class='k'>return</span> JsIntLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.floatLiteral:    <span class='k'>return</span> JsFloatLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.decimalLiteral:  <span class='k'>return</span> JsDecimalLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.strLiteral:      <span class='k'>return</span> JsStrLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.durationLiteral: <span class='k'>return</span> JsDurationLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.uriLiteral:      <span class='k'>return</span> JsUriLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.typeLiteral:     <span class='k'>return</span> JsTypeLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.slotLiteral:     <span class='k'>return</span> JsSlotLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.rangeLiteral:    <span class='k'>return</span> JsRangeLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.listLiteral:     <span class='k'>return</span> JsListLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.mapLiteral:      <span class='k'>return</span> JsMapLiteralExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.boolNot:         <span class='k'>return</span> JsUnaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.cmpNull:         <span class='k'>return</span> JsUnaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.cmpNotNull:      <span class='k'>return</span> JsUnaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.elvis:           <span class='k'>return</span> JsElvisExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.assign:          <span class='k'>return</span> JsBinaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.same:            <span class='k'>return</span> JsBinaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.notSame:         <span class='k'>return</span> JsBinaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.ternary:         <span class='k'>return</span> JsTernaryExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.boolOr:          <span class='k'>return</span> JsCondExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.boolAnd:         <span class='k'>return</span> JsCondExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.isExpr:          <span class='k'>return</span> JsTypeCheckExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.isnotExpr:       <span class='k'>return</span> JsTypeCheckExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.asExpr:          <span class='k'>return</span> JsTypeCheckExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.coerce:          <span class='k'>return</span> JsTypeCheckExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.call:            <span class='k'>return</span> JsCallExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.construction:    <span class='k'>return</span> JsCallExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.shortcut:        <span class='k'>return</span> JsShortcutExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.field:           <span class='k'>return</span> JsFieldExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.closure:         <span class='k'>return</span> JsClosureExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='k'>case</span> ExprId.localVar:        <span class='k'>return</span> JsLocalVarExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.thisExpr:        <span class='k'>return</span> JsThisExpr<span class='b'>(</span>s<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.superExpr:       <span class='k'>return</span> JsSuperExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.itExpr:          <span class='k'>return</span> JsItExpr<span class='b'>(</span>s<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.staticTarget:    <span class='k'>return</span> JsStaticTargetExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+      <span class='k'>case</span> ExprId.throwExpr:       <span class='k'>return</span> JsThrowExpr<span class='b'>(</span>s, expr<span class='b'>)</span>
+
+      <span class='y'>// Not implemented</span>
+      <span class='y'>//case ExprId.unknownVar</span>
+      <span class='y'>//case ExprId.storage</span>
+      <span class='y'>//case ExprId.curry</span>
+      <span class='y'>//case ExprId.complexLiteral</span>
+
+      <span class='k'>default</span>: <span class='k'>throw</span> s.err<span class='b'>(</span><span class='s'>"Unknown ExprId: $expr.id"</span>, expr.loc<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsThisExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsThisExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span> <span class='b'>{}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span> <span class='b'>{</span> out.w<span class='b'>(</span>support.thisName<span class='b'>)</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsSuperExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsSuperExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, SuperExpr se<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>se.explicitType != <span class='k'>null</span><span class='b'>)</span>
+      explicitType = JsTypeRef<span class='b'>(</span>s, se.explicitType<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span> <span class='b'>{}</span> <span class='y'>// handled in JsCallExpr</span>
+  JsTypeRef? explicitType
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsItExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsItExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span> <span class='b'>{}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span> <span class='b'>{</span> out.w<span class='b'>(</span><span class='s'>"it"</span> <span class='b'>)</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsLocalVarExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsLocalVarExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LocalVarExpr le<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    name = vnameToJs<span class='b'>(</span>le.var.name<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span>name<span class='b'>)</span>
+  <span class='b'>}</span>
+  Str name
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsStaticTargetExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsStaticTargetExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, StaticTargetExpr le<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    target = JsTypeRef<span class='b'>(</span>s, le.ctype<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span>target.qname<span class='b'>)</span>
+  <span class='b'>}</span>
+  JsTypeRef target
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsNullLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsNullLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span> <span class='b'>{}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span> <span class='b'>{</span> out.w<span class='b'>(</span><span class='s'>"null"</span> <span class='b'>)</span> <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsBoolLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsBoolLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, Bool val<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = val
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span>val ? <span class='s'>"true"</span> : <span class='s'>"false"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Bool val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsIntLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsIntLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span>val<span class='b'>)</span>
+  <span class='b'>}</span>
+  Int val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsFloatLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsFloatLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Float.make($val)"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Float val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsDecimalLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsDecimalLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Decimal.make($val)"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Decimal val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsStrLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsStrLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+    <span class='k'>this</span>.esc = val.toCode<span class='b'>(</span><span class='s'>'\"'</span>, <span class='k'>true</span><span class='b'>)[</span>1..-2<span class='b'>]</span>  <span class='y'>// remove outer quotes</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"\"$esc\""</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Str val
+  Str esc
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsDurationLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsDurationLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Duration.fromStr(\"$val.toStr\")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Duration val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsUriLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsUriLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = x.val
+    <span class='k'>this</span>.str = val.toStr.toCode<span class='b'>(</span><span class='s'>'\"'</span>, <span class='k'>true</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Uri.fromStr("</span><span class='b'>)</span>
+    out.w<span class='b'>(</span>val.toStr.toCode<span class='b'>(</span><span class='s'>'\"'</span>, <span class='k'>true</span><span class='b'>))</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Obj val
+  Str str
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsTypeLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsTypeLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, LiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.val = JsTypeRef<span class='b'>(</span>s, x.val<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    writeType<span class='b'>(</span>val, out<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>static</span> Void writeType<span class='b'>(</span>JsTypeRef t, JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>t.isList || t.isMap || t.isFunc<span class='b'>)</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>"fan.sys.Type.find(\"$t.sig\")"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>"${t.qname}.\$type"</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>t.isNullable<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>".toNullable()"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+  JsTypeRef val
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsSlotLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsSlotLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, SlotLiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.parent = JsTypeRef<span class='b'>(</span>s, x.parent<span class='b'>)</span>
+    <span class='k'>this</span>.name   = x.name
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    JsTypeLiteralExpr.writeType<span class='b'>(</span>parent, out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>".slot(\"$name\")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  JsTypeRef parent  <span class='y'>// slot parent type</span>
+  Str name          <span class='y'>// slot name</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsRangeLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsRangeLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>JsCompilerSupport s, RangeLiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    start = JsExpr.makeFor<span class='b'>(</span>s, x.start<span class='b'>)</span>
+    end   = JsExpr.makeFor<span class='b'>(</span>s, x.end<span class='b'>)</span>
+    exclusive = x.exclusive
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void <span id='write'>write</span><span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Range.make("</span><span class='b'>)</span>
+    start.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+    end.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>exclusive<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>",true"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  JsExpr <span id='start'>start</span>
+  JsExpr <span id='end'>end</span>
+  Bool <span id='exclusive'>exclusive</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsListLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsListLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, ListLiteralExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.inferredType = JsTypeRef<span class='b'>(</span>s, x.ctype<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>x.explicitType != <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>this</span>.explicitType = JsTypeRef<span class='b'>(</span>s, x.explicitType<span class='b'>)</span>
+
+    <span class='k'>this</span>.vals = x.vals.map |v-&gt;JsExpr| <span class='b'>{</span> JsExpr.makeFor<span class='b'>(</span>s, v<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    of := <span class='b'>(</span>explicitType ?: inferredType<span class='b'>)</span>.v
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.List.make("</span><span class='b'>)</span>
+    JsTypeLiteralExpr.writeType<span class='b'>(</span>of, out<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>vals.size &gt; 0<span class='b'>)</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>", ["</span><span class='b'>)</span>
+      vals.each |v,i|
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>i &gt; 0<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+        v.write<span class='b'>(</span>out<span class='b'>)</span>
+      <span class='b'>}</span>
+      out.w<span class='b'>(</span><span class='s'>"]"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  JsTypeRef inferredType
+  JsTypeRef? explicitType
+  JsExpr<span class='b'>[]</span> vals
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsMapLiteralExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsMapLiteralExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, MapLiteralExpr me<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.inferredType = JsTypeRef<span class='b'>(</span>s, me.ctype<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>me.explicitType != <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>this</span>.explicitType = JsTypeRef<span class='b'>(</span>s, me.explicitType<span class='b'>)</span>
+
+    <span class='k'>this</span>.keys = me.keys.map |k-&gt;JsExpr| <span class='b'>{</span> JsExpr.makeFor<span class='b'>(</span>s, k<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>this</span>.vals = me.vals.map |v-&gt;JsExpr| <span class='b'>{</span> JsExpr.makeFor<span class='b'>(</span>s, v<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Map.fromLiteral(["</span><span class='b'>)</span>
+    keys.each |k,i| <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>i &gt; 0<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>; k.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>"],["</span><span class='b'>)</span>
+    vals.each |v,i| <span class='b'>{</span> <span class='k'>if</span> <span class='b'>(</span>i &gt; 0<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>; v.write<span class='b'>(</span>out<span class='b'>)</span> <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>"]"</span><span class='b'>)</span>
+    t := explicitType ?: inferredType
+    out.w<span class='b'>(</span><span class='s'>",fan.sys.Type.find(\""</span><span class='b'>)</span>.w<span class='b'>(</span>t.k.sig<span class='b'>)</span>.w<span class='b'>(</span><span class='s'>"\")"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>",fan.sys.Type.find(\""</span><span class='b'>)</span>.w<span class='b'>(</span>t.v.sig<span class='b'>)</span>.w<span class='b'>(</span><span class='s'>"\")"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  JsTypeRef inferredType
+  JsTypeRef? explicitType
+  JsExpr<span class='b'>[]</span> keys
+  JsExpr<span class='b'>[]</span> vals
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsUnaryExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsUnaryExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, UnaryExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.id      = x.id
+    <span class='k'>this</span>.symbol  = x.opToken.symbol
+    <span class='k'>this</span>.operand = JsExpr.makeFor<span class='b'>(</span>s, x.operand<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>id<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> ExprId.cmpNull:    operand.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>" == null"</span><span class='b'>)</span>
+      <span class='k'>case</span> ExprId.cmpNotNull: operand.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>" != null"</span><span class='b'>)</span>
+      <span class='k'>default</span>:                out.w<span class='b'>(</span>symbol<span class='b'>)</span>; operand.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+  ExprId id
+  Str symbol
+  JsExpr operand
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsBinaryExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsBinaryExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, BinaryExpr x<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.symbol = x.opToken.symbol
+    <span class='k'>this</span>.lhs    = JsExpr.makeFor<span class='b'>(</span>s, x.lhs<span class='b'>)</span>
+    <span class='k'>this</span>.rhs    = JsExpr.makeFor<span class='b'>(</span>s, x.rhs<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>lhs <span class='k'>is</span> JsFieldExpr &amp;&amp; lhs-&gt;useAccessor == <span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      lhs-&gt;isSet = <span class='k'>true</span>
+      lhs.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"\$("</span><span class='b'>)</span>
+      rhs.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      lhs.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>" $symbol "</span><span class='b'>)</span>
+      rhs.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+  Str symbol
+  JsExpr lhs
+  JsExpr rhs
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsTernaryExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsTernaryExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, TernaryExpr te<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.condition = JsExpr.makeFor<span class='b'>(</span>s, te.condition<span class='b'>)</span>
+    <span class='k'>this</span>.trueExpr  = JsExpr.makeFor<span class='b'>(</span>s, te.trueExpr<span class='b'>)</span>
+    <span class='k'>this</span>.falseExpr = JsExpr.makeFor<span class='b'>(</span>s, te.falseExpr<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    var := support.unique
+    old := support.thisName
+    support.thisName = <span class='s'>"\$this"</span>
+    out.w<span class='b'>(</span><span class='s'>"(function(\$this) { "</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>"if ("</span><span class='b'>)</span>; condition.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>") "</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>trueExpr isnot JsThrowExpr<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>"return "</span><span class='b'>)</span>
+    trueExpr.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>"; "</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>falseExpr isnot JsThrowExpr<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>"return "</span><span class='b'>)</span>
+    falseExpr.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>"; "</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>"})($old)"</span><span class='b'>)</span>
+    support.thisName = old
+  <span class='b'>}</span>
+  JsExpr condition
+  JsExpr trueExpr
+  JsExpr falseExpr
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsElvisExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsElvisExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, BinaryExpr be<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.lhs = JsExpr.makeFor<span class='b'>(</span>s, be.lhs<span class='b'>)</span>
+    <span class='k'>this</span>.rhs = JsExpr.makeFor<span class='b'>(</span>s, be.rhs<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    var := support.unique
+    old := support.thisName
+    support.thisName = <span class='s'>"\$this"</span>
+    out.w<span class='b'>(</span><span class='s'>"(function(\$this) { var $var = "</span><span class='b'>)</span>
+    lhs.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>"; if ($var != null) return $var; "</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>rhs isnot JsThrowExpr<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>"return "</span><span class='b'>)</span>
+    rhs.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>"; })($old)"</span><span class='b'>)</span>
+    support.thisName = old
+  <span class='b'>}</span>
+  JsExpr lhs
+  JsExpr rhs
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsCondExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsCondExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, CondExpr ce<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.symbol   = ce.opToken.symbol
+    <span class='k'>this</span>.operands = ce.operands.map |op-&gt;JsExpr| <span class='b'>{</span> JsExpr.makeFor<span class='b'>(</span>s, op<span class='b'>)</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"("</span><span class='b'>)</span>
+    operands.each |op,i|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>i&gt;0 &amp;&amp; i&lt;operands.size<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>" $symbol "</span><span class='b'>)</span>
+      op.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Str symbol
+  JsExpr<span class='b'>[]</span> operands
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsTypeCheckExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsTypeCheckExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, TypeCheckExpr te<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.op     = te.id == ExprId.coerce ? <span class='s'>"coerce"</span> : te.opStr
+    <span class='k'>this</span>.target = JsExpr.makeFor<span class='b'>(</span>s, te.target<span class='b'>)</span>
+    <span class='k'>this</span>.check  = JsTypeRef<span class='b'>(</span>s, te.check<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    m := op
+    <span class='k'>if</span> <span class='b'>(</span>m == <span class='s'>"isnot"</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>"!"</span><span class='b'>)</span>
+      m = <span class='s'>"is"</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.ObjUtil.$m("</span><span class='b'>)</span>
+    target.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+    JsTypeLiteralExpr.writeType<span class='b'>(</span>check, out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  Str op
+  JsExpr target
+  JsTypeRef check
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsCallExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsCallExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, CallExpr ce<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.name   = vnameToJs<span class='b'>(</span>ce.method.name<span class='b'>)</span>
+    <span class='k'>this</span>.args   = ce.args.map |a-&gt;JsExpr| <span class='b'>{</span> JsExpr.makeFor<span class='b'>(</span>s, a<span class='b'>)</span> <span class='b'>}</span>
+    <span class='k'>this</span>.isSafe = ce.isSafe
+    <span class='k'>this</span>.isMock = ce.method <span class='k'>is</span> MockMethod
+    <span class='k'>this</span>.isCtorChain = ce.isCtorChain
+    <span class='k'>this</span>.isDynamic = ce.isDynamic
+    <span class='k'>if</span> <span class='b'>(</span>isDynamic<span class='b'>)</span> <span class='k'>this</span>.dynamicName = ce.name
+
+    <span class='k'>if</span> <span class='b'>(</span>ce.method != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>this</span>.parent = JsTypeRef<span class='b'>(</span>s, ce.method.parent<span class='b'>)</span>
+      <span class='k'>this</span>.isCtor = ce.method.isCtor
+      <span class='k'>this</span>.isObj  = ce.method.parent.qname == <span class='s'>"sys::Obj"</span>
+      <span class='k'>this</span>.isPrim = isPrimitive<span class='b'>(</span>ce.method.parent<span class='b'>)</span>
+      <span class='k'>this</span>.isStatic = ce.method.isStatic
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>ce.target != <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>this</span>.target = JsExpr.makeFor<span class='b'>(</span>s, ce.target<span class='b'>)</span>
+      <span class='k'>this</span>.targetType = ce.target.ctype == <span class='k'>null</span> ? parent : JsTypeRef<span class='b'>(</span>s, ce.target.ctype<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='y'>// force these methods to route thru ObjUtil</span>
+    <span class='k'>if</span> <span class='b'>(</span>name == <span class='s'>"equals"</span> || name == <span class='s'>"compare"</span><span class='b'>)</span> isObj = <span class='k'>true</span>
+
+    <span class='y'>// use isMock as hook to skip instance inits</span>
+    <span class='k'>if</span> <span class='b'>(</span>name.startsWith<span class='b'>(</span><span class='s'>"instance\$init\$"</span><span class='b'>))</span> isMock = <span class='k'>true</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='y'>// skip mock methods used to insert implicit runtime checks</span>
+    <span class='k'>if</span> <span class='b'>(</span>isMock<span class='b'>)</span> <span class='k'>return</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>isSafe<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='y'>// wrap if safe-nav</span>
+      safeVar = support.unique
+      old := support.thisName
+      support.thisName = <span class='s'>"\$this"</span>
+      out.w<span class='b'>(</span><span class='s'>"(function(\$this) { var $safeVar = "</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>target == <span class='k'>null</span><span class='b'>)</span> out.w<span class='b'>(</span>support.thisName<span class='b'>)</span>
+      <span class='k'>else</span> target.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"; if ($safeVar == null) return null; return "</span><span class='b'>)</span>
+      writeCall<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"; })($old)"</span><span class='b'>)</span>
+      support.thisName = old
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// normal call</span>
+      writeCall<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void writeCall<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>isObj<span class='b'>)</span> writeObj<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>isPrim<span class='b'>)</span> writePrimitive<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>isCtorChain<span class='b'>)</span> writeCtorChain<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>target <span class='k'>is</span> JsSuperExpr<span class='b'>)</span> writeSuper<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      writeTarget<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>".$name("</span><span class='b'>)</span>
+      writeArgs<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void writeObj<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.ObjUtil.$name("</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>isStatic<span class='b'>)</span> writeArgs<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      writeTarget<span class='b'>(</span>out<span class='b'>)</span>
+      writeArgs<span class='b'>(</span>out, <span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void writePrimitive<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"${targetType.qname}.$name("</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>isStatic<span class='b'>)</span> writeArgs<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      writeTarget<span class='b'>(</span>out<span class='b'>)</span>
+      writeArgs<span class='b'>(</span>out, <span class='k'>true</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void writeCtorChain<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"${targetType.qname}.${name}\$($support.thisName"</span><span class='b'>)</span>
+    writeArgs<span class='b'>(</span>out, <span class='k'>true</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void writeSuper<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    JsTypeRef t := target-&gt;explicitType ?: targetType
+    out.w<span class='b'>(</span><span class='s'>"${t.qname}.prototype.${name}.call($support.thisName"</span><span class='b'>)</span>
+    writeArgs<span class='b'>(</span>out, <span class='k'>true</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>")"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void writeTarget<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>isStatic || isCtor<span class='b'>)</span> parent.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>safeVar != <span class='k'>null</span><span class='b'>)</span> out.w<span class='b'>(</span>safeVar<span class='b'>)</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>target == <span class='k'>null</span><span class='b'>)</span> out.w<span class='b'>(</span>support.thisName<span class='b'>)</span>
+    <span class='k'>else</span> target.write<span class='b'>(</span>out<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void writeArgs<span class='b'>(</span>JsWriter out, Bool hasFirstArg := <span class='k'>false</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>isDynamic<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>hasFirstArg<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"\"$dynamicName\",fan.sys.List.make(fan.sys.Obj.\$type.toNullable(),["</span><span class='b'>)</span>
+      hasFirstArg = <span class='k'>false</span>
+    <span class='b'>}</span>
+
+    args.each |arg,i|
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>hasFirstArg || i &gt; 0<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      arg.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>isDynamic<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>"])"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  JsExpr? target         <span class='y'>// call target</span>
+  JsTypeRef? targetType  <span class='y'>// call target type</span>
+  JsTypeRef? parent      <span class='y'>// method parent type</span>
+  Str name               <span class='y'>// method name</span>
+  JsExpr<span class='b'>[]</span> args          <span class='y'>// args to pass to method</span>
+  Bool isObj             <span class='y'>// is target sys::Obj</span>
+  Bool isPrim            <span class='y'>// is target a primitive type (Int,Bool,etc)</span>
+  Bool isSafe            <span class='y'>// if ?. operator</span>
+  Str? safeVar           <span class='y'>// var target expr is held in for safe-nav</span>
+  Bool isMock            <span class='y'>// mock methods used to insert implicit runtime checks</span>
+  Bool isCtor            <span class='y'>// is this a ctor call</span>
+  Bool isCtorChain       <span class='y'>// is this a ctor chain call</span>
+  Bool isStatic          <span class='y'>// is this a static method</span>
+  Bool isDynamic         <span class='y'>// is this a -&gt; call</span>
+  Str? dynamicName       <span class='y'>// name of -&gt; call</span>
+
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsShortcutExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsShortcutExpr : JsCallExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, ShortcutExpr se<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s, se<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.symbol    = se.opToken.symbol
+    <span class='k'>this</span>.isAssign  = se.isAssign
+    <span class='k'>this</span>.isIndexedAssign = se <span class='k'>is</span> IndexedAssignExpr
+    <span class='k'>this</span>.isPostfixLeave  = se.isPostfixLeave
+
+    <span class='k'>switch</span> <span class='b'>(</span>symbol<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> <span class='s'>"!="</span>: name = <span class='s'>"compareNE"</span>
+      <span class='k'>case</span> <span class='s'>"&lt;"</span>:  name = <span class='s'>"compareLT"</span>
+      <span class='k'>case</span> <span class='s'>"&lt;="</span>: name = <span class='s'>"compareLE"</span>
+      <span class='k'>case</span> <span class='s'>"&gt;="</span>: name = <span class='s'>"compareGE"</span>
+      <span class='k'>case</span> <span class='s'>"&gt;"</span>:  name = <span class='s'>"compareGT"</span>
+    <span class='b'>}</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>isAssign<span class='b'>)</span>        assignTarget = findAssignTarget<span class='b'>(</span>target, se.loc<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>isIndexedAssign<span class='b'>)</span> assignIndex  = findIndexedAssign<span class='b'>(</span>target, se.loc<span class='b'>)</span>.args<span class='b'>[</span>0<span class='b'>]</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> JsExpr findAssignTarget<span class='b'>(</span>JsExpr expr, Loc loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr <span class='k'>is</span> JsLocalVarExpr || expr <span class='k'>is</span> JsFieldExpr<span class='b'>)</span> <span class='k'>return</span> expr
+    t := Type.of<span class='b'>(</span>expr<span class='b'>)</span>.field<span class='b'>(</span><span class='s'>"target"</span>, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>t != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> findAssignTarget<span class='b'>(</span>t.get<span class='b'>(</span>expr<span class='b'>)</span>, loc<span class='b'>)</span>
+    <span class='k'>throw</span> support.err<span class='b'>(</span><span class='s'>"No base Expr found"</span>, loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>private</span> JsShortcutExpr findIndexedAssign<span class='b'>(</span>JsExpr expr, Loc loc<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>expr <span class='k'>is</span> JsShortcutExpr<span class='b'>)</span> <span class='k'>return</span> expr
+    t := Type.of<span class='b'>(</span>expr<span class='b'>)</span>.field<span class='b'>(</span><span class='s'>"target"</span>, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>t != <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> findIndexedAssign<span class='b'>(</span>t.get<span class='b'>(</span>expr<span class='b'>)</span>, loc<span class='b'>)</span>
+    <span class='k'>throw</span> support.err<span class='b'>(</span><span class='s'>"No base Expr found"</span>, loc<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>isIndexedAssign<span class='b'>)</span>
+    <span class='b'>{</span>
+      doWriteIndexedAssign<span class='b'>(</span>out<span class='b'>)</span>
+      <span class='k'>return</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>isPostfixLeave<span class='b'>)</span>
+    <span class='b'>{</span>
+      var := support.unique
+      old := support.thisName
+      support.thisName = <span class='s'>"\$this"</span>
+      out.w<span class='b'>(</span><span class='s'>"(function(\$this) { var $var = "</span><span class='b'>)</span>
+      assignTarget.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"; "</span><span class='b'>)</span>
+      doWrite<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"; return $var; })($old)"</span><span class='b'>)</span>
+      support.thisName = old
+    <span class='b'>}</span>
+    <span class='k'>else</span> doWrite<span class='b'>(</span>out<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void doWrite<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>isAssign<span class='b'>)</span>
+    <span class='b'>{</span>
+      assignTarget.write<span class='b'>(</span>out<span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>" = "</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>super</span>.write<span class='b'>(</span>out<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Void doWriteIndexedAssign<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    newVal := support.unique
+    oldVal := support.unique
+    ref    := support.unique
+    index  := support.unique
+    old    := support.thisName
+    support.thisName = <span class='s'>"\$this"</span>
+    out.w<span class='b'>(</span><span class='s'>"(function(\$this) {"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>" var $ref = "</span><span class='b'>)</span>;    assignTarget.write<span class='b'>(</span>out<span class='b'>)</span>; out.w<span class='b'>(</span><span class='s'>";"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>" var $index = "</span><span class='b'>)</span>;  assignIndex.write<span class='b'>(</span>out<span class='b'>)</span>;  out.w<span class='b'>(</span><span class='s'>";"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>" var $newVal = "</span><span class='b'>)</span>; <span class='k'>super</span>.write<span class='b'>(</span>out<span class='b'>)</span>;        out.w<span class='b'>(</span><span class='s'>";"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>isPostfixLeave<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>" var $oldVal = ${ref}.get($index);"</span><span class='b'>)</span>;
+    out.w<span class='b'>(</span><span class='s'>" ${ref}.set($index,$newVal);"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>" return "</span><span class='b'>)</span>.w<span class='b'>(</span>isPostfixLeave ? oldVal : newVal<span class='b'>)</span>.w<span class='b'>(</span><span class='s'>";"</span><span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>" })($old)"</span><span class='b'>)</span>
+    support.thisName = old
+  <span class='b'>}</span>
+
+  Str symbol            <span class='y'>// the shortcut token symbol</span>
+  Bool isAssign         <span class='y'>// does this expr assign</span>
+  Bool isIndexedAssign  <span class='y'>// is indexed assign</span>
+  Bool isPostfixLeave   <span class='y'>// is postfix expr</span>
+  JsExpr? assignTarget  <span class='y'>// target of assignment</span>
+  JsExpr? assignIndex   <span class='y'>// indexed assign: index</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsFieldExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsFieldExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, FieldExpr fe<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>fe.target != <span class='k'>null</span><span class='b'>)</span> <span class='k'>this</span>.target = JsExpr.makeFor<span class='b'>(</span>s, fe.target<span class='b'>)</span>
+    <span class='k'>this</span>.parent = JsTypeRef<span class='b'>(</span>s, fe.field.parent<span class='b'>)</span>
+    <span class='k'>this</span>.name   = vnameToJs<span class='b'>(</span>fe.name<span class='b'>)</span>
+    <span class='k'>this</span>.useAccessor = fe.useAccessor
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>target == <span class='k'>null</span><span class='b'>)</span> parent.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>else</span> target.write<span class='b'>(</span>out<span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>name == <span class='s'>"\$this"</span><span class='b'>)</span> <span class='k'>return</span> <span class='y'>// skip $this ref for closures</span>
+    out.w<span class='b'>(</span><span class='s'>"."</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>useAccessor<span class='b'>)</span>
+    <span class='b'>{</span>
+      out.w<span class='b'>(</span><span class='s'>"$name"</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>!isSet<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>"()"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> out.w<span class='b'>(</span><span class='s'>"m_$name"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+  JsExpr? target       <span class='y'>// field target</span>
+  JsTypeRef parent     <span class='y'>// field parent type</span>
+  Str name             <span class='y'>// field name</span>
+  Bool useAccessor     <span class='y'>// false if access using '*' storage operator</span>
+  Bool isSet := <span class='k'>false</span>  <span class='y'>// transiently use for setters</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsClosureExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsClosureExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, ClosureExpr ce<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.func = JsMethod<span class='b'>(</span>s, ce.doCall<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    sig := func.sig<span class='b'>(</span>func.params<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.Func.make("</span><span class='b'>)</span>.nl
+    out.indent
+
+    <span class='y'>// params</span>
+    out.w<span class='b'>(</span><span class='s'>"fan.sys.List.make(fan.sys.Param.\$type, ["</span><span class='b'>)</span>
+    func.params.each |p,i|
+    <span class='b'>{</span>
+      <span class='k'>if</span><span class='b'>(</span>i &gt; 0<span class='b'>)</span> out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>
+      out.w<span class='b'>(</span><span class='s'>"new fan.sys.Param(\"$p.name\",\"$p.paramType.sig\",$p.hasDef)"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    out.w<span class='b'>(</span><span class='s'>"]),"</span><span class='b'>)</span>.nl
+
+    <span class='y'>// return</span>
+    JsTypeLiteralExpr.writeType<span class='b'>(</span>func.ret, out<span class='b'>)</span>
+    out.w<span class='b'>(</span><span class='s'>","</span><span class='b'>)</span>.nl
+
+    <span class='y'>// func</span>
+    out.w<span class='b'>(</span><span class='s'>"function$sig"</span><span class='b'>)</span>.nl
+    out.w<span class='b'>(</span><span class='s'>"{"</span><span class='b'>)</span>.nl
+    out.indent
+    old := support.thisName
+    support.thisName = <span class='s'>"\$this"</span>
+    func.code?.write<span class='b'>(</span>out<span class='b'>)</span>
+    support.thisName = old
+    out.unindent
+    out.w<span class='b'>(</span><span class='s'>"})"</span><span class='b'>)</span>
+    out.unindent
+  <span class='b'>}</span>
+  JsMethod? func  <span class='y'>// the func for this closure</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** JsThrowExpr</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> JsThrowExpr : JsExpr
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>(</span>JsCompilerSupport s, ThrowExpr te<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>s<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.exception = JsExpr.makeFor<span class='b'>(</span>s, te.exception<span class='b'>)</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Void write<span class='b'>(</span>JsWriter out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.w<span class='b'>(</span><span class='s'>"throw "</span><span class='b'>)</span>
+    exception.write<span class='b'>(</span>out<span class='b'>)</span>
+  <span class='b'>}</span>
+  JsExpr exception  <span class='y'>// the exception to throw</span>
+<span class='b'>}</span>
+
+</pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='JsRangeLiteralExpr.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#end'>end</a></li>
+  <li style='display: block;'><a href='#exclusive'>exclusive</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li style='display: block;'><a href='#start'>start</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+compilerJs 1.0.56
+[11-Nov-2010 Thu 10:08:18AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

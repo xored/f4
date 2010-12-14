@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>sys::Pod</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>sys</a></li>
+  <li>&gt;</li>
+  <li><a href='Pod.html'>Pod</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const final class</h2>
+<h1>sys::Pod</h1>
+<pre><a href='Obj.html'>sys::Obj</a>
+  sys::Pod</pre>
+</div>
+<div class='detail'>
+
+<p>Pod represents a module of Types.  Pods serve as a type namespace as well as unit of deployment and versioning.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='config' class='method'>config<a href='Pod_src.html#config'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? config(<a href='Str.html'>Str</a> name, <a href='Str.html'>Str</a>? def := null)</code></p>
+
+<p>Convenience for <code><a href='Env.html#config'>Env.config</a></code>.</p>
+</dd>
+<dt id='depends' class='method'>depends<a href='Pod_src.html#depends'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Depend.html'>Depend</a>[] depends()</code></p>
+
+<p>Get the declared list of dependencies for this pod.</p>
+</dd>
+<dt id='doc' class='method'>doc<a href='Pod_src.html#doc'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? doc()</code></p>
+
+<p>Return the fandoc chapter for this pod or null if not available. To get the summary string for the pod use:</p>
+
+<pre>pod.meta["pod.summary"]</pre>
+</dd>
+<dt id='file' class='method'>file<a href='Pod_src.html#file'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='File.html'>File</a>? file(<a href='Uri.html'>Uri</a> uri, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Look up a resource file in this pod.  The URI must start with the Pod's <a href='Pod.html#uri'>uri</a> or be path absolute.  If the file cannot be found then return null or throw UnresolvedErr based on checked flag.</p>
+
+<p>Examples:</p>
+
+<pre>Pod.find("icons").file(`/x16/cut.png`)
+Pod.find("icons").file(`fan://icons/x16/cut.png`)
+`fan://icons/x16/cut.png`.get</pre>
+</dd>
+<dt id='files' class='method'>files<a href='Pod_src.html#files'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='File.html'>File</a>[] files()</code></p>
+
+<p>List all the resource files contained by this pod.  Resources are any files included in the pod's zip file excluding fcode files.  The URI of these files is rooted by <a href='Pod.html#uri'>uri</a>.  Use <a href='Pod.html#file'>file</a> or <code><a href='Uri.html#get'>Uri.get</a></code> to lookup a resource file.</p>
+</dd>
+<dt id='find' class='method'>find<a href='Pod_src.html#find'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Pod.html'>Pod</a>? find(<a href='Str.html'>Str</a> name, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Find a pod by name.  If the pod doesn't exist and checked is false then return null, otherwise throw UnknownPodErr.</p>
+</dd>
+<dt id='list' class='method'>list<a href='Pod_src.html#list'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Pod.html'>Pod</a>[] list()</code></p>
+
+<p>Get a list of all the pods installed.  Note that currently this method will load all of the pods into memory, so it is an expensive operation.</p>
+</dd>
+<dt id='load' class='method'>load<a href='Pod_src.html#load'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Pod.html'>Pod</a> load(<a href='InStream.html'>InStream</a> in)</code></p>
+
+<p>Load a pod into memory from the specified input stream.  The stream must contain a valid pod zip file with the all the definitions. The pod is completely loaded into memory and the input stream is closed.  The pod cannot have resources.  The pod name as defined by <code>/pod.def</code> must be uniquely named or Err is thrown.</p>
+</dd>
+<dt id='locale' class='method'>locale<a href='Pod_src.html#locale'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>? locale(<a href='Str.html'>Str</a> name, <a href='Str.html'>Str</a>? def := "name")</code></p>
+
+<p>Convenience for <code><a href='Env.html#locale'>Env.locale</a></code> using <code><a href='Locale.html#cur'>Locale.cur</a></code>.</p>
+</dd>
+<dt id='log' class='method'>log<a href='Pod_src.html#log'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Log.html'>Log</a> log()</code></p>
+
+<p>Return the log for this pod's name.  This is a convenience for <code>Log.get(name)</code>.</p>
+</dd>
+<dt id='make' class='method hidden'>make<a href='Pod_src.html#make'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>new make()</code></p>
+
+<p>Private constructor.</p>
+</dd>
+<dt id='meta' class='method'>meta<a href='Pod_src.html#meta'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>:<a href='Str.html'>Str</a> meta()</code></p>
+
+<p>Get the meta name/value pairs for this pod. See <a href='../docLang/Pods.html#meta'>docLang</a>.</p>
+</dd>
+<dt id='name' class='method'>name<a href='Pod_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a> name()</code></p>
+
+<p>Simple name of the pod such as "sys".</p>
+</dd>
+<dt id='of' class='method'>of<a href='Pod_src.html#of'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='Pod.html'>Pod</a>? of(<a href='Obj.html'>Obj</a> obj)</code></p>
+
+<p>Get the pod of the given instance which is convenience for <code>Type.of(obj).pod</code>.  See <code><a href='Type.html#pod'>Type.pod</a></code>.</p>
+</dd>
+<dt id='props' class='method'>props<a href='Pod_src.html#props'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Str.html'>Str</a>:<a href='Str.html'>Str</a> props(<a href='Uri.html'>Uri</a> uri, <a href='Duration.html'>Duration</a> maxAge)</code></p>
+
+<p>Convenience for <code><a href='Env.html#props'>Env.props</a></code>.</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='Pod_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>Always return name().</p>
+</dd>
+<dt id='type' class='method'>type<a href='Pod_src.html#type'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Type.html'>Type</a>? type(<a href='Str.html'>Str</a> name, <a href='Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Find a type by name.  If the type doesn't exist and checked is false then return null, otherwise throw UnknownTypeErr.</p>
+</dd>
+<dt id='types' class='method'>types<a href='Pod_src.html#types'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Type.html'>Type</a>[] types()</code></p>
+
+<p>List of the all defined types.</p>
+</dd>
+<dt id='uri' class='method'>uri<a href='Pod_src.html#uri'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Uri.html'>Uri</a> uri()</code></p>
+
+<p>Uri for this pod which is always "fan://{name}".</p>
+</dd>
+<dt id='version' class='method'>version<a href='Pod_src.html#version'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Version.html'>Version</a> version()</code></p>
+
+<p>Version number for this pod.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Pod_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#config'>config</a></li>
+  <li><a href='#depends'>depends</a></li>
+  <li><a href='#doc'>doc</a></li>
+  <li><a href='#file'>file</a></li>
+  <li><a href='#files'>files</a></li>
+  <li><a href='#find'>find</a></li>
+  <li><a href='#list'>list</a></li>
+  <li><a href='#load'>load</a></li>
+  <li><a href='#locale'>locale</a></li>
+  <li><a href='#log'>log</a></li>
+  <li class='hidden'><a href='#make'>make</a></li>
+  <li><a href='#meta'>meta</a></li>
+  <li><a href='#name'>name</a></li>
+  <li><a href='#of'>of</a></li>
+  <li><a href='#props'>props</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#type'>type</a></li>
+  <li><a href='#types'>types</a></li>
+  <li><a href='#uri'>uri</a></li>
+  <li><a href='#version'>version</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+sys 1.0.56
+[11-Nov-2010 Thu 10:08:16AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

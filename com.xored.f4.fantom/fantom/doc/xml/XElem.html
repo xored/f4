@@ -1,0 +1,328 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml::XElem</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='XElem.html'>XElem</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>xml::XElem</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='XNode.html'>xml::XNode</a>
+    xml::XElem</pre>
+</div>
+<div class='detail'>
+
+<p>Models an XML element: its name, attributes, and children nodes.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='add' class='method'>add<a href='XElem_src.html#add'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> add(<a href='../sys/Obj.html'>Obj</a> child)</code></p>
+
+<p>If child is a XAttr then add an attribute.  Otherwise it must be a XElem, XText, or XPi and is added a child node.  If the child node is already parented, then throw ArgErr.  Return this.</p>
+</dd>
+<dt id='addAttr' class='method'>addAttr<a href='XElem_src.html#addAttr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> addAttr(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Str.html'>Str</a> val, <a href='XNs.html'>XNs</a>? ns := null)</code></p>
+
+<p>Add an attribute to this element.  Return this. This method is a convenience for:</p>
+
+<pre>add(XAttr(name, val, ns))</pre>
+</dd>
+<dt id='attr' class='method'>attr<a href='XElem_src.html#attr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XAttr.html'>XAttr</a>? attr(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Get an attribute by its non-qualified local name.  If the attribute is not found and checked is false then return null otherwise throw XErr.</p>
+</dd>
+<dt id='attrList' class='field hidden'>attrList<a href='XElem_src.html#attrList'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='XAttr.html'>XAttr</a>[] attrList := noAttrs</code></p>
+</dd>
+<dt id='attrs' class='method'>attrs<a href='XElem_src.html#attrs'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XAttr.html'>XAttr</a>[] attrs()</code></p>
+
+<p>Get this element's attributes as a readonly list.</p>
+</dd>
+<dt id='childList' class='field hidden'>childList<a href='XElem_src.html#childList'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='XNode.html'>XNode</a>[] childList := noNodes</code></p>
+</dd>
+<dt id='children' class='method'>children<a href='XElem_src.html#children'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XNode.html'>XNode</a>[] children()</code></p>
+
+<p>Get this element's children elements, text, and PIs as a readonly list.</p>
+</dd>
+<dt id='clearAttrs' class='method'>clearAttrs<a href='XElem_src.html#clearAttrs'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> clearAttrs()</code></p>
+
+<p>Remove all the attributes.  Return this.</p>
+</dd>
+<dt id='copy' class='method'>copy<a href='XElem_src.html#copy'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/This.html'>This</a> copy()</code></p>
+
+<p>Make a shallow copy of this element.</p>
+</dd>
+<dt id='doWrite' class='method hidden'>doWrite<a href='XElem_src.html#doWrite'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>internal <a href='../sys/Void.html'>Void</a> doWrite(<a href='../sys/OutStream.html'>OutStream</a> out, <a href='../sys/Int.html'>Int</a> indent)</code></p>
+</dd>
+<dt id='each' class='method'>each<a href='XElem_src.html#each'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> each(|<a href='XNode.html'>XNode</a>, <a href='../sys/Int.html'>Int</a>| f)</code></p>
+
+<p>Iterate each child element, text, and PI node in the <a href='XElem.html#children'>children</a> list.</p>
+</dd>
+<dt id='eachAttr' class='method'>eachAttr<a href='XElem_src.html#eachAttr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Void.html'>Void</a> eachAttr(|<a href='XAttr.html'>XAttr</a>, <a href='../sys/Int.html'>Int</a>| f)</code></p>
+
+<p>Iterate each attribute in the <a href='XElem.html#attrs'>attrs</a> list.</p>
+</dd>
+<dt id='elem' class='method'>elem<a href='XElem_src.html#elem'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XElem.html'>XElem</a>? elem(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Find an element by its non-qualified local name.  If there are multiple child elements with the name, then the first one is returned.  If the element is not found and checked is false then return null otherwise throw XErr.</p>
+</dd>
+<dt id='elems' class='method'>elems<a href='XElem_src.html#elems'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XElem.html'>XElem</a>[] elems()</code></p>
+
+<p>Get the children elements.  If this element contains text or PI nodes, then they are excluded in the result.</p>
+</dd>
+<dt id='get' class='method'>get<a href='XElem_src.html#get'>Source</a></dt>
+<dd>
+<p><code class='sig'>@<a href='../sys/Operator.html'>Operator</a> <br/>
+<a href='../sys/Str.html'>Str</a>? get(<a href='../sys/Str.html'>Str</a> name, <a href='../sys/Bool.html'>Bool</a> checked := true)</code></p>
+
+<p>Get an attribute value by its non-qualified local name. If the attribute is not found and checked is false then return null otherwise throw XErr.</p>
+</dd>
+<dt id='line' class='field'>line<a href='XElem_src.html#line'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Int.html'>Int</a> line</code></p>
+
+<p>Line number of XML element in source file or zero if unknown.</p>
+</dd>
+<dt id='make' class='method'>make<a href='XElem_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='../sys/Str.html'>Str</a> name, <a href='XNs.html'>XNs</a>? ns := null)</code></p>
+
+<p>Construct an element with unqualified local name and optional XML namespace.  The XNs instance should be defined as an attribute on this or an ancestor element (see <code><a href='XAttr.html#makeNs'>XAttr.makeNs</a></code>).</p>
+</dd>
+<dt id='name' class='field'>name<a href='XElem_src.html#name'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> name</code></p>
+
+<p>Unqualified local name of the element.  If an XML namespace prefix was specified, then this is everything after the colon:</p>
+
+<pre>&lt;foo>    =>  foo
+&lt;x:foo>  =>  foo</pre>
+</dd>
+<dt id='noAttrs' class='field hidden'>noAttrs<a href='XElem_src.html#noAttrs'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static internal <a href='XAttr.html'>XAttr</a>[] noAttrs := XAttr[,]</code></p>
+</dd>
+<dt id='noElems' class='field hidden'>noElems<a href='XElem_src.html#noElems'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static internal <a href='XElem.html'>XElem</a>[] noElems := XElem[,]</code></p>
+</dd>
+<dt id='noNodes' class='field hidden'>noNodes<a href='XElem_src.html#noNodes'>Source</a></dt>
+<dd class='hidden'>
+<p><code class='sig'>const static internal <a href='XNode.html'>XNode</a>[] noNodes := XNode[,]</code></p>
+</dd>
+<dt id='nodeType' class='method'>nodeType<a href='XElem_src.html#nodeType'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='XNodeType.html'>XNodeType</a> nodeType()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='XNode.html#nodeType'>xml::XNode.nodeType</a></p>
+</div>
+
+<p>Return the <code><a href='XNodeType.html#elem'>XNodeType.elem</a></code>.  Note that during pull parsing XParser will return <code>elemStart</code> and <code>elemEnd</code>.</p>
+</dd>
+<dt id='ns' class='field'>ns<a href='XElem_src.html#ns'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XNs.html'>XNs</a>? ns</code></p>
+
+<p>The XML namespace which qualified this element's name. If the element name is unqualified return null.</p>
+</dd>
+<dt id='prefix' class='method'>prefix<a href='XElem_src.html#prefix'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a>? prefix()</code></p>
+
+<p>If this element is qualified by an XML namespace then return the namespace's prefix.  Otherwise return null.  If the namespace is the default namespace then prefix is "".</p>
+</dd>
+<dt id='qname' class='method'>qname<a href='XElem_src.html#qname'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Str.html'>Str</a> qname()</code></p>
+
+<p>Qualified name of the element.  This is the full name including the XML namespace prefix:</p>
+
+<pre>&lt;foo>    =>  foo
+&lt;x:foo>  =>  x:foo</pre>
+</dd>
+<dt id='remove' class='method'>remove<a href='XElem_src.html#remove'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XNode.html'>XNode</a>? remove(<a href='XNode.html'>XNode</a> child)</code></p>
+
+<p>Remove the child element, text, or PI from this element. The child is matched by reference, so you must pass in the same XNode contained by this element.  Return the removed node or null if no match.</p>
+</dd>
+<dt id='removeAt' class='method'>removeAt<a href='XElem_src.html#removeAt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XNode.html'>XNode</a> removeAt(<a href='../sys/Int.html'>Int</a> index)</code></p>
+
+<p>Remove the child element, text, or PI at the specified index into <a href='XElem.html#children'>children</a>.  Return the removed node.</p>
+</dd>
+<dt id='removeAttr' class='method'>removeAttr<a href='XElem_src.html#removeAttr'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XAttr.html'>XAttr</a>? removeAttr(<a href='XAttr.html'>XAttr</a> attr)</code></p>
+
+<p>Remove the attribute from this element.  The attribute is matched by reference, so you must pass in the same XAttr contained by this element.  Return the removed attribute or null if no match.</p>
+</dd>
+<dt id='removeAttrAt' class='method'>removeAttrAt<a href='XElem_src.html#removeAttrAt'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XAttr.html'>XAttr</a> removeAttrAt(<a href='../sys/Int.html'>Int</a> index)</code></p>
+
+<p>Remove the attribute at the specified index into <a href='XElem.html#attrs'>attrs</a>. Return the removed attribute.</p>
+</dd>
+<dt id='text' class='method'>text<a href='XElem_src.html#text'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='XText.html'>XText</a>? text()</code></p>
+
+<p>Return this element's child text node.  If this element contains multiple text nodes then return the first one.  If this element does not contain a text node return null.</p>
+</dd>
+<dt id='toStr' class='method'>toStr<a href='XElem_src.html#toStr'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Str.html'>Str</a> toStr()</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='../sys/Obj.html#toStr'>sys::Obj.toStr</a></p>
+</div>
+
+<p>String representation is as a start tag.</p>
+</dd>
+<dt id='uri' class='method'>uri<a href='XElem_src.html#uri'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='../sys/Uri.html'>Uri</a>? uri()</code></p>
+
+<p>If this element is qualified by an XML namespace then return the namespace's uri.  Otherwise return null.</p>
+</dd>
+<dt id='write' class='method'>write<a href='XElem_src.html#write'>Source</a></dt>
+<dd>
+<p><code class='sig'>override <a href='../sys/Void.html'>Void</a> write(<a href='../sys/OutStream.html'>OutStream</a> out)</code></p>
+<div class='slotInfo'>
+<p>Overrides <a href='XNode.html#write'>xml::XNode.write</a></p>
+</div>
+
+<p>Write this node to the output stream.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='XElem_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#add'>add</a></li>
+  <li><a href='#addAttr'>addAttr</a></li>
+  <li><a href='#attr'>attr</a></li>
+  <li class='hidden'><a href='#attrList'>attrList</a></li>
+  <li><a href='#attrs'>attrs</a></li>
+  <li class='hidden'><a href='#childList'>childList</a></li>
+  <li><a href='#children'>children</a></li>
+  <li><a href='#clearAttrs'>clearAttrs</a></li>
+  <li><a href='#copy'>copy</a></li>
+  <li class='hidden'><a href='#doWrite'>doWrite</a></li>
+  <li><a href='#each'>each</a></li>
+  <li><a href='#eachAttr'>eachAttr</a></li>
+  <li><a href='#elem'>elem</a></li>
+  <li><a href='#elems'>elems</a></li>
+  <li><a href='#get'>get</a></li>
+  <li><a href='#line'>line</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#name'>name</a></li>
+  <li class='hidden'><a href='#noAttrs'>noAttrs</a></li>
+  <li class='hidden'><a href='#noElems'>noElems</a></li>
+  <li class='hidden'><a href='#noNodes'>noNodes</a></li>
+  <li><a href='#nodeType'>nodeType</a></li>
+  <li><a href='#ns'>ns</a></li>
+  <li><a href='#prefix'>prefix</a></li>
+  <li><a href='#qname'>qname</a></li>
+  <li><a href='#remove'>remove</a></li>
+  <li><a href='#removeAt'>removeAt</a></li>
+  <li><a href='#removeAttr'>removeAttr</a></li>
+  <li><a href='#removeAttrAt'>removeAttrAt</a></li>
+  <li><a href='#text'>text</a></li>
+  <li><a href='#toStr'>toStr</a></li>
+  <li><a href='#uri'>uri</a></li>
+  <li><a href='#write'>write</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

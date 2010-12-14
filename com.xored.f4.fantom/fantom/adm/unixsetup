@@ -1,0 +1,20 @@
+#! /bin/bash
+
+#
+# unixsetup: chmod +x on all fan scripts
+#
+# TODO: need to add examples/ scripts
+#
+
+. "${0%/*}/../bin/fanlaunch"
+echo "###"
+echo "### FAN_HOME=$FAN_HOME"
+echo "###"
+
+# this is a test comment for email notification, but do i really need .exe?
+chmod +x $FAN_HOME/bin/*
+find $FAN_HOME \
+    \( -name "*.exe" -o -name "build*.fan" -o -name 'boot*.fan' \) \
+    -exec chmod +x {} \;
+find $FAN_HOME/examples -name '*.fan' \
+    -exec chmod +x {} \;

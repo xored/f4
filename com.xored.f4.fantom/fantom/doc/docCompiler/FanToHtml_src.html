@@ -1,0 +1,534 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>docCompiler::FanToHtml</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docCompiler</a></li>
+  <li>&gt;</li>
+  <li><a href='FanToHtml.html'>FanToHtml</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>docCompiler::FanToHtml</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  docCompiler::FanToHtml</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   30 Jan 08  Andy Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> compiler
+<span class='k'>using</span> fandoc
+
+<span class='z'>**</span>
+<span class='z'>** FanToHtml generates a syntax color coded HTML fragment from a</span>
+<span class='z'>** Fantom source file.  The actual CSS styles are not defined by this</span>
+<span class='z'>** class, and should be set by the parent HTML markup or external</span>
+<span class='z'>** CSS file.</span>
+<span class='z'>**</span>
+<span class='z'>**   // parse the file below into the markup below</span>
+<span class='z'>**   FanToHtml(in, out).parse</span>
+<span class='z'>**</span>
+<span class='z'>**   class Foo</span>
+<span class='z'>**   {</span>
+<span class='z'>**     Int x := 5</span>
+<span class='z'>**   }</span>
+<span class='z'>**</span>
+<span class='z'>**   &lt;div class='src'&gt;</span>
+<span class='z'>**   &lt;pre&gt;</span>
+<span class='z'>**   &lt;span class='k'&gt;class&lt;span&gt;Foo</span>
+<span class='z'>**   &lt;span class='b'&gt;{&lt;/span&gt;</span>
+<span class='z'>**     Int x := 5</span>
+<span class='z'>**   &lt;span class='b'&gt;}&lt;/span&gt;</span>
+<span class='z'>**   &lt;pre&gt;</span>
+<span class='z'>**   &lt;/div&gt;</span>
+<span class='z'>**</span>
+<span class='z'>** The default CSS class names can be changed by modifing the</span>
+<span class='z'>** respective fields.  They default to a single character to</span>
+<span class='z'>** preserve space:</span>
+<span class='z'>**</span>
+<span class='z'>**   source        =&gt;  src</span>
+<span class='z'>**   bracket       =&gt;  b</span>
+<span class='z'>**   keyword       =&gt;  k</span>
+<span class='z'>**   string        =&gt;  s</span>
+<span class='z'>**   char          =&gt;  c</span>
+<span class='z'>**   uri           =&gt;  u</span>
+<span class='z'>**   blockComment  =&gt;  x</span>
+<span class='z'>**   lineComment   =&gt;  y</span>
+<span class='z'>**   fandocComment =&gt;  z</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FanToHtml
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Constructor</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Create a new FanToHtml to parse the given InStream to the</span>
+  <span class='z'>** given OutStream.  The slots map is a slot name to line</span>
+  <span class='z'>** number map.  If non-null, it will be used to attempt to</span>
+  <span class='z'>** place an anchor where the respective slot is defined.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>InStream in, OutStream out, <span class='b'>[</span>Str:Int<span class='b'>]</span>? slots := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>this</span>.in    = FanToHtmlInStream<span class='b'>(</span>in<span class='b'>)</span>
+    <span class='k'>this</span>.out   = out
+    <span class='k'>this</span>.slots = slots == <span class='k'>null</span> ? Str:Int<span class='b'>[</span>:<span class='b'>]</span> : slots
+    <span class='k'>this</span>.used  = Str:Bool<span class='b'>[</span>:<span class='b'>]</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Methods</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the source file into a HTML fragment.</span>
+  <span class='z'>**</span>
+  Void <span id='parse'>parse</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;div class='$classSource'&gt;\n"</span><span class='b'>)</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;pre&gt;\n"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>in.peek == <span class='s'>'#'</span><span class='b'>)</span> shebang
+    <span class='k'>while</span> <span class='b'>(</span>nextToken<span class='b'>)</span> <span class='b'>{}</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/pre&gt;\n"</span><span class='b'>)</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/div&gt;\n"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse the next token.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='nextToken'>nextToken</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    peek := in.peek
+    <span class='k'>if</span> <span class='b'>(</span>peek == <span class='k'>null</span><span class='b'>)</span> <span class='k'>return</span> <span class='k'>false</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>peek.isAlphaNum || peek == <span class='s'>'_'</span><span class='b'>)</span> identifier
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>brackets.get<span class='b'>(</span>peek, <span class='k'>false</span><span class='b'>))</span> bracket
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'\''</span><span class='b'>)</span> char
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'\"'</span><span class='b'>)</span> string
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'`'</span><span class='b'>)</span> uri
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'/'</span><span class='b'>)</span> comment
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'*'</span><span class='b'>)</span> fandoc
+    <span class='k'>else</span> safe<span class='b'>(</span>in.next<span class='b'>)</span>
+    <span class='k'>return</span>  <span class='k'>true</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse an identifier.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='identifier'>identifier</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    id := in.readStrToken<span class='b'>(</span>512<span class='b'>)</span> |Int ch-&gt;Bool|
+    <span class='b'>{</span>
+      <span class='k'>return</span> !ch.isAlphaNum &amp;&amp; ch != <span class='s'>'_'</span>
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>keywords.get<span class='b'>(</span>id, <span class='k'>false</span><span class='b'>))</span>
+    <span class='b'>{</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;span class='"</span><span class='b'>)</span>.print<span class='b'>(</span>classKeyword<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+      out.print<span class='b'>(</span>id<span class='b'>)</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>slots<span class='b'>[</span>id<span class='b'>]</span> == in.line &amp;&amp; used<span class='b'>[</span>id<span class='b'>]</span> == <span class='k'>null</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      used<span class='b'>[</span>id<span class='b'>]</span> = <span class='k'>true</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;span id='"</span><span class='b'>)</span>.print<span class='b'>(</span>id<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+      out.print<span class='b'>(</span>id<span class='b'>)</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> out.print<span class='b'>(</span>id<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a bracket.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='bracket'>bracket</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;span class='"</span><span class='b'>)</span>.print<span class='b'>(</span>classBracket<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+    out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span>
+    <span class='k'>while</span> <span class='b'>(</span>brackets.get<span class='b'>(</span>in.peek ?: 0, <span class='k'>false</span><span class='b'>))</span> <span class='y'>// optimize consecutive brackets like () or []</span>
+      out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a char literal.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='char'>char</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;span class='"</span><span class='b'>)</span>.print<span class='b'>(</span>classString<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+    out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span> <span class='y'>// start quote</span>
+    ch := in.next
+    <span class='k'>while</span> <span class='b'>(</span>ch != <span class='s'>'\''</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      safe<span class='b'>(</span>ch<span class='b'>)</span>
+      peek := in.peek
+      <span class='k'>if</span> <span class='b'>(</span>ch == <span class='s'>'\\'</span> &amp;&amp; <span class='b'>(</span>peek == <span class='s'>'\''</span> || peek == <span class='s'>'\\'</span><span class='b'>))</span>
+        out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span>
+      ch = in.next
+    <span class='b'>}</span>
+    out.writeChar<span class='b'>(</span>ch<span class='b'>)</span> <span class='y'>// end quote</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a string literal.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='string'>string</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;span class='"</span><span class='b'>)</span>.print<span class='b'>(</span>classString<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+    out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span> <span class='y'>// start quote</span>
+    ch := in.next
+    <span class='k'>while</span> <span class='b'>(</span>ch != <span class='s'>'\"'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      safe<span class='b'>(</span>ch<span class='b'>)</span>
+      peek := in.peek
+      <span class='k'>if</span> <span class='b'>(</span>ch == <span class='s'>'\\'</span> &amp;&amp; <span class='b'>(</span>peek == <span class='s'>'\"'</span> || peek == <span class='s'>'\\'</span><span class='b'>))</span>
+        out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span>
+      ch = in.next
+    <span class='b'>}</span>
+    out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>  <span class='y'>// end quote</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a Uri literal.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='uri'>uri</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;span class='"</span><span class='b'>)</span>.print<span class='b'>(</span>classUri<span class='b'>)</span>.print<span class='b'>(</span><span class='s'>"'&gt;"</span><span class='b'>)</span>
+    out.writeChar<span class='b'>(</span>in.next<span class='b'>)</span> <span class='y'>// start quote</span>
+    ch := in.next
+    <span class='k'>while</span> <span class='b'>(</span>ch != <span class='s'>'`'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      safe<span class='b'>(</span>ch<span class='b'>)</span>
+      ch = in.next
+    <span class='b'>}</span>
+    out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>  <span class='y'>// end quote</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a comment.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='comment'>comment</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    in.next <span class='y'>// eat '/'</span>
+    peek := in.peek
+    <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'/'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      ch := in.read
+      out.print<span class='b'>(</span><span class='s'>"&lt;span class='y'&gt;/"</span><span class='b'>)</span>
+      <span class='k'>while</span> <span class='b'>(</span>ch != <span class='k'>null</span> &amp;&amp; !nl<span class='b'>(</span>ch<span class='b'>))</span>
+      <span class='b'>{</span>
+        safe<span class='b'>(</span>ch<span class='b'>)</span>
+        ch = in.next
+      <span class='b'>}</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>nl<span class='b'>(</span>ch<span class='b'>))</span> out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>peek == <span class='s'>'*'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      ch := in.read
+      out.print<span class='b'>(</span><span class='s'>"&lt;span class='x'&gt;/*"</span><span class='b'>)</span>
+      a := in.next
+      b := in.next
+      stack := 1
+      <span class='k'>while</span> <span class='b'>(</span><span class='k'>true</span><span class='b'>)</span>
+      <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>a == <span class='s'>'/'</span> &amp;&amp; b == <span class='s'>'*'</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          stack++
+          safe<span class='b'>(</span>a<span class='b'>)</span>
+          safe<span class='b'>(</span>b<span class='b'>)</span>
+          a = in.next
+          b = in.next
+        <span class='b'>}</span>
+        <span class='k'>else</span> <span class='k'>if</span> <span class='b'>(</span>a == <span class='s'>'*'</span> &amp;&amp; b == <span class='s'>'/'</span><span class='b'>)</span>
+        <span class='b'>{</span>
+          stack--
+          safe<span class='b'>(</span>a<span class='b'>)</span>
+          safe<span class='b'>(</span>b<span class='b'>)</span>
+          <span class='k'>if</span> <span class='b'>(</span>stack == 0<span class='b'>)</span> <span class='k'>break</span>
+          a = in.next
+          b = in.next
+        <span class='b'>}</span>
+        <span class='k'>else</span>
+        <span class='b'>{</span>
+          safe<span class='b'>(</span>a<span class='b'>)</span>
+          a = b
+          b = in.next
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// was not acutally a comment</span>
+      out.writeChar<span class='b'>(</span><span class='s'>'/'</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a fandoc comment.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='fandoc'>fandoc</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    in.read <span class='y'>// eat first '*'</span>
+    <span class='k'>if</span> <span class='b'>(</span>in.peek == <span class='s'>'*'</span><span class='b'>)</span>
+    <span class='b'>{</span>
+      in.read <span class='y'>// eat second '*'</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;span class='z'&gt;**"</span><span class='b'>)</span>
+      ch := in.next
+      <span class='k'>while</span> <span class='b'>(</span>ch != <span class='k'>null</span> &amp;&amp; !nl<span class='b'>(</span>ch<span class='b'>))</span>
+      <span class='b'>{</span>
+        safe<span class='b'>(</span>ch<span class='b'>)</span>
+        ch = in.next
+      <span class='b'>}</span>
+      out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+      <span class='k'>if</span> <span class='b'>(</span>nl<span class='b'>(</span>ch<span class='b'>))</span> out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>else</span>
+    <span class='b'>{</span>
+      <span class='y'>// not actually a fandoc commnet</span>
+      out.writeChar<span class='b'>(</span><span class='s'>'*'</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Parse a #! shebang</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='shebang'>shebang</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;span&gt;"</span><span class='b'>)</span>
+    ch := in.next
+    <span class='k'>while</span> <span class='b'>(</span>ch != <span class='k'>null</span> &amp;&amp; !nl<span class='b'>(</span>ch<span class='b'>))</span>
+    <span class='b'>{</span>
+      safe<span class='b'>(</span>ch<span class='b'>)</span>
+      ch = in.next
+    <span class='b'>}</span>
+    <span class='k'>if</span> <span class='b'>(</span>nl<span class='b'>(</span>ch<span class='b'>))</span> out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>
+    out.print<span class='b'>(</span><span class='s'>"&lt;/span&gt;"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Escape &lt;, &amp;, and &gt; characters.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Void <span id='safe'>safe</span><span class='b'>(</span>Int ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>switch</span> <span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> <span class='s'>'&lt;'</span>: out.print<span class='b'>(</span><span class='s'>"&amp;lt;"</span><span class='b'>)</span>
+      <span class='k'>case</span> <span class='s'>'&gt;'</span>: out.print<span class='b'>(</span><span class='s'>"&amp;gt;"</span><span class='b'>)</span>
+      <span class='k'>case</span> <span class='s'>'&amp;'</span>: out.print<span class='b'>(</span><span class='s'>"&amp;amp;"</span><span class='b'>)</span>
+      <span class='k'>default</span>: out.writeChar<span class='b'>(</span>ch<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return true if ch is a newline character.</span>
+  <span class='z'>**</span>
+  <span class='k'>private</span> Bool <span id='nl'>nl</span><span class='b'>(</span>Int? ch<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ch == <span class='s'>'\n'</span> || ch == 0x0d
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// CSS class names</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>** The top level &lt;div&gt; CSS class name.</span>
+  Str <span id='classSource'>classSource</span> := <span class='s'>"src"</span>
+
+  <span class='z'>** The CSS class name used to style brackets (parens, curly brace).</span>
+  Str <span id='classBracket'>classBracket</span> := <span class='s'>"b"</span>
+
+  <span class='z'>** The CSS class name used to style keywords.</span>
+  Str <span id='classKeyword'>classKeyword</span> := <span class='s'>"k"</span>
+
+  <span class='z'>** The CSS class name used to style strings.</span>
+  Str <span id='classString'>classString</span> := <span class='s'>"s"</span>
+
+  <span class='z'>** The CSS class name used to style characters.</span>
+  Str <span id='classChar'>classChar</span> := <span class='s'>"c"</span>
+
+  <span class='z'>** The CSS class name used to style URI's.</span>
+  Str <span id='classUri'>classUri</span> := <span class='s'>"u"</span>
+
+  <span class='z'>** The CSS class name used to style block comments.</span>
+  Str <span id='classBlockComment'>classBlockComment</span> := <span class='s'>"x"</span>
+
+  <span class='z'>** The CSS class name used to style single line comments.</span>
+  Str <span id='classLineComment'>classLineComment</span> := <span class='s'>"y"</span>
+
+  <span class='z'>** The CSS class name used to style fandoc comments.</span>
+  Str <span id='classFandocComment'>classFandocComment</span> := <span class='s'>"z"</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>private</span> FanToHtmlInStream <span id='in'>in</span>  <span class='y'>// the source file to parse</span>
+  <span class='k'>private</span> OutStream <span id='out'>out</span>         <span class='y'>// where to write results</span>
+  <span class='k'>private</span> Str:Int <span id='slots'>slots</span>         <span class='y'>// map of slots to line numbers</span>
+  <span class='k'>private</span> Str:Bool <span id='used'>used</span>         <span class='y'>// keep track of already anchored slots</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Int:Bool <span id='brackets'>brackets</span> :=
+  <span class='b'>[</span>
+    <span class='s'>'{'</span>: <span class='k'>true</span>,<span class='s'>'}'</span>: <span class='k'>true</span>,
+    <span class='s'>'('</span>: <span class='k'>true</span>,<span class='s'>')'</span>: <span class='k'>true</span>,
+    <span class='s'>'['</span>: <span class='k'>true</span>,<span class='s'>']'</span>: <span class='k'>true</span>,
+  <span class='b'>]</span>
+
+  <span class='k'>private</span> <span class='k'>static</span> <span class='k'>const</span> Str:Bool <span id='keywords'>keywords</span>
+  <span class='k'>static</span>
+  <span class='b'>{</span>
+    list :=
+    <span class='b'>[</span>
+      <span class='s'>"abstract"</span>,  <span class='s'>"finally"</span>,    <span class='s'>"readonly"</span>,
+      <span class='s'>"as"</span>,        <span class='s'>"for"</span>,        <span class='s'>"return"</span>,
+      <span class='s'>"assert"</span>,    <span class='s'>"foreach"</span>,    <span class='s'>"static"</span>,
+      <span class='s'>"break"</span>,     <span class='s'>"goto"</span>,       <span class='s'>"super"</span>,
+      <span class='s'>"case"</span>,      <span class='s'>"if"</span>,         <span class='s'>"switch"</span>,
+      <span class='s'>"catch"</span>,     <span class='s'>"internal"</span>,   <span class='s'>"this"</span>,
+      <span class='s'>"class"</span>,     <span class='s'>"is"</span>,         <span class='s'>"throw"</span>,
+      <span class='s'>"const"</span>,     <span class='s'>"mixin"</span>,      <span class='s'>"true"</span>,
+      <span class='s'>"continue"</span>,  <span class='s'>"native"</span>,     <span class='s'>"try"</span>,
+      <span class='s'>"default"</span>,   <span class='s'>"new"</span>,        <span class='s'>"using"</span>,
+      <span class='s'>"do"</span>,        <span class='s'>"null"</span>,       <span class='s'>"virtual"</span>,
+      <span class='s'>"else"</span>,      <span class='s'>"override"</span>,   <span class='s'>"volatile"</span>,
+      <span class='s'>"enum"</span>,      <span class='s'>"private"</span>,    <span class='s'>"void"</span>,
+      <span class='s'>"false"</span>,     <span class='s'>"protected"</span>,  <span class='s'>"while"</span>,
+      <span class='s'>"final"</span>,     <span class='s'>"public"</span>,     <span class='s'>"once"</span>
+     <span class='b'>]</span>
+     map := Str:Bool<span class='b'>[</span>:<span class='b'>]</span>
+     list.each |Str s| <span class='b'>{</span> map<span class='b'>[</span>s<span class='b'>]</span> = <span class='k'>true</span> <span class='b'>}</span>
+     keywords = map
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** FanToHtmlInStream is used for line counting.</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>internal</span> <span class='k'>class</span> FanToHtmlInStream : InStream
+<span class='b'>{</span>
+  <span class='z'>**</span>
+  <span class='z'>** Wrap the given base stream.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> make<span class='b'>(</span>InStream base<span class='b'>)</span> : <span class='k'>super</span><span class='b'>(</span>base<span class='b'>)</span> <span class='b'>{}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Read the next character from the base stream.  If the</span>
+  <span class='z'>** character is a newline, increment our current line.</span>
+  <span class='z'>**</span>
+  Int? next<span class='b'>()</span>
+  <span class='b'>{</span>
+    ch := readChar
+    <span class='k'>if</span> <span class='b'>(</span>ch == 0x0a || ch == 0x0d<span class='b'>)</span> line++
+    <span class='k'>return</span> ch
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** The current line number.</span>
+  <span class='z'>**</span>
+  Int line := 1
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='FanToHtml.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li class='hidden' style='display: block;'><a href='#bracket'>bracket</a></li>
+  <li class='hidden' style='display: block;'><a href='#brackets'>brackets</a></li>
+  <li class='hidden' style='display: block;'><a href='#char'>char</a></li>
+  <li style='display: block;'><a href='#classBlockComment'>classBlockComment</a></li>
+  <li style='display: block;'><a href='#classBracket'>classBracket</a></li>
+  <li style='display: block;'><a href='#classChar'>classChar</a></li>
+  <li style='display: block;'><a href='#classFandocComment'>classFandocComment</a></li>
+  <li style='display: block;'><a href='#classKeyword'>classKeyword</a></li>
+  <li style='display: block;'><a href='#classLineComment'>classLineComment</a></li>
+  <li style='display: block;'><a href='#classSource'>classSource</a></li>
+  <li style='display: block;'><a href='#classString'>classString</a></li>
+  <li style='display: block;'><a href='#classUri'>classUri</a></li>
+  <li class='hidden' style='display: block;'><a href='#comment'>comment</a></li>
+  <li class='hidden' style='display: block;'><a href='#fandoc'>fandoc</a></li>
+  <li class='hidden' style='display: block;'><a href='#identifier'>identifier</a></li>
+  <li class='hidden' style='display: block;'><a href='#in'>in</a></li>
+  <li class='hidden' style='display: block;'><a href='#keywords'>keywords</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#nextToken'>nextToken</a></li>
+  <li class='hidden' style='display: block;'><a href='#nl'>nl</a></li>
+  <li class='hidden' style='display: block;'><a href='#out'>out</a></li>
+  <li style='display: block;'><a href='#parse'>parse</a></li>
+  <li class='hidden' style='display: block;'><a href='#safe'>safe</a></li>
+  <li class='hidden' style='display: block;'><a href='#shebang'>shebang</a></li>
+  <li class='hidden' style='display: block;'><a href='#slots'>slots</a></li>
+  <li class='hidden' style='display: block;'><a href='#string'>string</a></li>
+  <li class='hidden' style='display: block;'><a href='#uri'>uri</a></li>
+  <li class='hidden' style='display: block;'><a href='#used'>used</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docCompiler 1.0.56
+[11-Nov-2010 Thu 10:08:23AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

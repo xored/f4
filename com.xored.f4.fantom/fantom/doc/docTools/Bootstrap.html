@@ -1,0 +1,267 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Bootstrap</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docTools</a></li>
+  <li>&gt;</li>
+  <li><a href='Bootstrap.html'>Bootstrap</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='prev'><a href='Build.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Build.html'>Build</a></div>
+<div class='next'><a href='Flux.html'>Flux</a> <a href='Flux.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Bootstrap</h1>
+
+<h1 id='overview'>Overview </h1>
+
+<p>The Fantom compiler is written in Fantom itself - which presents a chicken and the egg problem.  How do you compile the compiler without having a compiler?  The problem is further compounded by the fact that the build scripts themselves are written in Fantom.  To solve this problem, the bootstrap process requires two Fantom installations:</p>
+
+<ol style='list-style-type:decimal'>
+<li><em>rel</em>: known good Fantom installation (typically the last build)</li>
+
+<li><em>dev</em>: development environment to build (probably pulled from hg)</li>
+</ol>
+
+<p>By convention we structure our development directory tree like this:</p>
+
+<pre>dev/
+  rel/
+    bin/
+    lib/
+    ...
+  fan/
+    bin/
+    lib/
+    src/
+    ...</pre>
+
+<p>The "rel" directory always contains the last released build.  The "fan" directory contains our main development code branch.  We call our top level directory "dev", but for the purposes of this discussion "fan" is the development directory.</p>
+
+<h1 id='script'>Bootstrap Script </h1>
+
+<p>The easiest way to perform a bootstrap build from hg tip is to use the "bootstrap.fan" script:</p>
+
+<ol style='list-style-type:decimal'>
+<li>Download latest released build from <a href='http://fantom.org/'>http://fantom.org/</a></li>
+
+<li>Unzip that build to <code>{relHome}</code></li>
+
+<li>Ensure <code>hg</code> is installed in your path (see <a href='http://mercurial.selenic.com/'>Mercurial</a>)</li>
+
+<li>Verify <code>java_home</code> env var points to your JDK installation</li>
+
+<li>Execute <code>{relHome}/bin/fan {relHome}/adm/bootstrap.fan</code></li>
+
+<li>Go grab a cup of coffee</li>
+</ol>
+
+<p class='NOTE'>NOTE: you need JDK 1.6 to recompile Fantom.  However only 1.5 is required to run Fantom.</p>
+
+<p>By default devHome is assumed to be a peer to relHome called "fan". If you'd like to use another directory then specify the "-devHome" option.</p>
+
+<p>This script will perform a number of steps:</p>
+
+<ol style='list-style-type:decimal'>
+<li>Verifies your environment</li>
+
+<li>Clones hg tip or if hg repo exists performs a pull/update</li>
+
+<li>Configures your etc files</li>
+
+<li>Rebuilds your devHome environment from scratch</li>
+</ol>
+
+<p class='NOTE'>NOTE: the bootstrap script does <em>not</em> update your <a href='#substitutes'>substitutes</a>. You must still do that by hand if you plan on rebuilding individual bootstrap pods yourself.</p>
+
+<p>The rest of this chapter covers all the internal details required to fully understand bootstrap building.</p>
+
+<h1 id='devHome'>Dev Home </h1>
+
+<p>By default the build assumes <em>devHome</em> to be the home directory of Fantom installation.  For example if you rebuild jfan, then the output goes into "devHome/lib/java/sys.jar".  In the case of the <em>rel</em> installation we don't want this default because we will overwrite ourselves (which leads to some nasty problems).  So you need to set the <em>devHome</em> prop in "etc/build/config.props" of your <em>rel</em> installation to reference the <em>dev</em> directory using a URI (not OS path):</p>
+
+<pre>// Must be configured boot build in substitute/release installation
+devHome=file:/C:/dev/fan/</pre>
+
+<p>If you forget to do this, then you will get a build error which looks something like this:</p>
+
+<pre>C:\dev\fan\src>sys\java\build
+ERR: Must update 'devHome' for bootstrap build
+BUILD FAILED [12ms]!</pre>
+
+<h1 id='substitutes'>Substitutes </h1>
+
+<p>On a clean machine with only source code, we don't have any pods compiled such as <code>sys</code>, <code>build</code>, or <code>compiler</code>.  In order to run the build scripts to compile these pods, we need to use our <em>rel</em> installation.</p>
+
+<h2 id='subsWindows'>Windows Substitutes </h2>
+
+<p>To make this all work seamlessly on Windows, the Fantom launcher will look in "etc/sys/config.props" to see if a substitute runtime should be used. For example in our environment we map the following scripts to use the <em>rel</em> installation.</p>
+
+<pre>// etc/sys/config.props of your *dev* directory
+runtime.substitutes=                                 \
+  /C:/dev/fan/src/buildall.fan       = C:\\dev\\rel  \
+  /C:/dev/fan/src/buildboot.fan      = C:\\dev\\rel  \
+  /C:/dev/fan/src/jfan/build.fan     = C:\\dev\\rel  \
+  /C:/dev/fan/src/sys/build.fan      = C:\\dev\\rel  \
+  /C:/dev/fan/src/compiler/build.fan = C:\\dev\\rel  \
+  /C:/dev/fan/src/build/build.fan    = C:\\dev\\rel</pre>
+
+<p>The launcher will check if any script being run matches one of those files.  If a match is made, then it will route to the alternate runtime specified.  Turn on <a href='Setup.html#debugging'>launcher debugging</a> to see exactly what is happening under the covers.</p>
+
+<p>Note that the extension used to run the build scripts needs to match the substitutes defined in the "config.props".  If you set your <code>pathext</code> to include ".fan", then Windows will pass the extension into the launcher.  If you are running an alternate way you might need to explicitly specify the extension on your command line or change the extensions defined in "config.props".</p>
+
+<h2 id='subsUnix'>Unix Substitutes </h2>
+
+<p>Unix substitution is implemented by the bootstrap build scripts using the following shebang:</p>
+
+<pre>#! /usr/bin/env fansubstitute</pre>
+
+<p>The fansubstitute script explictly sets FAN_HOME to the value of the FAN_SUBSTITUTE variable before launching.  So you will need to export FAN_SUBSTITUTE to reference your <em>rel</em> installation. And of course you have to run your scripts as executables so that the shebang takes effect.</p>
+
+<p>Also note that building on Unix will skip any .NET targets.</p>
+
+<h1 id='otherTools'>JDK and .NET Tools </h1>
+
+<p>You need JDK 1.6 or greater to compile from source (only 1.5 is required for the Java runtime).</p>
+
+<p>Version 2.0 or greater of .NET is required.</p>
+
+<p>In order to compile from source you will need to setup some config properties to reference your JDK and .NET home directories:</p>
+
+<pre>jdkHome=/C:/dev/tools/java/
+dotnetHome=/C:/WINDOWS/Microsoft.NET/Framework/v2.0.50727/</pre>
+
+<p>These paths should be formatted as file system Uris (not OS paths). These properties should be configured in "etc/build/config.props" of <strong>both</strong> your <em>rel</em> and <em>dev</em> environments.</p>
+
+<p>The .NET targets are automatically skipped if not running Windows. So you can ignore the .NET configuration on Unix platforms.</p>
+
+<h1 id='buildall'>Buildall </h1>
+
+<p>The "buildall.fan" script is the top level build script for compiling the Fantom distribution.  We commonly run this command to rebuild everything and run tests on every pod:</p>
+
+<pre>buildall full test</pre>
+
+<p>The "buildall" script is executed by the <em>rel</em> substitute runtime and in turn launches two sub-scripts.  The "buildboot.fan" script manages rebuilding the core runtime modules:</p>
+
+<pre>sys/build.fan
+sys/java/build.fan
+sys/dotnet/build.fan
+sys/js/build.fan
+compiler/build.fan
+compilerJava/build.fan
+build/build.fan</pre>
+
+<p>Once the bootstrap modules are compiled, the development environment is self hosting and can be used to compile the remainder of itself.  This is done via the "buildpods.fan" script.</p>
+
+<h1 id='dependencies'>Dependencies </h1>
+
+<p>The bootstrap issue can cause some confusing dependency issues which are summarized here:</p>
+
+<ul>
+<li>The <em>rel</em> compiler will be generating the <code>sys</code>, <code>compiler</code>, and <code>build</code> pod files.  This means that the <em>rel</em> compiler must be able to generate fcode that the <em>dev</em> runtime can read.  It also means that the <em>rel</em> compiler must be able to read any new syntax used by <em>dev</em> versions of <code>sys</code>, <code>compiler</code>, and <code>build</code>.</li>
+
+<li>The <em>rel</em> compiler will actually use the <em>dev</em> versions of the pods to resolve dependencies.  For example <em>dev</em> compiler can reference new sys APIs defined in <em>dev</em> but not <em>rel</em>.  Under the covers this works because the <code>compiler</code> and <code>build</code> pod's build scripts specify a non-default <code><a href='../build/BuildPod.html#dependsDir'>dependsDir</a></code>.</li>
+</ul>
+
+<p>Because of these restrictions, adding new language features and fcode changes require some careful planning.</p>
+
+<h1 id='debugging'>Debugging </h1>
+
+<p>You can use the "dumpEnv" build target to dump key aspects of your build script environment.  You can run target on "buildall.fan", although a more concise report is to dumpEnv on "buildboot.fan" and one of the non bootstrap pods like "testSys/build.fan".</p>
+
+<p>Key things to note about your environment:</p>
+
+<ol style='list-style-type:decimal'>
+<li>all scripts should be using <em>dev</em> for devHomeDir</li>
+
+<li>bootbuild scripts should be using <em>rel</em> for fanHome</li>
+
+<li>non-bootbuild scripts like testSys should be using <em>dev</em> for fanHome</li>
+
+<li>verify javaHome for sys/javafan/build.fan</li>
+
+<li>verify dotnetHome for sys/dotnet/build.fan (if running on Windows)</li>
+</ol>
+
+<h1 id='summary'>Summary </h1>
+
+<p>In summary, you want to make sure of a couple key things:</p>
+
+<ol style='list-style-type:decimal'>
+<li>setup your <em>rel</em> installation and never touch it (consider it readonly)</li>
+
+<li>ensure jdkHome and dotnetHome are configured in both <em>rel</em> and <em>dev</em> etc/build/config.props</li>
+
+<li>ensure <em>rel</em> etc/build/config.props devHome points to your <em>dev</em> installation</li>
+
+<li>make sure your substitutes are configured correctly:
+<ol style='list-style-type:lower-alpha'>
+<li>on Unix make sure your FAN_SUBSTITUTE env points to the <em>rel</em> installation</li>
+
+<li>on Windows make sure your <em>dev</em> etc/sys/config.props substitutes are configured</li>
+</ol>
+</li>
+
+<li>only put <em>dev</em> bin your path and always run your scripts from the <em>dev</em> installation</li>
+
+<li>never use a working repo for bootstrap (use only the boot repo)</li>
+</ol>
+<div class='prevNext'>
+<div class='prev'><a href='Build.html'><img src='../go-previous.png' alt='prev' /></a> <a href='Build.html'>Build</a></div>
+<div class='next'><a href='Flux.html'>Flux</a> <a href='Flux.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#overview'>Overview </a></li><li><a href='#script'>Bootstrap Script </a></li><li><a href='#devHome'>Dev Home </a></li><li><a href='#substitutes'>Substitutes </a><ul>
+<li><a href='#subsWindows'>Windows Substitutes </a></li><li><a href='#subsUnix'>Unix Substitutes </a></li></ul>
+</li><li><a href='#otherTools'>JDK and .NET Tools </a></li><li><a href='#buildall'>Buildall </a></li><li><a href='#dependencies'>Dependencies </a></li><li><a href='#debugging'>Debugging </a></li><li><a href='#summary'>Summary </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docTools 1.0.56
+[11-Nov-2010 Thu 10:08:29AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

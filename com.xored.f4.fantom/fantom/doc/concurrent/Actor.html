@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>concurrent::Actor</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>concurrent</a></li>
+  <li>&gt;</li>
+  <li><a href='Actor.html'>Actor</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>const class</h2>
+<h1>concurrent::Actor</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  concurrent::Actor</pre>
+</div>
+<p><code class='sig'>@<a href='../sys/Js.html'>Js</a> <br/>
+</code></p>
+<div class='detail'>
+
+<p>Actor is a worker who processes messages asynchronously.</p>
+
+<p>See <a href='../docLang/Actors.html'>docLang::Actors</a> and <a href='../examples/concurrent-actors.html'>examples</a>.</p>
+</div>
+</div>
+<div class='slots'>
+<div class='detail'>
+<h2>Slots</h2>
+<dl>
+<dt id='locals' class='method'>locals<a href='Actor_src.html#locals'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='../sys/Str.html'>Str</a>:<a href='../sys/Obj.html'>Obj</a>? locals()</code></p>
+
+<p>Return the map of "global" variables visibile only to the current actor (similar to how thread locals work in Java).  These variables are keyed by a string name - by convention use a dotted notation beginning with your pod name to avoid naming collisions.</p>
+</dd>
+<dt id='make' class='method'>make<a href='Actor_src.html#make'>Source</a></dt>
+<dd>
+<p><code class='sig'>new make(<a href='ActorPool.html'>ActorPool</a> pool, |<a href='../sys/Obj.html'>Obj</a>? -> <a href='../sys/Obj.html'>Obj</a>?|? receive := null)</code></p>
+
+<p>Create an actor whose execution is controlled by the given ActorPool. If receive is non-null, then it is used to process messages sent to this actor.  If receive is specified then it must be an immutable function (it cannot capture state from the calling thread), otherwise NotImmutableErr is thrown.  If receive is null, then you must subclass Actor and override the <a href='Actor.html#receive'>receive</a> method.</p>
+</dd>
+<dt id='makeCoalescing' class='method'>makeCoalescing<a href='Actor_src.html#makeCoalescing'>Source</a></dt>
+<dd>
+<p><code class='sig'>new makeCoalescing(<a href='ActorPool.html'>ActorPool</a> pool, |<a href='../sys/Obj.html'>Obj</a>? -> <a href='../sys/Obj.html'>Obj</a>?|? toKey, |<a href='../sys/Obj.html'>Obj</a>?, <a href='../sys/Obj.html'>Obj</a>? -> <a href='../sys/Obj.html'>Obj</a>?|? coalesce, |<a href='../sys/Obj.html'>Obj</a>? -> <a href='../sys/Obj.html'>Obj</a>?|? receive := null)</code></p>
+
+<p>Create an actor with a coalescing message loop.  This constructor follows the same semantics as <a href='Actor.html#make'>make</a>, but has the ability to coalesce the messages pending in the thread's message queue.  Coalesced messages are merged into a single pending message with a shared Future.</p>
+
+<p>The <code>toKey</code> function is used to derive a key for each message, or if null then the message itself is used as the key.  If the <code>toKey</code> function returns null, then the message is not considered for coalescing. Internally messages are indexed by key for efficient coalescing.</p>
+
+<p>If an incoming message has the same key as a pending message in the queue, then the <code>coalesce</code> function is called to coalesce the messages into a new merged message.  If <code>coalesce</code> function itself is null, then we use the incoming message (last one wins).  The coalesced message occupies the same position in the queue as the original and reuses the original message's Future instance.</p>
+
+<p>Both the <code>toKey</code> and <code>coalesce</code> functions are called while holding an internal lock on the queue.  So the functions must be efficient and never attempt to interact with other actors.</p>
+</dd>
+<dt id='pool' class='method'>pool<a href='Actor_src.html#pool'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='ActorPool.html'>ActorPool</a> pool()</code></p>
+
+<p>The pool used to control execution of this actor.</p>
+</dd>
+<dt id='receive' class='method'>receive<a href='Actor_src.html#receive'>Source</a></dt>
+<dd>
+<p><code class='sig'>virtual protected <a href='../sys/Obj.html'>Obj</a>? receive(<a href='../sys/Obj.html'>Obj</a>? msg)</code></p>
+
+<p>The receive behavior for this actor is handled by overriding this method or by passing a function to the constructor.  Return the result made available by the Future.  If an exception is raised by this method, then it is raised by <code>Future.get</code>.</p>
+</dd>
+<dt id='send' class='method'>send<a href='Actor_src.html#send'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Future.html'>Future</a> send(<a href='../sys/Obj.html'>Obj</a>? msg)</code></p>
+
+<p>Asynchronously send a message to this actor for processing. If msg is not immutable or serializable, then IOErr is thrown. Throw Err if this actor's pool has been stopped.  Return a future which may be used to obtain the result once it the actor has processed the message.  If the message is coalesced then this method returns the original message's future reference. Also see <a href='Actor.html#sendLater'>sendLater</a> and <a href='Actor.html#sendWhenDone'>sendWhenDone</a>.</p>
+</dd>
+<dt id='sendLater' class='method'>sendLater<a href='Actor_src.html#sendLater'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Future.html'>Future</a> sendLater(<a href='../sys/Duration.html'>Duration</a> d, <a href='../sys/Obj.html'>Obj</a>? msg)</code></p>
+
+<p>Schedule a message for delivery after the specified period of duration has elapsed.  Once the period has elapsed the message is appended to the end of this actor's queue.  Accuracy of scheduling is dependent on thread coordination and pending messages in the queue. Scheduled messages are not guaranteed to be processed if the actor's pool is stopped.  Scheduled messages are never coalesced. Also see <a href='Actor.html#send'>send</a> and <a href='Actor.html#sendWhenDone'>sendWhenDone</a>.</p>
+</dd>
+<dt id='sendWhenDone' class='method'>sendWhenDone<a href='Actor_src.html#sendWhenDone'>Source</a></dt>
+<dd>
+<p><code class='sig'><a href='Future.html'>Future</a> sendWhenDone(<a href='Future.html'>Future</a> f, <a href='../sys/Obj.html'>Obj</a>? msg)</code></p>
+
+<p>Schedule a message for delivery after the given future has completed. Completion may be due to the future returning a result, throwing an exception, or cancellation.  Send when done messages are never coalesced.  Also see <a href='Actor.html#send'>send</a> and <a href='Actor.html#sendLater'>sendLater</a>.</p>
+</dd>
+<dt id='sleep' class='method'>sleep<a href='Actor_src.html#sleep'>Source</a></dt>
+<dd>
+<p><code class='sig'>static <a href='../sys/Void.html'>Void</a> sleep(<a href='../sys/Duration.html'>Duration</a> duration)</code></p>
+
+<p>Put the currently executing actor thread to sleep for the specified period.  If the thread is interrupted for any reason while sleeping, then InterruptedErr is thrown.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Type</h2>
+<ul class='clean'>
+  <li><a href='Actor_src.html'>View Source</a></li>
+  <li><a href='#' onclick='ShowSlots.toggle(event); return false;'>Show All Slots</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li><a href='#locals'>locals</a></li>
+  <li><a href='#make'>make</a></li>
+  <li><a href='#makeCoalescing'>makeCoalescing</a></li>
+  <li><a href='#pool'>pool</a></li>
+  <li><a href='#receive'>receive</a></li>
+  <li><a href='#send'>send</a></li>
+  <li><a href='#sendLater'>sendLater</a></li>
+  <li><a href='#sendWhenDone'>sendWhenDone</a></li>
+  <li><a href='#sleep'>sleep</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+concurrent 1.0.56
+[11-Nov-2010 Thu 10:08:19AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

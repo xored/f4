@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>xml::XDoc</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>xml</a></li>
+  <li>&gt;</li>
+  <li><a href='XDoc.html'>XDoc</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='type'>
+<div class='overview'>
+<h2>class</h2>
+<h1>xml::XDoc</h1>
+<pre><a href='../sys/Obj.html'>sys::Obj</a>
+  <a href='XNode.html'>xml::XNode</a>
+    xml::XDoc</pre>
+</div>
+</div>
+<div class='src'>
+<pre>
+<span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//    11 Nov 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='z'>**</span>
+<span class='z'>** XML document encapsulates the root element and document type.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> XDoc : XNode
+<span class='b'>{</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Construction</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Construct with optional root elem.</span>
+  <span class='z'>**</span>
+  <span class='k'>new</span> <span id='make'>make</span><span class='b'>(</span>XElem? root := <span class='k'>null</span><span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>root != <span class='k'>null</span><span class='b'>)</span>
+      <span class='k'>this</span>.root = root
+    <span class='k'>else</span>
+      <span class='k'>this</span>.root = XElem<span class='b'>(</span><span class='s'>"undefined"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Identity</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return the `XNodeType.doc`.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> XNodeType <span id='nodeType'>nodeType</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> XNodeType.doc <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Document type declaration or null if undefined.</span>
+  <span class='z'>**</span>
+  XDocType? <span id='docType'>docType</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Return string representation.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Str <span id='toStr'>toStr</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> <span class='s'>"&lt;?xml version='1.0'?&gt;"</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Children</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Root element.</span>
+  <span class='z'>**</span>
+  XElem <span id='root'>root</span>
+  <span class='b'>{</span>
+    set
+    <span class='b'>{</span>
+      <span class='k'>if</span> <span class='b'>(</span>it.parent != <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"Node already parented: $it"</span><span class='b'>)</span>
+      it.parent = <span class='k'>this</span>
+      <span class='k'>this</span>.&amp;root = it
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Get any processing instructions declared before the</span>
+  <span class='z'>** root element.  Processing instructions after the root</span>
+  <span class='z'>** are not supported.</span>
+  <span class='z'>**</span>
+  XNode<span class='b'>[]</span> <span id='pis'>pis</span><span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> piList.ro <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Add a node to the document.  If the node is an XElem then it</span>
+  <span class='z'>** is defined as the `root` element, otherwise the child must be</span>
+  <span class='z'>** a `XPi`.  Return this.</span>
+  <span class='z'>**</span>
+  This <span id='add'>add</span><span class='b'>(</span>Obj child<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>child <span class='k'>is</span> XElem<span class='b'>)</span> <span class='b'>{</span> root = child; <span class='k'>return</span> <span class='k'>this</span> <span class='b'>}</span>
+    pi := <span class='b'>(</span>XPi<span class='b'>)</span>child
+    <span class='k'>if</span> <span class='b'>(</span>pi.parent != <span class='k'>null</span><span class='b'>)</span> <span class='k'>throw</span> ArgErr<span class='b'>(</span><span class='s'>"Node already parented: $pi"</span><span class='b'>)</span>
+    pi.parent = <span class='k'>this</span>
+    piList = piList.rw
+    piList.add<span class='b'>(</span>pi<span class='b'>)</span>
+    <span class='k'>return</span> <span class='k'>this</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Remove the processing instruction by reference.</span>
+  <span class='z'>**</span>
+  XPi? <span id='removePi'>removePi</span><span class='b'>(</span>XPi pi<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>piList.isEmpty<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>if</span> <span class='b'>(</span>piList.removeSame<span class='b'>(</span>pi<span class='b'>)</span> !== pi<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    pi.parent = <span class='k'>null</span>
+    <span class='k'>return</span> pi
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Write</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Write this node to the output stream.</span>
+  <span class='z'>**</span>
+  <span class='k'>override</span> Void <span id='write'>write</span><span class='b'>(</span>OutStream out<span class='b'>)</span>
+  <span class='b'>{</span>
+    out.writeChars<span class='b'>(</span><span class='s'>"&lt;?xml version='1.0' encoding='${out.charset}'?&gt;\n"</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>docType != <span class='k'>null</span><span class='b'>)</span> out.writeChars<span class='b'>(</span>docType.toStr<span class='b'>)</span>.writeChar<span class='b'>(</span><span class='s'>'\n'</span><span class='b'>)</span>
+    piList.each |XPi pi| <span class='b'>{</span> pi.write<span class='b'>(</span>out<span class='b'>)</span>; out.writeChar<span class='b'>(</span><span class='s'>'\n'</span><span class='b'>)</span> <span class='b'>}</span>
+    root.write<span class='b'>(</span>out<span class='b'>)</span>
+    out.writeChar<span class='b'>(</span><span class='s'>'\n'</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+<span class='y'>// Fields</span>
+<span class='y'>//////////////////////////////////////////////////////////////////////////</span>
+
+  <span class='k'>internal</span> <span class='k'>const</span> <span class='k'>static</span> XPi<span class='b'>[]</span> <span id='noPis'>noPis</span> := XPi<span class='b'>[</span>,<span class='b'>]</span>
+
+  <span class='k'>internal</span> XPi<span class='b'>[]</span> <span id='piList'>piList</span> :=  noPis
+
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<h2>More Info</h2>
+<ul class='clean'>
+  <li><a href='XDoc.html'>View Fandoc</a></li>
+</ul>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#add'>add</a></li>
+  <li style='display: block;'><a href='#docType'>docType</a></li>
+  <li style='display: block;'><a href='#make'>make</a></li>
+  <li class='hidden' style='display: block;'><a href='#noPis'>noPis</a></li>
+  <li style='display: block;'><a href='#nodeType'>nodeType</a></li>
+  <li class='hidden' style='display: block;'><a href='#piList'>piList</a></li>
+  <li style='display: block;'><a href='#pis'>pis</a></li>
+  <li style='display: block;'><a href='#removePi'>removePi</a></li>
+  <li style='display: block;'><a href='#root'>root</a></li>
+  <li style='display: block;'><a href='#toStr'>toStr</a></li>
+  <li style='display: block;'><a href='#write'>write</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+xml 1.0.56
+[11-Nov-2010 Thu 10:08:26AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

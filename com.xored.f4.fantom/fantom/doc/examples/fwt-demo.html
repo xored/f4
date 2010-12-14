@@ -1,0 +1,1049 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>demo_10::FwtDemo</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>examples</a></li>
+  <li>&gt;</li>
+  <li><a href='FwtDemo.html'>fwt-demo.html</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='src'>
+<pre>
+<span>#! /usr/bin/env fan
+</span><span class='y'>//</span>
+<span class='y'>// Copyright (c) 2008, Brian Frank and Andy Frank</span>
+<span class='y'>// Licensed under the Academic Free License version 3.0</span>
+<span class='y'>//</span>
+<span class='y'>// History:</span>
+<span class='y'>//   10 Jun 08  Brian Frank  Creation</span>
+<span class='y'>//</span>
+
+<span class='k'>using</span> gfx
+<span class='k'>using</span> fwt
+
+<span class='z'>**</span>
+<span class='z'>** FwtDemo displays the FWT sampler program.</span>
+<span class='z'>**</span>
+<span class='k'>class</span> FwtDemo
+<span class='b'>{</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Put the whole thing together in a tabbed pane</span>
+  <span class='z'>**</span>
+  Void <span id='main'>main</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    Window
+    <span class='b'>{</span>
+      title = <span class='s'>"FWT Demo"</span>
+      size = Size<span class='b'>(</span>800, 600<span class='b'>)</span>
+      menuBar = makeMenuBar
+      content = EdgePane
+      <span class='b'>{</span>
+        top = makeToolBar
+        center = TabPane
+        <span class='b'>{</span>
+          Tab <span class='b'>{</span> text = <span class='s'>"Buttons"</span>;        InsetPane <span class='b'>{</span> makeButtons, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Labels"</span>;         InsetPane <span class='b'>{</span> makeLabels, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"ProgessBar"</span>;     InsetPane <span class='b'>{</span> makeProgressBar, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"WebBrowser"</span>;     InsetPane <span class='b'>{</span> makeWebBrowser, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Text"</span>;           InsetPane <span class='b'>{</span> makeText, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"BorderPane"</span>;     InsetPane <span class='b'>{</span> makeBorderPane, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"EdgePane"</span>;       InsetPane <span class='b'>{</span> makeEdgePane, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"GridPane"</span>;       InsetPane <span class='b'>{</span> makeGridPane, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Tree and Table"</span>; InsetPane <span class='b'>{</span> makeTreeAndTable, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Window"</span>;         InsetPane <span class='b'>{</span> makeWindow, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Serialization"</span>;  InsetPane <span class='b'>{</span> makeSerialization, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Eventing"</span>;       InsetPane <span class='b'>{</span> makeEventing, <span class='b'>}</span>, <span class='b'>}</span>,
+          Tab <span class='b'>{</span> text = <span class='s'>"Graphics"</span>;       InsetPane <span class='b'>{</span> makeGraphics, <span class='b'>}</span>, <span class='b'>}</span>,
+        <span class='b'>}</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>.open
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build the menu bar</span>
+  <span class='z'>**</span>
+  Menu <span id='makeMenuBar'>makeMenuBar</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> Menu
+    <span class='b'>{</span>
+      Menu
+      <span class='b'>{</span>
+        text = <span class='s'>"File"</span>;
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Back"</span>;    image = backIcon;    onAction.add <span class='b'>{</span>browser.back<span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Next"</span>;    image = nextIcon;    onAction.add <span class='b'>{</span>browser.forward<span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Refresh"</span>; image = refreshIcon; onAction.add <span class='b'>{</span>browser.refresh<span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Stop"</span>;    image = stopIcon;    onAction.add <span class='b'>{</span>browser.stop<span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Exit"</span>; onAction.add |-&gt;| <span class='b'>{</span> Env.cur.exit <span class='b'>}</span> <span class='b'>}</span>,
+      <span class='b'>}</span>,
+
+      Menu
+      <span class='b'>{</span>
+        text = <span class='s'>"Nested"</span>;
+        Menu
+        <span class='b'>{</span>
+          text = <span class='s'>"Alpha"</span>
+          image = folderIcon
+          MenuItem <span class='b'>{</span> text = <span class='s'>"Alpha.1"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+          Menu
+          <span class='b'>{</span>
+            text = <span class='s'>"Alpha.2"</span>
+            MenuItem <span class='b'>{</span> text = <span class='s'>"Alpha.2.I"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+            Menu
+            <span class='b'>{</span>
+              text = <span class='s'>"Alpha.2.II"</span>
+              MenuItem <span class='b'>{</span> text = <span class='s'>"Alpha.2.II.a"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+              MenuItem <span class='b'>{</span> text = <span class='s'>"Alpha.2.II.b"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+            <span class='b'>}</span>,
+            MenuItem <span class='b'>{</span> text = <span class='s'>"Alpha.2.III"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+          <span class='b'>}</span>,
+        <span class='b'>}</span>,
+        Menu
+        <span class='b'>{</span>
+          text = <span class='s'>"Beta"</span>
+          MenuItem <span class='b'>{</span> text = <span class='s'>"Beta.1"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+          MenuItem <span class='b'>{</span> text = <span class='s'>"Beta.2"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+        <span class='b'>}</span>,
+      <span class='b'>}</span>,
+
+      Menu
+      <span class='b'>{</span>
+        text = <span class='s'>"Modes"</span>
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Check 1"</span>; accelerator=Key.f1; mode = MenuItemMode.check; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Check 2"</span>; accelerator=Key.f2; mode = MenuItemMode.check; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Radio 1"</span>; accelerator=Key.num1+Key.alt; mode = MenuItemMode.radio; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Radio 2"</span>; accelerator=Key.alt+Key.num2; mode = MenuItemMode.radio; onAction.add<span class='b'>(</span>cb<span class='b'>)</span>; selected = <span class='k'>true</span>  <span class='b'>}</span>,
+      <span class='b'>}</span>,
+
+      Menu
+      <span class='b'>{</span>
+        text = <span class='s'>"Dialogs"</span>
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Info"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openInfo<span class='b'>(</span>e.window, <span class='s'>"Test information!"</span><span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Warn"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openWarn<span class='b'>(</span>e.window, <span class='s'>"Test warning!"</span><span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Err"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openErr<span class='b'>(</span>e.window, <span class='s'>"Test error!"</span><span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Question"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openQuestion<span class='b'>(</span>e.window, <span class='s'>"Test question?"</span><span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Ok/Cancel"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openInfo<span class='b'>(</span>e.window, <span class='s'>"OK/Cancel"</span>, Dialog.okCancel<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Yes/No"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openInfo<span class='b'>(</span>e.window, <span class='s'>"Yes/No"</span>, Dialog.yesNo<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Details Err"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>Dialog.openErr<span class='b'>(</span>e.window, <span class='s'>"Something bad"</span>, ArgErr<span class='b'>()))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Prompt Str 1"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span><span class='s'>"--&gt; "</span> + Dialog.openPromptStr<span class='b'>(</span>e.window, <span class='s'>"Enter a string:"</span><span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Prompt Str 2"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span><span class='s'>"--&gt; "</span> + Dialog.openPromptStr<span class='b'>(</span>e.window, <span class='s'>"Enter a string:"</span>, <span class='s'>"123"</span>, 4<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Option A"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>((</span>Dialog<span class='b'>(</span>e.window<span class='b'>)</span> <span class='b'>{</span>body=<span class='s'>"Str message"</span>; commands=<span class='b'>[</span>Dialog.ok<span class='b'>]})</span>.open<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Option B"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>((</span>Dialog<span class='b'>(</span>e.window<span class='b'>)</span> <span class='b'>{</span>body=Button <span class='b'>{</span> text=<span class='s'>"BIG!"</span> <span class='b'>}</span>; commands=Dialog.okCancel<span class='b'>})</span>.open<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> mode = MenuItemMode.sep <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"File Open"</span>;  onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>FileDialog <span class='b'>{}</span>.open<span class='b'>(</span>e.window<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Files Open"</span>; onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>FileDialog <span class='b'>{</span> dir=Env.cur.homeDir; mode=FileDialogMode.openFiles <span class='b'>}</span>.open<span class='b'>(</span>e.window<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"File Save"</span>;  onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>FileDialog <span class='b'>{</span> name=<span class='s'>"foo.txt"</span>;  mode=FileDialogMode.saveFile <span class='b'>}</span>.open<span class='b'>(</span>e.window<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+        MenuItem <span class='b'>{</span> text = <span class='s'>"Dir Open"</span>;   onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>FileDialog <span class='b'>{</span> dir=Env.cur.homeDir; mode=FileDialogMode.openDir <span class='b'>}</span>.open<span class='b'>(</span>e.window<span class='b'>))</span> <span class='b'>}</span> <span class='b'>}</span>,
+      <span class='b'>}</span>,
+
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build the toolbar</span>
+  <span class='z'>**</span>
+  Widget <span id='makeToolBar'>makeToolBar</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ToolBar
+    <span class='b'>{</span>
+      Button <span class='b'>{</span> image = backIcon;    onAction.add <span class='b'>{</span>browser.back<span class='b'>}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = nextIcon;    onAction.add <span class='b'>{</span>browser.forward<span class='b'>}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = refreshIcon; onAction.add <span class='b'>{</span>browser.refresh<span class='b'>}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = stopIcon;    onAction.add <span class='b'>{</span>browser.stop<span class='b'>}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode  = ButtonMode.sep <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = sysIcon;   mode = ButtonMode.check; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = prefsIcon; mode = ButtonMode.toggle; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode  = ButtonMode.sep <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = audioIcon; mode = ButtonMode.radio; onAction.add<span class='b'>(</span>cb<span class='b'>)</span>; selected = <span class='k'>true</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = imageIcon; mode = ButtonMode.radio; onAction.add<span class='b'>(</span>cb<span class='b'>)</span>; <span class='b'>}</span>,
+      Button <span class='b'>{</span> image = videoIcon; mode = ButtonMode.radio; onAction.add<span class='b'>(</span>cb<span class='b'>)</span>; <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a simple web browser</span>
+  <span class='z'>**</span>
+  Widget <span id='makeWebBrowser'>makeWebBrowser</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    url := Text <span class='b'>{</span> text=homeUri <span class='b'>}</span>
+    url.onAction.add |-&gt;| <span class='b'>{</span> browser.load<span class='b'>(</span>url.text.toUri<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='k'>return</span> EdgePane
+    <span class='b'>{</span>
+      top = EdgePane <span class='b'>{</span> center=url; right=Label<span class='b'>{</span>text=<span class='s'>"Enter to Go!"</span><span class='b'>}</span> <span class='b'>}</span>
+      center = browser
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane of various labels</span>
+  <span class='z'>**</span>
+  Widget <span id='makeLabels'>makeLabels</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> GridPane
+    <span class='b'>{</span>
+      numCols = 2
+      hgap = 20
+      halignCells = Halign.fill
+      Label <span class='b'>{</span> text = <span class='s'>"Text Only"</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> image = stopIcon <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Both"</span>; image = folderIcon <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Monospace"</span>; font = Desktop.sysFontMonospace <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Colors"</span>; image = folderIcon; fg = Color.red; bg = Color.yellow <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Left"</span>; halign = Halign.left <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Center"</span>; halign = Halign.center <span class='b'>}</span>,
+      Label <span class='b'>{</span> text = <span class='s'>"Right"</span>; halign = Halign.right <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane of various progress bars</span>
+  <span class='z'>**</span>
+  Widget <span id='makeProgressBar'>makeProgressBar</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> GridPane
+    <span class='b'>{</span>
+      numCols = 1
+      hgap = 20
+      halignCells = Halign.fill
+      ProgressBar <span class='b'>{</span> val=25; <span class='b'>}</span>,
+      ProgressBar <span class='b'>{</span> min=0; max=100; val=75; <span class='b'>}</span>,
+      ProgressBar <span class='b'>{</span> min=-100; max=100; val=80; <span class='b'>}</span>,
+      ProgressBar <span class='b'>{</span> min=-100; max=100; val=25; <span class='b'>}</span>,
+      ProgressBar <span class='b'>{</span> indeterminate = <span class='k'>true</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane of various buttons</span>
+  <span class='z'>**</span>
+  Widget <span id='makeButtons'>makeButtons</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> GridPane
+    <span class='b'>{</span>
+      numCols = 3
+      hgap = 20
+      Button <span class='b'>{</span> text = <span class='s'>"B1"</span>; image = stopIcon; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> text = <span class='s'>"Monospace"</span>; font = Desktop.sysFontMonospace; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode = ButtonMode.toggle; text = <span class='s'>"Button 3"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode = ButtonMode.check; text = <span class='s'>"B4"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode = ButtonMode.radio; text = <span class='s'>"Button 5"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> mode = ButtonMode.radio; text = <span class='s'>"B6"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> text = <span class='s'>"Popup 1"</span>; onAction.add <span class='b'>{</span>FwtDemo.popup<span class='b'>(</span><span class='k'>true</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> text = <span class='s'>"Popup 2"</span>; onAction.add <span class='b'>{</span>FwtDemo.popup<span class='b'>(</span><span class='k'>false</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> text = <span class='s'>"Disabled"</span>; enabled=<span class='k'>false</span> <span class='b'>}</span>,
+      Button <span class='b'>{</span> text = <span class='s'>"Invisible"</span>; visible=<span class='k'>false</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane of various text fields</span>
+  <span class='z'>**</span>
+  Widget <span id='makeText'>makeText</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    area := Text
+    <span class='b'>{</span>
+      multiLine = <span class='k'>true</span>
+      font = Desktop.sysFontMonospace
+      text =<span class='s'>"Press button above to serialize this entire demo here"</span>
+    <span class='b'>}</span>
+
+    ecb := |Event e| <span class='b'>{</span> echo<span class='b'>(</span><span class='s'>"onAction: \"${e.widget-&gt;text}\""</span><span class='b'>)</span> <span class='b'>}</span>
+    ccb := |Event e| <span class='b'>{</span> echo<span class='b'>(</span><span class='s'>"onModify: \"${e.widget-&gt;text}\""</span><span class='b'>)</span> <span class='b'>}</span>
+
+    nums := <span class='b'>[</span><span class='s'>"One"</span>, <span class='s'>"Two"</span>, <span class='s'>"Three"</span>, <span class='s'>"Four"</span>, <span class='s'>"Five"</span>, <span class='s'>"Six"</span>, <span class='s'>"Seven"</span> <span class='b'>]</span>
+
+    <span class='k'>return</span> EdgePane
+    <span class='b'>{</span>
+      left = GridPane
+      <span class='b'>{</span>
+        numCols = 2
+
+        Label <span class='b'>{</span> text=<span class='s'>"Single"</span> <span class='b'>}</span>,
+        Text <span class='b'>{</span> onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span> <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"Monospace"</span>;  <span class='b'>}</span>,
+        Text <span class='b'>{</span> font = Desktop.sysFontMonospace; onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span>  <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"Password"</span> <span class='b'>}</span>,
+        Text <span class='b'>{</span> password = <span class='k'>true</span>; onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span> <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"Combo"</span> <span class='b'>}</span>,
+        Combo <span class='b'>{</span> items=nums; onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span> <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"Combo editable=true"</span> <span class='b'>}</span>,
+        Combo <span class='b'>{</span> editable=<span class='k'>true</span>; items=nums; onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span> <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"Combo dropDown=false"</span> <span class='b'>}</span>,
+        Combo <span class='b'>{</span> dropDown=<span class='k'>false</span>; items=nums; onAction.add<span class='b'>(</span>ecb<span class='b'>)</span>; onModify.add<span class='b'>(</span>ccb<span class='b'>)</span> <span class='b'>}</span>,
+
+        Label <span class='b'>{</span> text=<span class='s'>"MultiLine"</span> <span class='b'>}</span>,
+
+        Button <span class='b'>{</span> text=<span class='s'>"Serialize Demo"</span>; onAction.add <span class='b'>{</span>serializeTo<span class='b'>(</span>area<span class='b'>)}</span> <span class='b'>}</span>,
+      <span class='b'>}</span>
+      center = InsetPane.make<span class='b'>(</span>5<span class='b'>)</span> <span class='b'>{</span> content=area <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='serializeTo'>serializeTo</span><span class='b'>(</span>Text area<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      opts := <span class='b'>[</span><span class='s'>"indent"</span>:2, <span class='s'>"skipDefaults"</span>:<span class='k'>true</span>, <span class='s'>"skipErrors"</span>:<span class='k'>true</span><span class='b'>]</span>
+      buf := Buf.make.writeObj<span class='b'>(</span>area.window, opts<span class='b'>)</span>
+      area.text = buf.flip.readAllStr
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      area.text = e.traceToStr
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a demo border pane</span>
+  <span class='z'>**</span>
+  Widget <span id='makeBorderPane'>makeBorderPane</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    b := BorderPane
+    <span class='b'>{</span>
+      border = Border.defVal
+      insets = Insets<span class='b'>(</span>10<span class='b'>)</span>
+      content = Box <span class='b'>{</span> color = Color.blue <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    borderText := Text <span class='b'>{</span> text = b.border.toStr <span class='b'>}</span>
+    insetsText := Text <span class='b'>{</span> text = b.insets.toStr <span class='b'>}</span>
+    bgText     := Text <span class='b'>{</span> text = <span class='s'>""</span> <span class='b'>}</span>
+
+    update := |-&gt;|
+    <span class='b'>{</span>
+      b.border = Border<span class='b'>(</span>borderText.text<span class='b'>)</span>
+      b.insets = Insets<span class='b'>(</span>insetsText.text<span class='b'>)</span>
+      b.bg     = bgText.text.isEmpty ? <span class='k'>null</span> : Color<span class='b'>(</span>bgText.text<span class='b'>)</span>
+      b.relayout
+      b.repaint
+    <span class='b'>}</span>
+
+    borderText.onAction.add<span class='b'>(</span>update<span class='b'>)</span>
+    insetsText.onAction.add<span class='b'>(</span>update<span class='b'>)</span>
+    bgText.onAction.add<span class='b'>(</span>update<span class='b'>)</span>
+
+    controlPane := GridPane
+    <span class='b'>{</span>
+      numCols = 2
+      Label <span class='b'>{</span> text=<span class='s'>"border"</span> <span class='b'>}</span>, borderText,
+      Label <span class='b'>{</span> text=<span class='s'>"insets"</span> <span class='b'>}</span>, insetsText,
+      Label <span class='b'>{</span> text=<span class='s'>"bg"</span> <span class='b'>}</span>, bgText,
+      Button <span class='b'>{</span> text = <span class='s'>"Update"</span>; onAction.add<span class='b'>(</span>update<span class='b'>)</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> EdgePane
+    <span class='b'>{</span>
+      left   = controlPane
+      center = BorderPane <span class='b'>{</span> bg = Color.white; insets = Insets<span class='b'>(</span>10<span class='b'>)</span>; content = b <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a demo edge pane</span>
+  <span class='z'>**</span>
+  Widget <span id='makeEdgePane'>makeEdgePane</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> EdgePane
+    <span class='b'>{</span>
+      top    = Button <span class='b'>{</span> text = <span class='s'>"top"</span> <span class='b'>}</span>
+      left   = Button <span class='b'>{</span> text = <span class='s'>"left"</span> <span class='b'>}</span>
+      right  = Button <span class='b'>{</span> text = <span class='s'>"right"</span> <span class='b'>}</span>
+      bottom = Button <span class='b'>{</span> text = <span class='s'>"bottom"</span> <span class='b'>}</span>
+      center = Button <span class='b'>{</span> text = <span class='s'>"center"</span> <span class='b'>}</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a demo grid pane using randomly sized boxes</span>
+  <span class='z'>**</span>
+  Widget <span id='makeGridPane'>makeGridPane</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    grid := GridPane
+    <span class='b'>{</span>
+      numCols = 5
+      hgap = 10
+      vgap = 10
+      Box <span class='b'>{</span> color = Color.red <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.green <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.yellow <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.blue <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.orange <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.darkGray <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.purple <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.gray <span class='b'>}</span>,
+      Box <span class='b'>{</span> color = Color.white <span class='b'>}</span>,
+    <span class='b'>}</span>
+    colors := <span class='b'>[</span>Color.red, Color.green, Color.yellow, Color.blue, Color.orange,
+               Color.darkGray, Color.purple, Color.gray, Color.white<span class='b'>]</span>
+
+    15.times |Int i| <span class='b'>{</span> grid.add<span class='b'>(</span>Box <span class='b'>{</span> color=colors<span class='b'>[</span>i%colors.size<span class='b'>]</span> <span class='b'>})</span> <span class='b'>}</span>
+
+    controls := GridPane
+    <span class='b'>{</span>
+      numCols = 2
+      halignCells = Halign.fill
+      Label <span class='b'>{</span> text=<span class='s'>"numCols"</span> <span class='b'>}</span>,      Text <span class='b'>{</span> text=<span class='s'>"5"</span>; onModify.add <span class='b'>{</span>setInt<span class='b'>(</span>grid, <span class='s'>"numCols"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"hgap"</span> <span class='b'>}</span>,         Text <span class='b'>{</span> text=<span class='s'>"10"</span>; onModify.add <span class='b'>{</span>setInt<span class='b'>(</span>grid, <span class='s'>"hgap"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"vgap"</span> <span class='b'>}</span>,         Text <span class='b'>{</span> text=<span class='s'>"10"</span>; onModify.add <span class='b'>{</span>setInt<span class='b'>(</span>grid, <span class='s'>"vgap"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"halignCells"</span> <span class='b'>}</span>,  Combo <span class='b'>{</span> items=Halign.vals; onModify.add <span class='b'>{</span>setEnum<span class='b'>(</span>grid, <span class='s'>"halignCells"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"valignCells"</span> <span class='b'>}</span>,  Combo <span class='b'>{</span> items=Valign.vals; onModify.add <span class='b'>{</span>setEnum<span class='b'>(</span>grid, <span class='s'>"valignCells"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"halignPane"</span> <span class='b'>}</span>,   Combo <span class='b'>{</span> items=Halign.vals; onModify.add <span class='b'>{</span>setEnum<span class='b'>(</span>grid, <span class='s'>"halignPane"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"valignPane"</span> <span class='b'>}</span>,   Combo <span class='b'>{</span> items=Valign.vals; onModify.add <span class='b'>{</span>setEnum<span class='b'>(</span>grid, <span class='s'>"valignPane"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"expandRow"</span> <span class='b'>}</span>,    Text <span class='b'>{</span> text=<span class='s'>"null"</span>; onModify.add <span class='b'>{</span>setInt<span class='b'>(</span>grid, <span class='s'>"expandRow"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"expandCol"</span> <span class='b'>}</span>,    Text <span class='b'>{</span> text=<span class='s'>"null"</span>; onModify.add <span class='b'>{</span>setInt<span class='b'>(</span>grid, <span class='s'>"expandCol"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"uniformCols"</span> <span class='b'>}</span>,  Combo <span class='b'>{</span> items=<span class='b'>[</span><span class='k'>false</span>,<span class='k'>true</span><span class='b'>]</span>; onModify.add <span class='b'>{</span>setBool<span class='b'>(</span>grid, <span class='s'>"uniformCols"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+      Label <span class='b'>{</span> text=<span class='s'>"uniformRows"</span> <span class='b'>}</span>,  Combo <span class='b'>{</span> items=<span class='b'>[</span><span class='k'>false</span>,<span class='k'>true</span><span class='b'>]</span>; onModify.add <span class='b'>{</span>setBool<span class='b'>(</span>grid, <span class='s'>"uniformRows"</span>, it<span class='b'>)}</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> EdgePane <span class='b'>{</span> left=controls; center=InsetPane <span class='b'>{</span> content=grid <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a demo tree and table for file system</span>
+  <span class='z'>**</span>
+  Widget <span id='makeTreeAndTable'>makeTreeAndTable</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    tree := Tree
+    <span class='b'>{</span>
+      multi = <span class='k'>true</span>
+      model = DirTreeModel <span class='b'>{</span> demo = <span class='k'>this</span> <span class='b'>}</span>
+      onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span> <span class='b'>}</span>
+      onSelect.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span>; echo<span class='b'>(</span><span class='s'>"selected=${e-&gt;widget-&gt;selected}"</span><span class='b'>)</span> <span class='b'>}</span>
+      onPopup.add |Event e|  <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span>; e.popup = makePopup <span class='b'>}</span>
+      <span class='y'>// onMouseMove.add |Event e| { echo(e.pos + ": " + e-&gt;widget-&gt;nodeAt(e.pos)) }</span>
+      <span class='y'>// hbar.onModify.add(&amp;onScroll("Tree.hbar"))</span>
+      <span class='y'>// vbar.onModify.add(&amp;onScroll("Tree.vbar"))</span>
+    <span class='b'>}</span>
+
+    table := Table
+    <span class='b'>{</span>
+      multi = <span class='k'>true</span>
+      model = DirTableModel <span class='b'>{</span> demo = <span class='k'>this</span>; dir = File.os<span class='b'>(</span><span class='s'>"."</span><span class='b'>)</span>.list <span class='b'>}</span>
+      onAction.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span> <span class='b'>}</span>
+      onSelect.add |Event e| <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span>; echo<span class='b'>(</span><span class='s'>"selected=${e-&gt;widget-&gt;selected}"</span><span class='b'>)</span> <span class='b'>}</span>
+      onPopup.add |Event e|  <span class='b'>{</span> echo<span class='b'>(</span>e<span class='b'>)</span>; e.popup = makePopup <span class='b'>}</span>
+      <span class='y'>// onMouseMove.add |Event e| { Int? row := e-&gt;widget-&gt;rowAt(e.pos); Int? col := e-&gt;widget-&gt;colAt(e.pos); echo("Row: $row Col: $col " + ((row != null &amp;&amp; col != null) ? e-&gt;widget-&gt;model-&gt;text(col, row) : "")) }</span>
+      <span class='y'>// hbar.onModify.add(&amp;onScroll("Table.hbar"))</span>
+      <span class='y'>// vbar.onModify.add(&amp;onScroll("Table.vbar"))</span>
+    <span class='b'>}</span>
+
+    updateTable := |File dir| <span class='b'>{</span> table.model-&gt;dir = dir.list; table.refreshAll <span class='b'>}</span>
+    tree.onAction.add  |Event e| <span class='b'>{</span> updateTable<span class='b'>(</span>e.data<span class='b'>)</span> <span class='b'>}</span>
+    table.onAction.add |Event e| <span class='b'>{</span> updateTable<span class='b'>(</span>table.model-&gt;dir-&gt;get<span class='b'>(</span>e.index<span class='b'>))</span> <span class='b'>}</span>
+
+    <span class='k'>return</span> SashPane
+    <span class='b'>{</span>
+      weights = <span class='b'>[</span>1,3<span class='b'>]</span>
+      tree,
+      table,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane showing how the various window options work</span>
+  <span class='z'>**</span>
+  Widget <span id='makeWindow'>makeWindow</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    mode := Combo <span class='b'>{</span> items = WindowMode.vals; editable=<span class='k'>false</span> <span class='b'>}</span>
+    alwaysOnTop := Button <span class='b'>{</span> it.mode = ButtonMode.check; text = <span class='s'>"alwaysOnTop"</span> <span class='b'>}</span>
+    resizable := Button <span class='b'>{</span> it.mode = ButtonMode.check; text = <span class='s'>"resizable"</span> <span class='b'>}</span>
+    showTrim := Button <span class='b'>{</span> it.mode = ButtonMode.check; text = <span class='s'>"showTrim"</span>; selected = <span class='k'>true</span> <span class='b'>}</span>
+
+    open := |-&gt;|
+    <span class='b'>{</span>
+      close := Button <span class='b'>{</span> text=<span class='s'>"Close Me"</span> <span class='b'>}</span>
+      w := Window<span class='b'>(</span>mode.window<span class='b'>)</span>
+      <span class='b'>{</span>
+        it.mode = mode.selected
+        it.alwaysOnTop = alwaysOnTop.selected
+        it.resizable = resizable.selected
+        it.showTrim = showTrim.selected
+        it.size = Size<span class='b'>(</span>200,200<span class='b'>)</span>
+        GridPane <span class='b'>{</span> halignPane = Halign.center; valignPane = Valign.center; add<span class='b'>(</span>close<span class='b'>)</span> <span class='b'>}</span>,
+      <span class='b'>}</span>
+      close.onAction.add <span class='b'>{</span> w.close <span class='b'>}</span>
+      w.open
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> GridPane
+    <span class='b'>{</span>
+      mode,
+      alwaysOnTop,
+      resizable,
+      showTrim,
+      Button <span class='b'>{</span> text=<span class='s'>"Open"</span>; onAction.add<span class='b'>(</span>open<span class='b'>)</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane showing how to use serialization</span>
+  <span class='z'>**</span>
+  Widget <span id='makeSerialization'>makeSerialization</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    area := Text
+    <span class='b'>{</span>
+      multiLine = <span class='k'>true</span>
+      font = Desktop.sysFontMonospace
+      text =
+        <span class='s'>"fwt::EdgePane\n"</span> +
+        <span class='s'>"{\n"</span> +
+        <span class='s'>"  top = fwt::Button { text=\"Top\" }\n"</span> +
+        <span class='s'>"  center = fwt::Button { text=\"Center\" }\n"</span> +
+        <span class='s'>"  bottom = fwt::Button { text=\"Bottom\" }\n"</span> +
+        <span class='s'>"}\n"</span>
+    <span class='b'>}</span>
+
+    test := InsetPane
+    <span class='b'>{</span>
+      Label <span class='b'>{</span> text=<span class='s'>"Press button to deserialize code on the left here"</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+
+    <span class='k'>return</span> SashPane
+    <span class='b'>{</span>
+      EdgePane
+      <span class='b'>{</span>
+        center = area
+        right = InsetPane
+        <span class='b'>{</span>
+          Button <span class='b'>{</span> text=<span class='s'>"=&gt;"</span>; onAction.add |-&gt;| <span class='b'>{</span> deserializeTo<span class='b'>(</span>area.text, test<span class='b'>)</span> <span class='b'>}</span> <span class='b'>}</span>,
+        <span class='b'>}</span>
+      <span class='b'>}</span>,
+      test,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void <span id='deserializeTo'>deserializeTo</span><span class='b'>(</span>Str text, InsetPane test<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      test.content = text.in.readObj
+    <span class='b'>}</span>
+    <span class='k'>catch</span> <span class='b'>(</span>Err e<span class='b'>)</span>
+    <span class='b'>{</span>
+      test.content = Text <span class='b'>{</span> it.multiLine = <span class='k'>true</span>; it.text = e.traceToStr <span class='b'>}</span>
+    <span class='b'>}</span>
+    test.relayout
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane to trace events</span>
+  <span class='z'>**</span>
+  Widget <span id='makeEventing'>makeEventing</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> GridPane
+    <span class='b'>{</span>
+      EventDemo <span class='b'>{</span> name = <span class='s'>"A"</span>; demo = <span class='k'>this</span> <span class='b'>}</span>,
+      EventDemo <span class='b'>{</span> name = <span class='s'>"B"</span>; demo = <span class='k'>this</span> <span class='b'>}</span>,
+      EventDemo <span class='b'>{</span> name = <span class='s'>"C"</span>; demo = <span class='k'>this</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='z'>**</span>
+  <span class='z'>** Build a pane showing how to use Graphics</span>
+  <span class='z'>**</span>
+  Widget <span id='makeGraphics'>makeGraphics</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> ScrollPane <span class='b'>{</span> content=GraphicsDemo <span class='b'>{</span> demo = <span class='k'>this</span> <span class='b'>}</span> <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Void <span id='setInt'>setInt</span><span class='b'>(</span>Widget obj, Str field, Event e<span class='b'>)</span>
+  <span class='b'>{</span>
+    f := obj.typeof.field<span class='b'>(</span>field<span class='b'>)</span>
+    Str text := e.widget-&gt;text
+    int := text.toInt<span class='b'>(</span>10, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>int != <span class='k'>null</span> || text==<span class='s'>"null"</span><span class='b'>)</span> f.set<span class='b'>(</span>obj, int<span class='b'>)</span>
+    obj.relayout
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Void <span id='setBool'>setBool</span><span class='b'>(</span>Widget obj, Str field, Event e<span class='b'>)</span>
+  <span class='b'>{</span>
+    f := obj.typeof.field<span class='b'>(</span>field<span class='b'>)</span>
+    Str text := e.widget-&gt;text
+    b := text.toBool<span class='b'>(</span><span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>b != <span class='k'>null</span><span class='b'>)</span> f.set<span class='b'>(</span>obj, b<span class='b'>)</span>
+    obj.relayout
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Void <span id='setEnum'>setEnum</span><span class='b'>(</span>Widget obj, Str field, Event e<span class='b'>)</span>
+  <span class='b'>{</span>
+    f := obj.typeof.field<span class='b'>(</span>field<span class='b'>)</span>
+    en := f.get<span class='b'>(</span>obj<span class='b'>)</span>-&gt;fromStr<span class='b'>(</span>e.widget-&gt;text, <span class='k'>false</span><span class='b'>)</span>
+    <span class='k'>if</span> <span class='b'>(</span>en != <span class='k'>null</span><span class='b'>)</span> f.set<span class='b'>(</span>obj, en<span class='b'>)</span>
+    obj.relayout
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> |Event e| <span id='cb'>cb</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> |Event e|
+    <span class='b'>{</span>
+      w := e.widget
+      echo<span class='b'>(</span><span class='s'>"${w-&gt;text} selected=${w-&gt;selected}"</span><span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Void <span id='popup'>popup</span><span class='b'>(</span>Bool withPos, Event event<span class='b'>)</span>
+  <span class='b'>{</span>
+    makePopup.open<span class='b'>(</span>event.widget, withPos ? Point.make<span class='b'>(</span>0, event.widget.size.h<span class='b'>)</span> : event.pos<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Menu <span id='makePopup'>makePopup</span><span class='b'>()</span>
+  <span class='b'>{</span>
+    <span class='k'>return</span> Menu
+    <span class='b'>{</span>
+      MenuItem <span class='b'>{</span> text = <span class='s'>"Popup 1"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      MenuItem <span class='b'>{</span> text = <span class='s'>"Popup 2"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+      MenuItem <span class='b'>{</span> text = <span class='s'>"Popup 3"</span>; onAction.add<span class='b'>(</span>cb<span class='b'>)</span> <span class='b'>}</span>,
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  <span class='k'>static</span> Void <span id='onScroll'>onScroll</span><span class='b'>(</span>Str name, Event e<span class='b'>)</span>
+  <span class='b'>{</span>
+    ScrollBar sb := e.widget
+    echo<span class='b'>(</span><span class='s'>"-- onScroll $name $e  [val=$sb.val min=$sb.min max=$sb.max thumb=$sb.thumb page=$sb.page orient=$sb.orientation"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  WebBrowser <span id='browser'>browser</span> := WebBrowser <span class='b'>{}</span>
+  Str <span id='homeUri'>homeUri</span> := <span class='s'>"http://fantom.org/"</span>
+
+  File <span id='scriptDir'>scriptDir</span>  := File.make<span class='b'>(</span><span class='k'>this</span>.typeof-&gt;sourceFile.toStr.toUri<span class='b'>)</span>.parent
+
+  Image <span id='backIcon'>backIcon</span>    := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/arrowLeft.png`</span><span class='b'>)</span>
+  Image <span id='nextIcon'>nextIcon</span>    := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/arrowRight.png`</span><span class='b'>)</span>
+  Image <span id='cutIcon'>cutIcon</span>     := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/cut.png`</span><span class='b'>)</span>
+  Image <span id='copyIcon'>copyIcon</span>    := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/copy.png`</span><span class='b'>)</span>
+  Image <span id='pasteIcon'>pasteIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/paste.png`</span><span class='b'>)</span>
+  Image <span id='folderIcon'>folderIcon</span>  := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/folder.png`</span><span class='b'>)</span>
+  Image <span id='fileIcon'>fileIcon</span>    := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='audioIcon'>audioIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='imageIcon'>imageIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='videoIcon'>videoIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='sysIcon'>sysIcon</span>     := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='prefsIcon'>prefsIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/file.png`</span><span class='b'>)</span>
+  Image <span id='refreshIcon'>refreshIcon</span> := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/refresh.png`</span><span class='b'>)</span>
+  Image <span id='stopIcon'>stopIcon</span>    := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/err.png`</span><span class='b'>)</span>
+  Image <span id='cloudIcon'>cloudIcon</span>   := Image<span class='b'>(</span><span class='u'>`fan://icons/x16/cloud.png`</span><span class='b'>)</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** DirTreeModel</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> DirTreeModel : TreeModel
+<span class='b'>{</span>
+  FwtDemo? demo
+
+  <span class='k'>override</span> Obj<span class='b'>[]</span> roots<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> Env.cur.homeDir.listDirs <span class='b'>}</span>
+
+  <span class='k'>override</span> Str text<span class='b'>(</span>Obj node<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> node-&gt;name <span class='b'>}</span>
+
+  <span class='k'>override</span> Image? image<span class='b'>(</span>Obj node<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> demo.folderIcon <span class='b'>}</span>
+
+  <span class='k'>override</span> Obj<span class='b'>[]</span> children<span class='b'>(</span>Obj obj<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> obj-&gt;listDirs <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** DirTableModel</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> DirTableModel : TableModel
+<span class='b'>{</span>
+  FwtDemo? demo
+  File<span class='b'>[]</span>? dir
+  Str<span class='b'>[]</span> headers := <span class='b'>[</span><span class='s'>"Name"</span>, <span class='s'>"Size"</span>, <span class='s'>"Modified"</span><span class='b'>]</span>
+  <span class='k'>override</span> Int numCols<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> 3 <span class='b'>}</span>
+  <span class='k'>override</span> Int numRows<span class='b'>()</span> <span class='b'>{</span> <span class='k'>return</span> dir.size <span class='b'>}</span>
+  <span class='k'>override</span> Str header<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> headers<span class='b'>[</span>col<span class='b'>]</span> <span class='b'>}</span>
+  <span class='k'>override</span> Halign halign<span class='b'>(</span>Int col<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> col == 1 ? Halign.right : Halign.left <span class='b'>}</span>
+  <span class='k'>override</span> Font? font<span class='b'>(</span>Int col, Int row<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> col == 2 ? Font <span class='b'>{</span>name=Desktop.sysFont.name; size=Desktop.sysFont.size-1<span class='b'>}</span> : <span class='k'>null</span> <span class='b'>}</span>
+  <span class='k'>override</span> Color? fg<span class='b'>(</span>Int col, Int row<span class='b'>)</span>  <span class='b'>{</span> <span class='k'>return</span> col == 2 ? Color<span class='b'>(</span><span class='s'>"#666"</span><span class='b'>)</span> : <span class='k'>null</span> <span class='b'>}</span>
+  <span class='k'>override</span> Color? bg<span class='b'>(</span>Int col, Int row<span class='b'>)</span>  <span class='b'>{</span> <span class='k'>return</span> col == 2 ? Color<span class='b'>(</span><span class='s'>"#eee"</span><span class='b'>)</span> : <span class='k'>null</span> <span class='b'>}</span>
+  <span class='k'>override</span> Str text<span class='b'>(</span>Int col, Int row<span class='b'>)</span>
+  <span class='b'>{</span>
+    f := dir<span class='b'>[</span>row<span class='b'>]</span>
+    <span class='k'>switch</span> <span class='b'>(</span>col<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> 0:  <span class='k'>return</span> f.name
+      <span class='k'>case</span> 1:  <span class='k'>return</span> f.size?.toLocale<span class='b'>(</span><span class='s'>"B"</span><span class='b'>)</span> ?: <span class='s'>""</span>
+      <span class='k'>case</span> 2:  <span class='k'>return</span> f.modified.toLocale
+      <span class='k'>default</span>: <span class='k'>return</span> <span class='s'>"?"</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Int sortCompare<span class='b'>(</span>Int col, Int row1, Int row2<span class='b'>)</span>
+  <span class='b'>{</span>
+    a := dir<span class='b'>[</span>row1<span class='b'>]</span>
+    b := dir<span class='b'>[</span>row2<span class='b'>]</span>
+    <span class='k'>switch</span> <span class='b'>(</span>col<span class='b'>)</span>
+    <span class='b'>{</span>
+      <span class='k'>case</span> 1:  <span class='k'>return</span> a.size &lt;=&gt; b.size
+      <span class='k'>case</span> 2:  <span class='k'>return</span> a.modified &lt;=&gt; b.modified
+      <span class='k'>default</span>: <span class='k'>return</span> <span class='k'>super</span>.sortCompare<span class='b'>(</span>col, row1, row2<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+  <span class='k'>override</span> Image? image<span class='b'>(</span>Int col, Int row<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>col != 0<span class='b'>)</span> <span class='k'>return</span> <span class='k'>null</span>
+    <span class='k'>return</span> dir<span class='b'>[</span>row<span class='b'>]</span>.isDir ? demo.folderIcon : demo.fileIcon
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** Box</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> Box : Canvas
+<span class='b'>{</span>
+  Color color := Color.green
+
+  <span class='k'>override</span> Size prefSize<span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span>
+  <span class='b'>{</span>
+    Size<span class='b'>(</span>Int.random<span class='b'>(</span>20..100<span class='b'>)</span>, Int.random<span class='b'>(</span>20..80<span class='b'>))</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Void onPaint<span class='b'>(</span>Graphics g<span class='b'>)</span>
+  <span class='b'>{</span>
+    size := <span class='k'>this</span>.size
+    g.brush = color
+    g.fillRect<span class='b'>(</span>0, 0, size.w, size.h<span class='b'>)</span>
+    g.brush = Color.black
+    g.drawRect<span class='b'>(</span>0, 0, size.w-1, size.h-1<span class='b'>)</span>
+  <span class='b'>}</span>
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** EventDemo</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> EventDemo : Canvas
+<span class='b'>{</span>
+  <span class='k'>new</span> make<span class='b'>()</span>
+  <span class='b'>{</span>
+    d := |e| <span class='b'>{</span> dump<span class='b'>(</span>e<span class='b'>)</span> <span class='b'>}</span>
+    onFocus.add<span class='b'>(</span>d<span class='b'>)</span>
+    onBlur.add<span class='b'>(</span>d<span class='b'>)</span>
+    onKeyUp.add<span class='b'>(</span>d<span class='b'>)</span>
+    onKeyDown.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseUp.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseDown.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseEnter.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseExit.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseMove.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseHover.add<span class='b'>(</span>d<span class='b'>)</span>
+    onMouseWheel.add<span class='b'>(</span>d<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  <span class='k'>override</span> Size prefSize<span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> Size.make<span class='b'>(</span>100, 100<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Void onPaint<span class='b'>(</span>Graphics g<span class='b'>)</span>
+  <span class='b'>{</span>
+    w := size.w
+    h := size.h
+
+    g.brush = Color.black
+    g.drawRect<span class='b'>(</span>0, 0, w-1, h-1<span class='b'>)</span>
+    g.drawText<span class='b'>(</span>name, 45, 40<span class='b'>)</span>
+
+    <span class='k'>if</span> <span class='b'>(</span>hasFocus<span class='b'>)</span>
+    <span class='b'>{</span>
+      g.brush = Color.red
+      g.drawRect<span class='b'>(</span>1, 1, w-3, h-3<span class='b'>)</span>
+      g.drawRect<span class='b'>(</span>2, 2, w-5, h-5<span class='b'>)</span>
+    <span class='b'>}</span>
+  <span class='b'>}</span>
+
+  Void dump<span class='b'>(</span>Event event<span class='b'>)</span>
+  <span class='b'>{</span>
+    <span class='k'>if</span> <span class='b'>(</span>event.id == EventId.focus || event.id == EventId.blur<span class='b'>)</span>
+      repaint
+
+    echo<span class='b'>(</span><span class='s'>"$name&gt; $event"</span><span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Str? name
+  FwtDemo? demo
+<span class='b'>}</span>
+
+<span class='z'>**************************************************************************</span>
+<span class='z'>** GraphicsDemo</span>
+<span class='z'>**************************************************************************</span>
+
+<span class='k'>class</span> GraphicsDemo : Canvas
+<span class='b'>{</span>
+  FwtDemo? demo
+
+  <span class='k'>override</span> Size prefSize<span class='b'>(</span>Hints hints := Hints.defVal<span class='b'>)</span> <span class='b'>{</span> <span class='k'>return</span> Size.make<span class='b'>(</span>750, 450<span class='b'>)</span> <span class='b'>}</span>
+
+  <span class='k'>override</span> Void onPaint<span class='b'>(</span>Graphics g<span class='b'>)</span>
+  <span class='b'>{</span>
+    w := size.w
+    h := size.h
+
+    g.antialias = <span class='k'>true</span>
+
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0% 0%, 100% 100%, #fff, #666"</span><span class='b'>)</span>
+    g.fillRect<span class='b'>(</span>0, 0, w, h<span class='b'>)</span>
+
+    g.brush = Color.black; g.drawRect<span class='b'>(</span>0, 0, w-1, h-1<span class='b'>)</span>
+
+    g.brush = Color.orange; g.fillRect<span class='b'>(</span>10, 10, 50, 60<span class='b'>)</span>
+    g.brush = Color.blue; g.drawRect<span class='b'>(</span>10, 10, 50, 60<span class='b'>)</span>
+
+    g.brush = Color<span class='b'>(</span><span class='s'>"#80ffff00"</span><span class='b'>)</span>; g.fillOval<span class='b'>(</span>40, 40, 120, 100<span class='b'>)</span>
+    g.pen = Pen <span class='b'>{</span> width = 2; dash=<span class='b'>[</span>8,4<span class='b'>]</span>.toImmutable <span class='b'>}</span>
+    g.brush = Color.green; g.drawOval<span class='b'>(</span>40, 40, 120, 100<span class='b'>)</span>
+
+    g.pen = Pen <span class='b'>{</span> width = 8; join = Pen.joinBevel <span class='b'>}</span>
+    g.brush = Color.gray; g.drawRect<span class='b'>(</span>120, 120, 120, 90<span class='b'>)</span>
+    g.brush = Color.orange; g.fillArc<span class='b'>(</span>120, 120, 120, 90, 45, 90<span class='b'>)</span>
+    g.pen = Pen <span class='b'>{</span> width = 8; cap = Pen.capRound <span class='b'>}</span>
+    g.brush = Color.blue; g.drawArc<span class='b'>(</span>120, 120, 120, 90, 45, 90<span class='b'>)</span>
+
+    g.brush = Color.purple; g.drawText<span class='b'>(</span><span class='s'>"Hello World!"</span>, 70, 50<span class='b'>)</span>
+    g.font = Desktop.sysFontMonospace.toSize<span class='b'>(</span>16<span class='b'>)</span>.toBold; g.drawText<span class='b'>(</span><span class='s'>"Hello World!"</span>, 70, 70<span class='b'>)</span>
+
+    g.pen = Pen <span class='b'>{</span> width = 2; join = Pen.joinBevel <span class='b'>}</span>
+    g.brush = Color<span class='b'>(</span><span class='s'>"#a00"</span><span class='b'>)</span>
+    g.drawPolyline<span class='b'>([</span>
+      Point<span class='b'>(</span>10, 380<span class='b'>)</span>,
+      Point<span class='b'>(</span>30, 420<span class='b'>)</span>,
+      Point<span class='b'>(</span>50, 380<span class='b'>)</span>,
+      Point<span class='b'>(</span>70, 420<span class='b'>)</span>,
+      Point<span class='b'>(</span>90, 380<span class='b'>)])</span>
+
+    polygon := <span class='b'>[</span>Point<span class='b'>(</span>180, 380<span class='b'>)</span>, Point<span class='b'>(</span>140, 440<span class='b'>)</span>, Point<span class='b'>(</span>220, 440<span class='b'>)]</span>
+    g.pen = Pen<span class='b'>(</span><span class='s'>"1"</span><span class='b'>)</span>
+    g.brush = Color<span class='b'>(</span><span class='s'>"#f88"</span><span class='b'>)</span>; g.fillPolygon<span class='b'>(</span>polygon<span class='b'>)</span>
+    g.brush = Color<span class='b'>(</span><span class='s'>"#800"</span><span class='b'>)</span>; g.drawPolygon<span class='b'>(</span>polygon<span class='b'>)</span>
+
+    img := demo.folderIcon
+    g.drawImage<span class='b'>(</span>img, 220, 20<span class='b'>)</span>
+    g.copyImage<span class='b'>(</span>img, Rect<span class='b'>(</span>0, 0, img.size.w, img.size.h<span class='b'>)</span>, Rect<span class='b'>(</span>250, 30, 64, 64<span class='b'>))</span>
+    g.drawImage<span class='b'>(</span>img.resize<span class='b'>(</span>Size<span class='b'>(</span>64, 64<span class='b'>))</span>, 320, 30<span class='b'>)</span>
+    g.push
+    <span class='k'>try</span>
+    <span class='b'>{</span>
+      g.alpha=128; g.drawImage<span class='b'>(</span>img, 220, 40<span class='b'>)</span>
+      g.alpha=64;  g.drawImage<span class='b'>(</span>img, 220, 60<span class='b'>)</span>
+    <span class='b'>}</span>
+    <span class='k'>finally</span> g.pop
+
+    <span class='y'>// image brush</span>
+    g.brush = Pattern<span class='b'>(</span>demo.cloudIcon<span class='b'>)</span>
+    g.fillOval<span class='b'>(</span>390, 20, 80, 80<span class='b'>)</span>
+    g.brush = Color.black
+    g.pen = Pen <span class='b'>{</span> width = 1 <span class='b'>}</span>
+    g.drawOval<span class='b'>(</span>390, 20, 80, 80<span class='b'>)</span>
+
+    <span class='y'>// system font/colors</span>
+    y := 20
+    g.brush = Color.black
+    g.font = Desktop.sysFont
+    g.drawText<span class='b'>(</span><span class='s'>"sysFont: $Desktop.sysFont.toStr"</span>, 480, y<span class='b'>)</span>
+    g.font = Desktop.sysFontSmall
+    g.drawText<span class='b'>(</span><span class='s'>"sysFontSmall: $Desktop.sysFontSmall.toStr"</span>, 480, y+18<span class='b'>)</span>
+    g.font = Desktop.sysFontView
+    g.drawText<span class='b'>(</span><span class='s'>"sysFontView: $Desktop.sysFontView.toStr"</span>, 480, y+30<span class='b'>)</span>
+    y += 60
+    g.font = Font<span class='b'>(</span><span class='s'>"9pt Arial"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysDarkShadow, <span class='s'>"sysDarkShadow"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysNormShadow, <span class='s'>"sysNormShadow"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysLightShadow, <span class='s'>"sysLightShadow"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysHighlightShadow, <span class='s'>"sysHighlightShadow"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysFg, <span class='s'>"sysFg"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysBg, <span class='s'>"sysBg"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysBorder, <span class='s'>"sysBorder"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysListBg, <span class='s'>"sysListBg"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysListFg, <span class='s'>"sysListFg"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysListSelBg, <span class='s'>"sysListSelBg"</span><span class='b'>)</span>
+    y = sysColor<span class='b'>(</span>g, y, Desktop.sysListSelFg, <span class='s'>"sysListSelFg"</span><span class='b'>)</span>
+
+    <span class='y'>// rect/text with gradients</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"260px 120px, 460px 320px, #00f, #f00"</span><span class='b'>)</span>
+    g.pen = Pen <span class='b'>{</span> width=20; join = Pen.joinRound <span class='b'>}</span>
+    g.drawRect<span class='b'>(</span>270, 130, 180, 180<span class='b'>)</span>
+    6.times |Int i| <span class='b'>{</span> g.drawText<span class='b'>(</span><span class='s'>"Gradients!"</span>, 300, 150+i*20<span class='b'>)</span> <span class='b'>}</span>
+
+    <span class='y'>// translate for font metric box</span>
+    g.translate<span class='b'>(</span>50, 250<span class='b'>)</span>
+    g.pen = Pen.defVal
+    g.brush = Color.yellow
+    g.fillRect<span class='b'>(</span>0, 0, 200, 100<span class='b'>)</span>
+
+    <span class='y'>// font metric box with ascent, descent, baseline</span>
+    g.font = Desktop.sysFont.toSize<span class='b'>(</span>20<span class='b'>)</span>
+    tw := g.font.width<span class='b'>(</span><span class='s'>"Font Metrics"</span><span class='b'>)</span>
+    tx := <span class='b'>(</span>200-tw<span class='b'>)</span>/2
+    ty := 30
+    g.brush = Color.gray
+    g.drawLine<span class='b'>(</span>tx-10, ty, tx+10, ty<span class='b'>)</span>
+    g.drawLine<span class='b'>(</span>tx, ty-10, tx, ty+10<span class='b'>)</span>
+    g.brush = Color.orange
+    my := ty+g.font.leading; g.drawLine<span class='b'>(</span>tx, my, tx+tw, my<span class='b'>)</span>
+    g.brush = Color.green
+    my += g.font.ascent; g.drawLine<span class='b'>(</span>tx, my, tx+tw, my<span class='b'>)</span>
+    g.brush = Color.blue
+    my += g.font.descent; g.drawLine<span class='b'>(</span>tx, my, tx+tw, my<span class='b'>)</span>
+    g.brush = Color.black
+    g.drawText<span class='b'>(</span><span class='s'>"Font Metrics"</span>, tx, ty<span class='b'>)</span>
+
+    <span class='y'>// alpha</span>
+    g.translate<span class='b'>(</span>430, 80<span class='b'>)</span>
+    <span class='y'>// checkerboard bg</span>
+    g.brush = Color.white
+    g.fillRect<span class='b'>(</span>0, 0, 240, 120<span class='b'>)</span>
+    g.brush = Color<span class='b'>(</span><span class='s'>"#ccc"</span><span class='b'>)</span>
+    12.times |Int by| <span class='b'>{</span>
+      24.times |Int bx| <span class='b'>{</span>
+        <span class='k'>if</span> <span class='b'>(</span>bx.isEven.xor<span class='b'>(</span>by.isEven<span class='b'>))</span>
+          g.fillRect<span class='b'>(</span>bx*10, by*10, 10, 10<span class='b'>)</span>
+      <span class='b'>}</span>
+    <span class='b'>}</span>
+    <span class='y'>// change both alpha and color</span>
+    a := Color<span class='b'>(</span><span class='s'>"#ffff0000"</span><span class='b'>)</span>
+    b := Color<span class='b'>(</span><span class='s'>"#80ff0000"</span><span class='b'>)</span>
+    g.alpha=255; g.brush=a; g.fillRect<span class='b'>(</span>0, 0,  30, 30<span class='b'>)</span>; g.brush=b; g.fillRect<span class='b'>(</span>30, 0,  30, 30<span class='b'>)</span>
+    g.alpha=192; g.brush=a; g.fillRect<span class='b'>(</span>0, 30, 30, 30<span class='b'>)</span>; g.brush=b; g.fillRect<span class='b'>(</span>30, 30, 30, 30<span class='b'>)</span>
+    g.alpha=128; g.brush=a; g.fillRect<span class='b'>(</span>0, 60, 30, 30<span class='b'>)</span>; g.brush=b; g.fillRect<span class='b'>(</span>30, 60, 30, 30<span class='b'>)</span>
+    g.alpha=64;  g.brush=a; g.fillRect<span class='b'>(</span>0, 90, 30, 30<span class='b'>)</span>; g.brush=b; g.fillRect<span class='b'>(</span>30, 90, 30, 30<span class='b'>)</span>
+    <span class='y'>// change only alpha</span>
+    g.brush = a
+    g.alpha=255; g.fillRect<span class='b'>(</span>60, 0,  30, 30<span class='b'>)</span>;
+    g.alpha=192; g.fillRect<span class='b'>(</span>60, 30, 30, 30<span class='b'>)</span>;
+    g.alpha=128; g.fillRect<span class='b'>(</span>60, 60, 30, 30<span class='b'>)</span>;
+    g.alpha=64;  g.fillRect<span class='b'>(</span>60, 90, 30, 30<span class='b'>)</span>;
+    <span class='y'>// change only color</span>
+    g.alpha = 128
+    g.brush = Color<span class='b'>(</span><span class='s'>"#f00"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>90, 0,  30, 30<span class='b'>)</span>;
+    g.brush = Color<span class='b'>(</span><span class='s'>"#ff0"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>90, 30, 30, 30<span class='b'>)</span>;
+    g.brush = Color<span class='b'>(</span><span class='s'>"#0f0"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>90, 60, 30, 30<span class='b'>)</span>;
+    g.brush = Color<span class='b'>(</span><span class='s'>"#00f"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>90, 90, 30, 30<span class='b'>)</span>;
+    <span class='y'>// gradients</span>
+    g.alpha = 255
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #f00, #fff"</span><span class='b'>)</span>;           g.fillRect<span class='b'>(</span>120, 0, 20, 120<span class='b'>)</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #f00, #80ffffff"</span><span class='b'>)</span>;      g.fillRect<span class='b'>(</span>140, 0, 20, 120<span class='b'>)</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #80ff0000, #80ffffff"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>160, 0, 20, 120<span class='b'>)</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #f00, #fff"</span><span class='b'>)</span>;
+      g.alpha = 128; <span class='x'>/* set alpha after gradient */</span>  g.fillRect<span class='b'>(</span>180, 0, 20, 120<span class='b'>)</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #f00, #80ffffff"</span><span class='b'>)</span>;      g.fillRect<span class='b'>(</span>200, 0, 20, 120<span class='b'>)</span>
+    g.brush = Gradient<span class='b'>(</span><span class='s'>"0px 0px, 0px 120px, #80ff0000, #80ffffff"</span><span class='b'>)</span>; g.fillRect<span class='b'>(</span>220, 0, 20, 120<span class='b'>)</span>
+  <span class='b'>}</span>
+
+  Int sysColor<span class='b'>(</span>Graphics g, Int y, Color c, Str name<span class='b'>)</span>
+  <span class='b'>{</span>
+    g.brush = c
+    g.fillRect<span class='b'>(</span>480, y, 140, 20<span class='b'>)</span>
+    g.brush = Color.green
+    g.drawText<span class='b'>(</span>name, 490, y+3<span class='b'>)</span>
+    <span class='k'>return</span> y + 20
+  <span class='b'>}</span>
+<span class='b'>}</span></pre>
+</div>
+</div>
+<div class='sidebar'>
+<div class='slots'>
+<div class='overview'>
+<h2>Slots</h2>
+<ul class='clean'>
+  <li style='display: block;'><a href='#audioIcon'>audioIcon</a></li>
+  <li style='display: block;'><a href='#backIcon'>backIcon</a></li>
+  <li style='display: block;'><a href='#browser'>browser</a></li>
+  <li style='display: block;'><a href='#cb'>cb</a></li>
+  <li style='display: block;'><a href='#cloudIcon'>cloudIcon</a></li>
+  <li style='display: block;'><a href='#copyIcon'>copyIcon</a></li>
+  <li style='display: block;'><a href='#cutIcon'>cutIcon</a></li>
+  <li style='display: block;'><a href='#deserializeTo'>deserializeTo</a></li>
+  <li style='display: block;'><a href='#fileIcon'>fileIcon</a></li>
+  <li style='display: block;'><a href='#folderIcon'>folderIcon</a></li>
+  <li style='display: block;'><a href='#homeUri'>homeUri</a></li>
+  <li style='display: block;'><a href='#imageIcon'>imageIcon</a></li>
+  <li style='display: block;'><a href='#main'>main</a></li>
+  <li style='display: block;'><a href='#makeBorderPane'>makeBorderPane</a></li>
+  <li style='display: block;'><a href='#makeButtons'>makeButtons</a></li>
+  <li style='display: block;'><a href='#makeEdgePane'>makeEdgePane</a></li>
+  <li style='display: block;'><a href='#makeEventing'>makeEventing</a></li>
+  <li style='display: block;'><a href='#makeGraphics'>makeGraphics</a></li>
+  <li style='display: block;'><a href='#makeGridPane'>makeGridPane</a></li>
+  <li style='display: block;'><a href='#makeLabels'>makeLabels</a></li>
+  <li style='display: block;'><a href='#makeMenuBar'>makeMenuBar</a></li>
+  <li style='display: block;'><a href='#makePopup'>makePopup</a></li>
+  <li style='display: block;'><a href='#makeProgressBar'>makeProgressBar</a></li>
+  <li style='display: block;'><a href='#makeSerialization'>makeSerialization</a></li>
+  <li style='display: block;'><a href='#makeText'>makeText</a></li>
+  <li style='display: block;'><a href='#makeToolBar'>makeToolBar</a></li>
+  <li style='display: block;'><a href='#makeTreeAndTable'>makeTreeAndTable</a></li>
+  <li style='display: block;'><a href='#makeWebBrowser'>makeWebBrowser</a></li>
+  <li style='display: block;'><a href='#makeWindow'>makeWindow</a></li>
+  <li style='display: block;'><a href='#nextIcon'>nextIcon</a></li>
+  <li style='display: block;'><a href='#onScroll'>onScroll</a></li>
+  <li style='display: block;'><a href='#pasteIcon'>pasteIcon</a></li>
+  <li style='display: block;'><a href='#popup'>popup</a></li>
+  <li style='display: block;'><a href='#prefsIcon'>prefsIcon</a></li>
+  <li style='display: block;'><a href='#refreshIcon'>refreshIcon</a></li>
+  <li style='display: block;'><a href='#scriptDir'>scriptDir</a></li>
+  <li style='display: block;'><a href='#serializeTo'>serializeTo</a></li>
+  <li style='display: block;'><a href='#setBool'>setBool</a></li>
+  <li style='display: block;'><a href='#setEnum'>setEnum</a></li>
+  <li style='display: block;'><a href='#setInt'>setInt</a></li>
+  <li style='display: block;'><a href='#stopIcon'>stopIcon</a></li>
+  <li style='display: block;'><a href='#sysIcon'>sysIcon</a></li>
+  <li style='display: block;'><a href='#videoIcon'>videoIcon</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+[11-Nov-2010 Thu 10:09:02AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>

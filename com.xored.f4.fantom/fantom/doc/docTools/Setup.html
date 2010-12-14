@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+  <title>Setup</title>
+  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+  <link rel='stylesheet' type='text/css' href='../doc.css'/>
+  <script type='text/javascript' src='../doc.js'></script>
+<!--[if lt IE 7]>
+<script src='http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE7.js' type='text/javascript'></script>
+<![endif]-->
+</head>
+<body onload='Login.check();'>
+<div class='header'>
+<div>
+<h1><a href='/'>Fantom</a></h1>
+<p id='sidewalkLogin_'>&nbsp;</p>
+<form method='get' action='/sidewalk/search/'>
+<p>
+<input type='text' name='q' size='30' value='Search...' onfocus='if (value=="Search...") value=""' onblur='if (value=="") value="Search..."' />
+</p>
+</form>
+<ul>
+<li><a href='/'>Home</a></li>
+<li class='active'><a href='../index.html'>Docs</a></li>
+<li><a href='/sidewalk/blog/'>Blog</a></li>
+<li><a href='/sidewalk/ticket/'>Tickets</a></li>
+<li><a href='/sidewalk/topic/'>Discuss</a></li>
+</ul></div>
+</div>
+<div class='subHeader'>
+<div>
+<ul>
+  <li><a href='../index.html'>Doc Home</a></li>
+  <li>&gt;</li>
+  <li><a href='index.html'>docTools</a></li>
+  <li>&gt;</li>
+  <li><a href='Setup.html'>Setup</a></li>
+</ul>
+</div>
+</div>
+<div class='content'>
+<div>
+<div class='fandoc'>
+<div class='prevNext'>
+<div class='next'><a href='Fan.html'>Fan</a> <a href='Fan.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+<h1 class='title'>Setup</h1>
+
+<h1 id='unix'>Unix Setup </h1>
+
+<p>The Fantom distribution is packaged as a zip file.  Once unpacked you should add "bin" into your path:</p>
+
+<pre>PATH=$PATH:/apps/fantom/bin</pre>
+
+<p>The Fantom launchers are implemented as a set of Bash shell scripts which all route to common code sourced in "bin/fanlaunch". The current implementation is pretty simple and requires that you have a "java" command available in your environment (we haven't tried Mono with Fantom yet).</p>
+
+<p>If the unpacked zip file doesn't have the executable permission set on script files, then the "adm/unixsetup" script will automatically call "chmod +x" on all the shell scripts and Fan build scripts:</p>
+
+<pre>bash adm/unixsetup</pre>
+
+<h2 id='executableUnix'>Executable Scripts </h2>
+
+<p>Fantom allows the first line of a source file to start with "#!" to run as a Unix shell script:</p>
+
+<pre>#! /usr/bin/env fan
+class Script { static Void main() { echo("hi") } }
+
+chmod +x myscript.fan
+./myscript.fan</pre>
+
+<h1 id='windows'>Windows Setup </h1>
+
+<p>The Fantom distribution includes a set of Win32 executables which allow you to configure which version of Java or .NET is being used via "etc/sys/config.props".</p>
+
+<h2 id='executableWindows'>Executable Scripts </h2>
+
+<p>You can always use the <a href='Fan.html'>fan</a> launcher to run a script by passing it on the command line.  But ideally you will want to setup your environment so that you can call fan scripts directly as an executable file:</p>
+
+<pre>fan build.fan    // call using fan launcher explicitly
+build            // call as executable script</pre>
+
+<p>The following series of console commands will make ".fan" files executable assuming we installed to "c:\dev\fan":</p>
+
+<pre>assoc .fan=Fan
+ftype Fan=c:\dev\fan\bin\fan.exe "%1" %*
+set pathext=%pathext%;.fan</pre>
+
+<h2 id='runtime'>Selecting Java or .NET Runtime </h2>
+
+<p>Fantom is designed to be run on either a Java VM or a .NET CLR.  You can test which runtime is being used via "fan -version":</p>
+
+<pre>C:\dev\fan>fan -version
+Fantom Launcher
+Copyright (c) 2006-2010, Brian Frank and Andy Frank
+Licensed under the Academic Free License version 3.0
+
+Java Runtime:
+  java.version:    1.6.0_13
+  java.vm.name:    Java HotSpot(TM) Client VM
+  java.vm.vendor:  Sun Microsystems Inc.
+  java.vm.version: 11.3-b02
+  java.home:       C:\Program Files\Java\jre6
+  fan.version:     1.0.45</pre>
+
+<p>Use "etc/sys/config.props" to configure which runtime is used by default. The value must be "java" or "dotnet":</p>
+
+<pre>// runtime - either "java" or "dotnet"
+runtime=java</pre>
+
+<p>You can override the system property using the "--D" option:</p>
+
+<pre>C:\dev\fan>fan -version --Druntime=dotnet</pre>
+
+<p>You can also override the system property via the "fan_runtime" environmental variable:</p>
+
+<pre>C:\dev\fan>set fan_runtime=dotnet
+C:\dev\fan>fan -version</pre>
+
+<p>The runtime option is only available on Windows.</p>
+
+<h2 id='javaRuntime'>Java Runtime </h2>
+
+<p>If running on Windows, the Fantom launcher will attempt to locate the current Java VM via the registry key "SOFTWARE\\JavaSoft\\Java Runtime Environment.CurrentVersion" similar to how "java.exe" works.  You can specify the path to the "jvm.dll" to use explicitly via the "java.jvm" system property.  You can use "java.options" to pass through options to the JVM such as memory settings.</p>
+
+<pre>// etc/sys/config.props
+runtime=java
+java.jvm=c:\\dev\\tools\\java\\jre\\bin\\client\\jvm.dll
+java.options=-Xmx128M</pre>
+
+<p>Fantom currently requires Java version 1.5 or greater to run. Java 1.6 or greater is required to compile from source.</p>
+
+<p>You can also run Fantom directly without the launcher by adding "sys.jar" to your classpath and ensuring either the "fan_home" environment variable is set or the "fan.home" Java system property is set:</p>
+
+<pre>// via env var
+C:\>set fan_home=c:\dev\fan
+C:\>java -cp %fan_home%\lib\java\sys.jar fanx.tools.Fan -version
+
+// via system property
+C:\>java -cp c:\dev\fan\lib\java\sys.jar -Dfan.home=%fan_home% fanx.tools.Fan -version</pre>
+
+<p>Each of the tools maps to a different class, for example to run <code>fant</code> then run the Java class <code>fanx.tools.Fant</code>.</p>
+
+<h2 id='dotnetRuntime'>.NET Runtime </h2>
+
+<p>The Fantom launcher will attempt to use the latest version of .NET installed.</p>
+
+<p>Fantom currently requires .NET version 2.0 or greater.</p>
+
+<p class='TODO'>TODO: Support manually specifying version, running without launcher</p>
+
+<h2 id='substitutes'>Substitutes </h2>
+
+<p>Another feature of the launcher executables is the ability to map specific script files to use an alternate Fantom runtime.  This technique is used to manage the <a href='Bootstrap.html#substitutes'>bootstrap build</a> process.</p>
+
+<h2 id='debugging'>Launcher Debugger </h2>
+
+<p>You can set the "fan_launcher_debug" to "true" to debug the launcher code.  This can be helpful if you are having problems getting your Java or .NET environment working:</p>
+
+<pre>C:\dev\fan\src>set fan_launcher_debug=true
+
+C:\dev\fan\src>fan -version
+-- launcher version 1.0 3-Jan-07
+--   args[0] = "fan"
+--   args[1] = "-version"
+-- init
+--   fanHome = c:\dev\fan
+--   config.props:
+--     runtime=java
+...</pre>
+
+<h1 id='javaExt'>Java Extensions </h1>
+
+<p>You can add Java JARs to the following directories to have them automatically loaded by the Fantom class loader:</p>
+
+<ul>
+<li><code>{home}/lib/java/ext/</code></li>
+
+<li><code>{home}/lib/java/ext/{platform}</code></li>
+</ul>
+
+<p>The platform directory is used for JARs which vary by platform.  For example the SWT JARs are distributed in platform specific directories. You can verify your platform running "fan -version".</p>
+
+<h1 id='swt'>SWT Support </h1>
+
+<p>The Fantom distribution ships with SWT support for a a couple common platforms.  If your platform is not supported, follow these steps to get SWT working:</p>
+
+<ol style='list-style-type:decimal'>
+<li>Verify your platform identifier using "fan -version" (see <code><a href='../sys/Env.html#platform'>sys::Env.platform</a></code>)</li>
+
+<li>Download your platform's "swt.jar" from <a href='http://download.eclipse.org/eclipse/downloads/drops/R-3.6.1-201009090800/index.php#SWT'>eclipse.org</a></li>
+
+<li>Put "swt.jar" into <code>{home}/lib/java/ext/{platform}/swt.jar</code></li>
+</ol>
+
+<p>You can easily test SWT support by attempting to run <a href='Flux.html'>Flux</a>.</p>
+
+<h1 id='env'>Env </h1>
+
+<p>The default behavior of Fantom is to manage all its files under the installation directory.  But you can boot Fantom using alternative environments to customize how your deployment is structured. See <a href='../docLang/Env.html'>docLang::Env</a> for details.</p>
+<div class='prevNext'>
+<div class='next'><a href='Fan.html'>Fan</a> <a href='Fan.html'><img src='../go-next.png' alt='next' /></a></div>
+</div>
+</div>
+<div class='sidebar'>
+<h2>Contents</h2>
+<ul>
+<li><a href='#unix'>Unix Setup </a><ul>
+<li><a href='#executableUnix'>Executable Scripts </a></li></ul>
+</li><li><a href='#windows'>Windows Setup </a><ul>
+<li><a href='#executableWindows'>Executable Scripts </a></li><li><a href='#runtime'>Selecting Java or .NET Runtime </a></li><li><a href='#javaRuntime'>Java Runtime </a></li><li><a href='#dotnetRuntime'>.NET Runtime </a></li><li><a href='#substitutes'>Substitutes </a></li><li><a href='#debugging'>Launcher Debugger </a></li></ul>
+</li><li><a href='#javaExt'>Java Extensions </a></li><li><a href='#swt'>SWT Support </a></li><li><a href='#env'>Env </a></li></ul>
+</div>
+</div>
+</div>
+<div class='footer'>
+<div>
+<p>
+docTools 1.0.56
+[11-Nov-2010 Thu 10:08:29AM EST]
+</p>
+</div>
+</div>
+</body>
+</html>
