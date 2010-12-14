@@ -56,7 +56,7 @@ class FanInterpretersBlock : InterpretersBlockBridge
   
   override Void interpreterAdded(IInterpreterInstall? interpreter)
   {
-    fanVersion := InterpreterUtils.getVersion(interpreter)
+    fanVersion := InterpreterUtils.getVersion(PathUtil.fanHome(interpreter.getInstallLocation.getPath).toFile)
     interpreter.setName(fanVersion)
     super.interpreterAdded(interpreter)
   }

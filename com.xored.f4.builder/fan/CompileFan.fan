@@ -131,9 +131,10 @@ class CompileFan : IScriptBuilder
       //a depends on b
       else if(allDependents(b,allProjects).contains(a)) return 1
       return 0
-    }.each 
+    }.eachWhile 
     { 
-      buildPod(it) 
+      //so that we terminate build once at least one project fails
+      buildPod(it) ? null : "" 
     }
     return Status(IStatus.OK, pluginId, "OK")
   }
@@ -143,16 +144,19 @@ class CompileFan : IScriptBuilder
     modules.map { fantomProject(it.getScriptProject) }.unique
   }
   
-  private Void buildPod(FantomProject fp)
+  private Bool buildPod(FantomProject fp)
   {
     building = true
     clearMarkers(fp.project)
+    hasErrs := false
     createBuilder(fp).build { writeToLog(it) }.each |err| 
     {
-      reportErr(err, fp.project) 
+      reportErr(err, fp.project)
+      hasErrs = hasErrs || err.isErr
     }
     writeToLog //append empty line
-    refreshPod(fp)
+    if(!hasErrs) refreshPod(fp)
+    return hasErrs
   }
   
   private Void writeToLog(Str entry := "")

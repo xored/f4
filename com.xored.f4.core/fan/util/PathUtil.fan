@@ -58,4 +58,5 @@ class PathUtil
   static File libByInterpreter(IPath interp) { (fanHome(interp) + `lib/fan/`).toFile }
   
   static File srcByInterpreter(IPath interp) { (fanHome(interp) + `src/`).toFile }
+
 }

@@ -18,9 +18,9 @@ using compiler
 **
 class InterpreterUtils
 {
-  static Str getVersion(IInterpreterInstall interp) 
+  static Str getVersion(File fanHome) 
   {
-    job := LoadInfoJob(interp)
+    job := LoadInfoJob(fanHome)
     job.schedule
     job.join
     return job.version
@@ -29,18 +29,16 @@ class InterpreterUtils
 
 class LoadInfoJob : Job
 {
-  private IInterpreterInstall install
+  private File fanHome
   Str version := "fan"
-  new make(IInterpreterInstall install) : super("Load Fantom Interpreter info...")
+  new make(File fanHome) : super("Load Fantom Interpreter info...")
   {
-    this.install = install
+    this.fanHome = fanHome
   }
   
   override IStatus? run(IProgressMonitor? m)
   {
     m.beginTask("Load Fantom version", IProgressMonitor.UNKNOWN)
-    env := install.getExecEnvironment
-    if(env == null) return Status.CANCEL_STATUS
     
     versionReader := VersionReader()
     FcodeReader.make(locateSysPod).accept(versionReader)
@@ -50,8 +48,7 @@ class LoadInfoJob : Job
   
   private File locateSysPod() 
   {
-    (PathUtil.libByInterpreter(install.getInstallLocation.getPath).uri +
-      `sys.pod`).toFile
+    fanHome + `lib/fan/sys.pod`
   }
   
 }

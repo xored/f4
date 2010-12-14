@@ -11,7 +11,7 @@ using [java] org.eclipse.swt.widgets::Shell
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.core.runtime
 using [java] org.eclipse.dltk.core.environment
-
+using f4core
 using f4launching
 
 **
@@ -26,12 +26,8 @@ class AddFanInterpreterDialog : AddScriptInterpreterDialog
   
   override protected Str? generateInterpreterName(IFileHandle? file)
   {
-    IInterpreterInstall install := InterpreterStandin(
-      getInterpreterType, 
-      createUniqueId(getInterpreterType))
-    setFieldValuesToInterpreter(install)
     
-    pName := InterpreterUtils.getVersion(install)
+    pName := InterpreterUtils.getVersion(PathUtil.fanHome(file.getPath).toFile)
     baseName := pName
     index := 0
     while(!validateGeneratedName(pName)) pName = "$baseName(${index++})" 
