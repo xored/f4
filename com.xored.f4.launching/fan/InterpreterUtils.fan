@@ -25,6 +25,13 @@ class InterpreterUtils
     job.join
     return job.version
   }
+  
+  static Bool isValid(File pod)
+  {
+    try FcodeReader.make(pod).accept(VersionReader())
+    catch return false
+    return true
+  }
 }
 
 class LoadInfoJob : Job

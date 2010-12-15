@@ -6,10 +6,12 @@
 //   ivaninozemtsev Apr 29, 2010 - Initial Contribution
 //
 
-using "[java]org.eclipse.dltk.internal.launching"::AbstractInterpreterInstallType
+using [java] com.xored.f4.launching::AbstractInterpreterInstallTypeBridge
 using "[java]org.eclipse.dltk.internal.launching"::AbstractInterpreterInstallType$ILookupRunnable as ILookupRunnable
 using [java] org.eclipse.dltk.launching::IInterpreterInstall
 using [java] org.eclipse.dltk.core.environment::IDeployment
+using [java] org.eclipse.core.runtime::Status
+using [java] org.eclipse.core.runtime::IStatus
 using [java] org.eclipse.core.runtime::Path
 using [java] org.eclipse.core.runtime::IPath
 using [java] com.xored.fanide.core::FanCore
@@ -27,11 +29,12 @@ using [java] org.eclipse.core.runtime::Platform
 using [java] org.eclipse.dltk.core.environment::FileAsFileHandle
 using [java] java.io::File as JavaFile
 
+using f4fcode
 using f4core
 **
 **
 **
-class InstallType : AbstractInterpreterInstallType
+class InstallType : AbstractInterpreterInstallTypeBridge
 {
   private static const Str typeName := "Fantom 1.0"
   
@@ -100,6 +103,22 @@ class InstallType : AbstractInterpreterInstallType
   {
     findInterpreterInstallByName(name) == null
   }
+  
+  
+  override IStatus? validateInstall(IFileHandle? installLocation)
+  {
+    fanHome := PathUtil.fanHome(installLocation.getPath)
+    //installation is valid if there is sys.pod which can be opened by fcode reader
+    sysPod := fanHome.toFile + `lib/fan/sys.pod`
+    if(!sysPod.exists) return createStatus(IStatus.ERROR, "Sys pod is not found at $sysPod", null)
+    
+    if(!InterpreterUtils.isValid(sysPod)) return createStatus(IStatus.ERROR, "Invalid pod $sysPod", null)
+    
+    return Status.OK_STATUS
+  }
+  
+  //protected IStatus createStatus(int severity, String message,
+  //    Throwable throwable) {
 }
 
 
