@@ -29,7 +29,7 @@ class CallProcessor : ICallProcessor
   {
     requestor := Searcher(parent)
     pattern := SearchPattern.createPattern(
-        element.getElementName,
+        element.getParent.getElementName+"."+element.getElementName,
         IDLTKSearchConstants.METHOD,
         IDLTKSearchConstants.REFERENCES,
         genericAgnosticMatchRule,
