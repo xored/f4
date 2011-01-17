@@ -60,8 +60,13 @@ class SourceLookupParticipant : AbstractSourceLookupParticipant
       return null
     }
     Str? path := frame.getSourcePath
+    Str classQualifiedName := frame.getReceivingTypeName
+    
+    if(!classQualifiedName.startsWith("fan")) {
+      //Not a fantom stack frame, current source lookup participant won't be able to locate it
+      return null
+    }
     if (path == null) {
-      Str classQualifiedName := frame.getReceivingTypeName
       path = classQualifiedName.replace(".","/")
       if (path.contains("\$"))
         path = path.split('\$', false)[0]
