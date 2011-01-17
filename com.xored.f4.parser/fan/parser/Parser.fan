@@ -1281,7 +1281,7 @@ class Parser : AstFactory
     expectedArgs := expectedClosureArgs(caller, args.size)
 
     // TODO: compare signatures of expected and following closures
-    if (expectedArgs != null && isClosure)
+    if (expectedArgs != null && isClosure(expectedArgs.size != 0))
     {
       args.add(closure(expectedArgs))
     }
@@ -1311,7 +1311,6 @@ class Parser : AstFactory
         args.add(cl)
       }
     }
-    // TODO: determine whether () can be used as call shortcut (fantom.org #1194)    
     if (caller.resolvedType?.qname == "sys::Func" && !callerIsMethod(caller) )
     {
       //generate invoke of 'call method'
@@ -1455,7 +1454,7 @@ class Parser : AstFactory
     if (sig[-1] == '?') { sig = sig[0 .. -2] }
     if (!sig.startsWith("|") || !sig.endsWith("|")) { return null }
     sigArgs := sig[1 ..< (sig.index("->") ?: sig.size - 1)]
-    return sigArgs.split(',').map{ (!it.isEmpty && it[-1] == '?') ? it[0..-2] : it }
+    return sigArgs.split(',').exclude{it.isEmpty}.map{ it[-1] == '?' ? it[0..-2] : it }
   }
 
   **
@@ -1744,9 +1743,9 @@ class Parser : AstFactory
     return false
   }
   
-  Bool isClosure()
+  Bool isClosure(Bool canBeItBlock := true)
   {
-    if (!(match(Token.lbrace) || !nl && match(Token.pipe))) return false
+    if (!(canBeItBlock && match(Token.lbrace) || !nl && match(Token.pipe))) return false
 //    if (inFieldInit)
 //    {
       switch(peekt)
@@ -1943,9 +1942,20 @@ class Parser : AstFactory
     for(i = line1.size.min(line2.size)-1; i >= 0; i--) {
       if (line1[i].qname == line2[i].qname) break;
     }
-    // TODO: wait for generic arguments inference specs (fantom.org #1192)
     if (i < 0) return null
     res := ns.findType(line1[i].qname)
+    if (res.qname == "sys::List") {
+      firstElem := first.parametrization["sys::V"]
+      secondElem := second.parametrization["sys::V"]
+      commonElem := null
+      if (firstElem != null && secondElem != null)
+        commonElem = commonSuper(firstElem,secondElem)
+      res = res.parameterize(["sys::V":commonElem]);
+    }
+    if (res.qname == "sys::Map" || res.qname == "sys::Func") {
+      if (first.parametrization == second.parametrization)
+        res = first
+    }
     return first.isNullable||second.isNullable ? res.toNullable : res
   }
   
