@@ -9,7 +9,7 @@
 using f4parser
 using f4model
 **
-** This class provides completion after "?->", "?." or "."
+** This class provides completion after "?->", "->", "?.", ".", or "#"
 ** 
 class DotCompletionProvider : CompletionProvider
 {
@@ -25,6 +25,7 @@ class DotCompletionProvider : CompletionProvider
     preceding := src[0..pos] 
     ending := endings.find { preceding.endsWith(it) }
     if(ending == null) return false
+    isPound = ending == "#"
     
     //TODO: improve, looks too similar to magic now
     nodePos := pos - ending.size +1//+ (prefix.isEmpty ? 1 : 0)
@@ -87,10 +88,11 @@ class DotCompletionProvider : CompletionProvider
   ** Elements length should be decreasing (so we correctly define
   ** full ending)
   ** 
-  private static const Str[] endings := Str["?->", "->", "?.", "."]
+  private static const Str[] endings := Str["?->", "->", "?.", ".", "#"]
   
   ** path to node preceding to completion position
   private AstPath? path
+  private Bool isPound 
   **
   ** True if we should complete only static methods and constructors
   ** 
@@ -99,10 +101,11 @@ class DotCompletionProvider : CompletionProvider
     node := getNode(path)
     return node is StaticTargetExpr || node is CType
   }
-  
+
   private |IFanSlot->Bool| filter()
   {
-    isStatic ? |IFanSlot slot->Bool| { slot.isStatic || slot.isCtor } :
-      |IFanSlot slot->Bool| { !slot.isStatic && !slot.isCtor }
+    isPound ? |IFanSlot slot->Bool| { true } :
+    (isStatic ? |IFanSlot slot->Bool| { slot.isStatic || slot.isCtor } :
+      |IFanSlot slot->Bool| { !slot.isStatic && !slot.isCtor })
   }
 }
