@@ -113,7 +113,7 @@ class InternalBuilder : Builder
     try compiler.compile  
     catch(CompilerErr e) caughtErrs.add(e) 
     catch(Err e) e.trace //TODO: add logging
-    
+    ((F4Namespace)input.ns).close
     return [compiler.errs, compiler.warns, caughtErrs].flatten.unique
   }
 }

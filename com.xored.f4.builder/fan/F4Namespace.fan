@@ -27,7 +27,7 @@ class F4Namespace : CNamespace
     if(!locs.containsKey(podName)) return null
     loc := locs[podName]
     if(!loc.exists) return null
-    fpod := FPod(this, podName, Zip.open(loc))
+    fpod := FPod(this, podName, addZip(Zip.open(loc)))
     fpod.read
     return fpod
   }
@@ -35,6 +35,16 @@ class F4Namespace : CNamespace
   override protected CBridge findBridge(Compiler c, Str name, Loc? loc)
   {
     return name == "java" ? F4JavaBridge(c, F4Cp(cpEntries)) : super.findBridge(c, name, loc)
+  }
+  
+  private Zip addZip(Zip zip) {
+    zips.add(zip)
+    return zip
+  }
+  private Zip[] zips := [,]
+  
+  public Void close() {
+    zips.each { it.close }
   }
 }
 
