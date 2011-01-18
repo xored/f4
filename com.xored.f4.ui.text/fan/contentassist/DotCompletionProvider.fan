@@ -63,11 +63,12 @@ class DotCompletionProvider : CompletionProvider
   }
   
   private Node getNode(AstPath path) {
-    slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
-    if(slotLiteral != null) return slotLiteral
-    
-    if(prefix != "") {
-      return  path[-2]
+    if (!isPound) {
+      slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
+      if(slotLiteral != null) return slotLiteral
+      if(prefix != "") {
+        return  path[-2]
+      }
     }
     return path.last
   }

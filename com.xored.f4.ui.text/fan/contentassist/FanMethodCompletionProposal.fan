@@ -7,6 +7,7 @@
 //
 
 using [java] java.lang
+using [java] java.util
 
 using [java] org.eclipse.dltk.ui
 using [java] org.eclipse.dltk.core
@@ -16,6 +17,7 @@ using [java] org.eclipse.dltk.ui.text.completion::ScriptMethodCompletionProposal
 using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
 using [java] org.eclipse.jface.text
+using [java] fanx.interop
 
 using "[java]com.xored.fanide.internal.ui"
 
@@ -127,5 +129,16 @@ class FanMethodCompletionProposal : ScriptMethodCompletionProposal {
     // one space only
     
     return buffer.toStr
+  }
+
+  override protected CharArray? computeTriggerCharacters() {
+    res := super.computeTriggerCharacters
+    for(i := 1;i<res.size;i++)
+      if (res[i] == '.') {
+        ans := Arrays.copyOf(res,res.size-1)
+        ans[i] = res.size-1
+        return ans
+      }
+    return res
   }
 }
