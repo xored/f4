@@ -1671,7 +1671,7 @@ class Parser : AstFactory
       IFanType? rt := null
       endRule(s)
       if (index is RangeLiteral)
-        return shortcut(s.start, s.end, ExprId.index, "slice", base, index, op)
+        return shortcut(s.start, s.end, ExprId.index, "getRange", base, index, op)
       else      
         return shortcut(s.start, s.end, ExprId.index, "get", base, index, op)
     }
@@ -1826,7 +1826,20 @@ class Parser : AstFactory
   {
     s := startRule
     Str typeName := consume(Token.identifier).val
-    found := p == null ? ns.findType(typeName) : p.modelPod?.findType(typeName, false)
+    found := null;
+    if (p == null) {
+      found = usings.eachWhile |UsingDef def->IFanType?|{
+        if (def.typeName == null)
+          return def.podName.modelPod.findType(typeName,false)
+        else if (typeName == def.typeName.text)
+          return def.typeName.resolvedType
+        return null;
+      }
+      if (found == null)
+        found = currPod.findType(typeName,false)
+    }
+    else
+      p.modelPod?.findType(typeName, false)
 //    if (found == null) 
 //      throw err(locOfRange(-1), ProblemKind.parser_unresolvedType, [typeName])
     endRule(s)
