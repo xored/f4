@@ -86,23 +86,27 @@ class InternalBuilder : Builder
   {
     buf := StrBuf()
     input := CompilerInput.make
-    input.log         = CompilerLog(buf.out)
-    input.podName     = fp.podName
-    input.version     = fp.version
-    input.ns          = F4Namespace(getAllPods(fp), fp.classpath)
-    input.depends     = fp.rawDepends.dup
-    input.includeDoc  = true
-    input.summary     = fp.summary
-    input.mode        = CompilerInputMode.file
-    input.baseDir     = fp.baseDir
-    input.srcFiles    = fp.srcDirs
-    input.resFiles    = fp.resDirs
-    input.index       = fp.index
-    input.outDir      = fp.outDir
-    input.output      = CompilerOutputMode.podFile
-    input.jsFiles     = fp.jsDirs
-
-    return compile(input) 
+    try {
+      input.log         = CompilerLog(buf.out)
+      input.podName     = fp.podName
+      input.version     = fp.version
+      input.ns          = F4Namespace(getAllPods(fp), fp.classpath)
+      input.depends     = fp.rawDepends.dup
+      input.includeDoc  = true
+      input.summary     = fp.summary
+      input.mode        = CompilerInputMode.file
+      input.baseDir     = fp.baseDir
+      input.srcFiles    = fp.srcDirs
+      input.resFiles    = fp.resDirs
+      input.index       = fp.index
+      input.outDir      = fp.outDir
+      input.output      = CompilerOutputMode.podFile
+      input.jsFiles     = fp.jsDirs
+      return compile(input)
+    } finally {
+      if (input.ns is F4Namespace)
+        ((F4Namespace)input.ns).close
+    }
   }
   
   private CompilerErr[] compile(CompilerInput input)
@@ -113,7 +117,6 @@ class InternalBuilder : Builder
     try compiler.compile  
     catch(CompilerErr e) caughtErrs.add(e) 
     catch(Err e) e.trace //TODO: add logging
-    ((F4Namespace)input.ns).close
     return [compiler.errs, compiler.warns, caughtErrs].flatten.unique
   }
 }
