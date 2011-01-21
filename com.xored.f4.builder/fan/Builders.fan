@@ -142,6 +142,7 @@ class ExternalBuilder : Builder
     wc.setAttribute(LaunchConsts.fanClass, Manifest.filename)
     wc.setAttribute(LaunchConsts.fanProject, fp.project.getName)
     wc.setAttribute(LaunchConsts.useClassOnly, true)
+    wc.setAttribute(LaunchConsts.consoleEncoding, "UTF-8")
     install := ScriptRuntime.computeInterpreterInstall(wc)
     if(!install.getInstallLocation.exists)
       return interpreterErrs
@@ -149,10 +150,16 @@ class ExternalBuilder : Builder
     if(launch.getProcesses.isEmpty) return [,]
     process := launch.getProcesses.first as IProcess
     out := StrBuf()
-    process.getStreamsProxy.getOutputStreamMonitor.addListener |txt| { consumer?.call(txt); out.add(txt) }
-    process.getStreamsProxy.getErrorStreamMonitor.addListener |txt| { consumer?.call(txt); out.add(txt) }
     while(!process.isTerminated) Actor.sleep(25ms)
+    report(consumer,out,process.getStreamsProxy.getOutputStreamMonitor.getContents)
+    report(consumer,out,process.getStreamsProxy.getErrorStreamMonitor.getContents)
     return parseErrors(out.toStr)
+  }
+  
+  private static Void report(|Str|? consumer, StrBuf out, Str txt)
+  {
+    consumer?.call(txt);
+    out.add(txt);
   }
   
   private CompilerErr[] parseErrors(Str out)
@@ -162,19 +169,37 @@ class ExternalBuilder : Builder
   }
   
   private static const Regex loc := Regex<|(\((\d+)(,(\d+))?\))|> 
+  private static const Regex javaLoc := Regex<|:(\d+):|>
   private CompilerErr? errFromLine(Str line)
   {
+    if (line.startsWith("ERR: ")) {
+      if (line.contains("CompileJava")) return null;
+      line = line["ERR: ".size..-1]
+      return CompilerErr.make(line, null, null, LogLevel.err)
+    }
     //assume that err/warn line always starts with base directory
     if(!line.startsWith(fp.baseDir.osPath)) return null
     m := loc.matcher(line)
-    if(!m.find) return null
-    file := line[0..<m.start]
-    lineNo := m.group(2).toInt
-    col := m.group(4).isEmpty ? null : m.group(4).toInt
-    msg := line[m.end+1..-1].trim
-    isWarn := msg.startsWith("WARN")
-    if(isWarn) msg = msg["WARN".size..-1]
-    return CompilerErr.make(msg, Loc.make(file, lineNo, col)
-      , null, isWarn ? LogLevel.warn : LogLevel.err)
+    if (m.find) {
+      file := line[0..<m.start]
+      lineNo := m.group(2).toInt
+      col := m.group(4).isEmpty ? null : m.group(4).toInt
+      msg := line[m.end+1..-1].trim
+      isWarn := msg.startsWith("WARN")
+      if (isWarn) msg = msg["WARN".size..-1]
+      return CompilerErr.make(msg, Loc.make(file, lineNo, col)
+        , null, isWarn ? LogLevel.warn : LogLevel.err)
+    }
+    m = javaLoc.matcher(line);
+    if (m.find) {
+      file := line[0..<m.start]
+      lineNo := m.group(1).toInt
+      msg := line[m.end+1..-1].trim
+      isWarn := msg.startsWith("WARN")
+      if (isWarn) msg = msg["WARN".size..-1]
+      return CompilerErr.make(msg, Loc.make(file, lineNo)
+        , null, isWarn ? LogLevel.warn : LogLevel.err)
+    }
+    return null
   }
 }
