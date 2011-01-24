@@ -7,6 +7,7 @@
 //
 
 using [java] org.eclipse.dltk.launching
+using [java] org.eclipse.debug.core::DebugPlugin
 **
 **
 **
@@ -21,4 +22,5 @@ class LaunchConsts : ScriptLaunchConfigurationConstants
   static const Str useClassOnly := "useClassOnly" 
   static const Str fanProject := ATTR_PROJECT_NAME
   static const Str scriptNature := ATTR_SCRIPT_NATURE
+  static const Str consoleEncoding := DebugPlugin.ATTR_CONSOLE_ENCODING
 }
