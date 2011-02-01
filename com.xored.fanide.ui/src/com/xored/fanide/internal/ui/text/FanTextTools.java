@@ -79,10 +79,10 @@ public class FanTextTools extends ScriptTextTools {
 		return ret;
 	}
 
-	@Override
+	/*@Override
 	public ISemanticHighlighter getSemanticPositionUpdater() {
 		return new FanSemanticHighlighter(getExtensions());
-	}
+	}*/
 
 	private ISemanticHighlightingExtension[] getExtensions() {
 		// use new instance of extensions as they are not reentrant

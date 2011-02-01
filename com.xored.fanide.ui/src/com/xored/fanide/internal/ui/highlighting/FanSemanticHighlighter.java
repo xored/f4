@@ -3,9 +3,14 @@
  */
 package com.xored.fanide.internal.ui.highlighting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.dltk.compiler.env.IModuleSource;
 import org.eclipse.dltk.ui.editor.highlighting.AbstractSemanticHighlighter;
 import org.eclipse.dltk.ui.editor.highlighting.ISemanticHighlightingRequestor;
+import org.eclipse.dltk.ui.editor.highlighting.SemanticHighlighting;
 
 import com.xored.fanide.ui.highlighting.ISemanticHighlightingExtension;
 
@@ -35,6 +40,17 @@ public class FanSemanticHighlighter extends AbstractSemanticHighlighter {
 				result = true;
 		}
 		return result;
+	}
+
+	public SemanticHighlighting[] getSemanticHighlightings() {
+		List<SemanticHighlighting> list = new ArrayList<SemanticHighlighting>();
+		for (ISemanticHighlightingExtension extension : extensions) {
+		    SemanticHighlighting[] hl = extension.getHighlightings();
+		    if (hl != null) {
+		        list.addAll(Arrays.asList(hl));
+		    }
+		}
+		return (SemanticHighlighting[])list.toArray(new SemanticHighlighting[list.size()]);
 	}
 
 }

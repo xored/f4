@@ -18,8 +18,8 @@ public class FanSemanticPositionRequestor implements
 		this.requestor = requestor;
 	}
 
-	public void addPosition(int start, int end, int highlightingIndex) {
-		requestor.addPosition(start, end, highlightingIndex + offset);
+	public void addPosition(int start, int end, String highlightingKey) {
+		requestor.addPosition(start, end, highlightingKey + offset);
 	}
 
 }
