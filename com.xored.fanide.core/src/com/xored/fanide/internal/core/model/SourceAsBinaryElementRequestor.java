@@ -32,4 +32,7 @@ public class SourceAsBinaryElementRequestor extends
 	public void exitModule(int declarationEnd) {
 		// empty
 	}
+
+	public void updateField(FieldInfo arg0, int arg1) {
+	}
 }
