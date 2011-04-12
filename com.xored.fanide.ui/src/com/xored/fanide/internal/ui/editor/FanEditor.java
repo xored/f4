@@ -53,7 +53,7 @@ public class FanEditor extends ScriptEditor {
 	}
 
 	@Override
-	protected IPreferenceStore getScriptPreferenceStore() {
+	public IPreferenceStore getScriptPreferenceStore() {
 		return FanUI.getDefault().getPreferenceStore();
 	}
 
