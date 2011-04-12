@@ -82,7 +82,7 @@ class FanSemanticHighlighter : ISemanticHighlightingExtension, AstVisitor
     staticMethod
   ]
 
-  private Int index(SH sh) { highlightings.index(sh) }
+  private Str index(SH sh) { sh.getPreferenceKey }
   
   override SemanticHighlighting?[]? getHighlightings() {
     return highlightings

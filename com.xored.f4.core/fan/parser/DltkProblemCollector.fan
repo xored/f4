@@ -1,5 +1,6 @@
 using [java]org.eclipse.dltk.compiler.problem::IProblemReporter
 using [java]org.eclipse.dltk.compiler.problem::IProblem as IDltkProblem
+using [java]org.eclipse.dltk.compiler.problem::IProblemIdentifier
 
 using f4parser
 class DltkProblemCollector : IProblemCollector
@@ -17,7 +18,7 @@ class DltkProblemCollector : IProblemCollector
 const class DltkProblem : Problem, IProblem, IDltkProblem
 {
   override Str?[]? getArguments() {return Str?[,]}
-  override Int getID() {return -1}
+  override IProblemIdentifier? getID() {return null}
   override Str? getMessage() {return msg}
   override Str? getOriginatingFileName() {return fileName}
   override Int getSourceEnd() {return end}
