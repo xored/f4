@@ -82,7 +82,7 @@ class CompileFan : IScriptBuilder
     clearMarkers(project.getProject)
   } 
 
-  override Void endBuild(IScriptProject? project, IProgressMonitor? monitor) 
+  override Void endBuild(IScriptProject? project, IBuildState? state, IProgressMonitor? monitor) 
   {
     reporters.vals.each { it.flush }
     reporters.clear
@@ -232,8 +232,7 @@ class CompileFan : IScriptBuilder
         err.isWarn || err.msg == "No fan source files found"? ProblemSeverities.Warning : ProblemSeverities.Error, //severity
         -1, //start position
         -1, //end position
-        err.line ?: 0,
-        err.col ?: 0
+        err.line ?: 0
         )
       )
   }
