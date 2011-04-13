@@ -60,6 +60,7 @@ class Parser : AstFactory
       safe |->| {s["usings"] = usingDef}
       recoverTo(usingDefOrtypeDefSymptoms)
     }
+    usings = s.getList("usings")
     while (true)
     {      
       mark := pos
@@ -1826,11 +1827,11 @@ class Parser : AstFactory
   {
     s := startRule
     Str typeName := consume(Token.identifier).val
-    found := null;
+    found := null
     if (p == null) {
       found = usings.eachWhile |UsingDef def->IFanType?|{
         if (def.typeName == null)
-          return def.podName.modelPod.findType(typeName,false)
+          return def.podName.modelPod?.findType(typeName,false)
         else if (typeName == def.typeName.text)
           return def.typeName.resolvedType
         return null;
@@ -1887,8 +1888,6 @@ class Parser : AstFactory
     getLocals?.find {it.name.text == name}
   }
 
-  Void addUsing(UsingDef def) {usings.add(def)}
-  
   once IFanType? resolveObj() {ns.findPod("sys")?.findType("Obj", false)}
   once IFanType? resolveObjQue() { resolveObj?.toNullable }
   once IFanType? resolveVoid() {ns.findPod("sys")?.findType("Void", false)}
