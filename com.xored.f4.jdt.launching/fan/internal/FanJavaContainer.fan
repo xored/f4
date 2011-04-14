@@ -67,8 +67,13 @@ class FanJavaContainer : IClasspathContainer
   
   private static Bool isJavaPod(File f)
   {
-    if (!f.exists) return false
-    return Zip.open(f).contents.keys.any { it.ext == "class" } 
+    if (!f.exists) return false;
+    zip := Zip.open(f)
+    try {
+      return zip.contents.keys.any { ext == "class" }
+    } finally {
+      zip.close
+    }
   }
   
   ** Dirs with jars relative to fan.home
