@@ -19,7 +19,7 @@ public class FanSemanticPositionRequestor implements
 	}
 
 	public void addPosition(int start, int end, String highlightingKey) {
-		requestor.addPosition(start, end, highlightingKey + offset);
+		requestor.addPosition(start, end, highlightingKey);
 	}
 
 }

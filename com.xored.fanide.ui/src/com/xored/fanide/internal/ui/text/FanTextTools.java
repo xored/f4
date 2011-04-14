@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.dltk.core.SimpleClassDLTKExtensionManager;
-import org.eclipse.dltk.ui.editor.highlighting.ISemanticHighlighter;
+import org.eclipse.dltk.ui.editor.highlighting.ISemanticHighlightingUpdater;
 import org.eclipse.dltk.ui.editor.highlighting.SemanticHighlighting;
 import org.eclipse.dltk.ui.text.ScriptSourceViewerConfiguration;
 import org.eclipse.dltk.ui.text.ScriptTextTools;
@@ -79,10 +79,10 @@ public class FanTextTools extends ScriptTextTools {
 		return ret;
 	}
 
-	/*@Override
-	public ISemanticHighlighter getSemanticPositionUpdater() {
+	@Override
+	public ISemanticHighlightingUpdater getSemanticPositionUpdater(String natureId) {
 		return new FanSemanticHighlighter(getExtensions());
-	}*/
+	}
 
 	private ISemanticHighlightingExtension[] getExtensions() {
 		// use new instance of extensions as they are not reentrant
