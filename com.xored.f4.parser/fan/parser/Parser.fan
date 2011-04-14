@@ -1838,6 +1838,8 @@ class Parser : AstFactory
       }
       if (found == null)
         found = currPod.findType(typeName,false)
+      if (found == null)
+        found = ns.findPod("sys")?.findType(typeName,false)
     }
     else
       p.modelPod?.findType(typeName, false)
