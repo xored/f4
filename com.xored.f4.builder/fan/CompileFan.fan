@@ -61,20 +61,20 @@ class CompileFan : IScriptBuilder
   {
     fp := fantomProject(change.getScriptProject)
     
-    //buildPod(fp)
-    allProjects := FantomProjectManager.instance.listProjects
-    projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
-    projectsToBuild.sort |FantomProject a, FantomProject b -> Int|
-    {
-      //b depends on a
-      if(allDependents(a,allProjects).contains(b)) return -1
-      //a depends on b
-      else if(allDependents(b,allProjects).contains(a)) return 1
-      return 0
-    }.each 
-    { 
-      buildPod(it) 
-    }
+    buildPod(fp)
+    //allProjects := FantomProjectManager.instance.listProjects
+    //projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
+    //projectsToBuild.sort |FantomProject a, FantomProject b -> Int|
+    //{
+    //  //b depends on a
+    //  if(allDependents(a,allProjects).contains(b)) return -1
+    //  //a depends on b
+    //  else if(allDependents(b,allProjects).contains(a)) return 1
+    //  return 0
+    //}.each 
+    //{ 
+    //  buildPod(it) 
+    //}
   }
   
   override Void clean(IScriptProject? project, IProgressMonitor? monitor)
@@ -91,27 +91,27 @@ class CompileFan : IScriptBuilder
 
   
 
-  private FantomProject[] allDependents(FantomProject project, FantomProject[] allProjects)
-  {
-    result := FantomProject[,]
-    dependents(project, allProjects).each |p|
-    {
-      result.add(p)
-      result.addAll(allDependents(p, allProjects))
-    }
-    return result.unique
-  }
+  //private FantomProject[] allDependents(FantomProject project, FantomProject[] allProjects)
+  //{
+  //  result := FantomProject[,]
+  //  dependents(project, allProjects).each |p|
+  //  {
+  //    result.add(p)
+  //    result.addAll(allDependents(p, allProjects))
+  //  }
+  //  return result.unique
+  //}
   
-  private FantomProject[] dependents(FantomProject project, FantomProject[] allProjects)
-  {
-    allProjects.findAll |FantomProject candidate ->Bool| 
-    { 
-      candidate.rawDepends.any |Depend d -> Bool| 
-      {
-        d.name == project.podName
-      }
-    }
-  }
+  //private FantomProject[] dependents(FantomProject project, FantomProject[] allProjects)
+  //{
+  //  allProjects.findAll |FantomProject candidate ->Bool| 
+  //  { 
+  //    candidate.rawDepends.any |Depend d -> Bool| 
+  //    {
+  //      d.name == project.podName
+  //    }
+  //  }
+  //}
   
   static const Str pluginId := "com.xored.f4.builder"
   **
@@ -123,19 +123,20 @@ class CompileFan : IScriptBuilder
   {
     allProjects := FantomProjectManager.instance.listProjects
     fp := fantomProject(project)
-    projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
-    projectsToBuild.sort |FantomProject a, FantomProject b -> Int|
-    {
-      //b depends on a
-      if(allDependents(a,allProjects).contains(b)) return -1
-      //a depends on b
-      else if(allDependents(b,allProjects).contains(a)) return 1
-      return 0
-    }.eachWhile 
-    { 
-      //so that we terminate build once at least one project fails
-      buildPod(it) ? null : "" 
-    }
+    buildPod(fp)
+    //projectsToBuild := [fp].addAll(allDependents(fp, allProjects))
+    //projectsToBuild.sort |FantomProject a, FantomProject b -> Int|
+    //{
+    //  //b depends on a
+    //  if(allDependents(a,allProjects).contains(b)) return -1
+    //  //a depends on b
+    //  else if(allDependents(b,allProjects).contains(a)) return 1
+    //  return 0
+    //}.eachWhile 
+    //{ 
+    //  //so that we terminate build once at least one project fails
+    //  buildPod(it) ? null : "" 
+    //}
     return Status(IStatus.OK, pluginId, "OK")
   }
   
