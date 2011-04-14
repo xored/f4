@@ -41,7 +41,7 @@ class FanSourceElementRequestVisitor : StructureVisitor
   private Bool insideMethod := false
   private Bool insideType := false
   private Bool insideField := false
-  readonly Requestor requestor
+  Requestor requestor { private set }
   
   new make(Requestor requestor)
   {

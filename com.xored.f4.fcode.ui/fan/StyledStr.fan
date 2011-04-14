@@ -13,9 +13,9 @@ using [java] org.eclipse.swt.graphics::Point
 **
 internal class StyledStr
 {
-  readonly StyledStrFragment[] fragments := [,]
-  readonly Int[] offsets := [,]
-  readonly Str:Int userKeys := [:]
+  StyledStrFragment[] fragments := [,] { private set }
+  Int[] offsets := [,] { private set }
+  Str:Int userKeys := [:] { private set }
 
   Point append(StyledStr str)
   {

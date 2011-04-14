@@ -10,7 +10,7 @@ using [java]org.eclipse.dltk.core.search.indexing::SourceIndexerRequestor as Ind
 ** 
 class FanSourceElementParser : ISourceElementParser
 {
-  readonly ISourceElementRequestor? requestor
+  ISourceElementRequestor? requestor { private set }
   
   override Void parseSourceModule(IModuleSource? module)
   {

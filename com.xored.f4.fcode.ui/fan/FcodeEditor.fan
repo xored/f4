@@ -325,8 +325,8 @@ class FcodeEditor : EditorPart, FcodeVisitor, IScriptEditor, ISelectionChangedLi
 
 internal class EditorSelectionListener : CaretListener
 {
-  readonly FcodeEditor editor
-  readonly FanOutlinePage page
+  FcodeEditor editor { private set }
+  FanOutlinePage page { private set }
 
   new make(FcodeEditor editor, FanOutlinePage page)
   {

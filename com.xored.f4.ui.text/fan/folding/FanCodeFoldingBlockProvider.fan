@@ -26,10 +26,10 @@ class FanCodeFoldingBlockProvider : IFoldingBlockProvider
   private Int minLineCount := 3
   
   override Int getMinimalLineCount() { minLineCount }
-  readonly Bool collapseClasses := false
-  readonly Bool collapseMethods := false
-  readonly Bool collapseClosures := false
-  readonly Bool collapseImports := false
+  Bool collapseClasses := false { private set }
+  Bool collapseMethods := false { private set }
+  Bool collapseClosures := false { private set }
+  Bool collapseImports := false { private set }
   
   public IFoldingBlockRequestor? getRequestor() {
     return requestor

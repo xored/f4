@@ -69,9 +69,9 @@ class Manifest
   // Public API
   //////////////////////////////////////////////////////////////////////////
   public static const Str filename := "build.fan"
-  readonly Str:Obj? vals
+  Str:Obj? vals { private set }
   ** Lines of field initializers
-  readonly Str:Int lines 
+  Str:Int lines { private set } 
   
   Str? podName() { vals["podName"] }
   

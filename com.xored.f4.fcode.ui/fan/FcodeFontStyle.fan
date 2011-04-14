@@ -90,8 +90,8 @@ internal class FcodeFontStyle
 
 internal class FontStyle
 {
-  readonly Int style
-  readonly Color clr
+  Int style { private set }
+  Color clr { private set }
 
   new make(Int style, Color clr)
   {

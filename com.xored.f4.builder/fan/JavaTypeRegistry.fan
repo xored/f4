@@ -24,7 +24,7 @@ class JavaTypeRegistry
   }
   private F4Cp cp
 
-  readonly Str:NJavaType infoCache := [:]
+  Str:NJavaType infoCache := [:] { private set }
   
   **
   ** Use the same signature as JavaReflect
