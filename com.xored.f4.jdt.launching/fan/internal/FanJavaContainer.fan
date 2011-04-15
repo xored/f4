@@ -44,8 +44,8 @@ class FanJavaContainer : IClasspathContainer
         JavaCore.newLibraryEntry(
           Path(f.normalize.osPath),
           Path((home + `src/$f.basename/java/`).toFile.osPath),
-          null
-          )
+          Path("")
+        )
       }
     
     fp := FantomProjectManager.instance[project.getProject]
@@ -57,8 +57,9 @@ class FanJavaContainer : IClasspathContainer
           JavaCore.newLibraryEntry(
             Path(loc.osPath), 
             Path((home + `src/$name/java/`).toFile.osPath), 
-            null)
+            Path("")
           )
+        )
         
       }
     }
