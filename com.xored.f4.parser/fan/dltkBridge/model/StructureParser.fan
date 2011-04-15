@@ -363,6 +363,7 @@ class StructureParser
   {
     Int start := cur.start
     Int flags := Flag.Static.or(Flag.Public).or(Flag.Const)//.or(Flag.EnumVal)
+    while (curt === Token.docComment) consume
     TokenVal name := consume
     visitor?.visitField(start, flags, typeName, name)
 
