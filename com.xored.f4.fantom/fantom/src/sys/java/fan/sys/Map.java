@@ -126,20 +126,16 @@ public final class Map
       throw NullErr.make("key is null").val;
     if (!isImmutable(key))
       throw NotImmutableErr.make("key is not immutable: " + typeof(key)).val;
-    Object old = map.put(key, value);
-    if (old != null)
-    {
-      map.put(key, old);
+    if (map.containsKey(key))
       throw ArgErr.make("Key already mapped: " + key).val;
-    }
+    map.put(key, value);
     return this;
   }
 
   public final Object getOrAdd(Object key, Func valFunc)
   {
-    Object val = map.get(key);
-    if (val != null) return val;
-    val = valFunc.call(key);
+    if (map.containsKey(key)) return map.get(key);
+    Object val = valFunc.call(key);
     add(key, val);
     return val;
   }
@@ -177,7 +173,7 @@ public final class Map
       for (int i=0; i<list.sz(); ++i)
         set(list.get(i), list.get(i));
     }
-    else if (f.params.sz() == 1)
+    else if (f.arity() == 1)
     {
       for (int i=0; i<list.sz(); ++i)
         set(f.call(list.get(i)), list.get(i));
@@ -199,7 +195,7 @@ public final class Map
       for (int i=0; i<list.sz(); ++i)
         add(list.get(i), list.get(i));
     }
-    else if (f.params.sz() == 1)
+    else if (f.arity() == 1)
     {
       for (int i=0; i<list.sz(); ++i)
         add(f.call(list.get(i)), list.get(i));

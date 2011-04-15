@@ -293,7 +293,7 @@ abstract class Expr : Node
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
-  readonly ExprId id      // expression type identifier
+  const ExprId id         // expression type identifier
   CType? ctype            // type expression resolves to
   Bool leave := true { protected set } // leave this expression on the stack
 }
@@ -888,6 +888,7 @@ class CallExpr : NameExpr
   Bool isCtorChain    // true if this is MethodDef.ctorChain call
   Bool noParens       // was this call accessed without parens
   Bool isCallOp       // was this 'target()' (instead of 'target.name()')
+  Bool isItAdd        // if using comma operator
   CMethod? method     // resolved method
   override Bool synthetic := false
 }
@@ -1699,7 +1700,8 @@ enum class ShortcutOp
   eq(2, "==", "equals"),
   cmp(2, "<=>", "compare"),
   get(2, "[]"),
-  set(3, "[]=")
+  set(3, "[]="),
+  add(2, ",")
 
   private new make(Int degree, Str symbol, Str? methodName := null)
   {
@@ -1720,9 +1722,9 @@ enum class ShortcutOp
 
   Str formatErr(CType lhs, CType rhs)
   {
-    if (this === get) return "$lhs.qname [ $rhs.qname ]"
-    if (this === set) return "$lhs.qname [ $rhs.qname ]="
-    return "$lhs.qname $symbol $rhs.qname"
+    if (this === get) return "$lhs [ $rhs ]"
+    if (this === set) return "$lhs [ $rhs ]="
+    return "$lhs $symbol $rhs"
   }
 
   const Int degree

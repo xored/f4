@@ -178,7 +178,6 @@ public final class List
     return values[i];
   }
 
-  public final List slice(Range r) { return getRange(r); }
   public final List getRange(Range r)
   {
     try
@@ -523,7 +522,7 @@ public final class List
 
   public final void each(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         f.call(values[i]);
@@ -537,7 +536,7 @@ public final class List
 
   public final void eachr(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=size-1; i>=0; --i)
         f.call(values[i]);
@@ -556,7 +555,7 @@ public final class List
     int n = e - s + 1;
     if (n < 0) throw IndexErr.make(r).val;
 
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=s; i<=e; ++i)
         f.call(values[i]);
@@ -570,7 +569,7 @@ public final class List
 
   public final Object eachWhile(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
       {
@@ -591,7 +590,7 @@ public final class List
 
   public final Object eachrWhile(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=size-1; i>=0; --i)
       {
@@ -612,7 +611,7 @@ public final class List
 
   public final Object find(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         if (f.callBool(values[i]))
@@ -629,7 +628,7 @@ public final class List
 
   public final Long findIndex(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
       {
@@ -652,7 +651,7 @@ public final class List
   public final List findAll(Func f)
   {
     List acc = new List(of, size);
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         if (f.callBool(values[i]))
@@ -682,7 +681,7 @@ public final class List
   public final List exclude(Func f)
   {
     List acc = new List(of, size);
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         if (!f.callBool(values[i]))
@@ -699,7 +698,7 @@ public final class List
 
   public final boolean any(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         if (f.callBool(values[i]))
@@ -716,7 +715,7 @@ public final class List
 
   public final boolean all(Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         if (!f.callBool(values[i]))
@@ -733,7 +732,7 @@ public final class List
 
   public final Object reduce(Object reduction, Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         reduction = f.call(reduction, values[i]);
@@ -751,7 +750,7 @@ public final class List
     Type r = f.returns();
     if (r == Sys.VoidType) r = Sys.ObjType.toNullable();
     List acc = new List(r, (int)size());
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<size; ++i)
         acc.add(f.call(values[i]));
@@ -960,6 +959,19 @@ public final class List
     int i = FanInt.random.nextInt();
     if (i < 0) i = -i;
     return values[i % size];
+  }
+
+  public final List shuffle()
+  {
+    modify();
+    for (int i=0; i<size; ++i)
+    {
+      int randi = FanInt.random.nextInt(size);
+      Object temp = values[i];
+      values[i] = values[randi];
+      values[randi] = temp;
+    }
+    return this;
   }
 
 //////////////////////////////////////////////////////////////////////////

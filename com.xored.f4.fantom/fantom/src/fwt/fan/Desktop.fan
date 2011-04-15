@@ -16,6 +16,14 @@ using gfx
 @Js
 class Desktop
 {
+  **
+  ** Set the application name for this FWT instance.  This must
+  ** be configured before any FWT objects are created.
+  **
+  ** TODO: potentially move this into new FwtApp class, also
+  **   want to handle how closing all windows works on OS X
+  **
+  @NoDoc static native Void appName(Str name)
 
   **
   ** Get the platform name: "windows", "mac"
@@ -52,6 +60,15 @@ class Desktop
   ** mutable.
   **
   static native Void callAsync(|->| f)
+
+  **
+  ** Call the specified function on the UI thread's event loop
+  ** after a timer period has expired.  If this call is being made
+  ** on a thread which is not the UI thread, then the function
+  ** must be immutable.  If on the UI thread, then it is ok for
+  ** the function to be mutable.
+  **
+  static native Void callLater(Duration delay, |->| f)
 
 //////////////////////////////////////////////////////////////////////////
 // Dispose

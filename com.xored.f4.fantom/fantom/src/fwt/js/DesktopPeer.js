@@ -21,15 +21,29 @@ fan.fwt.DesktopPeer.$isMac = navigator.userAgent.indexOf("Mac OS X") != -1;
 // TODO
 //fan.fwt.DesktopPeer.bounds()
 //fan.fwt.DesktopPeer.focus()
-//fan.fwt.DesktopPeer.callAsync(|->| f)
+
+fan.fwt.DesktopPeer.callAsync = function(f)
+{
+  fan.fwt.DesktopPeer.callLater(fan.sys.Duration.m_defVal, f);
+}
+
+fan.fwt.DesktopPeer.callLater = function(delay, f)
+{
+  var func = function() { f.call() }
+  setTimeout(func, delay.toMillis());
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Dispose
 //////////////////////////////////////////////////////////////////////////
 
-//fan.fwt.DesktopPeer.disposeColor(Color c)
-//fan.fwt.DesktopPeer.disposeFont(Font f)
-//fan.fwt.DesktopPeer.disposeImage(Image i)
+fan.fwt.DesktopPeer.disposeColor = function(fanColor) {}
+fan.fwt.DesktopPeer.disposeFont = function(fanFont) {}
+fan.fwt.DesktopPeer.disposeImage = function(fanImg)
+{
+  // remove image from cache to allow GC free it
+  fan.fwt.FwtEnvPeer.imgCache[fanImg.m_uri.toStr()] = null
+}
 
 //////////////////////////////////////////////////////////////////////////
 // System Fonts

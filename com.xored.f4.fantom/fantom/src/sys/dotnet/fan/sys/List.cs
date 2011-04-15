@@ -169,7 +169,7 @@ namespace Fan.Sys
       return m_values[i];
     }
 
-    public List slice(Range r)
+    public List getRange(Range r)
     {
       try
       {
@@ -504,7 +504,7 @@ namespace Fan.Sys
 
     public void each(Func f)
     {
-      if (f.m_params.sz() == 1)
+      if (f.arity() == 1)
       {
         for (int i=0; i<m_size; i++)
           f.call(m_values[i]);
@@ -518,7 +518,7 @@ namespace Fan.Sys
 
     public void eachr(Func f)
     {
-      if (f.m_params.sz() == 1)
+      if (f.arity() == 1)
       {
         for (int i=m_size-1; i>=0; i--)
           f.call(m_values[i]);
@@ -537,7 +537,7 @@ namespace Fan.Sys
       int n = e - s + 1;
       if (n < 0) throw IndexErr.make(r).val;
 
-      if (f.m_params.sz() == 1)
+      if (f.arity() == 1)
       {
         for (int i=s; i<=e; ++i)
           f.call(m_values[i]);
@@ -873,6 +873,20 @@ namespace Fan.Sys
       int i = (int)FanInt.random();
       if (i < 0) i = -i;
       return m_values[i % m_size];
+    }
+
+    public List shuffle()
+    {
+      modify();
+      for (int i=0; i<m_size; ++i)
+      {
+        int randi = (int)FanInt.random() % m_size;
+        if (randi < 0) randi = -randi;
+        object temp = m_values[i];
+        m_values[i] = m_values[randi];
+        m_values[randi] = temp;
+      }
+      return this;
     }
 
   //////////////////////////////////////////////////////////////////////////

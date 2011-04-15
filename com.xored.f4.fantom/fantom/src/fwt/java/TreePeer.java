@@ -56,6 +56,8 @@ public class TreePeer
     t.addSelectionListener(this);
     t.setMenu(new Menu(t));
 
+    if (self.bg != null) t.setBackground(Fwt.get().color(self.bg));
+
     ScrollBar hbar = t.getHorizontalBar();
     ScrollBar vbar = t.getVerticalBar();
     if (hbar != null) ((ScrollBarPeer)self.hbar().peer).attachToScrollable(t, hbar);
@@ -64,7 +66,7 @@ public class TreePeer
     if (Fwt.isWindows())
     {
       // don't use dotted lines because they offend Andy's sense of taste
-      Fwt.osSet(t, Fwt.os("GWL_STYLE"), Fwt.osGet(t, Fwt.os("GWL_STYLE")) ^ Fwt.os("TVS_HASLINES"));
+      // Fwt.osSet(t, Fwt.os("GWL_STYLE"), Fwt.osGet(t, Fwt.os("GWL_STYLE")) ^ Fwt.os("TVS_HASLINES"));
     }
 
     this.control = t;
@@ -115,6 +117,19 @@ public class TreePeer
     TreeItem item = item(node);
     if (item == null) return;
     c.select(item);
+  }
+
+  public boolean isExpanded(fan.fwt.Tree self, Object node)
+  {
+    Tree c = (Tree)this.control;
+
+    TreeModel model = model();
+    if (model == null) return false;
+
+    TreeItem item = item(node);
+    if (item == null) return false;
+
+    return item.getExpanded();
   }
 
   public void setExpanded(fan.fwt.Tree self, Object node, boolean expanded)

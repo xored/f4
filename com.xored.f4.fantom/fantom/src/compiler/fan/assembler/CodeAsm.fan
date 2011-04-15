@@ -1224,14 +1224,20 @@ class CodeAsm : CompilerSupport
     op(FOp.LoadStr, fpod.strs.add(call.name))
 
     // args Obj[]
-    // TODO: don't need to create whole new Obj[] when no arguments
-    op(FOp.LoadInt,  fpod.ints.add(call.args.size))
-    op(FOp.CallNew,  fpod.addMethodRef(ns.listMakeObj))
-    add := fpod.addMethodRef(ns.listAdd)
-    call.args.each |Expr arg|
+    if (call.args.isEmpty)
     {
-      expr(arg)
-      op(FOp.CallVirtual, add)
+      op(FOp.LoadNull)
+    }
+    else
+    {
+      op(FOp.LoadInt,  fpod.ints.add(call.args.size))
+      op(FOp.CallNew,  fpod.addMethodRef(ns.listMakeObj))
+      add := fpod.addMethodRef(ns.listAdd)
+      call.args.each |Expr arg|
+      {
+        expr(arg)
+        op(FOp.CallVirtual, add)
+      }
     }
 
     // Obj.trap
@@ -1448,8 +1454,11 @@ class CodeAsm : CompilerSupport
         op(FOp.StoreVar, c.tempVar.register)
     }
 
-    // if we have a coercion then uncoerce
+    // if we have a coercion then uncoerce,
+    // otherwise perform coerce to ensure we
+    // have right type to store back to variable
     if (coerce != null) coerceOp(coerce.check, var.ctype)
+    else coerceOp(c.ctype, var.ctype)
 
     // save the variable back
     switch (var.id)
@@ -1621,12 +1630,14 @@ class CodeAsm : CompilerSupport
   **
   private Void line(Loc loc)
   {
-    line := loc.line
-    if (line == null || lastLine == line) return
+    line   := loc.line
+    offset := code.size
+    if (line == null || lastLine == line || lastOffset == offset) return
     lineCount++
-    lines.writeI2(code.size)
+    lines.writeI2(offset)
     lines.writeI2(line)
     lastLine = line
+    lastOffset = offset
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1642,6 +1653,7 @@ class CodeAsm : CompilerSupport
   Buf lines
   Int lineCount
   Int lastLine := -1
+  Int lastOffset := -1
   Loop[] loopStack
 
   // protected region fields

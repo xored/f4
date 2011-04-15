@@ -17,12 +17,19 @@ import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.events.PaintEvent;
 
 public class FwtGraphics implements Graphics
 {
-  public FwtGraphics(GC gc)
+  public FwtGraphics(PaintEvent e)
+  {
+    this(e.gc, e.x, e.y, e.width, e.height);
+  }
+
+  public FwtGraphics(GC gc, int x, int y, int w, int h)
   {
     this.gc = gc;
+    clip(Rect.make(x, y, w, h));
   }
 
   public Brush brush()
@@ -293,6 +300,11 @@ public class FwtGraphics implements Graphics
     Rectangle b = WidgetPeer.rect(r);
     gc.setClipping(a.intersection(b));
     return this;
+  }
+
+  public Rect clipBounds()
+  {
+   return WidgetPeer.rect(gc.getClipping());
   }
 
   public void dispose()

@@ -208,9 +208,6 @@ const final class Str
   **
   @Operator Str getRange(Range range)
 
-  ** TODO: use `getRange`
-  @Deprecated Str slice(Range range)
-
   **
   ** Concat the value of obj.toStr
   **
@@ -250,8 +247,8 @@ const final class Str
   ** this string.  If this string is empty, return false.
   **
   ** Example:
-  **   "Foo".any |Int c->Bool| { return c.isUpper } => true
-  **   "foo".any |Int c->Bool| { return c.isUpper } => false
+  **   "Foo".any |c| { c.isUpper } => true
+  **   "foo".any |c| { c.isUpper } => false
   **
   Bool any(|Int ch, Int index->Bool| c)
 
@@ -260,8 +257,8 @@ const final class Str
   ** this string.  If this string is empty, return true.
   **
   ** Example:
-  **   "Bar".all |Int c->Bool| { return c.isUpper } => false
-  **   "BAR".any |Int c->Bool| { return c.isUpper } => true
+  **   "Bar".all |c| { c.isUpper } => false
+  **   "BAR".all |c| { c.isUpper } => true
   **
   Bool all(|Int ch, Int index->Bool| c)
 
@@ -624,8 +621,8 @@ const final class Str
 
   **
   ** Create an input stream to read characters from the this string.
-  ** If binary reads are made from the string, then each character
-  ** is read as a one byte ASCII char.
+  ** The input stream is designed only to read character data.  Attempts
+  ** to perform binary reads will throw UnsupportedErr.
   **
   InStream in()
 

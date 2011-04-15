@@ -93,7 +93,7 @@ abstract class AbstractMain
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Get all the fields annotated with the '@arg' facet.
+  ** Get all the fields annotated with the [@Arg]`Arg` facet.
   **
   virtual Field[] argFields()
   {
@@ -101,7 +101,7 @@ abstract class AbstractMain
   }
 
   **
-  ** Get all the fields annotated with the '@opt' facet.
+  ** Get all the fields annotated with the [@Opt]`Opt` facet.
   **
   virtual Field[] optFields()
   {
@@ -328,13 +328,22 @@ abstract class AbstractMain
   **   1. call install on each service
   **   2. call start on each service
   **   3. put main thread to sleep.
+  **   4. on shutodwn call stop on each service
+  **   5. then call uninstall on each service
   **
   virtual Int runServices(Service[] services)
   {
+    Env.cur.addShutdownHook |->| { shutdownServices }
     services.each |Service s| { s.install }
     services.each |Service s| { s.start }
     Actor.sleep(Duration.maxVal)
     return 0
+  }
+
+  private static Void shutdownServices()
+  {
+    Service.list.each |Service s| { s.stop }
+    Service.list.each |Service s| { s.uninstall }
   }
 
 //////////////////////////////////////////////////////////////////////////

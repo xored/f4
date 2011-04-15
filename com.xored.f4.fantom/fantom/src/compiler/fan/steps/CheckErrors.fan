@@ -533,6 +533,9 @@ class CheckErrors : CompilerStep
     if (prefix == null) { err("Operator method '$m.name' has invalid name", m.loc); return }
     op := ShortcutOp.fromPrefix(prefix)
 
+    if (m.name == "add" && !m.returnType.isThis && !isSys)
+      err("Operator method '$m.name' must return This", m.loc)
+
     if (m.returnType.isVoid && op !== ShortcutOp.set)
       err("Operator method '$m.name' cannot return Void", m.loc)
 
@@ -1208,12 +1211,21 @@ class CheckErrors : CompilerStep
     if (call.target != null && !call.isCompare && !call.isSafe && !call.method.isStatic)
     {
       if (call.target.ctype.isVal || call.method.parent.isVal)
-        call.target = coerce(call.target, call.method.parent) |->| {}
+      {
+        call.target = coerce(call.target, call.method.parent) |->|
+        {
+          err("Cannot coerce '$call.target.ctype' to '$call.method.parent'", call.target.loc)
+        }
+      }
     }
 
     // ensure call operator target() not used on non-function types
     if (call.isCallOp && !call.target.ctype.isFunc)
       err("Cannot use () call operator on non-func type '$call.target.ctype'", call.target.loc)
+
+    // ensure @Operator when using add as it-block comma operator
+    if (call.isItAdd && !call.method.hasFacet("sys::Operator"))
+      err("Missing Operator facet: $call.method.qname", call.loc)
   }
 
   private Void checkField(FieldExpr f)
@@ -1361,16 +1373,9 @@ class CheckErrors : CompilerStep
     if (!check.fits(target) && !target.fits(check) && !check.isMixin && !target.isMixin)
       err("Inconvertible types '$target' and '$check'", expr.loc)
 
-    // don't allow is, as, isnot (everything but coerce) to be
-    // used with value type expressions
-    if (expr.id != ExprId.coerce)
-    {
-      if (target.isVal)
-      {
-        err("Cannot use '$expr.opStr' operator on value type '$target'", expr.loc)
-        return
-      }
-    }
+    // box value types for is, as, isnot (everything but coerce)
+    if (expr.id != ExprId.coerce && target.isVal)
+      expr.target = box(expr.target)
 
     // don't allow as with nullable
     if (expr.id === ExprId.asExpr && check.isNullable)

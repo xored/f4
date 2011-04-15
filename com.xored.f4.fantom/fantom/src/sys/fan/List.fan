@@ -130,9 +130,6 @@ final class List
   **
   @Operator L getRange(Range range)
 
-  ** TODO: use `getRange`
-  @Deprecated L slice(Range range)
-
   **
   ** Return if this list contains the specified item.
   ** Equality is determined by `Obj.equals`.  This method is readonly safe.
@@ -206,7 +203,7 @@ final class List
   ** an index of size.  Size is incremented by 1.  Return this.  Throw
   ** ReadonlyErr if readonly.
   **
-  L add(V item)
+  @Operator L add(V item)
 
   **
   ** Add all the items in the specified list to the end of this list.
@@ -619,9 +616,16 @@ final class List
 
   **
   ** Return a random item from the list.  If the list is empty
-  ** return null.  This method is readonly safe.  See `Int.random`.
+  ** return null.  This method is readonly safe.  Also see
+  ** `Int.random`, `Float.random`, `Range.random`, and `util::Random`.
   **
   V? random()
+
+  **
+  ** Shuffle this list's items into a randomized order.
+  ** Return this.  Throw ReadonlyErr if readonly.
+  **
+  L shuffle()
 
 //////////////////////////////////////////////////////////////////////////
 // Conversion

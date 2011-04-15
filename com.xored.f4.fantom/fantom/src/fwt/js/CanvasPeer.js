@@ -48,14 +48,8 @@ fan.fwt.CanvasPeer.prototype.sync = function(self)
 
     // repaint canvas using Canvas.onPaint callback
     var g = new fan.fwt.Graphics();
-    g.size = this.m_size;
-    g.cx = c.getContext("2d");
-    g.cx.lineWidth = 1;
-    g.cx.lineCap = "square";
-    g.cx.textBaseline = "top";
-    g.cx.font = fan.fwt.WidgetPeer.fontToCss(fan.fwt.DesktopPeer.$sysFont);
-    g.cx.clearRect(0, 0, this.m_size.m_w, this.m_size.m_h);
-    self.onPaint(g);
+    g.widget = self;
+    g.paint(c, self.bounds(), function() { self.onPaint(g) })
   }
   else
   {

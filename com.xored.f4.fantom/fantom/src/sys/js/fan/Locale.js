@@ -56,7 +56,7 @@ fan.sys.Locale.prototype.$ctor = function(str, lang, country)
 
 fan.sys.Locale.cur = function()
 {
-  if (fan.sys.Locale.$cur == null) fan.sys.Locale.$cur = fan.sys.Locale.fromStr("en");
+  if (fan.sys.Locale.$cur == null) fan.sys.Locale.$cur = fan.sys.Locale.fromStr("en-US");
   return fan.sys.Locale.$cur;
 }
 
@@ -102,3 +102,18 @@ fan.sys.Locale.prototype.equals = function(obj)
 
 fan.sys.Locale.prototype.toStr = function() { return this.m_str; }
 
+fan.sys.Locale.prototype.monthByName = function(name)
+{
+  if (this.m_monthsByName == null)
+  {
+    var map = {};
+    for (var i=0; i<fan.sys.Month.m_vals.size(); ++i)
+    {
+      var m = fan.sys.Month.m_vals.get(i);
+      map[fan.sys.Str.lower(m.abbr(this))] = m;
+      map[fan.sys.Str.lower(m.full(this))] = m;
+    }
+    this.m_monthsByName = map;
+  }
+  return this.m_monthsByName[name];
+}

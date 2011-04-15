@@ -14,13 +14,13 @@ using gfx
 **
 @Js
 @Serializable { collection = true }
-class BorderPane : Pane
+class BorderPane : ContentPane
 {
   **
   ** Border to paint around the edge of the content.
   ** Default is zero pixels.
   **
-  Border border := Border("0")
+  Border border := Border.defVal
 
   **
   ** Background to paint under content, or null for transparent.
@@ -34,21 +34,6 @@ class BorderPane : Pane
   ** Default is zero pixels.
   **
   Insets insets := Insets(0,0,0,0)
-
-  **
-  ** The content child widget.
-  **
-  Widget? content { set { remove(&content); Widget.super.add(it); &content = it} }
-
-  **
-  ** If this the first widget added, then assume it the content.
-  **
-  override This add(Widget? child)
-  {
-    if (&content == null) &content=child
-    super.add(child)
-    return this
-  }
 
   override Size prefSize(Hints hints := Hints.defVal)
   {

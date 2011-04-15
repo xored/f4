@@ -252,8 +252,9 @@ Depending on how it is used, the '[]' operator maps to three different shortcuts
 
 Typically 'a[b]' is a shortcut for calling 'a.get(b)'.  For example the
 `sys::List.get` method allows you to lookup a list item by it's 'Int'
-index.  Whenever a class supports a 'get' operator method you can
-use '[]' as a shortcut.  Consider this code:
+index.  Whenever a class supports a 'get' operator method which is
+annotated with the '@Operator' facet you can use '[]' as a shortcut.
+Consider this code:
 
   list := ["a", "b", "c"]
   list.get(2)
@@ -373,18 +374,19 @@ method called "add".  Any expression inside an it-block suffixed with a
 comma is assumed to be a call to 'it.add':
 
   a,       =>  it.add(a)
-  a, b,    =>  it.add(a).add(b)
+  a, b     =>  it.add(a).add(b)
   a, b, c  =>  it.add(a).add(b).add(c)
 
 Note the comma operator chains the calls to 'add', therefore the 'add'
-method must return a chainable type (typically 'This').
+method must be annotated with the '@Operator' facet and return the
+chainable type 'This'.
 
 Here is an FWT example:
 
   Menu
   {
     text = "File"
-    MenuItem { text = "Open"; onSelect=#open.func } },
+    MenuItem { text = "Open"; onSelect=#open.func },
     MenuItem { text = "Save"; onSelect=#save.func },
   }
 

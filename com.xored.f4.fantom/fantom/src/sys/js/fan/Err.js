@@ -115,7 +115,8 @@ fan.sys.Err.make = function(err, cause)
   {
     var m = err.message;
     if (m.indexOf(" from null") != -1) return fan.sys.NullErr.make(m, cause);
-
+    if (m.indexOf(" of null")   != -1) return fan.sys.NullErr.make(m, cause);
+    
     // TODO
     //  EvalError
     //  RangeError
@@ -166,7 +167,7 @@ fan.sys.FieldNotSetErr.make = function(msg, cause) { return new fan.sys.FieldNot
 fan.sys.IndexErr = fan.sys.Obj.$extend(fan.sys.Err);
 fan.sys.IndexErr.prototype.$ctor = function(msg, cause) { fan.sys.Err.prototype.$ctor.call(this, msg, cause); }
 fan.sys.IndexErr.prototype.$typeof = function() { return fan.sys.IndexErr.$type; }
-fan.sys.IndexErr.make = function(msg, cause) { return new fan.sys.IndexErr(msg, cause); }
+fan.sys.IndexErr.make = function(msg, cause) { return new fan.sys.IndexErr(""+msg, cause); }
 
 // InterruptedErr
 fan.sys.InterruptedErr = fan.sys.Obj.$extend(fan.sys.Err);

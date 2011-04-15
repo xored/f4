@@ -14,8 +14,28 @@ fan.fwt.Graphics = fan.sys.Obj.$extend(fan.sys.Obj);
 
 fan.fwt.Graphics.prototype.$ctor = function() {}
 
+fan.fwt.Graphics.prototype.widget = null;
 fan.fwt.Graphics.prototype.size = null;
 fan.fwt.Graphics.prototype.cx = null;
+fan.fwt.Graphics.prototype.m_clip = null;
+
+// canvas - <canvas> element
+// bounds - fan.gfx.Rect
+// f - JS function(fan.fwt.Graphics)
+fan.fwt.Graphics.prototype.paint = function(canvas, bounds, f)
+{
+  this.size = bounds.size();
+  this.m_clip = bounds;
+  this.cx = canvas.getContext("2d");
+  this.cx.save();
+  this.cx.lineWidth = 1;
+  this.cx.lineCap = "square";
+  this.cx.textBaseline = "top";
+  this.cx.font = fan.fwt.WidgetPeer.fontToCss(fan.fwt.DesktopPeer.$sysFont);
+  this.cx.clearRect(bounds.m_x, bounds.m_y, bounds.m_w, bounds.m_h);
+  f(this);
+  this.cx.restore();
+}
 
 // Brush brush
 fan.fwt.Graphics.prototype.m_brush = null
@@ -37,10 +57,10 @@ fan.fwt.Graphics.prototype.brush$  = function(b)
     var y2 = b.m_y2;
 
     // handle percent
-    if (b.m_x1Unit.m_symbol == "%") x1 = this.size.m_w * (x1 / 100);
-    if (b.m_y1Unit.m_symbol == "%") y1 = this.size.m_h * (y1 / 100);
-    if (b.m_x2Unit.m_symbol == "%") x2 = this.size.m_w * (x2 / 100);
-    if (b.m_y2Unit.m_symbol == "%") y2 = this.size.m_h * (y2 / 100);
+    if (b.m_x1Unit.symbol() == "%") x1 = this.size.m_w * (x1 / 100);
+    if (b.m_y1Unit.symbol() == "%") y1 = this.size.m_h * (y1 / 100);
+    if (b.m_x2Unit.symbol() == "%") x2 = this.size.m_w * (x2 / 100);
+    if (b.m_y2Unit.symbol() == "%") y2 = this.size.m_h * (y2 / 100);
 
     // add stops
     var style = this.cx.createLinearGradient(x1, y1, x2, y2);
@@ -215,14 +235,42 @@ fan.fwt.Graphics.prototype.fillOval = function(x, y, w, h)
 // This drawArc(Int x, Int y, Int w, Int h, Int startAngle, Int arcAngle)
 fan.fwt.Graphics.prototype.drawArc = function(x, y, w, h, startAngle, arcAngle)
 {
-  // TODO
+  // TODO FIXIT: support for elliptical arc curves
+  var cx  = x + (w/2);
+  var cy  = y + (h/2);
+  var rad = Math.min(w/2, h/2);
+  var sa  = Math.PI / 180 * startAngle;
+  var ea  = Math.PI / 180 * (startAngle + arcAngle);
+
+  this.cx.beginPath();
+  this.cx.arc(cx, cy, rad, -sa, -ea, true);
+  this.cx.stroke();
   return this;
 }
 
 // This fillArc(Int x, Int y, Int w, Int h, Int startAngle, Int arcAngle)
 fan.fwt.Graphics.prototype.fillArc = function(x, y, w, h, startAngle, arcAngle)
 {
-  // TODO
+  // TODO FIXIT: support for elliptical arc curves
+  var cx = x + (w/2);
+  var cy = y + (h/2);
+  var radius = Math.min(w/2, h/2);
+
+  var startRads = Math.PI / 180 * startAngle;
+  var x1 = cx + (Math.cos(-startRads) * radius);
+  var y1 = cy + (Math.sin(-startRads) * radius);
+
+  var endRads = Math.PI / 180 * (startAngle + arcAngle);
+  var x2 = cx + (Math.cos(-endRads) * radius);
+  var y2 = cy + (Math.sin(-endRads) * radius);
+
+  this.cx.beginPath();
+  this.cx.moveTo(cx, cy);
+  this.cx.lineTo(x1, y1);
+  this.cx.arc(cx, cy, radius, -startRads, -endRads, true);
+  this.cx.lineTo(x2, y2);
+  this.cx.closePath();
+  this.cx.fill();
   return this;
 }
 
@@ -236,7 +284,7 @@ fan.fwt.Graphics.prototype.drawText = function (s, x, y)
 // This drawImage(Image image, Int x, Int y)
 fan.fwt.Graphics.prototype.drawImage = function (fanImg, x, y)
 {
-  var jsImg = fan.fwt.FwtEnvPeer.loadImage(fanImg);
+  var jsImg = fan.fwt.FwtEnvPeer.loadImage(fanImg, this.widget);
   if (jsImg.width > 0 && jsImg.height > 0)
     this.cx.drawImage(jsImg, x, y)
   return this;
@@ -261,6 +309,7 @@ fan.fwt.Graphics.prototype.translate = function (x, y)
 // This clip(Rect r)
 fan.fwt.Graphics.prototype.clip = function (rect)
 {
+  this.m_clip = this.m_clip.intersection(rect);
   this.cx.beginPath();
   this.cx.moveTo(rect.m_x, rect.m_y);
   this.cx.lineTo(rect.m_x+rect.m_w, rect.m_y);
@@ -269,6 +318,12 @@ fan.fwt.Graphics.prototype.clip = function (rect)
   this.cx.closePath();
   this.cx.clip();
   return this
+}
+
+// Rect clipBounds()
+fan.fwt.Graphics.prototype.clipBounds = function ()
+{
+  return this.m_clip;
 }
 
 // Void push()
@@ -281,6 +336,7 @@ fan.fwt.Graphics.prototype.push = function ()
   state.font      = this.m_font;
   state.antialias = this.m_antialias;
   state.alpha     = this.m_alpha;
+  state.clip      = this.m_clip;
   this.stack.push(state);
 }
 
@@ -294,6 +350,7 @@ fan.fwt.Graphics.prototype.pop = function ()
   this.m_font      = state.font;
   this.m_antialias = state.antialias;
   this.m_alpha     = state.alpha;
+  this.m_clip      = state.clip;
 }
 
 // Void dispose()

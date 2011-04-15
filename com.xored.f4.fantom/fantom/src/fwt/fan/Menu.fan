@@ -32,7 +32,7 @@ class Menu : MenuItem
   ** Event fields:
   **   - none
   **
-  @Transient readonly EventListeners onOpen:= EventListeners()
+  @Transient EventListeners onOpen:= EventListeners() { private set }
 
   **
   ** Open this menu as a popup at the coordinates relative to
@@ -61,7 +61,7 @@ class Menu : MenuItem
     add(item)
   }
 
-  override This add(Widget? kid)
+  @Operator override This add(Widget? kid)
   {
     if (kid isnot MenuItem)
       throw ArgErr("Child of Menu must be MenuItem, not ${Type.of(kid)}")

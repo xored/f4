@@ -33,6 +33,12 @@ fan.sys.Type.prototype.$ctor = function(qname, base, mixins, flags)
     this.m_mixins = acc.ro();
   }
 
+  // facets
+  if (fan.sys.Facet.$type != null)
+  {
+    this.m_facets = fan.sys.Facet.$type.emptyList();
+  }
+
   var s = qname.split("::");
   this.m_qname    = qname;
   this.m_pod      = fan.sys.Pod.find(s[0]);
@@ -207,9 +213,10 @@ fan.sys.Type.prototype.field = function(name, checked)
 }
 
 // addMethod
-fan.sys.Type.prototype.$am = function(name, flags, params)
+fan.sys.Type.prototype.$am = function(name, flags, returns, params)
 {
-  var m = new fan.sys.Method(this, name, flags, params);
+  var r = fanx_TypeParser.load(returns);
+  var m = new fan.sys.Method(this, name, flags, r, params);
   this.m_slots[name] = m;
   return this;
 }
@@ -290,6 +297,18 @@ fan.sys.Type.checkMixin = function(mixin, that)
     if (fan.sys.Type.checkMixin(m[i], that))
       return true;
   return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Facets
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.Type.prototype.facets = function() { return this.m_facets; }
+fan.sys.Type.prototype.hasFacet = function(type) { return false; }
+fan.sys.Type.prototype.facet = function(type, checked)
+{
+  if (checked === undefined) checked = true;
+  return null;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -549,8 +568,12 @@ fan.sys.FuncType = fan.sys.Obj.$extend(fan.sys.Type);
 
 fan.sys.FuncType.prototype.$ctor = function(params, ret)
 {
-  this.params = params;
-  this.ret = ret;
+  this.m_pod    = fan.sys.Pod.find("sys");
+  this.m_name   = "Func";
+  this.m_qname  = "sys::Func";
+  this.m_base   = fan.sys.Obj.$type;
+  this.params   = params;
+  this.ret      = ret;
   this.m_mixins = [];
 }
 
@@ -608,5 +631,11 @@ fan.sys.FuncType.prototype.as = function(that)
 {
   // TODO FIXIT
   return that;
+}
+
+fan.sys.FuncType.prototype.toNullable = function()
+{
+  if (this.m_nullable == null) this.m_nullable = new fan.sys.NullableType(this);
+  return this.m_nullable;
 }
 

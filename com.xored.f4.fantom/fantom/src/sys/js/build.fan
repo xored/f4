@@ -119,7 +119,7 @@ class Build : BuildScript
           params.add("new fan.sys.Param('$p.name','$p.paramType.signature',$p.hasDefault)")
         }
         params.add("])")
-        out.print(".\$am('$m.name',${m->flags},$params)")
+        out.print(".\$am('$m.name',${m->flags},'${m.returnType.signature}',$params)")
       }
       out.printLine(";")
     }
@@ -136,6 +136,7 @@ class Build : BuildScript
     append(sys + `ObjUtil.js`, out)
     append(sys + `Sha1.js`, out)
     append(sys + `StrInStream.js`, out)
+    append(sys + `DateTimeStr.js`, out)
     append(sys + `staticInit.js`, out)
   }
 

@@ -123,7 +123,7 @@ fan.fwt.LabelPeer.prototype.rebuild = function(self)
     imgElem.src = fan.fwt.WidgetPeer.uriToImageSrc(this.m_image.m_uri);
 
     var imgSize = this.$imageSize();
-    if (imgSize != null) 
+    if (imgSize != null)
     {
       imgElem.style.width  = imgSize.m_w  + "px";
       imgElem.style.height = imgSize.m_h + "px";
@@ -157,7 +157,8 @@ fan.fwt.LabelPeer.prototype.rebuild = function(self)
     {
       text.style.overflow = "hidden";
       text.style.textOverflow = "ellipsis";
-    }    
+      text.title = this.m_text;
+    }
     text.style.display = "inline-block";
     text.style.position = "relative";
     text.style.top = "-1px";
@@ -194,14 +195,27 @@ fan.fwt.LabelPeer.prototype.rebuild = function(self)
 
   // override style
   var override = this.$style(self);
-  if (override != null && text != null)
+  if (override != null)
   {
-    s = text.style;
-    for (var k in override.keyMap)
+    if (img != null)
     {
-      var key = override.keyMap[k];
-      var val = override.valMap[k];
-      s.setProperty(key, val, "");
+      s = img.style;
+      for (var k in override.keyMap)
+      {
+        var key = override.keyMap[k];
+        var val = override.valMap[k];
+        s.setProperty(key, val, "");
+      }
+    }
+    if (text != null)
+    {
+      s = text.style;
+      for (var k in override.keyMap)
+      {
+        var key = override.keyMap[k];
+        var val = override.valMap[k];
+        s.setProperty(key, val, "");
+      }
     }
   }
 }
@@ -221,5 +235,6 @@ fan.fwt.LabelPeer.prototype.$style = function(self) { return null; }
 // Backdoor hook to reuse Label for hyperlinks
 // { uri:<encoded-uri>, underline:<css-underline>" }
 fan.fwt.LabelPeer.prototype.$uri = function(self) { return null; }
+
 
 

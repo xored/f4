@@ -217,12 +217,14 @@ public class Parser : CompilerSupport
     // start class body
     consume(Token.lbrace)
 
+    // open current type
+    curType = def
+    closureCount = 0
+
     // if enum, parse values
     if (isEnum) enumDefs(def)
 
     // slots
-    curType = def
-    closureCount = 0
     while (true)
     {
       doc = this.doc
@@ -239,6 +241,8 @@ public class Parser : CompilerSupport
         def.addSlot(slot)
       }
     }
+
+    // close cur type
     closureCount = null
     curType = null
 
@@ -325,6 +329,14 @@ public class Parser : CompilerSupport
   **
   private Void enumDefs(TypeDef def)
   {
+    // create static$init to wrap enums in case
+    // they have closures
+    sInit := MethodDef.makeStaticInit(def.loc, def, null)
+    sInit.code = Block(def.loc)
+    def.addSlot(sInit)
+    curSlot = sInit
+
+    // parse each enum def
     ordinal := 0
     def.enumDefs.add(enumDef(ordinal++))
     while (curt === Token.comma)
@@ -336,6 +348,9 @@ public class Parser : CompilerSupport
       def.enumDefs.add(enumDef)
     }
     endOfStmt
+
+    // clear static$init scope
+    curSlot = null
   }
 
   **
@@ -501,13 +516,19 @@ public class Parser : CompilerSupport
       genSyntheticGet(field)
     }
 
-    // readonly is syntatic sugar for { private set }
+    // TODO readonly is syntatic sugar for { private set }
     if (flags.and(Readonly) != 0)
     {
       if (field.isConst)
+      {
         err("Invalid combination of 'readonly' and 'const' modifiers", loc)
+      }
       else
+      {
+        // TODO
+        warn("'readonly' is deprecated, use '{ private set }'", loc)
         field.set.flags = field.set.flags.and(ProtectionMask).or(FConst.Private)
+      }
     }
 
     endOfStmt
@@ -891,6 +912,8 @@ public class Parser : CompilerSupport
     // report error
     if (id != null && curt === Token.identifier && (peekt === Token.defAssign || peekt === Token.assign))
       throw err("Unknown type '$id' for local declaration", loc)
+    else if (id == null && curt === Token.defAssign)
+      throw err("Left hand side of ':=' must be identifier", loc)
     else
       throw err("Expected expression statement", loc)
   }
@@ -901,7 +924,7 @@ public class Parser : CompilerSupport
   **
   private Expr itAdd(Expr e)
   {
-    e = CallExpr(e.loc, ItExpr(cur), "add") { args.add(e) }
+    e = CallExpr(e.loc, ItExpr(cur), "add") { args.add(e); isItAdd = true }
     while (true)
     {
       consume(Token.comma)
@@ -1200,6 +1223,9 @@ public class Parser : CompilerSupport
       condition := expr
       consume(Token.question)
       trueExpr := ifExprBody
+      // nice error checking for Foo? x :=
+      if (curt === Token.defAssign && expr.id === ExprId.unknownVar && trueExpr.id === ExprId.unknownVar)
+        throw err("Unknown type '$expr' for local declaration", expr.loc)
       consume(Token.colon)
       falseExpr := ifExprBody
       expr = TernaryExpr(condition, trueExpr, falseExpr)
@@ -1777,6 +1803,10 @@ public class Parser : CompilerSupport
   {
     loc := cur
     consume(Token.lbracket)
+
+    // nice error for BadType[,]
+    if (curt === Token.comma && target.id === ExprId.unknownVar)
+      throw err("Unknown type '$target' for list literal", target.loc)
 
     // otherwise this must be a standard single key index
     expr := expr

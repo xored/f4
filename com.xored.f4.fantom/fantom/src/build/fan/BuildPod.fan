@@ -105,11 +105,26 @@ abstract class BuildPod : BuildScript
   **
   Uri? dependsDir := null
 
+  ** Deprecated - TODO
+  @Deprecated { msg = "Use outPodDir" }
+  Uri outDir
+  {
+    get { outPodDir }
+    set { outPodDir = it }
+  }
+
   **
-  ** Directory to write pod file.  By default it goes into
+  ** Directory to output pod file.  By default it goes into
   ** "{Env.cur.workDir}/lib/fan/"
   **
-  Uri outDir := Env.cur.workDir.plus(`lib/fan/`).uri
+  Uri outPodDir := Env.cur.workDir.plus(`lib/fan/`).uri
+
+  **
+  ** Directory to output documentation (docs always get placed in sub-directory
+  ** named by pod).  By default it goes into
+  ** "{Env.cur.workDir}/doc/"
+  **
+  Uri outDocDir := Env.cur.workDir.plus(`doc/`).uri
 
 //////////////////////////////////////////////////////////////////////////
 // Validate
@@ -184,7 +199,7 @@ abstract class BuildPod : BuildScript
     ci.log         = log
     ci.includeDoc  = docApi
     ci.mode        = CompilerInputMode.file
-    ci.outDir      = outDir.toFile
+    ci.outDir      = outPodDir.toFile
     ci.output      = CompilerOutputMode.podFile
 
     if (dependsDir != null)
@@ -216,7 +231,7 @@ abstract class BuildPod : BuildScript
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Compile native Java jar file if podJavaDirs is configured
+  ** Compile Java class files if javaDirs is configured
   **
   virtual Void compileJava()
   {
@@ -232,39 +247,33 @@ abstract class BuildPod : BuildScript
     jdk      := JdkTask(this)
     javaExe  := jdk.javaExe
     jarExe   := jdk.jarExe
-    libJava  := devHomeDir + `lib/java/`
+    sysJar   := devHomeDir + `lib/java/sys.jar`
+    libFan   := devHomeDir + `lib/fan/`
     curPod   := devHomeDir + `lib/fan/${podName}.pod`
-    curJar   := devHomeDir + `lib/java/${podName}.jar`
     depends  := (Depend[])this.depends.map |s->Depend| { Depend(s) }
-
-    // if there are no javaDirs we only only stubbing
-    stubOnly := javaDirs.isEmpty
-
-    // start with a clean directory
-    Delete(this, jtemp).run
-    if (!stubOnly) CreateDir(this, jtemp).run
 
     // stub the pods fan classes into Java classfiles
     // by calling the JStub tool in the jsys runtime
-    stubDir := stubOnly ? libJava : jtemp
+    jtemp.create
     Exec(this, [javaExe,
-                "-cp", (libJava + `sys.jar`).osPath,
+                "-cp", sysJar.osPath,
                 "-Dfan.home=$Env.cur.workDir.osPath",
                 "fanx.tools.Jstub",
-                "-d", stubDir.osPath,
+                "-d", jtemp.osPath,
                 podName]).run
 
-    // if there are no javaDirs we only only stubbing
-    if (stubOnly) return
-
     // compile
-    javac := CompileJava(this)
-    javac.outDir = jtemp
-    javac.cp.add(jtemp+"${podName}.jar".toUri)
-    javac.cpAddExtJars
-    depends.each |Depend d| { javac.cp.add(libJava+`${d.name}.jar`) }
-    javac.src = javaDirs
-    javac.run
+    if (!javaDirs.isEmpty)
+    {
+      javac := CompileJava(this)
+      javac.outDir = jtemp
+      javac.cp.add(jstub)
+      javac.cpAddExtJars
+      javac.cp.add(sysJar)
+      depends.each |Depend d| { javac.cp.add(libFan+`${d.name}.pod`) }
+      javac.src = javaDirs
+      javac.run
+    }
 
     // extract stub jar into the temp directory
     Exec(this, [jarExe, "-xf", jstub.osPath], jtemp).run
@@ -272,9 +281,6 @@ abstract class BuildPod : BuildScript
     // now we can nuke the stub jar (and manifest)
     Delete(this, jstub).run
     Delete(this, jtemp + `meta-inf/`).run
-
-    // jar everything back up to lib/java/{pod}.jar
-    Exec(this, [jarExe, "cf", curJar.osPath, "-C", jtemp.osPath, "."], jtemp).run
 
     // append files to the pod zip (we use java's jar tool)
     Exec(this, [jarExe, "-fu", curPod.osPath, "-C", jtemp.osPath, "."], jtemp).run
@@ -290,7 +296,7 @@ abstract class BuildPod : BuildScript
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Compile native .NET assembly is podDotnetDirs configured
+  ** Compile native .NET assembly dotnetDirs configured
   **
   virtual Void compileDotnet()
   {
@@ -377,7 +383,7 @@ abstract class BuildPod : BuildScript
   {
     // use docCompiler reflectively
     docCompiler := Type.find("docCompiler::Main").make
-    docCompiler->d    = devHomeDir + `doc/`
+    docCompiler->d    = outDocDir.toFile
     docCompiler->src  = scriptDir
     docCompiler->pods = [podName]
     Int r := docCompiler->run

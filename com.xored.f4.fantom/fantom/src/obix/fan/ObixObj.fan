@@ -179,7 +179,7 @@ class ObixObj
   **
   ** Parent object or null if unparented.
   **
-  readonly ObixObj? parent
+  ObixObj? parent { private set }
 
   **
   ** Return is size is zero.
@@ -216,7 +216,7 @@ class ObixObj
   ** If the name maps to a child object, then return that
   ** child's value.  Otherwise route to 'Obj.trap'.
   **
-  override Obj? trap(Str name, Obj?[]? args)
+  override Obj? trap(Str name, Obj?[]? args := null)
   {
     child := kidsByName?.get(name)
     if (child != null) return child.val
@@ -258,7 +258,7 @@ class ObixObj
   ** Add a child object.  Throw ArgErr if this child is
   ** already parented or has a duplicate name.  Return this.
   **
-  This add(ObixObj kid)
+  @Operator This add(ObixObj kid)
   {
     // sanity checks
     if (kid.parent != null || kid.prev != null || kid.next != null)

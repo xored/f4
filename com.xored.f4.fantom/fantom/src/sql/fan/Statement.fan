@@ -10,13 +10,14 @@
 ** Statement is an executable statement for a specific database.
 ** A statement may be executed immediately or prepared and
 ** executed later with parameters.
+** See [pod-doc]`pod-doc#statements`.
 **
 class Statement
 {
   **
   ** Make a new statement with the specified SQL text.
   **
-  internal new make(Connection conn, Str sql)
+  internal new make(SqlConn conn, Str sql)
   {
     this.conn = conn
     this.sql = sql
@@ -62,12 +63,12 @@ class Statement
   **
   ** The connection that this statement uses.
   **
-  internal readonly Connection conn
+  internal SqlConn conn { private set }
 
   **
   ** The SQL text used to create this statement.
   **
-  readonly Str sql
+  const Str sql
 
   **
   ** Maximum number of rows returned when this statement is

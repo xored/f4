@@ -161,7 +161,6 @@ public class FanStr
     }
   }
 
-  public static String slice(String self, Range r) { return getRange(self, r); }
   public static String getRange(String self, Range r)
   {
     int size = self.length();
@@ -330,7 +329,7 @@ public class FanStr
   public static void each(String self, Func f)
   {
     int len = self.length();
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<len ; ++i)
         f.call(Long.valueOf(self.charAt(i)));
@@ -344,7 +343,7 @@ public class FanStr
 
   public static void eachr(String self, Func f)
   {
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=self.length()-1; i>=0; --i)
         f.call(Long.valueOf(self.charAt(i)));
@@ -359,7 +358,7 @@ public class FanStr
   public static boolean any(String self, Func f)
   {
     int len = self.length();
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<len ; ++i)
         if (f.callBool(Long.valueOf(self.charAt(i))))
@@ -377,7 +376,7 @@ public class FanStr
   public static boolean all(String self, Func f)
   {
     int len = self.length();
-    if (f.params.sz() == 1)
+    if (f.arity() == 1)
     {
       for (int i=0; i<len ; ++i)
         if (!f.callBool(Long.valueOf(self.charAt(i))))

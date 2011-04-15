@@ -34,6 +34,11 @@ public class DesktopPeer
 // Native methods
 //////////////////////////////////////////////////////////////////////////
 
+  public static void appName(String name)
+  {
+    Display.setAppName(name);
+  }
+
   public static String platform()
   {
     if (Fwt.isWindows()) return "windows";
@@ -63,6 +68,11 @@ public class DesktopPeer
 
   public static void callAsync(Func func)
   {
+    callLater(Duration.defVal, func);
+  }
+
+  public static void callLater(Duration delay, Func func)
+  {
     // check if running on UI thread
     Fwt fwt = Fwt.main();
     if (java.lang.Thread.currentThread() != fwt.display.getThread())
@@ -70,7 +80,7 @@ public class DesktopPeer
 
     // enqueue on main UI thread's display
     final Func finalFunc = func;
-    fwt.display.asyncExec(new Runnable()
+    final Runnable runnable = new Runnable()
     {
       public void run()
       {
@@ -83,7 +93,12 @@ public class DesktopPeer
           e.printStackTrace();
         }
       }
-    });
+    };
+
+    if (delay.ticks > 0)
+      fwt.display.timerExec((int)delay.millis(), runnable);
+    else
+      fwt.display.asyncExec(runnable);
   }
 
 //////////////////////////////////////////////////////////////////////////

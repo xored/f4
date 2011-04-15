@@ -8,6 +8,7 @@
 
 **
 ** Row models a row of a relational table.
+** See [pod-doc]`pod-doc#row`.
 **
 class Row
 {
@@ -25,20 +26,22 @@ class Row
 
   **
   ** Get column value.
+  ** See [type mapping]`pod-doc#typeMapping`.
   **
   @Operator native Obj? get(Col col)
 
   **
   ** Set a column value.
+  ** See [type mapping]`pod-doc#typeMapping`.
   **
   @Operator native Void set(Col col, Obj? val)
 
   **
   ** Trap is used to get or set a column by name.
   **
-  override Obj? trap(Str name, Obj?[]? args)
+  override Obj? trap(Str name, Obj?[]? args := null)
   {
-    if (args.size == 0) { return get(col(name)) }
+    if (args == null || args.size == 0) { return get(col(name)) }
     if (args.size == 1) { set(col(name), args.first); return null }
     return super.trap(name, args)
   }
