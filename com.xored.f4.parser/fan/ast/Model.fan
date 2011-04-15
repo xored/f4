@@ -64,16 +64,24 @@ const class UsingDef : Node
   }
 }
 
-abstract const class DefNode : Node
+abstract const class NamedNode : Node
+{
+  const Id name
+  new make(Int start, Int end, Id name) : super(start, end)
+  {
+    this.name = name
+  }
+}
+
+abstract const class DefNode : NamedNode
 {
   const FanDoc[] docs
   const FacetDef[] facets
   const Modifiers modifiers
-  const Id name
   
   new make(Int start, Int end, 
     FanDoc[] docs, FacetDef[] facets, Modifiers modifiers, Id name) 
-    : super(start, end)
+    : super(start, end, name)
   {
     this.docs = docs
     this.facets = facets
@@ -292,16 +300,14 @@ const class StaticInit : Node, SlotDef
   }
 }
 
-const class EnumValDef : Node, SlotDef
+const class EnumValDef : NamedNode, SlotDef
 {
   const FanDoc[] docs
-  const Id name
   const Expr[] args
   new make(Int start, Int end, FanDoc[] docs, Id name, Expr[] args) 
-    : super(start, end)
+    : super(start, end, name)
   {
     this.docs = docs
-    this.name = name
     this.args = args
   }
 }

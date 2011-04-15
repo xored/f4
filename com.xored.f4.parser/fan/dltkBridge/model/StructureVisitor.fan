@@ -6,7 +6,7 @@
 //   Alena Repina Feb 18, 2010 - Initial Contribution
 //
 
-class StructureVisitor
+mixin StructureVisitor
 {
   virtual Void visitModule() {}
   virtual Void endVisitModule(Int end) {}

@@ -76,7 +76,7 @@ class SelectionEngine : ISelectionEngine
   
   private IModelElement[] selectSlotDef(AstPath path)
   {
-    DefNode node := path.last
+    NamedNode node := path.last
     name := node.name.text
     TypeDef? type := path[-2] as TypeDef
     if(type == null)
