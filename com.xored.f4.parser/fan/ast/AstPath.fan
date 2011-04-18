@@ -39,7 +39,7 @@ const class AstPath
   {
     MethodVar[] locals := [,]
     Block[] blocks := findAll(Block#)
-    blocks.each {locals.addAll(MethodVarFinder().find(it, pos))}
+    blocks.each {locals.addAll(MethodVarFinder.find(it, pos))}
     MethodDef? def := findLast(MethodDef#)
     if (def != null) locals.addAll(def.params)
     return locals
@@ -52,20 +52,26 @@ const class AstPath
 internal class MethodVarFinder : AstVisitor
 {
   private MethodVar[] locals := [,]
-  private Int? pos := null
+  private const Int pos
+  private const Node node
   
-  MethodVar[] find(Node n, Int pos)
+  private new make(Node n, Int pos)
   {
-    this.locals = [,]
+    this.node = n
     this.pos = pos
-    n.accept(this)
-    return locals
   }
   
-  override Bool enterNode(Node node)
+  static MethodVar[] find(Node n, Int pos)
+  {
+    finder := MethodVarFinder(n, pos)
+    n.accept(finder)
+    return finder.locals
+  }
+  
+  override Bool enterNode(Node n)
   {    
-    if (node.start >= pos) return false
-    if (node is LocalDef) locals.add((MethodVar)node)
+    if (n.start >= pos || n !== node && n is Block) return false
+    if (n is LocalDef) locals.add((MethodVar)n)
     return true
   } 
 }
