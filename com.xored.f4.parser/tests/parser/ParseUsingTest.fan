@@ -33,8 +33,8 @@ class ParseUsingTest : Test
   {    
     verifyUsing("using [java] java.util", |u|
       {
-        verifyEq(u.ffi.text, "java")
-        verifyEq(u.podName.text, "java.util")
+        //verifyEq(u.ffi.text, "java")
+        verifyEq(u.podName.text, "[java]java.util")
       })
   }
   
@@ -42,8 +42,8 @@ class ParseUsingTest : Test
   {    
     verifyUsing("using [java] java.util::Map", |u|
       {
-        verifyEq(u.ffi.text, "java")
-        verifyEq(u.podName.text, "java.util")
+        //verifyEq(u.ffi.text, "java")
+        verifyEq(u.podName.text, "[java]java.util")
         verifyEq(u.typeName.text, "Map")
       })
   }
@@ -52,8 +52,8 @@ class ParseUsingTest : Test
   {    
     verifyUsing("using [java] java.util::Map\$Entry", |u|
       {
-        verifyEq(u.ffi.text, "java")
-        verifyEq(u.podName.text, "java.util")
+        //verifyEq(u.ffi.text, "java")
+        verifyEq(u.podName.text, "[java]java.util")
         verifyEq(u.typeName.text, "Map\$Entry")
       })
   }
@@ -62,20 +62,20 @@ class ParseUsingTest : Test
   {
      verifyUsing("using [java] java.util::Map\$Entry\$", |u|
       {
-        verifyEq(u.ffi.text, "java")
-        verifyEq(u.podName.text, "java.util")
+        //verifyEq(u.ffi.text, "java")
+        verifyEq(u.podName.text, "[java]java.util")
         verifyEq(u.typeName.text, "Map\$Entry\$")
       })
   }
   
-  Void testUsingWithInternalKeyword()
-  {    
-    verifyUsing("using internal.package.internal::InternalType", |u|
-      {
-        verifyEq(u.podName.text, "internal.package.internal")
-        verifyEq(u.typeName.text, "InternalType")
-      })
-  }
+  //Void testUsingWithInternalKeyword()
+  //{    
+  //  verifyUsing("using internal.package.internal::InternalType", |u|
+  //    {
+  //      verifyEq(u.podName.text, "internal.package.internal")
+  //      verifyEq(u.typeName.text, "InternalType")
+  //    })
+  //}
 
 //////////////////////////////////////////////////////////////////////////
 // Utils

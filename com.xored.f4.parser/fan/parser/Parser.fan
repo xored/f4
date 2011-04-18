@@ -77,12 +77,6 @@ class Parser : AstFactory
   {
     s := startRule
     consume(Token.usingKeyword)
-    Id? ffi
-    if (matchAndConsume(Token.lbracket))
-    {
-      safe |->| {ffi = id}
-      safe |->| {consume(Token.rbracket)}
-    }
     PodRef p := podName
     TypeRef? t
     Id? a
@@ -92,30 +86,26 @@ class Parser : AstFactory
       safe |->| {a = id}
     safe |->| {endOfStmt}
     endRule(s)
-    return UsingDef(s.start, s.end, ffi, p, t, a)
+    return UsingDef(s.start, s.end, p, t, a)
   }
   
   protected PodRef podName()
   {
     s := startRule
-    Str? podName := ""
-    switch (curt)
+    podName := ""
+    if (curt === Token.strLiteral)
     {
-      case Token.identifier: podName = id.text
-      case Token.internalKeyword: podName = "internal"; consume
+      podName = consume.val 
     }
+    else if (matchAndConsume(Token.lbracket))
+    {
+      safe |->| {podName = "[$id.text]"}
+      safe |->| {consume(Token.rbracket)}
+    }
+    if (curt === Token.identifier)
+      safe |->| { podName += id.text }
     while (matchAndConsume(Token.dot))
-    {
-      safe |->| 
-      {
-        podName += "."        
-        switch (curt)
-        {
-          case Token.identifier: podName += id.text
-          case Token.internalKeyword: podName += "internal"; consume
-        }
-      }      
-    }
+      safe |->| { podName += "."+id.text }      
     found := ns.findPod(podName)
     endRule(s)
     return PodRef(s.start, s.end, podName, found)

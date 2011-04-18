@@ -39,15 +39,13 @@ const class CUnit : Node
 
 const class UsingDef : Node
 {
-  const Id? ffi
   const PodRef podName
   const TypeRef? typeName
   const Id? asTypeName
-  new make(Int start, Int end, Id? ffi, PodRef podName, 
+  new make(Int start, Int end, PodRef podName, 
     TypeRef? typeName, Id? asTypeName)
     : super(start, end) 
   {
-    this.ffi = ffi
     this.podName = podName
     this.typeName = typeName
     this.asTypeName = asTypeName

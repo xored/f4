@@ -7,7 +7,7 @@ mixin AstFactory
   
   UsingDef makeUsingDef(RuleState s)
   {
-    return UsingDef(s.start, s.end, s.safeGet("ffi"), s.get("pod"), 
+    return UsingDef(s.start, s.end, s.get("pod"), 
       s.safeGet("type"), s.safeGet("as"))
   }
   
