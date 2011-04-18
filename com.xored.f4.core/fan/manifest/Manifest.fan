@@ -75,7 +75,7 @@ class Manifest
   
   Str? podName() { vals["podName"] }
   
-  Version version() { vals["version"] ?: Version.fromStr("1.0") }
+  Version version() { vals["version"] ?: Version("1.0") }
   
   Str:Obj index() { vals["index"] ?: [Str:Obj][:] }
   
@@ -96,13 +96,13 @@ class Manifest
   //////////////////////////////////////////////////////////////////////////
   private static Obj? resolveLiteral(Expr expr)
   {
-    if(expr is Literal) return expr->val
-    if(expr is ListLiteral)
+    if (expr is Literal) return expr->val
+    if (expr is ListLiteral)
     {
       list := expr as ListLiteral
       return list.items.map { resolveLiteral(it) }
     }
-    if(expr is MapLiteral)
+    if (expr is MapLiteral)
     {
       map := expr as MapLiteral
       result := [:]
@@ -111,6 +111,16 @@ class Manifest
         result[resolveLiteral(k)] = resolveLiteral(v)
       }
       return result
+    }
+    if (expr is CallExpr)
+    {
+      call := expr as CallExpr
+      // Possibly, more generic solution is needed 
+      if ((call.callee as Ref)?.text == "Version")
+      {
+        s := (call.args.getSafe(0) as Literal)?.val as Str
+        if (s != null) return Version(s)
+      }
     }
     return null
   }

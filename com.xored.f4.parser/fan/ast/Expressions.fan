@@ -300,13 +300,13 @@ const class Closure : Expr
 **************************************************************************
 const class CallExpr : Expr
 {
-  const Expr caller
+  const Expr callee
   const Expr[] args
   
-  new make(Int start, Int end, Expr caller, Expr[] args)
-    : super(start, end, ExprId.call, resolveType(caller))
+  new make(Int start, Int end, Expr callee, Expr[] args)
+    : super(start, end, ExprId.call, resolveType(callee))
   {
-    this.caller = caller
+    this.callee = callee
     this.args = args
   }
   
@@ -319,7 +319,7 @@ const class CallExpr : Expr
   {
     if (v.enterNode(this))
     {
-      caller.accept(v)
+      callee.accept(v)
       args.each {it.accept(v)}
       v.exitNode(this)
     }
