@@ -13,14 +13,8 @@ public class FanSourceParser : AbstractSourceParser
    */
   override IModuleDeclaration? parse(IModuleSource? input, IProblemReporter? reporter)
   {
-    Str content := input.getSourceContents
-    Str fName := input.getFileName
-    IProblemCollector collector := DltkProblemCollector(reporter)
-    
-    ns := FantomProjectManager.instance[input.getModelElement.getScriptProject.getProject].ns
-    parser := Parser(content, ns)
-    unit := parser.cunit
-    
-    return DltkAst(unit)
+    ns := ParseUtil.ns(input.getModelElement)
+    collector := DltkProblemCollector(reporter)
+    return DltkAst(Parser(input.getSourceContents,ns,null,collector).cunit)
   }
 }

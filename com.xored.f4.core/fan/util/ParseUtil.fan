@@ -40,7 +40,10 @@ class ParseUtil : TypeUtil
   
   static IFanNamespace ns(ISourceModule module)
   {
-    FantomProjectManager.instance[module.getScriptProject.getProject].ns
+    sp := module.getScriptProject
+    fp := FantomProjectManager.instance[sp.getProject]
+    IFanNamespace? ns
+    return module.getResource == null || sp.isOnBuildpath(module.getResource) ? fp.ns : ScriptNamespace(fp, module.getSource)
   }
   
   static Str wordStart(Str content, Int position, Int maxLen := 50)

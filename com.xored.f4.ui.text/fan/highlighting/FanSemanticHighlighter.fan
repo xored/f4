@@ -93,12 +93,9 @@ class FanSemanticHighlighter : ISemanticHighlightingExtension, AstVisitor
   {
     if (requestor == null) return false
     this.requestor = requestor
-    p := sourceModule.getModelElement?.getScriptProject?.getProject
-    if(p == null) return false
-    ns := FantomProjectManager.instance[p].ns
-    content := sourceModule.getSourceContents
-    cunit := Parser(content, ns).cunit 
-    cunit.accept(this)
+    me := sourceModule.getModelElement
+    if(me == null) return false
+    ParseUtil.parse(me).accept(this) 
     this.requestor = null
     return true
   }

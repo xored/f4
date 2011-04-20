@@ -1832,7 +1832,7 @@ class Parser : AstFactory
         found = ns.findPod("sys")?.findType(typeName,false)
     }
     else
-      p.modelPod?.findType(typeName, false)
+      found = p.modelPod?.findType(typeName, false)
 //    if (found == null) 
 //      throw err(locOfRange(-1), ProblemKind.parser_unresolvedType, [typeName])
     endRule(s)

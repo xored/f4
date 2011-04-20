@@ -93,14 +93,12 @@ internal const class ScriptPod : IFanPod
   new make(Str name,IFanType[] types)
   {
     this.name = name
-    this.typeNames = types.map { name }
+    this.typeNames = types.map { it.name }
     this.types = [Str:IFanType][:].addList(types) { it.name }
   }
-  override IFanType? findType(Str name, Bool checked)
+  override IFanType? findType(Str name, Bool checked := true)
   {
-    t := types[name]
-    if (t == null && checked) throw NullErr()
-    return t
+    types[name] ?: (checked ? throw UnknownTypeErr() : null)
   }
   override const Str name
   override const Str[] typeNames
