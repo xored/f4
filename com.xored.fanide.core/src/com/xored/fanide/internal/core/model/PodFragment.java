@@ -44,7 +44,7 @@ public class PodFragment extends Openable implements IProjectFragment,
 	private IPath path;
 	private IBuildpathEntry buildpathEntry;
 
-	protected PodFragment(ScriptProject project, IBuildpathEntry rentry) {
+	public PodFragment(ScriptProject project, IBuildpathEntry rentry) {
 		super(project);
 		this.path = rentry.getPath();
 		this.buildpathEntry = rentry;

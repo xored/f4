@@ -36,30 +36,6 @@ class FakeFanNamespace : IFanNamespace
     return podsMap[name]
   }
   
-  override IFanType? findType(Str name)
-  {
-    Str? pod
-    podStart := name.index("::")
-    if (podStart != null)
-    {
-      pod = name[0..<podStart]
-      name = name[podStart+2..-1]
-    }
-    if (pod == null)
-    {
-      found := currPod.findType(name, false)
-      if (found != null) return found
-      list := podsMap.vals
-      for (Int i:= 0; i<list.size;i++)
-      {
-        found = list[i].findType(name, false)
-        if (found != null) return found
-      }
-      return null
-    }
-    return findPod(pod)?.findType(name, false)
-  }
-  
   override Str toStr() {return podsMap.vals.join(",")}
 }
 

@@ -44,15 +44,11 @@ const class FantomProjectManager : Actor, BuildfanChangeListener
   //////////////////////////////////////////////////////////////////////////
   override Obj? receive(Obj? msg)
   {
+    // rewritten to fail fast
     try
     {
-      if(msg == null) return null
-      if(msg isnot Obj[]) return null
-      list := msg as Obj[]
-      if(list.first isnot Method) return null
-      method := list.first as Method
-      args := (list[1] as Unsafe).val as Obj?[]
-      return method.callOn(this, args)
+      list := (Obj[])msg
+      return ((Method)list[0]).callOn(this, ((Unsafe)list[1]).val)
     } catch(Err e)
     {
       e.trace //TODO: Add normal error reporting
@@ -62,23 +58,23 @@ const class FantomProjectManager : Actor, BuildfanChangeListener
   
   override Void notify(WorkspaceChange change)
   {
-    send([#doNotify, Unsafe([change])].toImmutable)
+    runInManager(#doNotify, [change])
   }
   //////////////////////////////////////////////////////////////////////////
   // Public API
   //////////////////////////////////////////////////////////////////////////
-  internal Void init()
-  {
-    send([#doInit, Unsafe([,])].toImmutable)
-  }
-  @Operator FantomProject? get(IProject project) { send([#doGet, Unsafe([project])].toImmutable).get }
+  internal Void init() { send([#doInit,Unsafe([,])].toImmutable) }
   
-  FantomProject? getByPod(Str podName) { send([#doGetByPod, Unsafe([podName])].toImmutable).get }
+  @Operator FantomProject? get(IProject project) { runInManager(#doGet, [project]) }
   
-  FantomProject[] listProjects() { send([#doListProjects, Unsafe([,])].toImmutable).get }
+  FantomProject? getByPod(Str podName) { runInManager(#doGetByPod, [podName]) }
+  
+  FantomProject[] listProjects() { runInManager(#doListProjects, [,]) }
   //////////////////////////////////////////////////////////////////////////
   // Method handlers
   //////////////////////////////////////////////////////////////////////////
+  private Obj? runInManager(Method method, Obj?[] args) { marker ? method.callOn(this,args) : send([method,Unsafe(args)].toImmutable).get }
+  
   private Void doNotify(WorkspaceChange change)
   {
     //we need to reset containers for all projects that depend on 
@@ -179,6 +175,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener
 
   private Void doInit()
   {
+    setMarker
     DLTKCore.create(ResourcesPlugin.getWorkspace.getRoot).getScriptProjects(F4Nature.id).each |IScriptProject sp|
     {
       addProject(sp.getProject)
@@ -222,4 +219,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener
   {
     locals.getOrAdd("pods") |->Obj| { [Str:FantomProject][:] }
   }
+  
+  private Bool marker() { locals[toStr] as Bool ?: false }
+  private Void setMarker() { locals[toStr] = true }
 }

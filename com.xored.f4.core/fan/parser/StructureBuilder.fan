@@ -114,7 +114,7 @@ class FanSourceElementRequestVisitor : StructureVisitor
   }
   
   override Void visitMethod(Int start, Int flags, Str? type, TokenVal name,
-    Str[] parameterTypes, Str[] parameterNames, Str[] parameterInitializers)
+    Str[] parameterTypes, Str[] parameterNames, Str?[] parameterInitializers)
   {
     if (insideField) endVisitField(start-1)
     if (insideMethod) endVisitMethod(start-1)

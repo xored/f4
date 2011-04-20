@@ -13,11 +13,12 @@ using f4model
 
 class Manifest
 {
-  new make(IProject project)
+  new make(FantomProject fantomProject)
   {
+    project := fantomProject.project
     content := PathUtil.resolveRes(project.getFile(filename)).readAllStr
     lineOffsets = buildOffsets(content)
-    parser := Parser(content, EmptyNamespace())
+    parser := Parser(content, ScriptNamespace(fantomProject,content))
 
     MethodDef? method := parser.cunit.types.find { it.name.text == "Build" }?.slots?.find { it->name->text == "make" }
     if(method == null) throw ArgErr("Can't parse build.fan in $project.getName")
@@ -91,6 +92,8 @@ class Manifest
   Uri[] resDirs() { vals["resDirs"] ?: Uri[,] }
   
   Uri[] jsDirs() { vals["jsDirs"] ?: Uri[,] }
+  
+  Uri[] javaDirs() { vals["javaDirs"] ?: Uri[,] }
   //////////////////////////////////////////////////////////////////////////
   // Helper methods
   //////////////////////////////////////////////////////////////////////////
@@ -116,7 +119,7 @@ class Manifest
     {
       call := expr as CallExpr
       // Possibly, more generic solution is needed 
-      if ((call.callee as Ref)?.text == "Version")
+      if ((call.callee as StaticTargetExpr)?.resolvedType?.qname == "sys::Version")
       {
         s := (call.args.getSafe(0) as Literal)?.val as Str
         if (s != null) return Version(s)

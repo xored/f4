@@ -9,7 +9,6 @@ class EmptyNamespace : IFanNamespace
 {
   override IFanPod currPod := EmptyPod.INSTANCE
   override IFanPod? findPod(Str name) { null }
-  override IFanType? findType(Str name) { null }
   override Str[] podNames() { Str[,] }
 }
 

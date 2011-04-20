@@ -20,6 +20,6 @@ mixin StructureVisitor
   virtual Void endVisitField(Int end) {}
   
   virtual Void visitMethod(Int start, Int flags, Str? type, TokenVal name,
-    Str[] parameterTypes, Str[] parameterNames, Str[] parameterInitializers) {}
+    Str[] parameterTypes, Str[] parameterNames, Str?[] parameterInitializers) {}
   virtual Void endVisitMethod(Int end) {}
 }

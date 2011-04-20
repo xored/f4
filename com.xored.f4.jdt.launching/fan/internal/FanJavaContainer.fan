@@ -33,37 +33,33 @@ class FanJavaContainer : IClasspathContainer
     if(install == null) return IClasspathEntry?[,]
     if(this.install != install) this.install = install
     
-    home := PathUtil.fanHome(install.getInstallLocation.getPath)
-    
     IClasspathEntry?[] cpEntries := 
       jarDirs.map |Uri loc -> File[]|
       {
         (home + loc).toFile.listFiles.findAll { it.ext == "jar" }
       }.flatten.map |File f -> IClasspathEntry?|
       {
-        JavaCore.newLibraryEntry(
-          Path(f.normalize.osPath),
-          Path((home + `src/$f.basename/java/`).toFile.osPath),
-          Path("")
-        )
+        createLibrary(f.normalize,f.basename)
       }
     
     fp := FantomProjectManager.instance[project.getProject]
-    fp.depends.each | loc, name|
+    fp.depends.each |loc, name|
     {
       if(isJavaPod(loc))
-      {
-        cpEntries.add(
-          JavaCore.newLibraryEntry(
-            Path(loc.osPath), 
-            Path((home + `src/$name/java/`).toFile.osPath), 
-            Path("")
-          )
-        )
-        
-      }
+        cpEntries.add(createLibrary(loc,name))
     }
     return cpEntries
+  }
+  
+  private Uri home() { PathUtil.fanHome(install.getInstallLocation.getPath) }
+  
+  private IClasspathEntry createLibrary(File podFile,Str podName)
+  {
+    return JavaCore.newLibraryEntry(
+      Path(podFile.osPath),
+      Path((home + `src/$podName/java/`).toFile.osPath),
+      Path("")
+    )
   }
   
   private static Bool isJavaPod(File f)

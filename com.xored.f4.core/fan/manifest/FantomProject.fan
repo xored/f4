@@ -31,7 +31,7 @@ const class FantomProject
     Manifest? manifest := null
     try
     {
-      manifest = Manifest(project)
+      manifest = Manifest(this)
     } catch(Err e)
     {
 //      e.trace
@@ -43,6 +43,7 @@ const class FantomProject
       outDir = baseDir
       resDirs = Uri[,]
       jsDirs = Uri[,]
+      javaDirs = Uri[,]
       summary = ""
       rawDepends = Depend[,]
       projectErrs = perrs
@@ -63,6 +64,7 @@ const class FantomProject
     outDir = resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
     resDirs = manifest.resDirs
     jsDirs = manifest.jsDirs
+    javaDirs = manifest.javaDirs
     summary = manifest.summary
     rawDepends = manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]|
     {
@@ -146,6 +148,18 @@ const class FantomProject
     return resolved.map { File.os(it.getLocation) }
   }
   
+  File? javaOutput()
+  {
+    try
+    {
+      root := baseDir
+      JavaCore.create(project).getOutputLocation.segments[1..-1].each |Str a|{ root += Uri.fromStr(a+"/") }
+      return root
+    }
+    catch (Err e)
+      return null
+  }
+  
 //////////////////////////////////////////////////////////////////////////
 // Build info
 //////////////////////////////////////////////////////////////////////////  
@@ -213,6 +227,7 @@ const class FantomProject
   
   const Uri[] jsDirs
     
+  const Uri[] javaDirs
   ** absolute path of output directory
   const File outDir 
   
