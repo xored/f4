@@ -38,16 +38,22 @@ class LaunchShortcut : AbstractScriptLaunchShortcut
    
     sourceModule := DLTKCore.createSourceModuleFrom(script)
     ns := ParseUtil.ns(sourceModule)
-    type := ParseUtil.typeNames(sourceModule).find |Str name -> Bool| 
+    if (sourceModule.getScriptProject.isOnBuildpath(script))
     {
-      type := ns.currPod.findType(name,false)
-      if(type == null) return false
-      return type.findSlot("main", ns, false) != null
+      type := ParseUtil.typeNames(sourceModule).find |Str name -> Bool| 
+      {
+        type := ns.currPod.findType(name,false)
+        if(type == null) return false
+        return type.findSlot("main", ns, false) != null
+      }
+      if(type == null) return null
+      attrs[LaunchConsts.fanClass] = type
     }
-
-    if(type == null) return null
-    
-    attrs[LaunchConsts.fanClass] =  type
+    else
+    {
+      attrs[LaunchConsts.fanClass] = script.getLocation.toStr
+      attrs[LaunchConsts.useClassOnly] = true
+    }
 
     return findOrCreate(script, getConfigurationType, getLaunchManager, attrs)
   }
