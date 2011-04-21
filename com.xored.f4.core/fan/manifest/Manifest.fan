@@ -18,7 +18,7 @@ class Manifest
     project := fantomProject.project
     content := PathUtil.resolveRes(project.getFile(filename)).readAllStr
     lineOffsets = buildOffsets(content)
-    parser := Parser(content, ScriptNamespace(fantomProject,content))
+    parser := Parser(content, EmptyNamespace())
 
     MethodDef? method := parser.cunit.types.find { it.name.text == "Build" }?.slots?.find { it->name->text == "make" }
     if(method == null) throw ArgErr("Can't parse build.fan in $project.getName")
@@ -119,7 +119,7 @@ class Manifest
     {
       call := expr as CallExpr
       // Possibly, more generic solution is needed 
-      if ((call.callee as StaticTargetExpr)?.resolvedType?.qname == "sys::Version")
+      if ((call.callee as UnresolvedRef)?.text == "Version")
       {
         s := (call.args.getSafe(0) as Literal)?.val as Str
         if (s != null) return Version(s)
