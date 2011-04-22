@@ -38,6 +38,7 @@ internal class ScriptNamespace : IFanNamespace
   override IFanPod? findPod(Str name)
   {
     if (currPodName == name) return currPod
+    if (name.startsWith("[java]")) return FfiPod(project.getProject,name)
     if (fragmentsByPod.containsKey(name))  
       return pods.getOrAdd(name) |->Obj| { DltkPod(name, fragmentsByPod[name]) }
     return null
@@ -94,7 +95,7 @@ internal const class ScriptPod : IFanPod
   {
     this.name = name
     this.typeNames = types.map { it.name }
-    this.types = [Str:IFanType][:].addList(types) { it.name }
+    this.types = Str:IFanType[:].addList(types) { it.name }
   }
   override IFanType? findType(Str name, Bool checked := true)
   {
@@ -110,12 +111,12 @@ internal const class ScriptMethod : ScriptSlot, IFanMethod
   new make(IFanType container, Str slotName, Int flags, Str? type, Str[] parameterTypes,
     Str[] parameterNames, Str?[] parameterInitializers) : super(container, slotName, flags, type)
   {
-    params = parameterTypes.map |v,i| { ScriptParam(v, parameterNames[i], parameterInitializers[i]) }
+    params = parameterTypes.map |v,i| { SimpleParam(v, parameterNames[i], parameterInitializers[i]) }
   }
   override const IFanParam[] params
 }
 
-internal const class ScriptParam : IFanParam
+const class SimpleParam : IFanParam
 {
   new make(Str type, Str name, Str? init)
   {
@@ -132,7 +133,7 @@ internal abstract const class ScriptSlot : IFanSlot, Flag
 {
   new make(IFanType container, Str slotName, Int flags, Str? type)
   {
-    parent = container.name
+    parent = container.qname
     of = type ?: parent
     this.type = container
     name = slotName

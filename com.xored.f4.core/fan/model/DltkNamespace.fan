@@ -52,8 +52,8 @@ internal class DltkNamespace : IFanNamespace
   override IFanPod currPod() { findPod(currPodName) }
   override IFanPod? findPod(Str name)
   {
-    !fragmentsByPod.containsKey(name) ?  
-      null
+    if (name.startsWith("[java]")) return FfiPod(project.getProject,name)
+    return !fragmentsByPod.containsKey(name) ? null
       : pods.getOrAdd(name) |->Obj| { DltkPod(name, fragmentsByPod[name]) }
   }
 }
