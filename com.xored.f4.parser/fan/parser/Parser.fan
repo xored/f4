@@ -2120,17 +2120,15 @@ class Parser : AstFactory
     Id? name
 
     mark := pos
-    if (!safe |->| { type = ctype; name = id })
+    if (isClosure)
     {
-      reset(mark)
-      if (isClosure)
-      {
-        name = id
-      }
-      else
-      {
-        type = ctype
-      }
+      type = tryType
+      name = id
+    }
+    else
+    {
+      type = ctype
+      if (curt === Token.identifier) name = id
     }
 
     endRule(s)
