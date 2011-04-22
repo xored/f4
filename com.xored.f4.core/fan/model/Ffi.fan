@@ -36,7 +36,7 @@ internal const class FfiPod : IFanPod
       }
     }
     this.typeNames = allTypes.map { it.name }
-    this.types = Str:IFanType[:].addList(allTypes) { it.name }
+    this.types = Str:IFanType[:].setList(allTypes) { it.name }
   }
   override IFanType? findType(Str name, Bool checked := true)
   {
