@@ -1832,7 +1832,7 @@ class Parser : AstFactory
         found = ns.findPod("sys")?.findType(typeName,false)
     }
     else
-      found = p.modelPod?.findType(typeName, false)
+      p.modelPod?.findType(typeName, false)
 //    if (found == null) 
 //      throw err(locOfRange(-1), ProblemKind.parser_unresolvedType, [typeName])
     endRule(s)
@@ -2120,15 +2120,17 @@ class Parser : AstFactory
     Id? name
 
     mark := pos
-    if (isClosure)
+    if (!safeAndSilent |->| { type = ctype; name = id })
     {
-      type = tryType
-      name = id
-    }
-    else
-    {
-      type = ctype
-      if (curt === Token.identifier) name = id
+      reset(mark)
+      if (isClosure)
+      {
+        name = id
+      }
+      else
+      {
+        type = ctype
+      }
     }
 
     endRule(s)
@@ -2309,6 +2311,16 @@ class Parser : AstFactory
     catch (Problem err)
     {
       collector?.addProblem(err)
+      return false
+    }
+    return true
+  }  
+  
+  protected Bool safeAndSilent(|->| stuffToDo)
+  {
+    try stuffToDo.call()
+    catch (Problem err)
+    {
       return false
     }
     return true
