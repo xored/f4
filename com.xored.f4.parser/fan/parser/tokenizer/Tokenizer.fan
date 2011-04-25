@@ -819,15 +819,15 @@ public class Tokenizer
         }
         return TokenVal(Token.gt)
       case '?':
-//        if (cur == ':') { consume; return TokenVal(Token.elvis) }
+        if (cur == ':') { consume; return TokenVal(Token.elvis) }
         if (cur == '.') { consume; return TokenVal(Token.safeDot) }
-//        if (cur == '-')
-//        {
-//          consume
-//          if (cur != '>') throw err("Expected '?->' symbol")
-//          consume
-//          return TokenVal(Token.safeArrow)
-//        }
+        if (cur == '-' && peek == '>')
+        {
+          consume
+          //if (cur != '>') throw err("Expected '?->' symbol")
+          consume
+          return TokenVal(Token.safeArrow)
+        }
         return TokenVal(Token.question)
       case '@':
         return TokenVal(Token.at)

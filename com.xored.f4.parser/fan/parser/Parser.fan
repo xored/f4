@@ -811,9 +811,7 @@ class Parser : AstFactory
   {
     s := startRule
     first := orExpr
-    if (curt === Token.question && 
-       peekt === Token.colon &&
-       !peek.newline)
+    if (curt === Token.elvis)
     {
       consume; consume
       second := ifExprBody
@@ -1640,9 +1638,7 @@ class Parser : AstFactory
         }
         else return base
     }
-    if (curt === Token.question && 
-       peekt === Token.arrow &&
-       !peek.newline)
+    if (curt === Token.safeArrow)
     {
       consume
       consume

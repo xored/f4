@@ -27,7 +27,7 @@ const class TypeRef : Ref
 {  
   const IFanType? modelType
   new make(Int start, Int end, Str text, IFanType? modelType := null)
-    : super(start, end, text, ExprId.typeRef) {this.modelType = modelType}
+    : super(start, end, text, ExprId.typeRef, modelType) {this.modelType = modelType}
 }
 
 const class SlotRef : Ref
