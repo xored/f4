@@ -18,7 +18,7 @@ internal class ScriptNamespace : IFanNamespace
     vis := CreationVisitor(currPodName)
     StructureParser(source,vis).parseUnit()
     currPod = vis.pod
-    install := fp.getInterpreterInstall
+    install := fp.scriptProject.exists ? fp.getInterpreterInstall : null
     if (install != null)
     {
       bpes := InterpreterContainer.getBuildpathEntries(install)
@@ -29,7 +29,7 @@ internal class ScriptNamespace : IFanNamespace
     else
     {
       fragmentsByPod = [:]
-      podNames = Str[,]
+      podNames = [currPodName]
     }
   }
   
