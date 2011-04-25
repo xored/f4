@@ -813,7 +813,7 @@ class Parser : AstFactory
     first := orExpr
     if (curt === Token.elvis)
     {
-      consume; consume
+      consume
       second := ifExprBody
       endRule(s)
       return BinaryExpr(s.start, s.end, first, second, ExprId.elvis, commonSuper(first.resolvedType, second.resolvedType))
@@ -1640,7 +1640,6 @@ class Parser : AstFactory
     }
     if (curt === Token.safeArrow)
     {
-      consume
       consume
       if (match(Token.identifier))
       {
