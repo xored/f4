@@ -414,7 +414,7 @@ class Parser : AstFactory
       default: throw err(curLoc, ProblemKind.parser_expectedThisOrSuperInCtorChain)
     }
     if (matchAndConsume(Token.dot)) s["ctor"] = baseCtorRef
-    if (matchAndConsume(Token.lparen))
+    if (!nl && matchAndConsume(Token.lparen))
     {
       if (!match(Token.rparen))
       {
@@ -1210,7 +1210,7 @@ class Parser : AstFactory
       // <Type>{ == ctor with closure param
       return call(StaticTargetExpr(s.start, s.end, t))
     }*/
-    if (curt == Token.lparen || curt == Token.lbrace)
+    if (curt == Token.lparen && !nl || curt == Token.lbrace)
     {
       // <Type>( == ctor
       // <Type>{ == ctor with closure param
@@ -1252,7 +1252,7 @@ class Parser : AstFactory
     s := startRule
     s.start = caller.start
     Expr[] args := [,]
-    if (curt === Token.lparen)
+    if (curt === Token.lparen && !nl)
     {
         consume
         if (!match(Token.rparen))
@@ -1661,7 +1661,7 @@ class Parser : AstFactory
       else      
         return shortcut(s.start, s.end, ExprId.index, "get", base, index, op)
     }
-    if (isClosure || curt === Token.lparen) return call(base)
+    if (isClosure || curt === Token.lparen && !nl) return call(base)
     return null
   }
   
@@ -1813,8 +1813,10 @@ class Parser : AstFactory
     s := startRule
     Str typeName := consume(Token.identifier).val
     found := null
-    if (p == null) {
-      found = usings.eachWhile |UsingDef def->IFanType?|{
+    if (p == null)
+    {
+      found = usings.eachWhile |UsingDef def->IFanType?|
+      {
         if (def.typeName == null)
           return def.podName.modelPod?.findType(typeName,false)
         else if (typeName == def.typeName.text)
@@ -1874,29 +1876,30 @@ class Parser : AstFactory
   {
     getLocals?.find {it.name.text == name}
   }
-
-  once IFanType? resolveObj() {ns.findPod("sys")?.findType("Obj", false)}
+  
+  once IFanPod? resolveSys() { ns.findPod("sys") }
+  once IFanType? resolveObj() { resolveSys?.findType("Obj", false)}
   once IFanType? resolveObjQue() { resolveObj?.toNullable }
-  once IFanType? resolveVoid() {ns.findPod("sys")?.findType("Void", false)}
-  once IFanType? resolveBool() {ns.findPod("sys")?.findType("Bool", false)}
-  once IFanType? resolveStr() {ns.findPod("sys")?.findType("Str", false)}
-  once IFanType? resolveInt() {ns.findPod("sys")?.findType("Int", false)}
-  once IFanType? resolveFloat() {ns.findPod("sys")?.findType("Float", false)}
-  once IFanType? resolveDecimal() {ns.findPod("sys")?.findType("Decimal", false)}
-  once IFanType? resolveDuration() {ns.findPod("sys")?.findType("Duration", false)}
-  once IFanType? resolveUri() {ns.findPod("sys")?.findType("Uri", false)}
-  once IFanType? resolveRange() {ns.findPod("sys")?.findType("Range", false)}
+  once IFanType? resolveVoid() { resolveSys?.findType("Void", false)}
+  once IFanType? resolveBool() { resolveSys?.findType("Bool", false)}
+  once IFanType? resolveStr() { resolveSys?.findType("Str", false)}
+  once IFanType? resolveInt() { resolveSys?.findType("Int", false)}
+  once IFanType? resolveFloat() { resolveSys?.findType("Float", false)}
+  once IFanType? resolveDecimal() { resolveSys?.findType("Decimal", false)}
+  once IFanType? resolveDuration() { resolveSys?.findType("Duration", false)}
+  once IFanType? resolveUri() { resolveSys?.findType("Uri", false)}
+  once IFanType? resolveRange() { resolveSys?.findType("Range", false)}
   IFanType? resolveList(CType? valueType, Expr[]? items := null)
   {
     resolved := resolveItemType(items ?: Expr[,], valueType)
-    type := ns.findPod("sys")?.findType("List", false)
+    type := resolveSys?.findType("List", false)
     return resolved == null ? type : type?.parameterize(["sys::V":resolved])
   }
   IFanType? resolveMap(CType? keyType, CType? valueType, Expr[]? keys := null, Expr[]? vals := null)
   {
     resolvedKey := resolveItemType(keys ?: Expr[,], keyType)
     resolvedVal := resolveItemType(vals ?: Expr[,], valueType)
-    type := ns.findPod("sys")?.findType("Map", false)
+    type := resolveSys?.findType("Map", false)
     map := ["sys::K":resolvedKey,"sys::V":resolvedVal]
     return type?.parameterize(map.exclude { it == null })
   }
@@ -1906,7 +1909,7 @@ class Parser : AstFactory
   
   // TODO: |A,B,C,D,E,F,G,H,I| is not assignable to |A,B,C,D,E,F,G,H,J| but, honestly, who cares
   IFanType? resolveFunc(FuncTypeParam[]? argTypes := null, CType? retType := null) {
-    type := ns.findPod("sys")?.findType("Func", false)
+    type := resolveSys?.findType("Func", false)
     resolvedRet := retType == null ? resolveVoid : retType.resolvedType
     map := ["sys::R":resolvedRet]
     if (argTypes != null) {
@@ -1986,10 +1989,10 @@ class Parser : AstFactory
     return given
   }
   
-  once IFanType? resolveSlot() {ns.findPod("sys")?.findType("Slot", false)}
-  once IFanType? resolveMethod() {ns.findPod("sys")?.findType("Method", false)}
-  once IFanType? resolveField() {ns.findPod("sys")?.findType("Field", false)}
-  once IFanType? resolveType() {ns.findPod("sys")?.findType("Type", false)}
+  once IFanType? resolveSlot() {resolveSys?.findType("Slot", false)}
+  once IFanType? resolveMethod() {resolveSys?.findType("Method", false)}
+  once IFanType? resolveField() {resolveSys?.findType("Field", false)}
+  once IFanType? resolveType() {resolveSys?.findType("Type", false)}
   once IFanSlot? resolveWithSlot() { resolveObj?.slot("with", false) }
   IFanSlot? resolveCallSlot(IFanType? t) { (t ?: resolveFunc)?.slot("call", false) }
   
@@ -2044,8 +2047,9 @@ class Parser : AstFactory
   {
     s := startRule
     s.start = base.start
-    if (matchAndConsume(Token.question))
+    if (curt === Token.question && !cur.whitespace)
     {
+      consume
       endRule(s)
       return NullableType(s.start, s.end, base)
     }
@@ -2091,16 +2095,25 @@ class Parser : AstFactory
     FuncTypeParam[] formals := [,]
     if (matchAndConsume(Token.arrow))
     {
-      if (curt !== Token.pipe) t = ctype
+      //if (curt !== Token.pipe)
+      t = ctype
     }
     else
     {
       argNum := 0
       formals.add(formal(isClosure, argsHint?.getSafe(argNum++)))
       while(matchAndConsume(Token.comma)) formals.add(formal(isClosure, argsHint?.getSafe(argNum++)))
-      if (matchAndConsume(Token.arrow))
+      last := formals[-1]
+      if (curt === Token.safeArrow && !cur.whitespace && last.name == null)
       {
-        if (curt !== Token.pipe) t = ctype
+        formals[-1] = FuncTypeParam(last.start, last.end+1, NullableType(last.start, last.end+1, last.ctype), null, last.resolvedType?.toNullable)
+        consume
+        t = ctype
+      }
+      else if (matchAndConsume(Token.arrow))
+      {
+        //if (curt !== Token.pipe)
+        t = ctype
       }
     }
     consume(Token.pipe)
