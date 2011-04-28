@@ -5,6 +5,7 @@ using concurrent
 
 using [java]org.eclipse.debug.core::DebugPlugin
 using [java]org.eclipse.debug.core::ILaunchConfigurationWorkingCopy
+using [java]org.eclipse.debug.core::ILaunchManager
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.dltk.launching::AbstractScriptLaunchConfigurationDelegate
 using [java]org.eclipse.jdt.launching::IJavaLaunchConfigurationConstants as JavaConsts
@@ -115,7 +116,9 @@ class InternalBuilder : Builder
   
   private ILaunchConfigurationWorkingCopy createLaunchConfig(Str type, Str name)
   {
-    DebugPlugin.getDefault.getLaunchManager.getLaunchConfigurationType(type).newInstance(null, name)
+    wc := DebugPlugin.getDefault.getLaunchManager.getLaunchConfigurationType(type).newInstance(null, name)
+    wc.setAttribute(ILaunchManager.ATTR_PRIVATE, true)
+    return wc
   }
 }
 
