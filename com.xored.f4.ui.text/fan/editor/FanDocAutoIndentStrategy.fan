@@ -1,17 +1,3 @@
-/*package com.xored.fanide.internal.ui.text;
-
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.dltk.core.ISourceRange;
-import org.eclipse.dltk.core.ModelException;
-import org.eclipse.dltk.ui.IWorkingCopyManager;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;*/
-
-using [java] java.lang::Character
 using [java] org.eclipse.ui::PlatformUI
 using [java] org.eclipse.ui.texteditor::ITextEditorExtension3
 using [java] org.eclipse.jface.text::DefaultIndentLineAutoEditStrategy
@@ -418,7 +404,7 @@ class FanDocAutoIndentStrategy : DefaultIndentLineAutoEditStrategy
       Str[] lineDelimiters := document.getLegalLineDelimiters
       Str? delim
       lineDelimiters.each {
-        if (command.text.endsWith(it) && delim == null || delim.size < it.size)
+        if (command.text.endsWith(it) && (delim == null || delim.size < it.size))
           delim = it
       }
 

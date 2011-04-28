@@ -534,7 +534,7 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
         // evaluate the line with the opening bracket that matches out
         // closing bracket
         reference := scanner.findOpeningPeer(p, block.opening, block.closing)
-        indLine := d.getLineOfOffset(reference)
+        indLine := reference == null ? -1 : d.getLineOfOffset(reference)
         if (indLine != -1 && indLine != line)
         {
           // take the indent of the found line

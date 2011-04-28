@@ -3,8 +3,6 @@ using [java] org.eclipse.jface.text::IDocument
 using [java] org.eclipse.jface.text::IRegion
 using [java] org.eclipse.jface.text::Region
 
-using "[java]com.xored.fanide.internal.ui.text"::FanPairMatcher
-
 class FanDoubleClickStrategy : DefaultTextDoubleClickStrategy
 {
   protected FanPairMatcher pairMatcher := FanPairMatcher()
