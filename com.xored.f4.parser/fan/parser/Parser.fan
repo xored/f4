@@ -2095,8 +2095,8 @@ class Parser : AstFactory
     FuncTypeParam[] formals := [,]
     if (matchAndConsume(Token.arrow))
     {
-      //if (curt !== Token.pipe)
-      t = ctype
+      if (curt !== Token.pipe)
+        t = ctype
     }
     else
     {
