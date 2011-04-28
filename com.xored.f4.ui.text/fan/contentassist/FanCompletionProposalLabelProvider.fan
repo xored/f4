@@ -1,6 +1,5 @@
-using [java] java.lang
 using [java] org.eclipse.dltk.ui.text.completion::CompletionProposalLabelProvider
-using [java] org.eclipse.dltk.core::CompletionProposal;
+using [java] org.eclipse.dltk.core::CompletionProposal
 
 using f4core
 using f4model

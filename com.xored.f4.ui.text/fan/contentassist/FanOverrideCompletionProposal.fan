@@ -31,7 +31,7 @@ class FanOverrideCompletionProposal : ScriptTypeCompletionProposal, ICompletionP
   override Bool updateReplacementString(IDocument? document, Int trigger, Int offset) {
     IDocument buffer := Document(document.get())
     Int index := offset - 1
-    while (index >= 0 && CharacterBridge.isJavaIdentifierPart(buffer.getChar(index))) index--
+    while (index >= 0 && buffer.getChar(index).isAlphaNum) index--
     Int length := offset - index - 1
     buffer.replace(index + 1, length, " ")
     return true

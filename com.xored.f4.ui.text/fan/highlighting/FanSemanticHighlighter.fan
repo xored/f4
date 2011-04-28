@@ -6,97 +6,60 @@
 //   Alexey Alexandrov Apr 13, 2010 - Initial Contribution
 //
 
-using [java]org.eclipse.dltk.ui.editor.highlighting::SemanticHighlighting
-using [java]com.xored.fanide.ui.highlighting::ISemanticHighlightingExtension
-using [java]org.eclipse.dltk.ui.editor.highlighting::ISemanticHighlightingRequestor
-using [java]org.eclipse.dltk.compiler.env::IModuleSource
-using [java]com.xored.fanide.ui.highlighting::SH
-using [java]com.xored.fanide.ui::FanPreferenceConstants
-using [java]org.eclipse.dltk.ui.preferences::PreferencesMessages
 using [java]org.eclipse.dltk.core
+using [java]org.eclipse.dltk.compiler.env::IModuleSource
+using [java]org.eclipse.dltk.ui.editor.highlighting::AbstractSemanticHighlighter
+using [java]org.eclipse.dltk.ui.editor.highlighting::ISemanticHighlightingRequestor
+using [java]org.eclipse.dltk.ui.editor.highlighting::SemanticHighlighting
+using [java]org.eclipse.dltk.ui.preferences::PreferencesMessages
+
+using [java]com.xored.fanide.ui::FanPreferenceConstants
 
 using f4parser
 using f4model
 using f4core
 
-**
-** Dear future me, this code is full of bullshit, so here's a quick information
-** about what's going on here:
-**  - we populate the list of highlightings covered by this highlighter
-**  - each semantic highlighting accepts three parameters:
-**    - Text ID, must match to the provided in FanEditorColoringConfigurationBlock.java
-**    - preference id for background, we don't specify it
-**    - description, not used
-** 
-** 
-class FanSemanticHighlighter : ISemanticHighlightingExtension, AstVisitor
+class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
 {
-  private ISemanticHighlightingRequestor? requestor
-  
   private SH funcDef := SH(FanPreferenceConstants.EDITOR_FUNCTION_DEFINITION_COLOR,
-          null, 
           PreferencesMessages.DLTKEditorPreferencePage_function_colors)
   
   private SH classDef := SH(FanPreferenceConstants.EDITOR_CLASS_DEFINITION_COLOR, 
-          null,
           PreferencesMessages.DLTKEditorPreferencePage_class_colors)
   
   private SH str := SH(FanPreferenceConstants.EDITOR_STRING_COLOR,
-          null, 
           PreferencesMessages.DLTKEditorPreferencePage_strings)
   
   private SH var := SH(FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
-          null, 
           PreferencesMessages.DLTKEditorPreferencePage_variables)
   
   private SH keyword := SH(FanPreferenceConstants.EDITOR_KEYWORD_COLOR,
-          null, 
           PreferencesMessages.DLTKEditorPreferencePage_keywords)
 
   private SH field := SH(FanPreferenceConstants.EDITOR_FIELD_COLOR,
-          null, 
           "Fields")
   
   private SH staticField := SH(FanPreferenceConstants.EDITOR_STATIC_FIELD_COLOR,
-          null,
           "Static fields")
   
   private SH method := SH(FanPreferenceConstants.EDITOR_METHOD_COLOR,
-          null, 
           "Methods")
   
   private SH staticMethod := SH(FanPreferenceConstants.EDITOR_STATIC_METHOD_COLOR,
-          null,
           "Static methods")
   
-  private SemanticHighlighting[] highlightings := 
-  [
-    funcDef,
-    classDef,
-    str,
-    var,
-    keyword,
-    field,
-    staticField,
-    method,
-    staticMethod
-  ]
-
-  private Str index(SH sh) { sh.getPreferenceKey }
-  
-  override SemanticHighlighting?[]? getHighlightings() {
-    return highlightings
+  override SemanticHighlighting?[]? getSemanticHighlightings()
+  {
+    [funcDef, classDef, str, var, keyword, field, staticField, method, staticMethod]
   }
 
-  override Bool process(IModuleSource? sourceModule,
-      ISemanticHighlightingRequestor? requestor)
+  private Str index(SH sh) { sh.getPreferenceKey }
+
+  protected override Bool doHighlighting(IModuleSource? sourceModule)
   {
-    if (requestor == null) return false
-    this.requestor = requestor
     me := sourceModule.getModelElement
     if(me == null) return false
     ParseUtil.parse(me).accept(this) 
-    this.requestor = null
     return true
   }
   
@@ -107,42 +70,39 @@ class FanSemanticHighlighter : ISemanticHighlightingExtension, AstVisitor
       SlotRef ref := node
       if (ref.id === ExprId.fieldRef)
       {
-        requestor.addPosition(ref.start, ref.end+1, 
-          index(ref.modelSlot.isStatic ? staticField : field))
+        addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticField : field))
       } else if(ref.id === ExprId.methodRef) {
-        requestor.addPosition(ref.start, ref.end+1, 
-          index(ref.modelSlot.isStatic ? staticMethod : method))
+        addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticMethod : method))
       }
     }
     else if (node is MethodVarRef)
     {
       MethodVarRef ref := node
-      requestor.addPosition(ref.start, ref.end+1, index(var))
+      addPosition(ref.start, ref.end+1, index(var))
     }
     else if (node is MethodVar)
     {
       MethodVar def := (MethodVar)node
-      requestor.addPosition(def.name.start, def.name.end+1, index(var))
+      addPosition(def.name.start, def.name.end+1, index(var))
     }
-    else if (node is ItRef)
+    /*else if (node is ItRef)
     {
-      requestor.addPosition(node.start, node.end+1, index(var))
-    }
+      addPosition(node.start, node.end+1, index(var))
+    }*/
     else if (node is Getter)
     {
       Getter getter := node
-      requestor.addPosition(getter.name.start, getter.name.end+1, index(keyword))
+      addPosition(getter.name.start, getter.name.end+1, index(keyword))
     }
     else if (node is Setter)
     {
       Setter setter := node
-      requestor.addPosition(setter.name.start, setter.name.end+1, index(keyword))
+      addPosition(setter.name.start, setter.name.end+1, index(keyword))
     }
     else if (node is FieldDef)
     {
       FieldDef f := node
-      requestor.addPosition(f.name.start, f.name.end+1, 
-        index(f.modifiers.has(ModifierId.Static) ? staticField : field))
+      addPosition(f.name.start, f.name.end+1, index(f.modifiers.has(ModifierId.Static) ? staticField : field))
     }
     return true
   }

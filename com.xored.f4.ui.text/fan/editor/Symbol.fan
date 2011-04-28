@@ -1,0 +1,25 @@
+enum class Symbol
+{
+  eof,
+  lbrace,
+  rbrace,
+  lbracket,
+  rbracket,
+  lparen,
+  rparen,
+  semicolon,
+  colon,
+  comma,
+  question,
+  eq,
+  less,
+  greater,
+  other,
+  identifier,
+  backslash,
+  slash,
+  plus,
+  minus,
+  star,
+  userDefined
+}

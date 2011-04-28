@@ -6,7 +6,6 @@
 //   Dmitriy Malyugin July 26, 2010 - Initial Contribution
 //
 
-using [java] java.lang
 using [java] java.util
 
 using [java] org.eclipse.dltk.ui
@@ -18,8 +17,6 @@ using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
 using [java] org.eclipse.jface.text
 using [java] fanx.interop
-
-using "[java]com.xored.fanide.internal.ui"
 
 using f4model
 using f4parser

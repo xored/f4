@@ -13,8 +13,6 @@ using [java]org.eclipse.dltk.ui.text.folding::IFoldingBlockRequestor
 using [java]org.eclipse.dltk.ui.text.folding::PartitioningFoldingBlockProvider
 using [java]org.eclipse.dltk.ui.text::IPartitioningProvider
 using [java]org.eclipse.jface.preference::IPreferenceStore
-using "[java]com.xored.fanide.internal.ui.text"::IFanPartitions
-using "[java]com.xored.fanide.internal.ui"::FanUI
 using [java]org.eclipse.jface.text::Document
 using [java]org.eclipse.dltk.ui.text.folding::IFoldingBlockKind
 using [java]org.eclipse.jface.text::IRegion
@@ -23,7 +21,7 @@ using [java]java.util::List as JList
 class FanCommentFoldingBlockProvider : PartitioningFoldingBlockProvider
 {
 
-  new make() : super(FanUI.getDefault.getTextTools) {     }
+  new make() : super(FanTextTools.instance) {     }
   
   private Void report(IFoldingContent content, Str pattern, Bool collapse) {
     computeBlocksForPartitionType(content, pattern, FanFoldingBlockKind.comment, collapse)
@@ -31,10 +29,10 @@ class FanCommentFoldingBlockProvider : PartitioningFoldingBlockProvider
   
   override Void computeFoldableBlocks(IFoldingContent? content) {
     if (isFoldingComments) {
-      report(content, IFanPartitions.FAN_SINGLE_LINE_COMMENT, isCollapseComments)
-      report(content, IFanPartitions.FAN_MULTI_LINE_COMMENT, isCollapseComments)
+      report(content, IFanPartitions.singleLineComment, isCollapseComments)
+      report(content, IFanPartitions.multiLineComment, isCollapseComments)
     }
-    if (isFoldingDocs) report(content, IFanPartitions.FAN_DOC, isCollapseDocs)
+    if (isFoldingDocs) report(content, IFanPartitions.fandoc, isCollapseDocs)
   }
 
   override Void reportRegions(Document? document, JList? regions,

@@ -1,6 +1,5 @@
 using [java] org.eclipse.dltk.ui.text.completion
 using [java] org.eclipse.jface.text.templates
-using "[java]com.xored.fanide.internal.ui.templates"
 
 public class FanTypeCompletionProposalComputer :
     ScriptCompletionProposalComputer {
