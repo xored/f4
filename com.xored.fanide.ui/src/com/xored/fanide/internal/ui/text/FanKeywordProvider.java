@@ -26,7 +26,7 @@ public final class FanKeywordProvider {
 	public final static String KEYWORD_THIS = "this";
 	public final static String KEYWORD_THIS_TYPE = "This";
 	public final static String KEYWORD_SUPER = "super";
-	// public final static String KEYWORD_IT = "it";
+	public final static String KEYWORD_IT = "it";
 	public final static String KEYWORD_NULL = "null";
 	public final static String KEYWORD_BREAK = "break";
 	public final static String KEYWORD_CONTINUE = "continue";
@@ -68,7 +68,7 @@ public final class FanKeywordProvider {
 				KEYWORD_THIS,
 				KEYWORD_THIS_TYPE,
 				KEYWORD_SUPER,
-				// KEYWORD_IT,
+				KEYWORD_IT,
 				KEYWORD_NULL, KEYWORD_BREAK, KEYWORD_CONTINUE, KEYWORD_FOR,
 				KEYWORD_IF, KEYWORD_ELSE, KEYWORD_RETURN, KEYWORD_THROW,
 				KEYWORD_WHILE, KEYWORD_TRY, KEYWORD_CATCH, KEYWORD_FINALLY,

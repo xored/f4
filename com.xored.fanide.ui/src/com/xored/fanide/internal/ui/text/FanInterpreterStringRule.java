@@ -5,7 +5,7 @@ import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 
-class FanInterpreterStringRule implements IPredicateRule {
+public class FanInterpreterStringRule implements IPredicateRule {
 	private IToken token;
 
 	public FanInterpreterStringRule(IToken comment) {

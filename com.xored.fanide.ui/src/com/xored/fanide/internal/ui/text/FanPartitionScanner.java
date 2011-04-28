@@ -46,7 +46,7 @@ public class FanPartitionScanner extends RuleBasedPartitionScanner implements
 		rules.add(new EndOfLineRule("**", doc));
 		rules.add(new MultiLineRule("/*", "*/", multiLineComment, '\\', true));
 
-		rules.add(new MultiLineRule("\'\'\'", "\'\'\'", string, '\\'));
+		//rules.add(new MultiLineRule("\'\'\'", "\'\'\'", string, '\\'));
 		rules.add(new MultiLineRule("\"\"\"", "\"\"\"", string));
 		rules.add(new MultiLineRule("\"", "\"", string, '\\'));
 		rules.add(new SingleLineRule("`", "`", string, '\\'));

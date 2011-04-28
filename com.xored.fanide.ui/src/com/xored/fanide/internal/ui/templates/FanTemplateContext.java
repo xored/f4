@@ -7,7 +7,7 @@ import org.eclipse.jface.text.templates.TemplateContextType;
 
 public class FanTemplateContext extends ScriptTemplateContext {
 
-	protected FanTemplateContext(TemplateContextType type,
+	public FanTemplateContext(TemplateContextType type,
 			IDocument document, int completionOffset, int completionLength,
 			ISourceModule sourceModule) {
 		super(type, document, completionOffset, completionLength, sourceModule);

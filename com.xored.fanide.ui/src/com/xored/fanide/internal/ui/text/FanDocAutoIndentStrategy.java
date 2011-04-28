@@ -34,7 +34,6 @@ import org.eclipse.ui.texteditor.ITextEditorExtension3;
  * @author kappa
  * 
  */
-@SuppressWarnings("restriction")
 public class FanDocAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
 	/** The partitioning that this strategy operates on. */

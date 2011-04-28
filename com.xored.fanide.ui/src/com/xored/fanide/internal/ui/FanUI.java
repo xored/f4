@@ -18,7 +18,6 @@ import org.fantom.FantomVM;
 import org.osgi.framework.BundleContext;
 
 import com.xored.fanide.internal.ui.text.FanCodeTemplateAccess;
-import com.xored.fanide.internal.ui.text.FanTextTools;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -65,8 +64,7 @@ public class FanUI extends AbstractUIPlugin {
 
 	public synchronized ScriptTextTools getTextTools() {
 		if (fFanTextTools == null)
-			fFanTextTools = new FanTextTools(true);
-			//fFanTextTools = (ScriptTextTools)FantomVM.makeObject("f4uiText::FanTextTools", true);
+			fFanTextTools = (ScriptTextTools)FantomVM.makeObject("f4uiText::FanTextTools");
 		return fFanTextTools;
 	}
 
