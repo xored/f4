@@ -291,14 +291,16 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
       dummyPeer := false
 
       block = getLastOpenBlockType(d, c.offset)
-      if (curLineStr.trim().endsWith("\\")) {
+      if (curLineStr.trim.endsWith("\\"))
         resultIndent = getLineIndent(d, line - 1)
-      } else if (block == null) {
+      else if (block == null)
+      {
         lastCodeLine := getLastCodeLine(d, line)
         // no code above us, just copy last indent
-        if (lastCodeLine == null) {
+        if (lastCodeLine == null)
           resultIndent = getLineIndent(d, line - 1)
-        } else {
+        else
+        {
           // if our line is inside brackets, get line with opening
           // bracket
           block = getLastOpenBlockType(d, d
@@ -313,7 +315,10 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
           }
           resultIndent = getLineIndent(d, lastCodeLine)
         }
-      } else {
+      }
+      else
+      {
+        // block != null
         lastCodeLine := d.getLineOfOffset(block.offset)
         lastIndent = getLineIndent(d, lastCodeLine)
 
@@ -334,7 +339,7 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
           needPeer = true
       }
 
-      if (!(block.opening == '[' || block.opening == '(')) {
+      if (!(block?.opening == '[' || block?.opening == '(')) {
         firstContinuation := previousIsFirstContinuation(d,
             scanner, c.offset, curLine)
         continuation := !firstContinuation
@@ -355,22 +360,23 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
       contentStart := findEndOfWhiteSpace(d, c.offset, lineEnd)
       c.length = 0.max(contentStart - c.offset)
 
-      if (block.opening == '{'
+      if (block?.opening == '{'
           && !preferenceStore
               .getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACES))
         needPeer = false
 
-      if ((block.opening == '[' || block.opening == '(')
+      if ((block?.opening == '[' || block?.opening == '(')
           && !preferenceStore
               .getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACKETS))
         needPeer = false
 
-      if ((needPeer || dummyPeer) && block.opening == '{') {
+      if ((needPeer || dummyPeer) && block?.opening == '{') {
+        //block != null
         buf := StrBuf().add(c.text).add(resultIndent)
         c.shiftsCaret = false
         c.caretOffset = c.offset + buf.size
         prevBlock := getLastOpenBlockType(d, block.offset - 1)
-        insideRoundBrackets := (prevBlock != null && prevBlock.opening == '(')
+        insideRoundBrackets := (prevBlock != null && prevBlock?.opening == '(')
         if (!dummyPeer && !insideRoundBrackets && lineEnd - contentStart > 0)
         {
           c.length = lineEnd - c.offset

@@ -372,8 +372,8 @@ class FanHeuristicScanner {
       pos = start - 1
       while (pos >= bound)
       {
-
-        char = document.getChar(pos);
+        if (pos < 0) return null
+        char = document.getChar(pos)
         if (condition.stop(char, pos, false))
           return pos
         pos = condition.nextPosition(pos, false)
