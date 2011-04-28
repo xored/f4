@@ -659,10 +659,10 @@ class FanHeuristicScanner {
           depth--
       }
     
-      Int? next := start
+      Int? next := start-1
       while (true)
       {
-        next = scanForward(next, CharacterMatch([openingPeer,closingPeer],this))
+        next = scanForward(next+1, CharacterMatch([openingPeer,closingPeer],this))
         if (next == null) return null
         if (document.getChar(next) == openingPeer)
           depth++
