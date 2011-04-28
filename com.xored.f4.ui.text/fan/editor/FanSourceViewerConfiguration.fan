@@ -26,7 +26,7 @@ using "[java]com.xored.fanide.internal.ui.text"::FanStringScanner
 class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 {
   new make(IColorManager colorManager, IPreferenceStore preferenceStore,
-    ITextEditor editor, Str partitioning)
+    ITextEditor? editor, Str partitioning)
   : super(colorManager, preferenceStore, editor, partitioning) { }
 
   override Str?[]? getConfiguredContentTypes(ISourceViewer? sourceViewer) { IFanPartitions.partitionTypes }

@@ -25,8 +25,8 @@ class FanTextTools : ScriptTextToolsBridge
       IPreferenceStore? preferenceStore, ITextEditor? editor,
       Str? partitioning)
   {
-    return FanSourceViewerConfiguration(getColorManager(),
-        preferenceStore, editor, partitioning);
+    return FanSourceViewerConfiguration(getColorManager,
+        preferenceStore, editor, partitioning)
   }
 
   
