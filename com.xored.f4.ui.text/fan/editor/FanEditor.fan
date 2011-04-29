@@ -21,8 +21,6 @@ using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptOutlinePage
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptEditor
 using [java] com.xored.fanide.core::FanLanguageToolkit
 using "[java]com.xored.fanide.internal.ui"::FanUI
-using "[java]com.xored.fanide.internal.ui.editor"::FanOutlinePage
-using "[java]com.xored.fanide.internal.ui.text"::FanBracketInserter
 
 class FanEditor : ScriptEditor
 {

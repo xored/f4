@@ -209,22 +209,13 @@ class FanHeuristicScanner {
   /** the most recently read character. */
   private Int char
   /** the most recently read position. */
-  private Int pos
+  Int pos { private set }
   /**
    * The most recently used partition.
    * 
    * @since 3.2
    */
   private ITypedRegion cachedPartition := TypedRegion(-1, 0, "__no_partition_at_all")
-
-  /**
-   * Returns the most recent internal scan position.
-   * 
-   * @return the most recent internal scan position.
-   */
-  /*public int getPosition() {
-    return fPos;
-  }*/
 
   /**
    * Sets the most recent internal scan position.
@@ -324,11 +315,9 @@ class FanHeuristicScanner {
    *         or <code>NOT_FOUND</code> if none can be found
    */
   //public int scanForward(int start, int bound, StopCondition condition) {
-  private Int? scanForward(Int start, StopCondition condition)
+  private Int? scanForward(Int start, StopCondition condition, Int bound := document.getLength)
   {
     //Assert.isLegal(start >= 0);
-    bound := document.getLength
-
     //try {
       pos = start
       while (pos < bound)
@@ -527,33 +516,24 @@ class FanHeuristicScanner {
    *            the first position not to consider any more
    * @return a constant from {@link Symbols} describing the next token
    */
-  /*public int nextToken(int start, int bound) {
-    int pos = scanForward(start, bound, fNonWSDefaultPart);
-    if (pos == NOT_FOUND)
-      return TokenEOF;
+  public Symbol nextToken(Int start, Int bound)
+  {
+    pos := scanForward(start, nonWSDefaultPart, bound)
+    if (pos == null) return Symbol.eof
 
-    fPos++;
+    pos++
 
-    int token = getGenericToken(fChar);
-    if (token != TokenOTHER)
-      return token;
+    token := getGenericToken(char)
+    if (token != Symbol.other) return token
 
     // else
-    if (isValidIdentifierPart(fChar)) {
-      // assume an identifier or keyword
-      int from = pos, to;
-      pos = findNonIdentifierForward(pos, bound);
-      if (pos == NOT_FOUND)
-        to = bound == UNBOUND ? fDocument.getLength() : bound;
-      else
-        to = pos;
+    if (!char.isAlphaNum) return Symbol.other
+    // assume an identifier or keyword
+    from := pos
+    to := scanForward(pos, nonIdentifier, bound) ?: bound
 
-      return getToken(from, to);
-    } else {
-      // operators, number literals etc
-      return TokenOTHER;
-    }
-  }*/
+    return getToken(from,document.get(from, to - from))
+  }
 
   /**
    * Returns the next token in backward direction, starting at
@@ -606,15 +586,7 @@ class FanHeuristicScanner {
     }
 
     return getToken(from, identOrKeyword);
-  }
-
-  public int findNonIdentifierForward(int offset, int bound) {
-    return scanForward(offset, bound, fNonIdentifier);
   }*/
-
-  //public Int? findNonIdentifierBackward(Int offset, Int bound) {
-  //
-  //}
 
   /*public int findPrecedingNotEmptyLine(int offset) {
     try {

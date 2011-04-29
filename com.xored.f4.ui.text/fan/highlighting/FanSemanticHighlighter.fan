@@ -35,6 +35,9 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
   
   private SH keyword := SH(FanPreferenceConstants.EDITOR_KEYWORD_COLOR,
           PreferencesMessages.DLTKEditorPreferencePage_keywords)
+  
+  private SH param := SH(FanPreferenceConstants.EDITOR_PARAM_COLOR,
+          "Parameters")
 
   private SH field := SH(FanPreferenceConstants.EDITOR_FIELD_COLOR,
           "Fields")
@@ -50,7 +53,7 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
   
   override SemanticHighlighting?[]? getSemanticHighlightings()
   {
-    [funcDef, classDef, str, var, keyword, field, staticField, method, staticMethod]
+    [funcDef, classDef, str, var, keyword, param, field, staticField, method, staticMethod]
   }
 
   private Str index(SH sh) { sh.getPreferenceKey }
@@ -80,9 +83,9 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
     }
     else if (node is FuncTypeParam)
     {
-      FuncTypeParam param := node
-      name := param.name
-      if (name != null) addPosition(name.start, name.end+1, index(var))
+      FuncTypeParam def := node
+      name := def.name
+      if (name != null) addPosition(name.start, name.end+1, index(param))
     }
     else if (node is TypeDef)
     {
@@ -102,15 +105,10 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
       Setter setter := node
       addPosition(setter.name.start, setter.name.end+1, index(keyword))
     }
-    else if (node is MethodVar)
+    else if (node is ParamDef)
     {
-      MethodVar def := (MethodVar)node
-      addPosition(def.name.start, def.name.end+1, index(var))
-    }
-    else if (node is FuncTypeParam)
-    {
-      FuncTypeParam param := node
-      addPosition(param.name.start, param.name.end+1, index(var))
+      ParamDef def := node
+      addPosition(def.name.start, def.name.end+1, index(param))
     }
     else if (node is EnumValDef)
     {
