@@ -27,4 +27,5 @@ mixin Flag
   const static Int Virtual    := 0x00002000
   const static Int Once       := 0x00004000
   const static Int Readonly   := 0x00008000
+  const static Int Facet      := 0x00010000
 }

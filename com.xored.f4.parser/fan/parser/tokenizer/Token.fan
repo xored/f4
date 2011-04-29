@@ -91,7 +91,6 @@ enum class Token
   defaultKeyword,
   doKeyword,
   elseKeyword,
-  enumKeyword,
   falseKeyword,
   finalKeyword,
   finallyKeyword,

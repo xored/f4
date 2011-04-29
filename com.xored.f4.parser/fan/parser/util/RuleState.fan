@@ -26,6 +26,7 @@ class RuleState
   @Operator Void set(Str key, Obj? val)
   {
     was := store[key]
+    if (val == null) return
     if (was == null) store[key] = val
     else 
     {

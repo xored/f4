@@ -5,43 +5,38 @@ using [java] com.xored.f4.ui.text::PredicateRuleBridge
 
 class FanInterpreterStringRule : PredicateRuleBridge
 {
-  private IToken token
-
   new make(IToken comment)
   {
-    token = comment
+    getSuccessToken = comment
   }
 
   override IToken? eval(ICharacterScanner? scanner)
   {
-    if (!(scanner is FanPartitionScanner && ((FanPartitionScanner) scanner).getOffset() == 0)) {
-      return Token.UNDEFINED;
+    if ((scanner as FanPartitionScanner)?.getOffset == 0)
+      return Token.UNDEFINED
+    c := scanner.read
+    if (c != '#')
+    {
+      scanner.unread
+      return Token.UNDEFINED
     }
-    c := scanner.read();
-    if (c != '#') {
-      scanner.unread();
-      return Token.UNDEFINED;
-    }
-    c = scanner.read();
-    if (c != '!') {
-      scanner.unread();
-      scanner.unread();
-      return Token.UNDEFINED;
+    c = scanner.read
+    if (c != '!')
+    {
+      scanner.unread
+      scanner.unread
+      return Token.UNDEFINED
     }
     // read till EOL
-    while (c != '\n' && c != '\r' && c != ICharacterScanner.EOF) {
-      c = scanner.read();
+    while (c != '\n' && c != '\r' && c != ICharacterScanner.EOF)
+      c = scanner.read
+    if (c == '\r')
+    {
+      c = scanner.read
+      if (c != '\n') scanner.unread
     }
-    if (c == '\r') {
-      c = scanner.read();
-      if (c != '\n') {
-        scanner.unread();
-      }
-    }
-    return token;
+    return getSuccessToken
   }
 
-  override IToken? getSuccessToken() {
-    return token;
-  }
+  override IToken? getSuccessToken { private set }
 }

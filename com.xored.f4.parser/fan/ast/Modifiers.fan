@@ -4,6 +4,7 @@ enum class ModifierId
   Const,
   Ctor,
   Enum,
+  Facet,
   Final,
   Internal,
   Mixin,

@@ -86,6 +86,16 @@ const class FuncType : CType
     if (returnType == null) return "|"+params.join(",")+"|"
     return "|"+params.join(",")+"->$returnType|"
   }
+  
+  override Void accept(AstVisitor v)
+  {
+    if (v.enterNode(this))
+    {
+      params.each { it.accept(v) }
+      returnType?.accept(v)
+      v.exitNode(this)
+    }
+  }
 }
 
 const class FuncTypeParam : Node

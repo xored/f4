@@ -15,9 +15,9 @@ class Parser : AstFactory
   static const Token[] typeDefSymptoms := [
     Token.classKeyword,
     Token.mixinKeyword,
-    Token.enumKeyword,
+//    Token.enumKeyword,
     Token.docComment, 
-//    Token.at, 
+    Token.at, 
 //    Token.pipe,
     Token.abstractKeyword,
     Token.constKeyword,
@@ -32,7 +32,10 @@ class Parser : AstFactory
     Token.publicKeyword,
     Token.readonlyKeyword,
     Token.staticKeyword,
-    Token.virtualKeyword]
+    Token.virtualKeyword
+  ]
+  
+  static const Str[] positionals := ["enum", "facet"]
   
   static const Token[] usingDefOrtypeDefSymptoms := 
     typeDefSymptoms.rw.add(usingDefSymptom).sort  
@@ -132,8 +135,7 @@ class Parser : AstFactory
     docs
     facets
     s["modifiers"] = modifiers
-    match :=  matchAny([Token.mixinKeyword,
-      Token.enumKeyword,Token.classKeyword])
+    match :=  matchAny([Token.mixinKeyword, Token.classKeyword])
     ruleFailed(s)
     return match
   }
@@ -143,28 +145,18 @@ class Parser : AstFactory
     s := startRule
     s["docs"] = docs
     s["facets"] = facets
-    s["modifiers"] = modifiers
-
-    isEnum  := false
-    if (matchAndConsume(Token.mixinKeyword)) 
+    m := modifiers
+    s["modifiers"] = m
+    if (curt === Token.mixinKeyword) 
     {
-      Modifiers m := s["modifiers"]
-      s.replace("modifiers", Modifiers.make(m.start, pos, m.list.dup.add(Modifier.make(pos, pos + 6, ModifierId.Mixin))))
-    }
-    else if (matchAndConsume(Token.enumKeyword))
-    {
-      consume(Token.classKeyword)
-      isEnum = true
-    }
-    else if (cur.val == "facet")
-    {
+      m = Modifiers.make(m.start, pos, m.list.dup.add(Modifier.make(pos, pos + 5, ModifierId.Mixin)))
+      s.replace("modifiers", m)
       consume
-      consume(Token.classKeyword)
     }
     else consume(Token.classKeyword)
-    typeId := id  
+    typeId := id
     curTypeName = typeId.text
-    s["name"] = typeId    
+    s["name"] = typeId
     if (matchAndConsume(Token.colon))
     {
       safe |->| {s["inheritance"] = ctype}
@@ -175,7 +167,7 @@ class Parser : AstFactory
     if (failed) recoverToNl //docs, flags,
     inType = true
     enterTypeDef(curTypeName)
-    if (isEnum) 
+    if (m.map[ModifierId.Enum] != null) 
     {
       s["slots"] = enumValDef
       while (matchAndConsume(Token.comma)) s["slots"] = enumValDef
@@ -199,8 +191,22 @@ class Parser : AstFactory
     else s["bodyEnd"] = consume(Token.rbrace).end
     return endRule(s).makeTypeDef(s)
   }
+
+  Modifier? positional()
+  {
+    s := startRule
+    if (curt !== Token.identifier) return null
+    switch (cur.val)
+    {
+      case "enum":  s["id"] = ModifierId.Enum
+      case "facet": s["id"] = ModifierId.Facet
+      default: return null
+    }
+    consume
+    return endRule(s).makeModifier(s)
+  }
   
-  Modifier modifier()
+  Modifier? modifier()
   {
     s := startRule
     switch (curt)
@@ -219,7 +225,7 @@ class Parser : AstFactory
       case Token.readonlyKeyword:  s["id"] = ModifierId.Readonly
       case Token.staticKeyword:    s["id"] = ModifierId.Static
       case Token.virtualKeyword:   s["id"] = ModifierId.Virtual
-      default: throw Err()
+      default: return null
     }
     consume
     return endRule(s).makeModifier(s)
@@ -230,9 +236,11 @@ class Parser : AstFactory
     s := startRule
     while(true)
     {
-      try s["modifiers"] = modifier
-      catch (Err err) break
+      mod := modifier
+      if (mod == null) break
+      s["modifiers"] = modifier
     }
+    s["modifiers"] = positional
     return endRule(s).makeModifiers(s)
   }
 
@@ -2305,7 +2313,7 @@ class Parser : AstFactory
   
   protected This recoverTo(Token[] tokens)
   {
-    while (!tokens.contains(curt))
+    while (!(tokens.contains(curt) || curt === Token.identifier && positionals.contains(cur.val)))
     {
       if (curt === Token.eof) break
       consume

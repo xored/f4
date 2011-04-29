@@ -1,7 +1,6 @@
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui.text.completion
 using [java] org.eclipse.swt.graphics
-using [java] com.xored.fanide.core
 using [java] com.xored.f4.ui.text
 using f4core
 
@@ -35,7 +34,5 @@ public class FanCompletionProposalCollector :
     FanMethodCompletionProposal(methodProposal, getInvocationContext)
   }
 
-  override Str? getNatureId() {
-    return FanNature.NATURE_ID
-  }
+  override Str? getNatureId() { F4Nature.id }
 }

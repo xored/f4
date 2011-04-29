@@ -279,11 +279,18 @@ class StructureParser
       isMixin = true
       consume
     }
-    else if (curt === Token.enumKeyword)
+    else if (curt === Token.identifier && cur.val == "enum")
     {
       consume
       consume(Token.classKeyword)
       flags = flags.or(Flag.Enum).or(Flag.Const).or(Flag.Final)
+      isEnum = true
+    }
+    else if (curt === Token.identifier && cur.val == "facet")
+    {
+      consume
+      consume(Token.classKeyword)
+      flags = flags.or(Flag.Facet).or(Flag.Const).or(Flag.Final)
       isEnum = true
     }
     else
@@ -792,7 +799,6 @@ class StructureParser
     switch (curt)
     {
       case Token.classKeyword: return true
-      case Token.enumKeyword:  return true
       case Token.mixinKeyword: return true
     }
     return false

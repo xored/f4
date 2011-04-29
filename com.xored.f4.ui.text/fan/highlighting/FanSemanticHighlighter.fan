@@ -69,26 +69,29 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
     {
       SlotRef ref := node
       if (ref.id === ExprId.fieldRef)
-      {
         addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticField : field))
-      } else if(ref.id === ExprId.methodRef) {
+      else if(ref.id === ExprId.methodRef)
         addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticMethod : method))
-      }
     }
     else if (node is MethodVarRef)
     {
       MethodVarRef ref := node
       addPosition(ref.start, ref.end+1, index(var))
     }
-    else if (node is MethodVar)
+    else if (node is FuncTypeParam)
     {
-      MethodVar def := (MethodVar)node
-      addPosition(def.name.start, def.name.end+1, index(var))
+      FuncTypeParam param := node
+      name := param.name
+      if (name != null) addPosition(name.start, name.end+1, index(var))
     }
-    /*else if (node is ItRef)
+    else if (node is TypeDef)
     {
-      addPosition(node.start, node.end+1, index(var))
-    }*/
+      TypeDef def := node
+      mod := def.modifiers.map[ModifierId.Enum]
+      if (mod != null) addPosition(mod.start, mod.end+1, index(keyword))
+      mod = def.modifiers.map[ModifierId.Facet]
+      if (mod != null) addPosition(mod.start, mod.end+1, index(keyword))
+    }
     else if (node is Getter)
     {
       Getter getter := node
@@ -98,6 +101,21 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
     {
       Setter setter := node
       addPosition(setter.name.start, setter.name.end+1, index(keyword))
+    }
+    else if (node is MethodVar)
+    {
+      MethodVar def := (MethodVar)node
+      addPosition(def.name.start, def.name.end+1, index(var))
+    }
+    else if (node is FuncTypeParam)
+    {
+      FuncTypeParam param := node
+      addPosition(param.name.start, param.name.end+1, index(var))
+    }
+    else if (node is EnumValDef)
+    {
+      EnumValDef f := node
+      addPosition(f.name.start, f.name.end+1, index(staticField))
     }
     else if (node is FieldDef)
     {

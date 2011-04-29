@@ -9,6 +9,6 @@ class FanDocumentSetupParticipant : IDocumentSetupParticipant
   override Void setup(IDocument? document)
   {
     FanTextTools.instance.setupDocumentPartitioner(document,
-      IFanPartitions.partitioning);
+      IFanPartitions.partitioning)
   }
 }
