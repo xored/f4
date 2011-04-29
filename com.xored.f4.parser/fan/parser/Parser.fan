@@ -303,13 +303,20 @@ class Parser : AstFactory
     if (match(Token.lparen))
     {
       safe |->| {s["params"] = params}
-      if (curt === Token.colon) safe |->| {s["ctorChain"] = ctorChain}
-      if (curt == Token.lbrace)
+      if (curt === Token.colon)
+      {
+        enterFunc(s.safeGet("params")?:[,])
+        safe |->| {s["ctorChain"] = ctorChain}
+        safe |->| {s["body"] = block}        
+        exitFunc
+      }
+      else if (curt == Token.lbrace)
       {
         enterFunc(s.safeGet("params")?:[,])
         safe |->| {s["body"] = block}        
         exitFunc
-      } else endOfStmt
+      }
+      else endOfStmt
       inSlot = true
       return endRule(s).makeMethodDef(s)
     }
