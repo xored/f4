@@ -1,6 +1,5 @@
 using [java] org.eclipse.dltk.ui.text::DLTKColorConstants
 
-** TODO move to ui core
 class FanColorConstants
 {
   private new make() { }

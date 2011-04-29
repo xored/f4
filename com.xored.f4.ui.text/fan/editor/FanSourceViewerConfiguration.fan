@@ -13,15 +13,11 @@ using [java] org.eclipse.jface.text.source::ISourceViewer
 using [java] org.eclipse.jface.util::PropertyChangeEvent
 using [java] org.eclipse.dltk.ui.text::AbstractScriptScanner
 using [java] org.eclipse.dltk.ui.text::IColorManager
+using [java] org.eclipse.dltk.ui.text::ScriptMultilineCommentScanner
 using [java] org.eclipse.dltk.ui.text::ScriptSourceViewerConfiguration
 using [java] org.eclipse.dltk.ui.text::ScriptPresentationReconciler
 using [java] org.eclipse.dltk.ui.text::TodoTaskPreferencesOnPreferenceStore
 using [java] org.eclipse.dltk.ui.text.completion::ContentAssistPreference
-using "[java]com.xored.fanide.internal.ui.text"::FanDoubleClickStrategy
-using "[java]com.xored.fanide.internal.ui.text"::FanInterpreterStringScanner
-using "[java]com.xored.fanide.internal.ui.text"::FanMultiLineCommentScanner
-using "[java]com.xored.fanide.internal.ui.text"::FanSingleLineCommentScanner
-using "[java]com.xored.fanide.internal.ui.text"::FanStringScanner
 
 class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 {
@@ -52,11 +48,11 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
         FanColorConstants.singleLineComment, FanColorConstants.todoTag,
         TodoTaskPreferencesOnPreferenceStore(fPreferenceStore))
 
-    multiLineCommentScanner = FanMultiLineCommentScanner(
+    multiLineCommentScanner = ScriptMultilineCommentScanner(
         getColorManager, fPreferenceStore,
         FanColorConstants.multiLineComment,
         FanColorConstants.todoTag,
-        TodoTaskPreferencesOnPreferenceStore(fPreferenceStore))
+        TodoTaskPreferencesOnPreferenceStore(fPreferenceStore), true)
 
     docScanner = FanSingleLineCommentScanner(getColorManager(),
         fPreferenceStore, FanColorConstants.fandoc,

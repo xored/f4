@@ -32,7 +32,6 @@ import com.xored.fanide.core.FanLanguageToolkit;
 import com.xored.fanide.internal.core.model.PodFragment;
 import com.xored.fanide.internal.core.model.PodModule;
 import com.xored.fanide.internal.core.model.PodSourcesFolder;
-import com.xored.fanide.internal.ui.editor.FanEditor;
 import com.xored.fanide.internal.ui.text.SimpleFanSourceViewerConfiguration;
 import com.xored.fanide.ui.FanUIConstants;
 
@@ -183,7 +182,7 @@ public class FanUILanguageToolkit extends AbstractDLTKUILanguageToolkit {
 				}
 			}
 		}
-		return FanEditor.EDITOR_ID;
+		return FanUIConstants.FAN_EDITOR_ID;
 	}
 
 	public String getInterpreterContainerId() {
