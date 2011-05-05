@@ -1,24 +1,17 @@
 package com.xored.fanide.core.utils;
 
-import static com.xored.fanide.core.FanCore.POD_EXTENSION;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.dltk.core.DLTKCore;
-import org.eclipse.dltk.core.IModelElement;
-import org.eclipse.dltk.core.IProjectFragment;
 import org.eclipse.dltk.core.IScriptProject;
 
-import com.xored.fanide.core.BuildFan;
-import com.xored.fanide.core.FanCore;
 import com.xored.fanide.core.FanNature;
 
 public class FanProjectUtils {
@@ -26,7 +19,7 @@ public class FanProjectUtils {
 	private static final QualifiedName POD_NAME_PROJECT_PROPERTY = new QualifiedName(
 			QUALIFIER, "podName");
 
-	public static String getPodNameForElement(IModelElement element) {
+	/*public static String getPodNameForElement(IModelElement element) {
 		IProjectFragment proj = (IProjectFragment) element
 				.getAncestor(IProjectFragment.PROJECT_FRAGMENT);
 		if (proj.isArchive() && proj.isExternal()) {
@@ -39,17 +32,17 @@ public class FanProjectUtils {
 			return getPodNameForElement(element.getScriptProject().getProject());
 		}
 		return null;
-	}
+	}*/
 
-	public static boolean isPodProject(IScriptProject project) {
+	/*public static boolean isPodProject(IScriptProject project) {
 		if (!project.isOpen())
 			return false;
 		String element = FanProjectUtils.getPodNameForElement(project
 				.getProject());
 		return element != null;
-	}
+	}*/
 
-	public static String getPodNameForElement(IResource resource) {
+	/*public static String getPodNameForElement(IResource resource) {
 		try {
 			IProject project = resource.getProject();
 			String property = project
@@ -68,7 +61,7 @@ public class FanProjectUtils {
 			FanCore.log(e);
 		}
 		return null;
-	}
+	}*/
 
 	public static String getSrcDirs(final IScriptProject project)
 			throws CoreException {

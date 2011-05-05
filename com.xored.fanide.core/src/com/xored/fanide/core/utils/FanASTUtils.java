@@ -1,22 +1,12 @@
 package com.xored.fanide.core.utils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Stack;
 
-import org.eclipse.dltk.ast.ASTNode;
 import org.eclipse.dltk.ast.ASTVisitor;
-import org.eclipse.dltk.ast.declarations.MethodDeclaration;
 import org.eclipse.dltk.ast.declarations.ModuleDeclaration;
-import org.eclipse.dltk.ast.declarations.TypeDeclaration;
-import org.eclipse.dltk.ast.statements.Block;
 import org.eclipse.dltk.ast.statements.Statement;
-import org.eclipse.dltk.core.DLTKCore;
 
-import com.xored.fanide.ast.declarations.ClassDeclaration;
-import com.xored.fanide.ast.expressions.CallExpr;
-import com.xored.fanide.ast.expressions.LocalVariableDef;
 import com.xored.fanide.ast.statements.UsingStmt;
 
 public class FanASTUtils {
@@ -24,7 +14,7 @@ public class FanASTUtils {
 		throw new AssertionError("Cannot instantiate utility class"); //$NON-NLS-1$
 	}
 
-	public static ASTNode getEnclosingElement(Class element,
+	/*public static ASTNode getEnclosingElement(Class element,
 			ASTNode[] wayToNode, ASTNode node, boolean considerGiven) {
 		int pos = -1;
 		for (int i = wayToNode.length - 1; i >= 0; i--) {
@@ -42,27 +32,27 @@ public class FanASTUtils {
 			}
 		}
 		return null;
-	}
+	}*/
 
-	public static TypeDeclaration getEnclosingType(ASTNode[] wayToNode,
+	/*public static TypeDeclaration getEnclosingType(ASTNode[] wayToNode,
 			ASTNode node, boolean considerGiven) {
 		return (TypeDeclaration) getEnclosingElement(TypeDeclaration.class,
 				wayToNode, node, considerGiven);
-	}
+	}*/
 
-	public static CallExpr getEnclosingCallNode(ASTNode[] wayToNode,
+	/*public static CallExpr getEnclosingCallNode(ASTNode[] wayToNode,
 			ASTNode node, boolean considerGiven) {
 		return (CallExpr) getEnclosingElement(CallExpr.class, wayToNode, node,
 				considerGiven);
-	}
+	}*/
 
-	public static MethodDeclaration getEnclosingMethod(ASTNode[] wayToNode,
+	/*public static MethodDeclaration getEnclosingMethod(ASTNode[] wayToNode,
 			ASTNode node, boolean considerGiven) {
 		return (MethodDeclaration) getEnclosingElement(MethodDeclaration.class,
 				wayToNode, node, considerGiven);
-	}
+	}*/
 
-	public static ASTNode findMinimalASTNode(ModuleDeclaration unit, int start,
+	/*public static ASTNode findMinimalASTNode(ModuleDeclaration unit, int start,
 			int end) {
 		FanSelectionVisitor visitor = new FanSelectionVisitor(start, end);
 
@@ -73,9 +63,9 @@ public class FanASTUtils {
 		}
 
 		return visitor.getResult();
-	}
+	}*/
 
-	public static ASTNode[] restoreWayToNode(ModuleDeclaration module,
+	/*public static ASTNode[] restoreWayToNode(ModuleDeclaration module,
 			final ASTNode nde) {
 		final Stack<ASTNode> stack = new Stack<ASTNode>();
 
@@ -108,7 +98,7 @@ public class FanASTUtils {
 			e.printStackTrace();
 		}
 		return stack.toArray(new ASTNode[stack.size()]);
-	}
+	}*/
 
 	public static UsingStmt[] getUsingPackages(ModuleDeclaration module) {
 		FanUsingCollector visitor = new FanUsingCollector();
@@ -123,7 +113,7 @@ public class FanASTUtils {
 		return usingPackages.toArray(new UsingStmt[usingPackages.size()]);
 	}
 
-	public static ClassDeclaration determineSelfClass(
+	/*public static ClassDeclaration determineSelfClass(
 			ModuleDeclaration parsedUnit, ASTNode[] wayToNode) {
 		for (int i = wayToNode.length; --i >= 0;) {
 			final ASTNode node = wayToNode[i];
@@ -132,9 +122,9 @@ public class FanASTUtils {
 			}
 		}
 		return null;
-	}
+	}*/
 
-	public static LocalVariableDef[] findLocalVariables(final ASTNode scope,
+	/*public static LocalVariableDef[] findLocalVariables(final ASTNode scope,
 			final ASTNode nextScope, final String varName) {
 		final Collection variables = new ArrayList();
 		ASTVisitor visitor = new ASTVisitor() {
@@ -175,11 +165,11 @@ public class FanASTUtils {
 		}
 		return (LocalVariableDef[]) variables
 				.toArray(new LocalVariableDef[variables.size()]);
-	}
+	}*/
 
 }
 
-class FanSelectionVisitor extends ASTVisitor {
+/*class FanSelectionVisitor extends ASTVisitor {
 	ASTNode result = null;
 	final int start, end;
 
@@ -223,7 +213,7 @@ class FanSelectionVisitor extends ASTVisitor {
 		return true;
 	}
 
-}
+}*/
 
 class FanUsingCollector extends ASTVisitor {
 	List<UsingStmt> usingPackages = new ArrayList<UsingStmt>();

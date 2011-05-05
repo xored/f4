@@ -14,6 +14,7 @@ import org.eclipse.dltk.ui.editor.highlighting.SemanticHighlightingUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 
+import com.xored.fanide.core.FanNature;
 import com.xored.fanide.ui.FanPreferenceConstants;
 
 public class FanUIPreferenceInitializer extends AbstractPreferenceInitializer {
@@ -26,7 +27,7 @@ public class FanUIPreferenceInitializer extends AbstractPreferenceInitializer {
 		EditorsUI.useQuickDiffPreferencePage(store);
 		FanPreferenceConstants.initializeDefaultValues(store);
 		SemanticHighlightingUtils.initializeDefaultValues(store, FanUI
-				.getDefault().getTextTools().getSemanticHighlightings());
+				.getDefault().getTextTools().getSemanticPositionUpdater(FanNature.NATURE_ID).getSemanticHighlightings());
 	}
 
 }

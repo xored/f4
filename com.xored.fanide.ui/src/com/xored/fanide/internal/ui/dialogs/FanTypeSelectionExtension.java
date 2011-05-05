@@ -3,12 +3,13 @@ package com.xored.fanide.internal.ui.dialogs;
 import org.eclipse.dltk.ui.dialogs.ITypeInfoFilterExtension;
 import org.eclipse.dltk.ui.dialogs.ITypeInfoRequestor;
 import org.eclipse.dltk.ui.dialogs.TypeSelectionExtension;
-import com.xored.fanide.ast.declarations.FanFlags;
+
+import com.xored.fanide.ast.declarations.FanModifiers;
 
 public class FanTypeSelectionExtension extends TypeSelectionExtension {
 
-	private int MIXIN_MODIFYER = FanFlags.AccMixin;
-	private int ENUM_MODIFYER = FanFlags.AccEnum;
+	private int MIXIN_MODIFYER = FanModifiers.AccMixin;
+	private int ENUM_MODIFYER = FanModifiers.AccEnum;
 	
 	private int curType;
 	private boolean isClass = false;

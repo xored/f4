@@ -5,16 +5,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.dltk.core.DLTKCore;
-import org.eclipse.dltk.core.DLTKLanguageManager;
-import org.eclipse.dltk.core.IDLTKLanguageToolkit;
-import org.eclipse.dltk.core.IScriptProject;
-import org.eclipse.dltk.ui.preferences.PreferencesMessages;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
-
-import com.xored.fanide.core.FanNature;
 
 public class FanBuildUtils {
 	public static boolean processChanges(IProject project,
@@ -74,7 +65,7 @@ public class FanBuildUtils {
 		return true;
 	}
 
-	private static String[] getFullBuildDialogStrings(boolean workspaceSettings) {
+	/*private static String[] getFullBuildDialogStrings(boolean workspaceSettings) {
 		String title = "Interpreter settings changed";
 		String message;
 		if (workspaceSettings) {
@@ -89,5 +80,5 @@ public class FanBuildUtils {
 							"");
 		}
 		return new String[] { title, message };
-	}
+	}*/
 }

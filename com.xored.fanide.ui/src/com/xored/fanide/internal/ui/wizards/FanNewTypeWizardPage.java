@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.dltk.ast.declarations.ModuleDeclaration;
-import org.eclipse.dltk.ast.parser.ISourceParserConstants;
 import org.eclipse.dltk.compiler.util.Util;
 import org.eclipse.dltk.core.DLTKLanguageManager;
 import org.eclipse.dltk.core.IBuffer;
@@ -89,7 +88,7 @@ import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
-import com.xored.fanide.ast.declarations.FanFlags;
+import com.xored.fanide.ast.declarations.FanModifiers;
 import com.xored.fanide.ast.statements.UsingStmt;
 import com.xored.fanide.core.FanLanguageToolkit;
 import com.xored.fanide.core.FanNature;
@@ -131,8 +130,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 			moduleUsings = new TreeSet<FanUsing>();
 			// parse without caching because we are going to change it anyway
 			ModuleDeclaration moduleDecl = SourceParserUtil
-					.getModuleDeclaration(module, null, null,
-							ISourceParserConstants.DEFAULT);
+					.getModuleDeclaration(module);
 			if (moduleDecl != null) {
 				usingStatements = FanASTUtils.getUsingPackages(moduleDecl);
 			} else {
@@ -328,11 +326,11 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 
 	private IScriptFolder currentScriptFolder;
 
-	public int F_PUBLIC = FanFlags.AccPublic;
-	public int F_INTERNAL = FanFlags.AccInternal;
-	public int F_CONST = FanFlags.AccConst;
-	public int F_FINAL = FanFlags.AccFinal;
-	public int F_ABSTRACT = FanFlags.AccAbstract;
+	public int F_PUBLIC = FanModifiers.AccPublic;
+	public int F_INTERNAL = FanModifiers.AccInternal;
+	public int F_CONST = FanModifiers.AccConst;
+	public int F_FINAL = FanModifiers.AccFinal;
+	public int F_ABSTRACT = FanModifiers.AccAbstract;
 
 	private final static String PAGE_NAME = "com.xored.fanide.ui.FanNewTypeWizardPage"; //$NON-NLS-1$
 
@@ -472,7 +470,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		fSuperMixinsStatus = new StatusInfo();
 		fModifierStatus = new StatusInfo();
 
-		setModifiers(FanFlags.AccDefault, true);
+		setModifiers(FanModifiers.AccDefault, true);
 	}
 
 	/**
@@ -911,20 +909,20 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 	}
 
 	public void setModifiers(int modifiers, boolean canBeModified) {
-		if (FanFlags.isPublic(modifiers)) {
+		if (FanModifiers.isPublic(modifiers)) {
 			fAccMdfButtons.setSelection(PUBLIC_INDEX, true);
-		} else if (FanFlags.isInternal(modifiers)) {
+		} else if (FanModifiers.isInternal(modifiers)) {
 			fAccMdfButtons.setSelection(INTERNAL_INDEX, true);
 		} else {
 			fAccMdfButtons.setSelection(DEFAULT_INDEX, true);
 		}
-		if (FanFlags.isAbstract(modifiers)) {
+		if (FanModifiers.isAbstract(modifiers)) {
 			fOtherMdfButtons.setSelection(ABSTRACT_INDEX, true);
 		}
-		if (FanFlags.isFinal(modifiers)) {
+		if (FanModifiers.isFinal(modifiers)) {
 			fOtherMdfButtons.setSelection(FINAL_INDEX, true);
 		}
-		if (FanFlags.isConst(modifiers)) {
+		if (FanModifiers.isConst(modifiers)) {
 			fOtherMdfButtons.setSelection(CONST_INDEX, true);
 		}
 
@@ -1205,7 +1203,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 	protected IStatus modifiersChanged() {
 		StatusInfo status = new StatusInfo();
 		int modifiers = getModifiers();
-		if (FanFlags.isFinal(modifiers) && FanFlags.isAbstract(modifiers)) {
+		if (FanModifiers.isFinal(modifiers) && FanModifiers.isAbstract(modifiers)) {
 			status
 					.setError(FanWizardMessages.NewTypeWizardPage_error_ModifiersFinalAndAbstract);
 		} 
@@ -1470,7 +1468,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		StringBuffer buf = new StringBuffer();
 
 		int modifiers = getModifiers();
-		buf.append(FanFlags.toString(modifiers));
+		buf.append(FanModifiers.toString(modifiers));
 		if (modifiers != 0) {
 			buf.append(' ');
 		}

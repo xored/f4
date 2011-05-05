@@ -11,7 +11,6 @@
  *******************************************************************************/
 package com.xored.fanide.core;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,17 +22,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.dltk.compiler.util.Util;
-import org.eclipse.dltk.core.DLTKCore;
 import org.eclipse.dltk.utils.TextUtils;
-
-import fan.sys.Depend;
-import fan.sys.Err;
-import fan.sys.Version;
 
 public class BuildFan {
 
@@ -41,10 +33,10 @@ public class BuildFan {
 	private static final String POD_NAME = "podName";
 	private static final String SRC_DIRS = "srcDirs";
 	private static final String DEPS = "depends";
-	private static final String VERSION = "version";
-	private static final Version defaultVersion = Version.fromStr("0");
+	//private static final String VERSION = "version";
+	//private static final Version defaultVersion = Version.fromStr("0");
 
-	public static String readPodName(IProject project) {
+	/*public static String readPodName(IProject project) {
 		IFile podConf = project.getFile(new Path(FILENAME));
 		if (!podConf.exists()) {
 			return null;
@@ -74,9 +66,9 @@ public class BuildFan {
 			}
 		}
 		return null;
-	}
+	}*/
 
-	public static Version readVersion(IProject project) {
+	/*public static Version readVersion(IProject project) {
 		IFile podConf = project.getFile(new Path(FILENAME));
 		if (!podConf.exists()) {
 			return defaultVersion;
@@ -107,9 +99,9 @@ public class BuildFan {
 			}
 		}
 		return defaultVersion;
-	}
+	}*/
 
-	public static Depend[] readDeps(IProject project) {
+	/*public static Depend[] readDeps(IProject project) {
 		IFile podConf = project.getFile(new Path(FILENAME));
 		if (!podConf.exists()) {
 			return new Depend[0];
@@ -139,7 +131,7 @@ public class BuildFan {
 			}
 		}
 		return new Depend[0];
-	}
+	}*/
 
 	/**
 	 * @param podFile
@@ -167,7 +159,7 @@ public class BuildFan {
 		}
 	}
 
-	private static String depsToStr(Depend[] deps) {
+	/*private static String depsToStr(Depend[] deps) {
 		StringBuilder b = new StringBuilder();
 		b.append("[");
 		for (int i = 0; i < deps.length; i++) {
@@ -179,9 +171,9 @@ public class BuildFan {
 		}
 		b.append("]");
 		return b.toString();
-	}
+	}*/
 
-	private static Depend[] strToDeps(String str) {
+	/*private static Depend[] strToDeps(String str) {
 		Matcher array = Pattern.compile(
 				"^\\s*\\[((?:\\s*\"[^\"]*\"\\s*,?\\s*)*)\\]\\s*$").matcher(str);
 		Pattern dep = Pattern.compile("\\s*\"(.*)\"\\s*");
@@ -202,9 +194,9 @@ public class BuildFan {
 			FanCore.warning("failed to parse depends: " + str);
 			return new Depend[0];
 		}
-	}
+	}*/
 
-	public static void updateDeps(IProject project, Depend[] deps)
+	/*public static void updateDeps(IProject project, Depend[] deps)
 			throws CoreException, IOException {
 		IFile podFile = project.getFile(new Path(FILENAME));
 		if (!podFile.exists())
@@ -222,7 +214,7 @@ public class BuildFan {
 			FanCore.warning(DEPS + " not found in " //$NON-NLS-1$
 					+ podFile.getFullPath() + ":" + content); //$NON-NLS-1$
 		}
-	}
+	}*/
 
 	private static StringBuilder read(IFile file) throws CoreException,
 			IOException {

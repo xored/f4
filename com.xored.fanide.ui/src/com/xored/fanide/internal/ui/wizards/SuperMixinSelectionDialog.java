@@ -1,5 +1,7 @@
 package com.xored.fanide.internal.ui.wizards;
 
+import static com.xored.fanide.core.FanCore.POD_EXTENSION;
+
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -20,12 +22,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
-import com.xored.fanide.ast.declarations.FanFlags;
+import com.xored.fanide.ast.declarations.FanModifiers;
 import com.xored.fanide.internal.ui.FanUI;
 import com.xored.fanide.internal.ui.FanUILanguageToolkit;
 import com.xored.fanide.internal.ui.dialogs.FanTypeSelectionExtension;
-
-import static com.xored.fanide.core.FanCore.POD_EXTENSION;
 
 @SuppressWarnings("restriction")
 public class SuperMixinSelectionDialog extends OpenTypeSelectionDialog2 {
@@ -54,7 +54,7 @@ public class SuperMixinSelectionDialog extends OpenTypeSelectionDialog2 {
 			FanNewTypeWizardPage page, IScriptProject p) {
 		super(parent, true, context, SearchEngine.createSearchScope(p),
 				IDLTKSearchConstants.TYPE, new FanTypeSelectionExtension(
-						FanFlags.AccMixin), FanUILanguageToolkit.getInstance());
+						FanModifiers.AccMixin), FanUILanguageToolkit.getInstance());
 		fTypeWizardPage = page;
 		// to restore the content of the dialog field if the dialog is canceled
 		fOldContent = fTypeWizardPage.getSuperMixins();
