@@ -1,6 +1,5 @@
 using [java]org.eclipse.jface.viewers
 using [java]org.eclipse.jface.text
-using "[java]com.xored.fanide.internal.ui.editor"
 
 class AstSelectionChangedListener : ISelectionChangedListener
 {

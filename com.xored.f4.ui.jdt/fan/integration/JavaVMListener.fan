@@ -8,8 +8,8 @@ using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.jface.dialogs
 using [java] org.eclipse.swt.widgets
 using [java] org.eclipse.ui
-using [java] com.xored.fanide.ui.utils
 using [java] com.xored.fanide.core
+using [java] com.xored.fanide.ui.utils::FanBuildUtils
 
 const class JavaVMListener : IVMInstallChangedListener {
 

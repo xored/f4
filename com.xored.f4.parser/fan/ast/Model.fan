@@ -93,9 +93,9 @@ const class TypeDef : DefNode
   const CType[] inheritance
   const SlotDef[] slots
   new make(Int start, Int end, 
-    FanDoc[] docs, FacetDef[] fasets, Modifiers modifiers, Id name, 
+    FanDoc[] docs, FacetDef[] facets, Modifiers modifiers, Id name, 
     CType[] inheritance, SlotDef[] slots) 
-    : super(start, end, docs, fasets, modifiers, name)
+    : super(start, end, docs, facets, modifiers, name)
   {
     this.inheritance = inheritance
     this.slots = slots
@@ -105,8 +105,9 @@ const class TypeDef : DefNode
   {
     if (v.enterNode(this))
     {
-      inheritance.each {it.accept(v)}
-      slots.each {it.accept(v)}
+      facets.each { it.accept(v) }
+      inheritance.each { it.accept(v) }
+      slots.each { it.accept(v) }
       v.exitNode(this)
     }
   }
@@ -141,6 +142,7 @@ const class FieldDef : DefNode, SlotDef
   {
     if (v.enterNode(this))
     {
+      facets.each { it.accept(v) }
       ctype?.accept(v)
       init?.accept(v)
       getter?.accept(v)
@@ -212,6 +214,7 @@ const class MethodDef : DefNode, SlotDef
   {
     if (v.enterNode(this))
     {
+      facets.each { it.accept(v) }
       returnType?.accept(v)
       params.each {it.accept(v)}
       ctorChain?.accept(v)

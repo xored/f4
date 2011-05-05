@@ -110,7 +110,7 @@ public class FanProjectUtils {
 		return false;
 	}
 
-	public static void updatePodName(IProject project) {
+	/*public static void updatePodName(IProject project) {
 		String podName = BuildFan.readPodName(project);
 		if (podName != null) {
 			try {
@@ -120,5 +120,5 @@ public class FanProjectUtils {
 				FanCore.log(e);
 			}
 		}
-	}
+	}*/
 }
