@@ -800,6 +800,7 @@ class StructureParser
     {
       case Token.classKeyword: return true
       case Token.mixinKeyword: return true
+      case Token.identifier: return cur.val == "enum" || cur.val == "facet"
     }
     return false
     

@@ -21,39 +21,44 @@ using f4core
 
 class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
 {
-  private SH funcDef := SH(FanPreferenceConstants.EDITOR_FUNCTION_DEFINITION_COLOR,
-          PreferencesMessages.DLTKEditorPreferencePage_function_colors)
-  
   private SH classDef := SH(FanPreferenceConstants.EDITOR_CLASS_DEFINITION_COLOR, 
           PreferencesMessages.DLTKEditorPreferencePage_class_colors)
   
-  private SH str := SH(FanPreferenceConstants.EDITOR_STRING_COLOR,
-          PreferencesMessages.DLTKEditorPreferencePage_strings)
+  private SH facet := SH(FanPreferenceConstants.EDITOR_DECORATOR_COLOR,
+          PreferencesMessages.DLTKEditorPreferencePage_decorators)
   
-  private SH var := SH(FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
-          PreferencesMessages.DLTKEditorPreferencePage_variables)
+  private SH field := SH(FanPreferenceConstants.EDITOR_FIELD_COLOR,
+          "Fields")
+  
+  private SH funcDef := SH(FanPreferenceConstants.EDITOR_FUNCTION_DEFINITION_COLOR,
+          PreferencesMessages.DLTKEditorPreferencePage_function_colors)
   
   private SH keyword := SH(FanPreferenceConstants.EDITOR_KEYWORD_COLOR,
           PreferencesMessages.DLTKEditorPreferencePage_keywords)
   
+  private SH method := SH(FanPreferenceConstants.EDITOR_METHOD_COLOR,
+          "Methods")
+  
   private SH param := SH(FanPreferenceConstants.EDITOR_PARAM_COLOR,
           "Parameters")
 
-  private SH field := SH(FanPreferenceConstants.EDITOR_FIELD_COLOR,
-          "Fields")
-  
   private SH staticField := SH(FanPreferenceConstants.EDITOR_STATIC_FIELD_COLOR,
           "Static fields")
-  
-  private SH method := SH(FanPreferenceConstants.EDITOR_METHOD_COLOR,
-          "Methods")
   
   private SH staticMethod := SH(FanPreferenceConstants.EDITOR_STATIC_METHOD_COLOR,
           "Static methods")
   
+  private SH varDef := SH(FanPreferenceConstants.EDITOR_VAR_DEF_COLOR,
+          "Variable declarations")
+  
+  private SH var := SH(FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
+          PreferencesMessages.DLTKEditorPreferencePage_variables)
+  
+  
+  
   override SemanticHighlighting?[]? getSemanticHighlightings()
   {
-    [funcDef, classDef, str, var, keyword, param, field, staticField, method, staticMethod]
+    [facet, field, funcDef, keyword, method, param, staticField, staticMethod, varDef, var]
   }
 
   private Str index(SH sh) { sh.getPreferenceKey }
@@ -95,6 +100,17 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
       mod = def.modifiers.map[ModifierId.Facet]
       if (mod != null) addPosition(mod.start, mod.end+1, index(keyword))
     }
+    else if (node is LocalDef)
+    {
+      LocalDef local := node
+      addPosition(local.name.start, local.name.end+1, index(varDef))
+    }
+    else if (node is FacetDef)
+    {
+      FacetDef fd := node
+      addPosition(fd.start, fd.start+1, index(facet)) // @
+      addPosition(fd.ctype.start, fd.ctype.end+1, index(facet))
+    }
     else if (node is Getter)
     {
       Getter getter := node
@@ -114,6 +130,11 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
     {
       EnumValDef f := node
       addPosition(f.name.start, f.name.end+1, index(staticField))
+    }
+    else if (node is MethodDef)
+    {
+      MethodDef f := node
+      addPosition(f.name.start, f.name.end+1, index(funcDef))
     }
     else if (node is FieldDef)
     {
