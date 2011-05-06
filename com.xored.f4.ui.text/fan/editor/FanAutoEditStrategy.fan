@@ -390,14 +390,14 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
         {
           if (insideRoundBrackets)
           {
-            buf.add(block.closing)
+            buf.add(block.closing.toChar)
             if (lineEnd - contentStart > 0)
             {
               c.length = lineEnd - c.offset
               buf.add(d.get(contentStart, lineEnd - contentStart))
             }
           } else
-            buf.add(block.closing)
+            buf.add(block.closing.toChar)
         }
         c.text = buf.toStr
       }
