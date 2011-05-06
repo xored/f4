@@ -64,6 +64,15 @@ const class MapType : CType
   {
     return bracketed? "$keyType:$valType" : "[$keyType:$valType]"
   }
+  
+  override Void accept(AstVisitor v)
+  {
+    if (v.enterNode(this))
+    {
+      keyType.accept(v)
+      valType.accept(v)
+    }
+  }
 }
 
 const class FuncType : CType

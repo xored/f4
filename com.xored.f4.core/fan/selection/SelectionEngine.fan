@@ -34,16 +34,17 @@ class SelectionEngine : ISelectionEngine
     unit = ast.unit
     path := AstFinder.find(unit, start)
     node := path.last
-    if(node == null) return IModelElement[,]
-    if(node is ListType) return selectType(node->valType)
-    else if(node is TypeDef) return selectTypeDef(node)
-    else if(node is CType) return selectType(node)
-    else if(node is SlotRef) return selectSlotRef(node)
-    else if(node is SlotDef) return selectSlotDef(path)
-    else if(node is MethodVarRef) return selectMethodVarRef(node)
-    else if(node is MethodVar) return selectMethodVar((MethodVar)node)
-    else if(node is Expr) return selectExpr(node)
-    else if(ignored.any { node.typeof.fits(it) }) return IModelElement[,] //don't care about blocks
+    if (node == null) return IModelElement[,]
+    if (node is ListType) return selectType(node->valType)
+    else if (node is FuncTypeParam) return selectType(node->ctype)
+    else if (node is TypeDef) return selectTypeDef(node)
+    else if (node is CType) return selectType(node)
+    else if (node is SlotRef) return selectSlotRef(node)
+    else if (node is SlotDef) return selectSlotDef(path)
+    else if (node is MethodVarRef) return selectMethodVarRef(node)
+    else if (node is MethodVar) return selectMethodVar((MethodVar)node)
+    else if (node is Expr) return selectExpr(node)
+    else if (ignored.any { node.typeof.fits(it) }) return IModelElement[,] //don't care about blocks
     else 
       typeof.pod.log.warn("Unknown node type $node.typeof")
     return IModelElement[,] 
