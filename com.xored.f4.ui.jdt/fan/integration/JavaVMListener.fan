@@ -9,7 +9,8 @@ using [java] org.eclipse.jface.dialogs
 using [java] org.eclipse.swt.widgets
 using [java] org.eclipse.ui
 using [java] com.xored.fanide.core
-using [java] com.xored.fanide.ui.utils::FanBuildUtils
+
+using f4uiCore
 
 const class JavaVMListener : IVMInstallChangedListener {
 

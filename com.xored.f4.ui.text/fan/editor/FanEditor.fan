@@ -1,7 +1,3 @@
-//import org.eclipse.jface.text.source.ISourceViewer;
-//import com.xored.fanide.internal.ui.text.FanPairMatcher;
-//import com.xored.fanide.internal.ui.text.IFanPartitions;
-
 using [java] java.lang::Class
 using [java] org.eclipse.swt.widgets::Composite
 using [java] org.eclipse.ui::IEditorInput
@@ -20,17 +16,18 @@ using "[java]org.eclipse.dltk.internal.ui.editor"::BracketInserter
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptOutlinePage
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptEditor
 using [java] com.xored.fanide.core::FanLanguageToolkit
-using "[java]com.xored.fanide.internal.ui"::FanUI
+
+using f4uiCore
 
 class FanEditor : ScriptEditor
 {
   override Str? getEditorId := "com.xored.fanide.ui.editor.FanEditor" { private set }
 
-  public static const Str editorCtx := "#FanEditorContext"
-  public static const Str rulerCtx := "#FanRulerContext"
+  static const Str editorCtx := "#FanEditorContext"
+  static const Str rulerCtx := "#FanRulerContext"
 
   private BracketInserter bracketInserter := FanBracketInserter(this)
-  private IPreferenceStore store := FanUI.getDefault.getPreferenceStore
+  private IPreferenceStore store := FanUI.plugin.getPreferenceStore
 
   protected override Void initializeEditor()
   {
@@ -39,16 +36,13 @@ class FanEditor : ScriptEditor
     setRulerContextMenuId(rulerCtx)
   }
 
-  override IPreferenceStore? getScriptPreferenceStore()
-  {
-    FanUI.getDefault.getPreferenceStore
-  }
+  override IPreferenceStore? getScriptPreferenceStore() { store }
 
   override ScriptTextTools? getTextTools() { FanTextTools.instance }
 
   protected override ScriptOutlinePage? doCreateOutlinePage()
   {
-    FanOutlinePage(this, FanUI.getDefault.getPreferenceStore)
+    FanOutlinePage(this, store)
   }
 
   protected override Void connectPartitioningToElement(
@@ -93,7 +87,7 @@ class FanEditor : ScriptEditor
   override Obj? getAdapter(Class? required)
   {
     if (required == IShowInTargetList#->toClass)
-      return idem |->Str?[]?| { [ FanUI.ID_FAN_EXPLORER, IPageLayout.ID_OUTLINE ] }
+      return idem |->Str?[]?| { [ FanUI.explorerId, IPageLayout.ID_OUTLINE ] }
     return super.getAdapter(required)
   }
   

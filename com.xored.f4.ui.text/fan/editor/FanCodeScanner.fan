@@ -1,7 +1,3 @@
-/*
-import org.eclipse.jface.text.rules.IRule;
-import org.eclipse.jface.text.rules.IToken;*/
-
 using [java] fanx.interop
 using [java] org.eclipse.jface.preference::IPreferenceStore
 using [java] org.eclipse.jface.text.rules::EndOfLineRule

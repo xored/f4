@@ -6,7 +6,7 @@ using [java] org.eclipse.jface.text.rules::Token
 /**
  * An implementation of <code>IRule</code> detecting a numerical value.
  */
-public class FanFloatNumberRule : IRule
+class FanFloatNumberRule : IRule
 {
   private IToken token
 

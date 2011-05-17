@@ -12,7 +12,7 @@ using [java] org.eclipse.dltk.ast::Modifiers
 **
 mixin FanModifiers : Modifiers {
   static const Int AccInternal := 1.shiftl(USER_MODIFIER)
-  //static const Int AccMixin := 1.shiftl(USER_MODIFIER + 1)
+  static const Int AccMixin := 1.shiftl(USER_MODIFIER + 1)
   static const Int AccEnum := 1.shiftl(USER_MODIFIER + 2)
   static const Int AccNative := 1.shiftl(USER_MODIFIER + 3)
   static const Int AccOverride := 1.shiftl(USER_MODIFIER + 4)

@@ -7,7 +7,7 @@ using "[java]org.eclipse.dltk.internal.ui.editor"::BracketInserter
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptEditor
 using [java] com.xored.fanide.core::FanConstants
 
-public class FanBracketInserter : BracketInserter, IPropertyChangeListener
+class FanBracketInserter : BracketInserter, IPropertyChangeListener
 {
   new make(ScriptEditor editor) : super(editor) { }
 

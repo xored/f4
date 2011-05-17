@@ -66,7 +66,7 @@ class FanDocAutoIndentStrategy : DefaultIndentLineAutoEditStrategy
       indentation := d.get(prefix.getOffset, prefix.getLength)
       lengthToAdd := prefix.getLength.min(offset - prefix.getOffset)
 
-      buf.add(indentation[0..lengthToAdd])
+      buf.add(indentation[0..lengthToAdd+1])
 
       if (firstNonWS < offset) {
         if (d.getChar(firstNonWS) == '*') {

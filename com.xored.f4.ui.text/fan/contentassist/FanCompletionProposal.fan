@@ -2,8 +2,9 @@ using [java] org.eclipse.dltk.ui
 using [java] org.eclipse.dltk.ui.text.completion
 using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
-using "[java]com.xored.fanide.internal.ui"::FanUI
 using [java] com.xored.f4.ui.text
+
+using f4uiCore
 
 public class FanCompletionProposal : ScriptCompletionProposalBridge {
 
@@ -17,8 +18,7 @@ public class FanCompletionProposal : ScriptCompletionProposalBridge {
 
   override Bool insertCompletion()
   {
-    FanUI.getDefault.getPreferenceStore
+    FanUI.plugin.getPreferenceStore
       .getBoolean(PreferenceConstants.CODEASSIST_INSERT_COMPLETION)
   }
-
 }

@@ -1,7 +1,7 @@
 using [java] org.eclipse.jface.preference::IPreferenceStore
 using [java] org.eclipse.dltk.ui.templates::ScriptTemplateAccess
 
-using "[java]com.xored.fanide.internal.ui"::FanUI
+using f4uiCore
 
 /**
  * Provides access to the Fantom template store.
@@ -21,5 +21,5 @@ class FanTemplateAccess : ScriptTemplateAccess
   /*
    * @see org.eclipse.dltk.ui.templates.ScriptTemplateAccess#getPreferenceStore()
    */
-  protected override IPreferenceStore? getPreferenceStore := FanUI.getDefault.getPreferenceStore { private set }
+  protected override IPreferenceStore? getPreferenceStore := FanUI.plugin.getPreferenceStore { private set }
 }

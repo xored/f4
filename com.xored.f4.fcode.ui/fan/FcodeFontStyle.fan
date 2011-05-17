@@ -17,8 +17,8 @@ using [java] org.eclipse.dltk.ui::PreferenceConstants
 using [java] org.eclipse.dltk.ui.text::IColorManagerExtension
 using [java] org.eclipse.jface.preference::PreferenceConverter
 
-using "[java]com.xored.fanide.internal.ui"::FanUI
-using "[java]com.xored.fanide.internal.ui.text"::FanColorConstants
+using f4uiCore
+using f4uiText
 
 **
 ** FcodeFontStyle
@@ -34,7 +34,7 @@ internal class FcodeFontStyle
 
   private Int style(Str key)
   {
-    store := FanUI.getDefault.getPreferenceStore
+    store := FanUI.plugin.getPreferenceStore
 
     boldKey := key + PreferenceConstants.EDITOR_BOLD_SUFFIX
     italicKey := key + PreferenceConstants.EDITOR_ITALIC_SUFFIX
@@ -63,7 +63,7 @@ internal class FcodeFontStyle
       return clr
     }
 
-    rgb := PreferenceConverter.getColor(FanUI.getDefault.getPreferenceStore, key)
+    rgb := PreferenceConverter.getColor(FanUI.plugin.getPreferenceStore, key)
     if (rgb != null && manager is IColorManagerExtension) {
       ext := manager as IColorManagerExtension
       ext.unbindColor(key)
@@ -76,16 +76,16 @@ internal class FcodeFontStyle
 
   FontStyle fontStyle(Str key) { FontStyle(style(key), clr(key)) }
 
-  static const Str keyword := FanColorConstants.FAN_KEYWORD
-  static const Str typeDefinition := FanColorConstants.FAN_CLASS_DEFINITION
-  static const Str fieldDefinition := FanColorConstants.FAN_FIELD
-  static const Str field := FanColorConstants.FAN_FIELD
-  static const Str staticField := FanColorConstants.FAN_STATIC_FIELD
-  static const Str functionDefinition := FanColorConstants.FAN_FUNCTION_DEFINITION
-  static const Str variable :=  FanColorConstants.FAN_VAR_REF
-  static const Str num := FanColorConstants.FAN_NUMBER
-  static const Str str := FanColorConstants.FAN_STRING
-  static const Str comment := FanColorConstants.FAN_SINGLE_LINE_COMMENT
+  static const Str keyword := FanColorConstants.keyword
+  static const Str typeDefinition := FanColorConstants.classDefinition
+  static const Str fieldDefinition := FanColorConstants.field
+  static const Str field := FanColorConstants.field
+  static const Str staticField := FanColorConstants.staticField
+  static const Str functionDefinition := FanColorConstants.functionDefinition
+  static const Str variable :=  FanColorConstants.varRef
+  static const Str num := FanColorConstants.number
+  static const Str str := FanColorConstants.string
+  static const Str comment := FanColorConstants.singleLineComment
 }
 
 internal class FontStyle

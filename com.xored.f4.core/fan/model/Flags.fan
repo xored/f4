@@ -10,7 +10,7 @@ using f4parser
 **
 **
 **
-internal const mixin Flags
+const mixin Flags
 {
   abstract Int flags()
   

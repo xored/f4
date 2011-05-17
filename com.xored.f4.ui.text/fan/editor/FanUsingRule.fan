@@ -22,7 +22,7 @@ class FanUsingRule : IRule
       scanner.unread
       size++
     }
-    size.times { buffer.add(scanner.read.toChar) }
+    size.times { buffer.addChar(scanner.read) }
     
     return buffer.toStr.index("using") != null && endSequenceDetected(scanner) ? token : Token.UNDEFINED
   }

@@ -38,10 +38,10 @@ using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptOutlinePage
 
 using [java] com.xored.fanide.core::FanLanguageToolkit
 using "[java]com.xored.fanide.internal.core.model"::PodModule
-using "[java]com.xored.fanide.internal.ui"::FanUI
 
 using f4fcode::FcodeReader
 using f4fcode::FcodeVisitor
+using f4uiCore
 using f4uiText
 using compiler
 
@@ -140,7 +140,7 @@ class FcodeEditor : EditorPart, FcodeVisitor, IScriptEditor, ISelectionChangedLi
 
   private ScriptOutlinePage createOutlinePage()
   {
-    page := FanOutlinePage(this, FanUI.getDefault.getPreferenceStore)
+    page := FanOutlinePage(this, FanUI.plugin.getPreferenceStore)
     setOutlinePageInput(page, getEditorInput)
     page.addPostSelectionChangedListener(this)
     control.addCaretListener(EditorSelectionListener(this, page))

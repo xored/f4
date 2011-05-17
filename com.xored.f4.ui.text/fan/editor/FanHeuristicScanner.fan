@@ -516,7 +516,7 @@ class FanHeuristicScanner {
    *            the first position not to consider any more
    * @return a constant from {@link Symbols} describing the next token
    */
-  public Symbol nextToken(Int start, Int bound)
+  Symbol nextToken(Int start, Int bound)
   {
     pos := scanForward(start, nonWSDefaultPart, bound)
     if (pos == null) return Symbol.eof

@@ -390,14 +390,14 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy
         {
           if (insideRoundBrackets)
           {
-            buf.add(block.closing.toChar)
+            buf.addChar(block.closing)
             if (lineEnd - contentStart > 0)
             {
               c.length = lineEnd - c.offset
               buf.add(d.get(contentStart, lineEnd - contentStart))
             }
           } else
-            buf.add(block.closing.toChar)
+            buf.addChar(block.closing)
         }
         c.text = buf.toStr
       }
@@ -923,21 +923,21 @@ internal class FanBlock
   const Int opening
   const Int closing
   const Str indent
-  public new makeParentheses(Int o,Str indent)
+  new makeParentheses(Int o,Str indent)
   {
     offset = o
     opening = '('
     closing = ')'
     this.indent = indent
   }
-  public new makeBrackets(Int o,Str indent)
+  new makeBrackets(Int o,Str indent)
   {
     offset = o
     opening = '['
     closing = ']'
     this.indent = indent
   }
-  public new makeBraces(Int o,Str indent)
+  new makeBraces(Int o,Str indent)
   {
     offset = o
     opening = '{'

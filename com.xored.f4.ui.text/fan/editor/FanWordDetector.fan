@@ -3,7 +3,7 @@ using [java] org.eclipse.jface.text.rules::IWordDetector
 /**
  * A fantom aware word detector.
  */
-public class FanWordDetector : IWordDetector
+class FanWordDetector : IWordDetector
 {
 
   /* (non-Javadoc)

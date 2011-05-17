@@ -6,7 +6,7 @@ using [java] org.eclipse.jface.text.rules::RuleBasedPartitionScanner
 using [java] org.eclipse.jface.text.rules::SingleLineRule
 using [java] org.eclipse.jface.text.rules::Token
 
-public class FanPartitionScanner : RuleBasedPartitionScanner
+class FanPartitionScanner : RuleBasedPartitionScanner
 {
 
   /**
