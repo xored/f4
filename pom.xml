@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xored.f4</groupId>
 	<artifactId>f4</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-
 	<properties>
-		<tycho-version>0.10.0</tycho-version>
+		<tycho-version>0.11.0</tycho-version>
 		<tycho-groupid>org.sonatype.tycho</tycho-groupid>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-
 	<modules>
-		<!--module>com.xored.f4.astView</module -->
 		<!-- Fantom plugins -->
 		<module>com.xored.f4.builder</module>
 		<module>com.xored.f4.builder.ui</module>
@@ -34,22 +29,16 @@
 		<module>com.xored.f4.ui.jdt</module>
 		<module>com.xored.f4.ui.text</module>
 		<module>com.xored.f4.ide</module>
-
 		<!-- Java plugins -->
 		<module>com.xored.fanide.core</module>
 		<module>com.xored.fanide.ui</module>
-
-		<!-- Bytecode introspection -->
-		<!-- Commented out since this plugin is include to fantom runtime -->
-		<!--module>com.xored.fantom.classfile/module -->
-
 		<!-- Packaging -->
 		<module>com.xored.f4.feature</module>
-		<module>com.xored.f4.site</module>
-		
 		<!-- Embedded -->
 		<module>com.xored.f4.fantom-feature</module>
 		<module>com.xored.f4.fantom</module>
+		<!-- RCP -->
+		<module>com.xored.f4.product</module>
 	</modules>
 	<repositories>
 		<repository>
@@ -69,19 +58,23 @@
 			<snapshots>
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
-			<id>fantom</id>
+			<id>fantom-runtime</id>
 			<layout>p2</layout>
 			<url>http://build.xored.com/browse/FAN-NTY-JOB1/latest/artifact/Update-Site</url>
 		</repository>
 	</repositories>
-
+	<pluginRepositories>
+		<pluginRepository>
+			<snapshots>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<id>xored</id>
+			<name>Xored Maven repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-			</plugin>
 			<plugin>
 				<groupId>${tycho-groupid}</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
@@ -89,17 +82,38 @@
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
-				<groupId>${tycho-groupid}</groupId>
-				<artifactId>maven-osgi-compiler-plugin</artifactId>
-				<version>${tycho-version}</version>
-			</plugin>
-
-			<plugin>
 				<groupId>org.sonatype.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
 					<resolver>p2</resolver>
+					<environments>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
 				</configuration>
 			</plugin>
 		</plugins>
