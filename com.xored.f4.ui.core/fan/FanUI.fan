@@ -34,10 +34,14 @@ class FanUI : AbstractUIPlugin
 
 	//private ScriptTextTools fFanTextTools;
 
+  new make() : super() {
+    
+  }
 	/**
 	 * The constructor
 	 */
-	new make() : super() {
+	override Void start(BundleContext? context) {
+    super.start(context)
 		(storage.val as Obj?[])[0] = this
 	}
 
