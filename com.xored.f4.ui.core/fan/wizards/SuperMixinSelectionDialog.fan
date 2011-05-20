@@ -59,7 +59,7 @@ public class SuperMixinSelectionDialog : OpenTypeSelectionDialog2
 		super.createButtonsForButtonBar(parent)
 	}
 
-	override protected IDialogSettings? getDialogBoundsSettings() { FanUI.plugin.getDialogSettings }
+	override protected IDialogSettings? getDialogBoundsSettings() { FanUI.instance.plugin.getDialogSettings }
 
 	override protected Void updateButtonsEnableState(IStatus? status)
   {

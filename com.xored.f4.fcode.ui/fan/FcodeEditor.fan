@@ -8,6 +8,7 @@
 
 using [java] java.lang::Class
 using [java] org.eclipse.core.runtime::IProgressMonitor
+using [java] org.eclipse.ui.plugin::AbstractUIPlugin
 using [java] org.eclipse.ui.part::EditorPart
 using [java] org.eclipse.ui::IEditorInput
 using [java] org.eclipse.ui::IEditorSite
@@ -26,6 +27,7 @@ using [java] org.eclipse.jface.viewers::ISelectionChangedListener
 using [java] org.eclipse.jface.viewers::IStructuredSelection
 using [java] org.eclipse.jface.viewers::SelectionChangedEvent
 using [java] org.eclipse.jface.resource::JFaceResources
+using [java] org.eclipse.jface.preference::IPreferenceStore
 using [java] org.eclipse.dltk.core::IModelElement
 using [java] org.eclipse.dltk.core::ISourceReference
 using [java] org.eclipse.dltk.core::IDLTKLanguageToolkit
@@ -140,7 +142,7 @@ class FcodeEditor : EditorPart, FcodeVisitor, IScriptEditor, ISelectionChangedLi
 
   private ScriptOutlinePage createOutlinePage()
   {
-    page := FanOutlinePage(this, FanUI.plugin.getPreferenceStore)
+    page := FanOutlinePage(this, FanUI.instance.plugin.getPreferenceStore)
     setOutlinePageInput(page, getEditorInput)
     page.addPostSelectionChangedListener(this)
     control.addCaretListener(EditorSelectionListener(this, page))

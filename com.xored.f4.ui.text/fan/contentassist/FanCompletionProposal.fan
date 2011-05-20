@@ -18,7 +18,7 @@ public class FanCompletionProposal : ScriptCompletionProposalBridge {
 
   override Bool insertCompletion()
   {
-    FanUI.plugin.getPreferenceStore
+    FanUI.instance.plugin.getPreferenceStore
       .getBoolean(PreferenceConstants.CODEASSIST_INSERT_COMPLETION)
   }
 }

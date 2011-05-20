@@ -21,5 +21,5 @@ class FanTemplateAccess : ScriptTemplateAccess
   /*
    * @see org.eclipse.dltk.ui.templates.ScriptTemplateAccess#getPreferenceStore()
    */
-  protected override IPreferenceStore? getPreferenceStore := FanUI.plugin.getPreferenceStore { private set }
+  protected override IPreferenceStore? getPreferenceStore := FanUI.instance.plugin.getPreferenceStore { private set }
 }

@@ -16,7 +16,7 @@ class FanImages
 {
   private static const Unsafe storage
   static {
-    helper := PluginImagesHelper(FanUI.plugin.getBundle, Path("/icons"))
+    helper := PluginImagesHelper(FanUI.instance.plugin.getBundle, Path("/icons"))
     storage = Unsafe([
       helper.createUnManaged(PluginImagesHelper.T_WIZBAN,"projectcreate_wiz.png"),
       helper.createUnManaged(PluginImagesHelper.T_WIZBAN,"filecreate_wiz.png")

@@ -17,7 +17,7 @@ class FanCodeTemplateAccess : CodeTemplateAccess
 	static const Str filesContextId := filesContextPrefix + ".fan"
 	static const Str typesContextId := typesContextPrefix + ".fan"
 
-	new make() : super(FanUI.pluginId, codeTemplatesKey, FanUI.plugin.getPreferenceStore) { }
+	new make() : super(FanUI.pluginId, codeTemplatesKey, FanUI.instance.plugin.getPreferenceStore) { }
 
 	protected override ContextTypeRegistry? createContextTypeRegistry()
   {

@@ -16,7 +16,6 @@ using "[java]org.eclipse.dltk.internal.ui.editor"::BracketInserter
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptOutlinePage
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptEditor
 using [java] com.xored.fanide.core::FanLanguageToolkit
-using "[java]com.xored.fanide.internal.ui"::FanUI as JavaFanUI
 
 using f4uiCore
 
@@ -37,7 +36,9 @@ class FanEditor : ScriptEditor
     setRulerContextMenuId(rulerCtx)
   }
 
-  override IPreferenceStore? getScriptPreferenceStore() { JavaFanUI.getDefault.getPreferenceStore }
+  override IPreferenceStore? getScriptPreferenceStore() { 
+    FanUI.instance.plugin.getPreferenceStore 
+  }
 
   override ScriptTextTools? getTextTools() { FanTextTools.instance }
 

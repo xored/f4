@@ -952,7 +952,7 @@ class FanNewTypePage : NewContainerWizardPage
   {
 		provider := ScriptExplorerContentProvider(false)
 		labelProvider := ScriptExplorerLabelProvider(
-      provider, FanUI.plugin.getPreferenceStore)
+      provider, FanUI.instance.plugin.getPreferenceStore)
 		dialog := ElementTreeSelectionDialog(getShell, labelProvider, provider)
 		dialog.setTitle(DLTKLaunchConfigurationsMessages.mainTab_searchButton_title)
 		dialog.setMessage(DLTKLaunchConfigurationsMessages.mainTab_searchButton_message)

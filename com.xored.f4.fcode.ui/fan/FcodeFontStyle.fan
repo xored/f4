@@ -34,7 +34,7 @@ internal class FcodeFontStyle
 
   private Int style(Str key)
   {
-    store := FanUI.plugin.getPreferenceStore
+    IPreferenceStore store := FanUI.instance.plugin.getPreferenceStore
 
     boldKey := key + PreferenceConstants.EDITOR_BOLD_SUFFIX
     italicKey := key + PreferenceConstants.EDITOR_ITALIC_SUFFIX
@@ -63,7 +63,8 @@ internal class FcodeFontStyle
       return clr
     }
 
-    rgb := PreferenceConverter.getColor(FanUI.plugin.getPreferenceStore, key)
+    IPreferenceStore store := FanUI.instance.plugin.getPreferenceStore
+    rgb := PreferenceConverter.getColor(store, key)
     if (rgb != null && manager is IColorManagerExtension) {
       ext := manager as IColorManagerExtension
       ext.unbindColor(key)

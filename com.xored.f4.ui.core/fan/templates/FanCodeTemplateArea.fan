@@ -7,7 +7,7 @@ class FanCodeTemplateArea : ICodeTemplateArea
   static const Str propId := "com.xored.fanide.ui.propertyPage.CodeTemplatePage"
 	override ICodeTemplateAccess? getTemplateAccess()
   {
-		FanUI.plugin.getCodeTemplateAccess
+		FanUI.instance.getCodeTemplateAccess
 	}
 
 	override Str? getTemplatePreferencePageId := prefId { private set }

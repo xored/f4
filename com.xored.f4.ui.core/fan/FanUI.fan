@@ -16,59 +16,39 @@ using [java] org.eclipse.dltk.ui.text.templates::ICodeTemplateAccess
 using [java] org.eclipse.dltk.ui.text::ScriptTextTools
 
 using [java] fanx.interop
+using [java] com.xored.f4.ui.core::F4UIPlugin
 
 /**
  * The activator class controls the plug-in life cycle
  */
-class FanUI : AbstractUIPlugin
+class FanUI
 {
 	// The plug-in ID
-	static const Str pluginId := "com.xored.f4.ui.core"
+	static const Str pluginId := F4UIPlugin.PLUGIN_ID
 	static const Str actionSetId := "com.xored.fanide.ui.actionSet"
 	static const Str explorerId := "com.xored.fanide.ui.explorer"
 
   
   private static const Unsafe storage := Unsafe([null]) 
 	// The shared instance
-	public static FanUI plugin() { (storage.val as Obj?[])[0] } 
+	public static FanUI instance() {
+    FanUI? result := storage.val->first
+    if(result == null) {
+      result = FanUI.make(F4UIPlugin.getDefault);
+      storage.val->set(0, result)
+    }
+    return result
+	} 
 
 	//private ScriptTextTools fFanTextTools;
 
-  new make() : super() {
-    
+  AbstractUIPlugin plugin
+  private new make(F4UIPlugin plugin) {
+    this.plugin = plugin
   }
-	/**
-	 * The constructor
-	 */
-	override Void start(BundleContext? context) {
-    super.start(context)
-		(storage.val as Obj?[])[0] = this
-	}
-
-	override Void stop(BundleContext? context)
-  {
-		(storage.val as Obj?[])[0] = null
-		super.stop(context)
-	}
-
-	/**
-	 * Returns the shared instance
-	 * 
-	 * @return the shared instance
-	 */
-//	static FanUI getDefault()
-//  {
-//    plugin
-//	}
-
-	/*public synchronized ScriptTextTools getTextTools() {
-		if (fFanTextTools == null)
-			fFanTextTools = (ScriptTextTools)FantomVM.makeObject("f4uiText::FanTextTools");
-		return fFanTextTools;
-	}*/
-
+	
 	static Void log(IStatus status) {
-		plugin.getLog.log(status)
+		instance.plugin.getLog.log(status)
 	}
 
 	static Void logErr(Err e)
