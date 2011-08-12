@@ -25,8 +25,8 @@ class FanTodoTaskBuildParticipant : IBuildParticipant
   override Void build(IBuildContext? context) {
     try
     {
-      CUnit unit := parse(context.getSourceModule)
       if (preferences.isEnabled) {
+        CUnit unit := parse(context.getSourceModule)
         processor := TodoProcessor(context.getTaskReporter, preferences)
         unit.comments.each { processor.process(it) }
       }

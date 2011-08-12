@@ -158,6 +158,7 @@ internal abstract const class FfiSlot : IFanSlot, Flag
 {
   new make(IFanType container, IMember member)
   {
+    this.member = Unsafe(member)
     parent = container.name
     this.type = container
     name = isCtor ? "make" : member.getElementName
@@ -185,6 +186,7 @@ internal abstract const class FfiSlot : IFanSlot, Flag
   override const IFanType type
   override const Str name
   override const Str qname
+  protected const Unsafe member
   private const Int flags
   override Bool isAbstract() { flags.and(Abstract) != 0 }
   override Bool isConst() { flags.and(Const) != 0 }
@@ -219,18 +221,29 @@ internal const class FfiMethod : FfiSlot, IFanMethod
 {
   static FfiMethod? tryMake(IFanType container, IMethod method)
   {
-    names := method.getParameterNames
-    types := method.getParameterTypes
-    if (FfiSlot.isInvisible(method) || names.size != types.size || method.getElementName == "<clinit>")
-      return null
-    params := types.map |v,i| { SimpleParam(FfiType.toFan(v), names[i], null) }
-    return FfiMethod(container, method, params)
+    return FfiMethod(container, method)
   }
-  private new make(IFanType container, IMethod method, IFanParam[] params) : super(container, method)
+  private new make(IFanType container, IMethod method) : super(container, method)
   {
     of = isCtor ? container.qname : FfiType.toFan(method.getReturnType)
-    this.params = params
   }
   override const Str of
-  override const IFanParam[] params
+  private const Unsafe paramsResult := Unsafe(IFanParam[]?[null])
+  override IFanParam[] params() 
+  {
+    IMethod method := member.val()
+    if (FfiSlot.isInvisible(method) || method.getElementName == "<clinit>")
+      return IFanParam[,]
+
+    IFanParam[]?[] lazyResult := paramsResult.val()
+    if (lazyResult[0] == null )
+    { 
+      names := method.getParameterNames
+      types := method.getParameterTypes
+      if (names.size != types.size )
+        return IFanParam[,]
+      lazyResult[0] = types.map |v,i| { SimpleParam(FfiType.toFan(v), names[i], null) }
+    }
+    return lazyResult[0]
+  }
 }
