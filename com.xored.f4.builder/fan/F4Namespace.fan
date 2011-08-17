@@ -8,6 +8,10 @@
 
 using compiler
 using compilerJava
+using [java]org.eclipse.jdt.core.search
+using [java]org.eclipse.jdt.core
+using [java]com.xored.fanide.core::FanCore
+using f4core
 **
 **
 **
@@ -15,10 +19,12 @@ class F4Namespace : CNamespace
 {
   private const Str:File locs
   private const File[] cpEntries
-  new make(Str:File locs, File[] cpEntries := File[,]) 
+  private IJavaProject? project
+  new make(Str:File locs, File[] cpEntries := File[,], IJavaProject? project := null ) 
   {
     this.locs = locs
     this.cpEntries = cpEntries
+    this.project = project
     init
   }
   
@@ -34,7 +40,7 @@ class F4Namespace : CNamespace
   
   override protected CBridge findBridge(Compiler c, Str name, Loc? loc)
   {
-    return name == "java" ? F4JavaBridge(c, F4Cp(cpEntries)) : super.findBridge(c, name, loc)
+    return name == "java" ? F4JavaBridge(c, F4Cp(cpEntries, project), project) : super.findBridge(c, name, loc)
   }
   
   private Zip addZip(Zip zip) {
@@ -53,57 +59,27 @@ class F4Namespace : CNamespace
 **************************************************************************
 class F4Cp : ClassPath
 {
-  new make(File[] entries) : super(entries)
+  private IJavaProject? project := null
+  new make(File[] entries, IJavaProject? project) : super(entries)
   {
+    this.project = project
   }
-  
-  [Str:CfLoc]? locs
   
   override Str:Str[] loadClasses()
   {
-    if(locs == null) locs = [Str:CfLoc][:]
-    result := [Str:Str[]][:]
-    visitClasses |f, c|
-    {
-      package := c.path[0..-2].join(".")
-      name := c.basename
-      qname := [package, name].join(".")
-      locs[qname] = CfLoc(f, c)
-      list := result.getOrAdd(package) |->Obj| { Str[,] }
-      if(!list.contains(name)) list.add(name)
-    }
-    return result
-  }
-  Void visitClasses(|File entry, Uri cf| visitor)
-  {
-    entries.each |e|
-    {
-      eUri := e.uri
-      if(e.isDir)
-      {
-        e.walk |c| 
-        {
-          cUri := c.uri.relTo(eUri)
-          if(isClass(cUri)) 
-          {
-            visitor(e, cUri)
-          }
-        }
-      }
-      else
-      {
-        Zip? zip := null
-        try
-        {
-          zip = Zip.open(e)
-          zip.contents.keys.each |c|
-          {
-            if(isClass(c)) visitor(e, c)
-          }
-        } catch {} 
-        finally { zip?.close }
-      }
-    }
+//    scope := SearchEngine.createJavaSearchScope([project])
+//    SearchEngine engine := SearchEngine()
+//    requestor := ClassPathTypeRequestor()
+//    dc := InteropUtil.toCharArray("*".chars)
+//    engine.searchAllTypeNames(dc,SearchPattern.R_PATTERN_MATCH, dc, 
+//      SearchPattern.R_PATTERN_MATCH,
+//      IJavaSearchConstants.CLASS_AND_INTERFACE,
+//      scope,
+//      requestor,
+//      IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, null)    
+//    
+//    return requestor.getClasses
+    return Str:Str[][:]
   }
   
   protected Bool isClass(Uri uri)
@@ -132,39 +108,56 @@ class F4Cp : ClassPath
 }
 
 **************************************************************************
-** CfLoc
-**************************************************************************
-const class CfLoc
-{
-  const File entry
-  const Uri cf
-  new make(File entry, Uri cf) { this.entry = entry; this.cf = cf }
-  
-  Buf load() { entry.isDir ? loadDir : loadZip }
-  
-  protected Buf loadDir() { (entry + cf).readAllBuf }
-  protected Buf loadZip() 
-  {
-    Zip? zip := null
-    try
-    {
-      zip = Zip.open(entry)
-      return zip.contents[cf].readAllBuf
-    } 
-    finally { zip?.close } 
-  }
-}
-
-**************************************************************************
 ** F4JavaBridge
 **************************************************************************
 class F4JavaBridge : JavaBridge
 {
-  new make(Compiler c, F4Cp cp) : super(c, cp)
+  new make(Compiler c, F4Cp cp, IJavaProject? project) : super(c, cp)
   {
-    registry = JavaTypeRegistry(cp)
+    registry = JavaTypeRegistry(cp, project)
+    this.project = project
   }
   private JavaTypeRegistry registry
+  private IJavaProject? project
+  
+  override CPod resolvePod(Str name, Loc? loc)
+  {
+    // the empty package is used to represent primitives
+    if (name == "") return primitives
+    
+    IPackageFragment[] fragments := project.getPackageFragments
+
+    IPackageFragment? fragment := fragments.find { it.getElementName == name }
+    
+    if( fragment == null)
+    {
+      return JavaPod(this, name, [,])
+    }
+    
+    Str[] names := [,]
+    collectTypes(fragment, names)
+    // look for package name in classpatch
+  
+    // map package to JavaPod
+    return JavaPod(this, name, names)
+  }
+  private Void collectTypes(IParent? element, Str[] names)
+  {
+    IJavaElement[]? childs := element.getChildren
+    childs.each | IJavaElement childElement |
+    {
+      if( childElement.getElementType == IJavaElement.TYPE )
+      {
+        ename := childElement.getElementName
+        if( !names.contains(ename)) names.add(ename)
+      }
+      if( childElement is IParent && 
+        !(childElement.getElementType == IJavaElement.FIELD || childElement.getElementType == IJavaElement.METHOD) )
+      {
+        collectTypes((IParent)childElement, names)
+      }
+    }
+  }
   
   override Void loadType(JavaType type, Str:CSlot slots)
   {

@@ -9,6 +9,7 @@
  *******************************************************************************/
 package com.xored.fanide.internal.core.model;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class PodEntryFile extends PlatformObject implements IStorage {
 							IModelStatusConstants.INVALID_PATH, this.entryName));
 				}
 
-				inputStream = zipFile.getInputStream(zipEntry);
+				inputStream = new BufferedInputStream(zipFile.getInputStream(zipEntry));
 				final int entrySize = (int) zipEntry.getSize();
 				if (entrySize >= 0) {
 					final byte[] buf = new byte[entrySize];

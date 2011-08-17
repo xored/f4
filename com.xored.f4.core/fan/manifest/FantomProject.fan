@@ -9,6 +9,9 @@
 using [java]org.eclipse.core.resources::IProject
 using [java]org.eclipse.core.resources::ResourcesPlugin
 using [java]org.eclipse.jdt.core::JavaCore
+using [java]org.eclipse.jdt.core::IJavaProject
+using [java]org.eclipse.jdt.core.search::IJavaSearchScope
+using [java]org.eclipse.jdt.core.search::SearchEngine
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.jdt.launching::JavaRuntime
 using [java]org.eclipse.dltk.launching::IInterpreterInstall
@@ -146,6 +149,11 @@ const class FantomProject
     }
     
     return resolved.map { File.os(it.getLocation) }
+  }
+  
+  IJavaProject javaProject()
+  {
+    return JavaCore.create(project)
   }
   
   File? javaOutput()

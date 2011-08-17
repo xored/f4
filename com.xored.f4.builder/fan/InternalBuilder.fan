@@ -30,7 +30,7 @@ class InternalBuilder : Builder
       input.log         = CompilerLog(buf.out)
       input.podName     = fp.podName
       input.version     = fp.version
-      input.ns          = F4Namespace(getAllPods(fp), fp.classpath)
+      input.ns          = F4Namespace(getAllPods(fp), fp.classpath, fp.javaProject)
       input.depends     = fp.rawDepends.dup
       input.includeDoc  = true
       input.summary     = fp.summary

@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.WorkingCopyOwner;
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.fantom.FantomVM;
 import org.osgi.framework.BundleContext;
 
@@ -106,5 +108,9 @@ public class FanCore extends Plugin {
 	public static void log(Throwable e) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, e
 				.getMessage(), e));
+	}
+	
+	public static WorkingCopyOwner getJDTWorkingCopyOwner() {
+		return DefaultWorkingCopyOwner.PRIMARY;
 	}
 }
