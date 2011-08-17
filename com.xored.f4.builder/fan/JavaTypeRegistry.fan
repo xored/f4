@@ -17,7 +17,7 @@ using [java]org.eclipse.jdt.core::IParent
 using [java]org.eclipse.jdt.core::IField
 using [java]org.eclipse.jdt.core::Signature
 using [java]org.eclipse.jdt.core::Flags
-using [java]org.eclipse.jdt.core::IType as IJavaType
+using [java]org.eclipse.jdt.core::IType
 using [java]org.eclipse.jdt.core::IMethod
 using [java]org.eclipse.jdt.core::IMember
 using [java]org.eclipse.jdt.core::IJavaElement
@@ -61,32 +61,25 @@ class JavaTypeRegistry
   }
   private Void populateTypeQName(JavaType type, Str:CSlot slots, Str qname)
   {
-    IJavaType? resultType := findType(qname)
+    IType? resultType := findType(qname)
     if( resultType != null)
     {
       populateType(type, resultType, slots)
     }
   }
-  private IJavaType? findType(Str qname)
+  private IType? findType(Str qname)
   {
-    pkgName := qname[0..qname.indexr(".")]
-    IJavaType? resultType := null
+    pkgName := qname[0..qname.indexr(".")-1]
     if( this.fragments.containsKey(pkgName))
     {
       IPackageFragment[] fragments := this.fragments[pkgName]
-      fragments.each |IPackageFragment f|
-      {
-        resultType = findTypeFrom(f, qname)
-        if( resultType != null)
-        {
-          return
-        }
-      }
+      IType? resultType := fragments.eachWhile { findTypeFrom(it, qname) }
+      return resultType
     }
-    return resultType
+    return null
   }
   
-  private IJavaType? findTypeFrom(IParent? element, Str qname)
+  private IType? findTypeFrom(IParent? element, Str qname)
   {
     IJavaElement[]? childs := element.getChildren
     IJavaElement[] result := [,]
@@ -94,7 +87,7 @@ class JavaTypeRegistry
     {
       if( childElement.getElementType == IJavaElement.TYPE )
       {
-        IJavaType typeElement := (IJavaType)childElement
+        IType typeElement := (IType)childElement
         ename := typeElement.getFullyQualifiedName('$')
         if( ename == qname)
         {
@@ -120,7 +113,7 @@ class JavaTypeRegistry
     return null
   }
   
-  private Void populateType(JavaType type, IJavaType info, Str:CSlot result)
+  private Void populateType(JavaType type, IType info, Str:CSlot result)
   {
     populateAccessAndBase(type, info)
     populateInterfaces(type, info)
@@ -152,7 +145,7 @@ class JavaTypeRegistry
   }
 
   
-  private Void populateFields(JavaType type, IJavaType info, [Str:JavaSlot[]] slots)
+  private Void populateFields(JavaType type, IType info, [Str:JavaSlot[]] slots)
   {    
     fieldHandler := |IField f->Void|
     {
@@ -167,7 +160,7 @@ class JavaTypeRegistry
     {
       f != null || Flags.AccPublic.and(f.getFlags) != 0 || Flags.AccProtected.and(f.getFlags) != 0
     }
-    IJavaType? base := info
+    IType? base := info
     while(base != null)
     {
       base.getFields.findAll(fieldFilter).each(fieldHandler)
@@ -175,7 +168,7 @@ class JavaTypeRegistry
     }
   }
 
-  private Void populateCtorsAndMethods(JavaType type, IJavaType info, [Str:JavaSlot[]] slots)
+  private Void populateCtorsAndMethods(JavaType type, IType info, [Str:JavaSlot[]] slots)
   {
     methodHandler := |IMethod m->Void|
     {
@@ -209,12 +202,12 @@ class JavaTypeRegistry
 //      getBase(info).getFullQualifiedName() == "java.lang.Object" ) 
 //      return
 
-    IJavaType? base := info
+    IType? base := info
     while((base = getBase(base)) != null)
       base.getMethods.exclude { it == null }.findAll(methodFilter).each(methodHandler)
   }
 
-  private Void populateInterfaceSlots(JavaType type, IJavaType nfo, [Str:JavaSlot[]] slots)
+  private Void populateInterfaceSlots(JavaType type, IType nfo, [Str:JavaSlot[]] slots)
   {
     if(nfo.getSuperInterfaceNames.isEmpty) return
     nfo.getSuperInterfaceNames.each |interface|
@@ -226,12 +219,12 @@ class JavaTypeRegistry
     }
   }
 
-  private IJavaType? getBase(IJavaType nfo)
+  private IType? getBase(IType nfo)
   {
     return findType(nfo.getSuperclassName)
   }
 
-  private Void populateInterfaces(JavaType type, IJavaType info)
+  private Void populateInterfaces(JavaType type, IType info)
   { 
     if(info.getSuperInterfaceNames.isEmpty) return
     type.mixins = info.getSuperInterfaceNames?.exclude { it == null }.map |Str interface -> CType|
@@ -241,10 +234,10 @@ class JavaTypeRegistry
     //echo("Interfaces for $type - $type.mixins")
   }
   
-  private Void populateAccessAndBase(JavaType type, IJavaType info)
+  private Void populateAccessAndBase(JavaType type, IType info)
   {
     type.flags = classFlags(info.getFlags)
-    IJavaType? superClass := null
+    IType? superClass := null
     if( info.getSuperclassName != null )
     {
       type.base = fanType(type.pod.bridge, info.getSuperclassName)
