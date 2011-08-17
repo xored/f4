@@ -176,8 +176,30 @@ class JavaTypeRegistry
       result := JavaMethod()
       result.parent = type
       result.name = m.getElementName
-      result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)
-      result.returnType = isCtor ? type : fanType(type.pod.bridge, m.getReturnType)
+      result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)      
+      returnTypeName := Signature.getReturnType(m.getSignature)
+      switch(returnTypeName)
+      {
+        case "I"://Signature.C_INT:
+          returnTypeName = "int"
+        case "D"://""+Signature.C_DOUBLE:
+          returnTypeName = "double"
+        case "F"://Signature.C_FLOAT:
+          returnTypeName = "float"
+        case "B"://Signature.C_BYTE:
+          returnTypeName = "byte"
+        case "S"://Signature.C_SHORT:
+          returnTypeName = "float"
+        case "C"://Signature.C_CHAR:
+          returnTypeName = "char"
+        case "J"://Signature.C_LONG:
+          returnTypeName = "long"
+        case "Z"://Signature.C_BOOLEAN:
+          returnTypeName = "boolean"
+        case "V"://Signature.C_BOOLEAN:
+          returnTypeName = "void"
+      }
+      result.returnType = isCtor ? type : fanType(type.pod.bridge, returnTypeName)
       result.setParamTypes(m.getParameterTypes.map { fanType(type.pod.bridge, it)})
       
       list := slots.getOrAdd(m.getElementName) |->JavaSlot[]| { JavaSlot[,] }

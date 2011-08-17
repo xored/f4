@@ -67,7 +67,7 @@ class F4Cp : ClassPath
   
   override Str:Str[] loadClasses()
   {
-//    scope := SearchEngine.createJavaSearchScope([project])
+//    scope := SearchEngine.createWorkspaceScope
 //    SearchEngine engine := SearchEngine()
 //    requestor := ClassPathTypeRequestor()
 //    dc := InteropUtil.toCharArray("*".chars)
@@ -127,17 +127,18 @@ class F4JavaBridge : JavaBridge
     
     IPackageFragment[] fragments := project.getPackageFragments
 
-    IPackageFragment? fragment := fragments.find { it.getElementName == name }
+    IPackageFragment?[] allFragments := fragments.findAll { it.getElementName == name }
     
-    if( fragment == null)
+    if( allFragments.size == 0)
     {
       return JavaPod(this, name, [,])
     }
     
     Str[] names := [,]
-    collectTypes(fragment, names)
-    // look for package name in classpatch
-  
+    allFragments.each {
+      collectTypes(it, names)
+    }
+      
     // map package to JavaPod
     return JavaPod(this, name, names)
   }
