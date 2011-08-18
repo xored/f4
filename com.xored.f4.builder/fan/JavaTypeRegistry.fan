@@ -12,6 +12,7 @@ using compilerJava
 
 using [java]org.eclipse.jdt.core.search
 using [java]org.eclipse.jdt.core::IPackageFragment
+using [java]org.eclipse.jdt.core::IPackageFragmentRoot
 using [java]org.eclipse.jdt.core::IJavaProject
 using [java]org.eclipse.jdt.core::IParent
 using [java]org.eclipse.jdt.core::IField
@@ -22,6 +23,7 @@ using [java]org.eclipse.jdt.core::IMethod
 using [java]org.eclipse.jdt.core::IMember
 using [java]org.eclipse.jdt.core::IJavaElement
 using [java]com.xored.fanide.core::FanCore
+using [java]com.xored.fanide.core::JDTSupport
 
 class JavaTypeRegistry
 {
@@ -30,13 +32,13 @@ class JavaTypeRegistry
   {
     this.cp = cp
     this.project = project
-    IPackageFragment[]? fragments := project.getPackageFragments
-    if( fragments != null)
-    {
-      fragments.each {
-         IPackageFragment[] fragment := this.fragments.getOrAdd(it.getElementName) |->IPackageFragment[]| { IPackageFragment[,] }
-         fragment.add(it)
-      }
+    
+    IPackageFragmentRoot[] roots := project.getAllPackageFragmentRoots
+    IPackageFragment[] allFragments := roots.map { it.getChildren.findAll {it is IPackageFragment }}.flatten
+  
+    allFragments.each {
+       IPackageFragment[] fragment := this.fragments.getOrAdd(it.getElementName) |->IPackageFragment[]| { IPackageFragment[,] }
+       fragment.add(it)
     }
   }
   private F4Cp cp
@@ -56,7 +58,11 @@ class JavaTypeRegistry
   private Void doLoad(JavaType type, Str:CSlot slots)
   {
     qname := type.toJavaClassName
-    //echo("Asm loading $qname")
+    echo("Asm loading $qname")
+    if( qname == "com.xored.fanide.core.utils.ElementInfoWrappers\$TypeInfo" )
+    {
+      echo("a1")
+    }
     populateTypeQName(type, slots, qname)
   }
   private Void populateTypeQName(JavaType type, Str:CSlot slots, Str qname)
@@ -68,13 +74,31 @@ class JavaTypeRegistry
     }
   }
   private IType? findType(Str qname)
-  {
-    pkgName := qname[0..qname.indexr(".")-1]
+  {    
+    ind := qname.indexr(".")
+    if( ind == -1) return null
+    pkgName := qname[0..ind-1]
     if( this.fragments.containsKey(pkgName))
     {
       IPackageFragment[] fragments := this.fragments[pkgName]
       IType? resultType := fragments.eachWhile { findTypeFrom(it, qname) }
       return resultType
+    }
+    else
+    {
+      // probable inner class, try to locate it
+      lqname := qname.split('.')
+      fi := 0
+      for( i := 0; i < lqname.size-1;i++)
+      {
+        lpkg := lqname[0..i].join(".")
+        lpkg2 := lqname[0..i+1].join(".")
+        if( fragments.containsKey(lpkg) && !fragments.containsKey(lpkg2))
+        {
+          lname := lqname[i+1..-1].join("\$")
+          return findType(lpkg +"." + lname)
+        }
+      }      
     }
     return null
   }
@@ -124,6 +148,18 @@ class JavaTypeRegistry
     populateInterfaceSlots(type, info, slots)
     populateFields(type, info, slots)
     result.addAll(collapseSlots(slots))
+    
+    if( !result.containsKey("<init>"))
+    {
+      // Add one default contructor if doesn't persist
+      ctor := JavaMethod()
+      ctor.parent = type
+      ctor.name = "<init>"
+      ctor.flags = FConst.Public.or(FConst.Ctor).or(FConst.Virtual)
+      ctor.returnType = type
+      ctor.setParamTypes([,])
+      result["<init>"] = ctor
+    }
   }
  
   private Str:CSlot collapseSlots(Str:CSlot[] slots)
@@ -153,8 +189,10 @@ class JavaTypeRegistry
       result.parent = type
       result.name = f.getElementName
       result.flags = memberFlags(f.getFlags)
-      result.fieldType = fanType(type.pod.bridge, f.getTypeSignature)
-      slots[f.getElementName] = [result]
+      result.fieldType = fanType(type.pod.bridge, f.getTypeSignature, false, info)
+      
+      //try to find slot with the same parameters
+      if(!slots.containsKey(result.name)) slots[result.name] = [result]
     }
     fieldFilter := |IField? f->Bool|
     {
@@ -172,37 +210,24 @@ class JavaTypeRegistry
   {
     methodHandler := |IMethod m->Void|
     {
-      isCtor := m.getElementName == "<init>"
+      isCtor := m.isConstructor
       result := JavaMethod()
       result.parent = type
-      result.name = m.getElementName
-      result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)      
-      returnTypeName := Signature.getReturnType(m.getSignature)
-      switch(returnTypeName)
+      if( !isCtor ) result.name = m.getElementName
+      else result.name = "<init>"
+      if( result.name == "<clinit>")
       {
-        case "I"://Signature.C_INT:
-          returnTypeName = "int"
-        case "D"://""+Signature.C_DOUBLE:
-          returnTypeName = "double"
-        case "F"://Signature.C_FLOAT:
-          returnTypeName = "float"
-        case "B"://Signature.C_BYTE:
-          returnTypeName = "byte"
-        case "S"://Signature.C_SHORT:
-          returnTypeName = "float"
-        case "C"://Signature.C_CHAR:
-          returnTypeName = "char"
-        case "J"://Signature.C_LONG:
-          returnTypeName = "long"
-        case "Z"://Signature.C_BOOLEAN:
-          returnTypeName = "boolean"
-        case "V"://Signature.C_BOOLEAN:
-          returnTypeName = "void"
+        // Skip interface initialization method
+        return
       }
-      result.returnType = isCtor ? type : fanType(type.pod.bridge, returnTypeName)
-      result.setParamTypes(m.getParameterTypes.map { fanType(type.pod.bridge, it)})
+      result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)
+      returnTypeName := m.getReturnType
       
-      list := slots.getOrAdd(m.getElementName) |->JavaSlot[]| { JavaSlot[,] }
+      result.returnType = isCtor ? type : fanType(type.pod.bridge, returnTypeName, false, info)
+      result.setParamTypes(m.getParameterTypes.map { fanType(type.pod.bridge, it, false, info)})
+      //echo(" method "+ result.name + "(" + result.params +")")
+      
+      list := slots.getOrAdd(result.name) |->JavaSlot[]| { JavaSlot[,] }
       //try to find slot with the same parameters
       slotExists := list.any |JavaSlot slot -> Bool|
       {
@@ -215,14 +240,13 @@ class JavaTypeRegistry
     }
     methodFilter := |IMethod? m->Bool|
     {
-      m != null || Flags.AccPublic.and(m.getFlags) != 0 || Flags.AccProtected.and(m.getFlags) != 0 || m.getElementName == "<init>"
+      m != null || Flags.AccPublic.and(m.getFlags) != 0 || Flags.AccProtected.and(m.getFlags) != 0
     }
     info.getMethods.findAll(methodFilter).each(methodHandler)
     
-    //TODO: Need to write correct code here
-//    if(Flags.AccInterface.and(info.getFlags) == info.getFlags &&
-//      getBase(info).getFullQualifiedName() == "java.lang.Object" ) 
-//      return
+    if(Flags.AccInterface.and(info.getFlags) != 0 && getBase(info) != null &&
+      getBase(info).getFullyQualifiedName('$') == "java.lang.Object" ) 
+      return
 
     IType? base := info
     while((base = getBase(base)) != null)
@@ -233,25 +257,39 @@ class JavaTypeRegistry
   {
     if(nfo.getSuperInterfaceNames.isEmpty) return
     nfo.getSuperInterfaceNames.each |interface|
-    { 
-      t := findType(interface) 
-      populateCtorsAndMethods(type, t, slots)
-      populateFields(type, t, slots)
-      populateInterfaceSlots(type, t, slots)
+    {
+      Str?[]? resolve := JDTSupport.resolve(nfo, interface)
+      if( resolve != null && resolve.size > 0) {
+        t := findType(resolve[0]) 
+        if( t != null)
+        {
+          populateCtorsAndMethods(type, t, slots)
+          populateFields(type, t, slots)
+          populateInterfaceSlots(type, t, slots)
+        } 
+      }
     }
   }
 
   private IType? getBase(IType nfo)
   {
-    return findType(nfo.getSuperclassName)
+    if( nfo.getSuperclassName == null)
+    {
+      return null
+    }
+    Str?[]? resolve := JDTSupport.resolve(nfo, nfo.getSuperclassName)
+    if( resolve != null && resolve.size > 0) {
+      return findType(resolve[0])
+    }
+    return null
   }
 
   private Void populateInterfaces(JavaType type, IType info)
   { 
     if(info.getSuperInterfaceNames.isEmpty) return
-    type.mixins = info.getSuperInterfaceNames?.exclude { it == null }.map |Str interface -> CType|
+    type.mixins = info.getSuperInterfaceTypeSignatures.exclude { it == null }.map |Str interface -> CType|
     {
-      fanType(type.pod.bridge, interface)
+      return fanType(type.pod.bridge, interface, false, info)
     }
     //echo("Interfaces for $type - $type.mixins")
   }
@@ -260,9 +298,9 @@ class JavaTypeRegistry
   {
     type.flags = classFlags(info.getFlags)
     IType? superClass := null
-    if( info.getSuperclassName != null )
-    {
-      type.base = fanType(type.pod.bridge, info.getSuperclassName)
+    if( info.getSuperclassTypeSignature != null )
+    { 
+       type.base = fanType(type.pod.bridge, info.getSuperclassTypeSignature, false, info)
       //echo("type.base - $type.base")
     }
   }
@@ -277,10 +315,10 @@ class JavaTypeRegistry
   private Int classFlags(Int access)
   {
     result := 0
-    if(Flags.AccAbstract.and(access) == access) result = result.or(FConst.Abstract)
-    if(Flags.AccFinal.and(access) == access) result = result.or(FConst.Final)
-    if(Flags.AccInterface.and(access) == access) result = result.or(FConst.Mixin)
-    result = result.or((Flags.AccPublic.and(access) == access) ? FConst.Public : FConst.Internal)
+    if(Flags.AccAbstract.and(access) != 0) result = result.or(FConst.Abstract)
+    if(Flags.AccFinal.and(access) != 0) result = result.or(FConst.Final)
+    if(Flags.AccInterface.and(access) != 0) result = result.or(FConst.Mixin)
+    result = result.or((Flags.AccPublic.and(access) != 0) ? FConst.Public : FConst.Internal)
     
     return result
   }
@@ -288,17 +326,17 @@ class JavaTypeRegistry
   private Int memberFlags(Int access)
   {
     result := 0
-    if(Flags.AccAbstract.and(access) == access) result = result.or(FConst.Abstract)
-    if(Flags.AccStatic.and(access) == access) result = result.or(FConst.Static)
-    result = result.or((Flags.AccFinal.and(access) == access) ? FConst.Final : FConst.Virtual)
-    if(Flags.AccPublic.and(access) == access) result = result.or(FConst.Public)
-    else if(Flags.AccPrivate.and(access) == access) result = result.or(FConst.Private)
-    else if(Flags.AccProtected.and(access) == access) result = result.or(FConst.Protected)
+    if(Flags.AccAbstract.and(access) != 0) result = result.or(FConst.Abstract)
+    if(Flags.AccStatic.and(access) != 0) result = result.or(FConst.Static)
+    result = result.or((Flags.AccFinal.and(access) != 0) ? FConst.Final : FConst.Virtual)
+    if(Flags.AccPublic.and(access) != 0) result = result.or(FConst.Public)
+    else if(Flags.AccPrivate.and(access) != 0) result = result.or(FConst.Private)
+    else if(Flags.AccProtected.and(access) != 0) result = result.or(FConst.Protected)
     else result = result.or(FConst.Internal)
     return result
   }
   
-  private CType fanType(JavaBridge bridge, Str? type, Bool multidim := false)
+  private CType fanType(JavaBridge bridge, Str? type, Bool multidim, IType? info)
   {
     ns := bridge.ns
 
@@ -306,37 +344,79 @@ class JavaTypeRegistry
     {
       return ns.voidType
     }
-    
-    primitive := primitiveType(bridge, type)
+     
+    primitive := primitiveType(bridge, type, false, info)
     if(primitive != null) return primitive
     
     if(Signature.getArrayCount(type) > 0) 
     {
-      return arrayType(bridge, type)
+      return arrayType(bridge, type, info)
       //handle arrays later
     }
     
     if(!multidim)
     {
-      direct := directType(ns, type)?.toNullable
+      direct := directType(ns, type, info)?.toNullable
       if(direct != null) return direct
     }
-
     
-    package := Signature.getQualifier(type)
+    if( Signature.getTypeSignatureKind(type) == Signature.TYPE_VARIABLE_SIGNATURE)
+    {
+      type = Signature.createTypeSignature("java.lang.Object", true);
+    }
+    
+    type = Signature.getTypeErasure(type)
+    package := Signature.getSignatureQualifier(type)
     name := Signature.getSimpleName(type)
+    if( name.endsWith(";"))
+    {
+      name = name[0..-2]
+    }
+    if( package.size == 0) {
+      Str?[]? resultName := JDTSupport.resolve(info, Signature.toString(type))
+      if( resultName != null && resultName.size > 0) 
+      {
+        package = resultName[0]
+        pind := package.indexr(".")
+        name = package[pind+1.. -1]
+        if( pind != -1) package = package[0.. pind-1]
+      }
+    }
+    if( !fragments.containsKey(package))
+    {
+      // probable inner class, try to locate it
+      lqname := (package + "." + name).split('.')
+      fi := 0
+      for( i := 0; i < lqname.size-1;i++)
+      {
+        lpkg := lqname[0..i].join(".")
+        lpkg2 := lqname[0..i+1].join(".")
+        if( fragments.containsKey(lpkg) && !fragments.containsKey(lpkg2))
+        {
+          lname := lqname[i+1..-1].join("\$")
+          if(lpkg == "fan.sys") return ns.resolveType("sys::$lname?")
+          return ns.resolveType("[java]${lpkg}::${lname}?")
+        }
+      }      
+    }
     
     if(package == "fan.sys") return ns.resolveType("sys::$name?")
     return ns.resolveType("[java]${package}::${name}?")
   }
   
-  private CType arrayType(JavaBridge bridge, Str? type)
+  private CType arrayType(JavaBridge bridge, Str? type, IType? info)
   {
     ns := bridge.ns
 
-    if(Signature.getArrayCount(type) == 0)
+    if(Signature.getArrayCount(type) == 1)
     {
-      switch(Signature.getSimpleName(type))
+      ttype := type [1..-1]
+      tName := Signature.toString(Signature.getSimpleNames(ttype).join("."))
+      
+      Str?[]? resultName := JDTSupport.resolve(info, tName)
+      if( resultName != null && resultName.size > 0) tName = resultName[0]
+      
+      switch(tName)
       {
           case "boolean": return ns.resolveType("[java]fanx.interop::BooleanArray?")
           case "byte": return ns.resolveType("[java]fanx.interop::ByteArray?")
@@ -349,15 +429,23 @@ class JavaTypeRegistry
       }
       
     }
-    elemResult := fanType(bridge, type, true).toNonNullable
+    if( Signature.getArrayCount(type) > 0)
+    {
+      // Remove one ARRAY qualifier
+      type = type [1..-1]
+     }
+    
+    elemResult := fanType(bridge, type, true, info).toNonNullable
     if(elemResult isnot JavaType) throw Err("Not JavaType: $type -> $elemResult")
     return ((JavaType)elemResult).toArrayOf.toNullable
   }
   
-  private static CType? directType(CNamespace ns, Str? type)
+  private static CType? directType(CNamespace ns, Str? type, IType? info)
   {
-    
-    tName := Signature.getQualifier(type) +"." + Signature.getSimpleName(type)
+    type = Signature.getTypeErasure(type)
+    tName := Signature.toString(Signature.getSimpleNames(type).join("."))
+    Str?[]? resultName := JDTSupport.resolve(info, tName)
+    if( resultName != null && resultName.size > 0) tName = resultName[0]
     switch(tName)
     {
       case "java.lang.Object" : return ns.objType
@@ -367,11 +455,22 @@ class JavaTypeRegistry
     }
   }
   
-  private static CType? primitiveType(JavaBridge bridge, Str? type, Bool multidim := false)
+  private static CType? primitiveType(JavaBridge bridge, Str? type, Bool multidim, IType? info)
   {
     ns := bridge.ns
     primitives := bridge.primitives
-    switch(Signature.getSimpleName(type))
+    
+    if( Signature.getQualifier(type).size != 0)
+    {
+      return null
+    }
+    sigName := Signature.getSimpleName(type)
+    finalName := Signature.toString(sigName)
+    
+    Str?[]? resultName := JDTSupport.resolve(info, finalName)
+    if( resultName != null && resultName.size > 0) finalName = resultName[0]
+    
+    switch(finalName)
     {
       case "void": return ns.voidType
       case "boolean" : return multidim? primitives.booleanType : ns.boolType

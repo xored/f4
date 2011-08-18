@@ -40,7 +40,7 @@ class FcodeElementParser : IBinaryElementParser
 
     podFragment := module.getAncestor(IModelElement.PROJECT_FRAGMENT) as PodFragment
     if(podFragment == null)
-      return
+      return 
     
     podPath := PathUtil.resolveLocalPath(podFragment.getPodPath)
     if(podPath == null) 

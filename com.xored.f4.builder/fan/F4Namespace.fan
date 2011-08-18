@@ -125,10 +125,9 @@ class F4JavaBridge : JavaBridge
     // the empty package is used to represent primitives
     if (name == "") return primitives
     
-    IPackageFragment[] fragments := project.getPackageFragments
-
-    IPackageFragment?[] allFragments := fragments.findAll { it.getElementName == name }
-    
+    IPackageFragmentRoot[] roots := project.getAllPackageFragmentRoots
+    IPackageFragment[] allFragments := roots.map { it.getChildren.findAll {it is IPackageFragment && ((IPackageFragment)it).getElementName == name} }.flatten
+        
     if( allFragments.size == 0)
     {
       return JavaPod(this, name, [,])
@@ -149,7 +148,8 @@ class F4JavaBridge : JavaBridge
     {
       if( childElement.getElementType == IJavaElement.TYPE )
       {
-        ename := childElement.getElementName
+        IType t := childElement
+        ename := t.getTypeQualifiedName('$')
         if( !names.contains(ename)) names.add(ename)
       }
       if( childElement is IParent && 
@@ -167,6 +167,7 @@ class F4JavaBridge : JavaBridge
       registry.load(type, slots)
     } catch(Err e) 
     {
+      e.trace
       err("Failed to load java type '${type.name}': ${e.msg}", null)
     }
   }

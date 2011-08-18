@@ -44,6 +44,10 @@ const class ContainerResetter : Actor
     try
     {
       project := (msg as Unsafe).val as IProject
+      if( !project.isAccessible)
+      {
+        return null
+      }
       scriptProject := DLTKCore.create(project)
       DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
         .initialize(containerPath(scriptProject), scriptProject)

@@ -109,8 +109,4 @@ public class FanCore extends Plugin {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, e
 				.getMessage(), e));
 	}
-	
-	public static WorkingCopyOwner getJDTWorkingCopyOwner() {
-		return DefaultWorkingCopyOwner.PRIMARY;
-	}
 }
