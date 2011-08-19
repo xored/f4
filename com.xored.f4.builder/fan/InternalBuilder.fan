@@ -15,6 +15,11 @@ using [java]org.eclipse.jdt.core::IJavaProject
 using [java]org.eclipse.jdt.launching::JavaRuntime
 using "[java]org.eclipse.core.externaltools.internal"::IExternalToolConstants as ExtConsts
 
+using [java]com.xored.fanide.core::FanCore
+using [java]org.eclipse.core.runtime::IPath
+using [java]org.eclipse.core.runtime::Path
+using [java]java.io::File as JFile
+
 **
 ** This builder uses embedded compiler via API
 ** 
@@ -24,6 +29,13 @@ class InternalBuilder : Builder
   
   override CompilerErr[] buildPod(|Str|? consumer)
   {
+    // Prepare temporaty output directory for pod building
+    IPath statePath := FanCore.getDefault.getStateLocation
+    IPath projectPath := statePath.append("compiler").append(fp.podName)
+    JFile root := projectPath.toFile
+    root.mkdirs
+    root.listFiles().exclude {it == null}.each |JFile? f|{ f.delete}
+    
     buf := StrBuf()
     input := CompilerInput.make
     try {
@@ -39,7 +51,8 @@ class InternalBuilder : Builder
       input.srcFiles    = fp.srcDirs
       input.resFiles    = fp.resDirs
       input.index       = fp.index
-      input.outDir      = fp.outDir
+//      input.outDir      = fp.outDir
+      input.outDir      = File.os(projectPath.toOSString)
       input.output      = CompilerOutputMode.podFile
       input.jsFiles     = fp.jsDirs
       errs := compile(input)
@@ -49,6 +62,54 @@ class InternalBuilder : Builder
     } finally {
       if (input.ns is F4Namespace)
         ((F4Namespace)input.ns).close
+      // Compare pod file in output directory to podFile in project and overwrite it if they are different
+      npodFile := input.outDir.listFiles.find { it.name == fp.podName + ".pod" }
+      if( npodFile != null)
+      {
+        podFile := fp.outDir.listFiles.find { it.name == fp.podName + ".pod"  }
+        if( podFile == null)
+        {
+          // No pod exist, just copy
+          npodFile.copyInto(fp.outDir, ["overwrite": true])
+        }
+        else
+        {
+          npodZip := Zip.open(npodFile)
+          podZip := Zip.open(podFile)
+            npodContents := npodZip.contents
+            podContents := podZip.contents
+            if( podContents == null || npodContents != podContents )
+            {
+              // Content different override
+              npodFile.copyInto(fp.outDir, ["overwrite": true])
+            }
+            else
+            {
+              different := npodContents.keys.find |Uri u -> Bool| {
+                f1 := npodContents[u]
+                f2 := podContents[u]
+                b1 := f1.readAllBuf
+                b2 := f2.readAllBuf
+                if( b1.size != b2.size) return true
+                for( i:=0;i<b1.size;i++)
+                {
+                  if( b1[i] != b2[i])
+                  {
+                    return true;
+                  }
+                }
+                return false
+              }
+              if( different != null && different.toStr != "/meta.props")
+              {
+                // Content are changed, replacing file
+                npodFile.copyInto(fp.outDir, ["overwrite": true])
+              }
+            } 
+            npodZip.close
+            podZip.close
+        }
+      }
     }
   }
   
