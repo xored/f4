@@ -58,11 +58,7 @@ class JavaTypeRegistry
   private Void doLoad(JavaType type, Str:CSlot slots)
   {
     qname := type.toJavaClassName
-    echo("Asm loading $qname")
-    if( qname.index("ArrayList") != null )
-    {
-      echo("a1")
-    }
+    //echo("Asm loading $qname")
     populateTypeQName(type, slots, qname)
   }
   private Void populateTypeQName(JavaType type, Str:CSlot slots, Str qname)
@@ -197,7 +193,7 @@ class JavaTypeRegistry
     }
     fieldFilter := |IField? f->Bool|
     {
-      f != null || Flags.AccPublic.and(f.getFlags) != 0 || Flags.AccProtected.and(f.getFlags) != 0
+      f != null && (Flags.AccPublic.and(f.getFlags) != 0 || Flags.AccProtected.and(f.getFlags) != 0)
     }
     IType? base := info
     while(base != null)
@@ -242,7 +238,7 @@ class JavaTypeRegistry
     }
     methodFilter := |IMethod? m->Bool|
     {
-      m != null || Flags.AccPublic.and(m.getFlags) != 0 || Flags.AccProtected.and(m.getFlags) != 0
+      m != null && (Flags.AccPublic.and(m.getFlags) != 0 || Flags.AccProtected.and(m.getFlags) != 0)
     }
     info.getMethods.findAll(methodFilter).each(methodHandler)
     
@@ -370,7 +366,8 @@ class JavaTypeRegistry
     
     if( Signature.getTypeSignatureKind(type) == Signature.TYPE_VARIABLE_SIGNATURE)
     {
-      type = Signature.createTypeSignature("java.lang.Object", true);
+      //type = Signature.createTypeSignature("java.lang.Object", true);
+      return ns.objType.toNullable
     }
     
     type = Signature.getTypeErasure(type)
@@ -407,10 +404,6 @@ class JavaTypeRegistry
         }
       }      
     }
-    if( name == "Void" || name == "String")
-    {
-      echo("\$")
-    }
     if(package == "fan.sys") return ns.resolveType("sys::$name?")
     return ns.resolveType("[java]${package}::${name}?")
   }
@@ -446,6 +439,10 @@ class JavaTypeRegistry
       type = type [1..-1]
      }
     
+    if( Signature.getTypeSignatureKind(type) == Signature.TYPE_VARIABLE_SIGNATURE)
+    {
+      type = Signature.createTypeSignature("java.lang.Object", true);
+    }
     elemResult := fanType(bridge, type, true, info).toNonNullable
     if(elemResult isnot JavaType) throw Err("Not JavaType: $type -> $elemResult")
     return ((JavaType)elemResult).toArrayOf.toNullable
