@@ -49,9 +49,11 @@ const class ContainerResetter : Actor
         return null
       }
       scriptProject := DLTKCore.create(project)
-      DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
-        .initialize(containerPath(scriptProject), scriptProject)
-      
+      if( scriptProject.exists)
+      {
+        DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
+          .initialize(containerPath(scriptProject), scriptProject)
+      }
     } catch(Err e)
     {
       e.trace
