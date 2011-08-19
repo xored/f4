@@ -69,6 +69,32 @@ class JavaTypeRegistry
       populateType(type, resultType, slots)
     }
   }
+  private Void printJavaMethod(JavaSlot m) {
+    map := ["Abstract":0x00000001,
+            "Const":0x00000002,
+            "Ctor":0x00000004,
+            "Enum":0x00000008,
+            "Facet":0x00000010,
+            "Final":0x00000020,
+            "Getter":0x00000040,
+            "Internal":0x00000080,
+            "Mixin":0x00000100,
+            "Native":0x00000200,
+            "Override":0x00000400,
+            "Private":0x00000800,
+            "Protected":0x00001000,
+            "Public":0x00002000,
+            "Setter":0x00004000,
+            "Static":0x00008000,
+            "Storage":0x00010000,
+            "Synthetic":0x00020000,
+            "Virtual":0x00040000,
+            "FlagsMask":0x0007ffff]
+    
+    
+    echo(m.signature)
+    map.each |v, k| { if(m.flags.and(v) == v) echo("\t$k") }
+  }
   private IType? findType(Str qname)
   {    
     ind := qname.indexr(".")
@@ -146,17 +172,19 @@ class JavaTypeRegistry
     populateFields(type, info, slots)
     result.addAll(collapseSlots(slots))
     
-    if( !result.containsKey("<init>"))
-    {
-      // Add one default contructor if doesn't persist
-      ctor := JavaMethod()
-      ctor.parent = type
-      ctor.name = "<init>"
-      ctor.flags = FConst.Public.or(FConst.Ctor).or(FConst.Virtual)
-      ctor.returnType = type
-      ctor.setParamTypes([,])
-      result["<init>"] = ctor
-    }
+    // Add <init> method for non interfaces
+    if(Flags.AccInterface.and(info.getFlags) == 0)
+      if( !result.containsKey("<init>"))
+      {
+        // Add one default contructor if doesn't persist
+        ctor := JavaMethod()
+        ctor.parent = type
+        ctor.name = "<init>"
+        ctor.flags = FConst.Public.or(FConst.Ctor).or(FConst.Virtual)
+        ctor.returnType = type
+        ctor.setParamTypes([,])
+        result["<init>"] = ctor
+      }
   }
  
   private Str:CSlot collapseSlots(Str:CSlot[] slots)
@@ -212,11 +240,6 @@ class JavaTypeRegistry
       result.parent = type
       if( !isCtor ) result.name = m.getElementName
       else result.name = "<init>"
-      if( result.name == "<clinit>")
-      {
-        // Skip interface initialization method
-        return
-      }
       result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)
       returnTypeName := m.getReturnType
       
@@ -248,7 +271,7 @@ class JavaTypeRegistry
 
     IType? base := info
     while((base = getBase(base)) != null)
-      base.getMethods.exclude { it == null }.findAll(methodFilter).each(methodHandler)
+      base.getMethods.exclude { it == null || ((IMethod)it).isConstructor }.findAll(methodFilter).each(methodHandler)
   }
 
   private Void populateInterfaceSlots(JavaType type, IType nfo, [Str:JavaSlot[]] slots)
