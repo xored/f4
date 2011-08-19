@@ -58,10 +58,7 @@ class InternalBuilder : Builder
       errs := compile(input)
       if (!errs[0].isEmpty) return errs.flatten
       if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer))
-      return errs.flatten
-    } finally {
-      if (input.ns is F4Namespace)
-        ((F4Namespace)input.ns).close
+      
       // Compare pod file in output directory to podFile in project and overwrite it if they are different
       npodFile := input.outDir.listFiles.find { it.name == fp.podName + ".pod" }
       if( npodFile != null)
@@ -75,41 +72,55 @@ class InternalBuilder : Builder
         else
         {
           npodZip := Zip.open(npodFile)
-          podZip := Zip.open(podFile)
-            npodContents := npodZip.contents
-            podContents := podZip.contents
-            if( podContents == null || npodContents != podContents )
+          Zip? podZip := null
+          try {
+            podZip = Zip.open(podFile)
+          }
+          catch(Err e)  {
+             // Content different override
+            npodFile.copyInto(fp.outDir, ["overwrite": true])
+            npodZip.close
+            return errs.flatten
+          }
+          npodContents := npodZip.contents
+          podContents := podZip.contents
+          if( podContents == null || npodContents != podContents )
+          {
+            // Content different override
+            npodFile.copyInto(fp.outDir, ["overwrite": true])
+          }
+          else
+          {
+            different := npodContents.keys.find |Uri u -> Bool| {
+              f1 := npodContents[u]
+              f2 := podContents[u]
+              b1 := f1.readAllBuf
+              b2 := f2.readAllBuf
+              if( b1.size != b2.size) return true
+              for( i:=0;i<b1.size;i++)
+              {
+                if( b1[i] != b2[i])
+                {
+                  return true;
+                }
+              }
+              return false
+            }
+            if( different != null && different.toStr != "/meta.props")
             {
-              // Content different override
+              // Content are changed, replacing file
               npodFile.copyInto(fp.outDir, ["overwrite": true])
             }
-            else
-            {
-              different := npodContents.keys.find |Uri u -> Bool| {
-                f1 := npodContents[u]
-                f2 := podContents[u]
-                b1 := f1.readAllBuf
-                b2 := f2.readAllBuf
-                if( b1.size != b2.size) return true
-                for( i:=0;i<b1.size;i++)
-                {
-                  if( b1[i] != b2[i])
-                  {
-                    return true;
-                  }
-                }
-                return false
-              }
-              if( different != null && different.toStr != "/meta.props")
-              {
-                // Content are changed, replacing file
-                npodFile.copyInto(fp.outDir, ["overwrite": true])
-              }
-            } 
-            npodZip.close
-            podZip.close
+          } 
+          npodZip.close
+          podZip.close
         }
       }
+      
+      return errs.flatten
+    } finally {
+      if (input.ns is F4Namespace)
+        ((F4Namespace)input.ns).close
     }
   }
   
