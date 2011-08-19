@@ -59,7 +59,7 @@ class JavaTypeRegistry
   {
     qname := type.toJavaClassName
     echo("Asm loading $qname")
-    if( qname == "com.xored.fanide.core.utils.ElementInfoWrappers\$TypeInfo" )
+    if( qname.index("ArrayList") != null )
     {
       echo("a1")
     }
@@ -225,6 +225,7 @@ class JavaTypeRegistry
       returnTypeName := m.getReturnType
       
       result.returnType = isCtor ? type : fanType(type.pod.bridge, returnTypeName, false, info)
+      
       result.setParamTypes(m.getParameterTypes.map { fanType(type.pod.bridge, it, false, info)})
       //echo(" method "+ result.name + "(" + result.params +")")
       
@@ -406,7 +407,10 @@ class JavaTypeRegistry
         }
       }      
     }
-    
+    if( name == "Void" || name == "String")
+    {
+      echo("\$")
+    }
     if(package == "fan.sys") return ns.resolveType("sys::$name?")
     return ns.resolveType("[java]${package}::${name}?")
   }
@@ -451,7 +455,7 @@ class JavaTypeRegistry
   {
     type = Signature.getTypeErasure(type)
     tName := Signature.toString(Signature.getSimpleNames(type).join("."))
-    if( tName.index(".") == 0)
+    if( tName.index(".") == null)
     {
       Str?[]? resultName := JDTSupport.resolve(info, tName)
       if( resultName != null && resultName.size > 0) tName = resultName[0]
@@ -482,7 +486,7 @@ class JavaTypeRegistry
     
     switch(finalName)
     {
-      case "void": return ns.voidType
+      case "void":return ns.voidType
       case "boolean" : return multidim? primitives.booleanType : ns.boolType
       case "long" : return multidim? primitives.longType : ns.intType
       case "double" : return multidim? primitives.doubleType : ns.floatType
