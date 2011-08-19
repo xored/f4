@@ -6,7 +6,7 @@
 //   Ivan Inozemtsev Jun 3, 2010 - Initial Contribution
 //
 
-using [java] java.lang
+using [java] java.lang::System
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.dltk.testing
 using [java] org.eclipse.dltk.testing.model
@@ -34,7 +34,7 @@ class FanTestProcessor : ITestingProcessor
   
   new make(ILaunch? launch) { this.launch = launch }
 
-  override Void done() {
+  override public Void done() {
     if (session == null || client == null) return
     session.setTotalCount(index)
     client.testTerminated(System.currentTimeMillis - startTime)

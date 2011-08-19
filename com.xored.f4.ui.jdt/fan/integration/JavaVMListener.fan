@@ -1,4 +1,4 @@
-using [java] java.lang
+//using [java] java.lang
 using [java] java.lang.reflect
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.core.runtime

@@ -1,4 +1,5 @@
-using [java] java.lang
+//using [java] java.lang
+using [java] java.lang::Integer
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui
