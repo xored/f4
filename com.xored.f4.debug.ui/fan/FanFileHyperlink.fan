@@ -6,10 +6,11 @@
 //   Ivan Inozemtsev Jun 2, 2010 - Initial Contribution
 //
 
-using [java] org.eclipse.ui.console
+using [java] org.eclipse.ui.console::IHyperlink
+using [java] org.eclipse.ui.console::TextConsole
 using [java] org.eclipse.ui.ide
 using [java] org.eclipse.ui.texteditor
-using [java] org.eclipse.ui.progress
+using [java] org.eclipse.ui.progress 
 using [java] org.eclipse.core.runtime
 using [java] org.eclipse.core.runtime.jobs
 using [java] org.eclipse.core.resources
