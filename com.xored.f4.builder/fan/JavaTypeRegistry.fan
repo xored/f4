@@ -76,7 +76,7 @@ class JavaTypeRegistry
   private IType? findType(Str qname)
   {    
     ind := qname.indexr(".")
-    if( ind == -1) return null
+    if( ind == null) return null
     pkgName := qname[0..ind-1]
     if( this.fragments.containsKey(pkgName))
     {
@@ -127,6 +127,7 @@ class JavaTypeRegistry
         if( res != null)
         {
           result.add(res)
+          return
         }
       }
     }
@@ -258,16 +259,20 @@ class JavaTypeRegistry
     if(nfo.getSuperInterfaceNames.isEmpty) return
     nfo.getSuperInterfaceNames.each |interface|
     {
-      Str?[]? resolve := JDTSupport.resolve(nfo, interface)
-      if( resolve != null && resolve.size > 0) {
-        t := findType(resolve[0]) 
-        if( t != null)
-        {
-          populateCtorsAndMethods(type, t, slots)
-          populateFields(type, t, slots)
-          populateInterfaceSlots(type, t, slots)
-        } 
+      IType? t := findType(interface)
+      if( t == null)
+      {
+        Str?[]? resolve := JDTSupport.resolve(nfo, interface)
+        if( resolve != null && resolve.size > 0) {
+          t = findType(resolve[0]) 
+        }
       }
+      if( t != null)  
+      {
+        populateCtorsAndMethods(type, t, slots)
+        populateFields(type, t, slots)
+        populateInterfaceSlots(type, t, slots)
+      } 
     }
   }
 
@@ -277,6 +282,8 @@ class JavaTypeRegistry
     {
       return null
     }
+    IType? t := findType(nfo.getSuperclassName)
+    if( t != null) return t
     Str?[]? resolve := JDTSupport.resolve(nfo, nfo.getSuperclassName)
     if( resolve != null && resolve.size > 0) {
       return findType(resolve[0])
@@ -379,7 +386,7 @@ class JavaTypeRegistry
         package = resultName[0]
         pind := package.indexr(".")
         name = package[pind+1.. -1]
-        if( pind != -1) package = package[0.. pind-1]
+        if( pind != null) package = package[0.. pind-1]
       }
     }
     if( !fragments.containsKey(package))
@@ -413,8 +420,8 @@ class JavaTypeRegistry
       ttype := type [1..-1]
       tName := Signature.toString(Signature.getSimpleNames(ttype).join("."))
       
-      Str?[]? resultName := JDTSupport.resolve(info, tName)
-      if( resultName != null && resultName.size > 0) tName = resultName[0]
+//      Str?[]? resultName := JDTSupport.resolve(info, tName)
+//      if( resultName != null && resultName.size > 0) tName = resultName[0]
       
       switch(tName)
       {
@@ -444,8 +451,11 @@ class JavaTypeRegistry
   {
     type = Signature.getTypeErasure(type)
     tName := Signature.toString(Signature.getSimpleNames(type).join("."))
-    Str?[]? resultName := JDTSupport.resolve(info, tName)
-    if( resultName != null && resultName.size > 0) tName = resultName[0]
+    if( tName.index(".") == 0)
+    {
+      Str?[]? resultName := JDTSupport.resolve(info, tName)
+      if( resultName != null && resultName.size > 0) tName = resultName[0]
+    }
     switch(tName)
     {
       case "java.lang.Object" : return ns.objType
@@ -467,8 +477,8 @@ class JavaTypeRegistry
     sigName := Signature.getSimpleName(type)
     finalName := Signature.toString(sigName)
     
-    Str?[]? resultName := JDTSupport.resolve(info, finalName)
-    if( resultName != null && resultName.size > 0) finalName = resultName[0]
+//    Str?[]? resultName := JDTSupport.resolve(info, finalName)
+//    if( resultName != null && resultName.size > 0) finalName = resultName[0]
     
     switch(finalName)
     {
