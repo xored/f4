@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>f4tests</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>q7test</packaging>
+
+	<parent>
+		<groupId>com.xored.f4</groupId>
+		<artifactId>f4</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	
+	<!--dependencies>
+		<dependency>
+		  <groupId>com.xored.q7</groupId>
+		  <artifactId>com.xored.q7.pro</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies-->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.xored.q7</groupId>
+				<artifactId>q7-maven-plugin</artifactId>
+				<version>${q7-maven-version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<aut>
+						<explicit>../com.xored.f4.product/target/products/com.xored.f4-product-[platform].zip</explicit>
+					</aut>
+					<testOptions>
+						<execTimeout>2000</execTimeout>
+					</testOptions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<snapshots>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<id>xored</id>
+			<name>Xored Maven repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/q7-snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>	
+	
+	<repositories>
+		<repository>
+			<id>xored</id>
+			<name>Xored Maven repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+	
+	<properties>
+		<q7-maven-version>0.0.1-SNAPSHOT</q7-maven-version>
+	</properties>
+	
+</project>

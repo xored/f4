@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="methodRef" version="3.0" id="_SEsQoMyUEeCqoItsrYQC5Q" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-menu "Search/Fan..." | click
+with [get-window Search] {
+    get-group "Search For" | get-button Method | click
+    get-group "Limit To" | get-button References | click
+    get-combo -after [get-label "Search string (* = any string, ? = any character):"] | set-text "*"
+    get-group Scope | get-button Workspace | click
+    get-group "Search For" | get-button Method | click
+    get-button Search | click
+}
+get-view Search | get-tree | select "Base.fan - fan - fantest/Base/method1\\(\\)" | double-click -nowait
+get-view Search | get-tree | get-item "Base.fan - fan - fantest/Base/method1\\(\\)" | get-property caption 
+    | equals "method1()" | verify-true]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Search</path>
+        <path>Fan...</path>
+        <parent id="EclipseWindow4" kind="EclipseWindow" description="Fantom - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu2" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State10" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Search" multiplicity="1">
+        <parent id="EclipseWindow4" kind="EclipseWindow" description="Fantom - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Group" pattern="Limit To" multiplicity="1">
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="References" multiplicity="1">
+        <parent id="Group6" kind="Group"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button8" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State11" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Search string (* = any string, ? = any character):" multiplicity="1">
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Combo" multiplicity="1">
+        <after id="Label2" kind="Label"/>
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetText" value="*">
+      <element id="Combo2" kind="Combo"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Group" pattern="Search For" multiplicity="1">
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Method" multiplicity="1">
+        <parent id="Group7" kind="Group"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button9" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State12" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Group" pattern="Scope" multiplicity="1">
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Workspace" multiplicity="1">
+        <parent id="Group8" kind="Group"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button10" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State13" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Search" multiplicity="1">
+        <parent id="Window2" kind="Window" description="Search"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button11" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State14" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Search" multiplicity="1">
+        <parent id="EclipseWindow4" kind="EclipseWindow" description="Fantom - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View6" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree6" kind="Tree"/>
+      <path>Base.fan - fan - fantest</path>
+      <path>Base</path>
+      <path>method1\(\)</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:DoubleClick">
+      <element id="Tree6" kind="Tree"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Search" multiplicity="1">
+        <parent id="EclipseWindow5" kind="EclipseWindow" description="Fantom - fantest/fan/Base.fan - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View8" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>Base.fan - fan - fantest</path>
+        <path>Base</path>
+        <path>method1\(\)</path>
+        <parent id="Tree8" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="method1()">
+      <element id="Item18" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow4" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="1986" y="57" width="1020" height="756"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="Menu2" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="Fan..." enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="State10" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="Window2" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Search" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2198" y="85" width="596" height="442"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.6">
+      <elements id="Group6" kind="Group"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Group" className="org.eclipse.swt.widgets.Group" enablement="true" childCount="3" caption="Limit To">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="236" y="71" width="319" height="78"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.7">
+      <elements id="Button8" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true" selected="true" kind="Radio">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="133" y="22" width="94" height="22"/>
+        <caption><![CDATA[&References]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.8">
+      <elements id="State11" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.11">
+      <elements id="Label2" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="Se&amp;arch string (* = any string, ? = any character):">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds width="550" height="17"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.12">
+      <elements id="Combo2" kind="Combo"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Combo" className="org.eclipse.swt.widgets.Combo" enablement="true" selection="*">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds y="22" width="429" height="29"/>
+        <values>*</values>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.14">
+      <elements id="Group7" kind="Group"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Group" className="org.eclipse.swt.widgets.Group" enablement="true" childCount="4" caption="Search For">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="5" y="71" width="221" height="78"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.15">
+      <elements id="Button9" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true" selected="true" kind="Radio">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="84" y="22" width="72" height="22"/>
+        <caption><![CDATA[&Method]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.16">
+      <elements id="State12" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.19">
+      <elements id="Group8" kind="Group"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Group" className="org.eclipse.swt.widgets.Group" enablement="true" childCount="6" caption="Scope">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="5" y="5" width="550" height="85"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.20">
+      <elements id="Button10" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true" selected="true" kind="Radio">
+        <backgroundColor red="242" green="241" blue="240"/>
+        <foregroundColor/>
+        <bounds x="7" y="22" width="92" height="22"/>
+        <caption><![CDATA[&Workspace]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.21">
+      <elements id="State13" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.24">
+      <elements id="Button11" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="458" y="19" width="122" height="29"/>
+        <caption><![CDATA[&Search]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.25">
+      <elements id="State14" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.28">
+      <elements id="View6" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Search">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="208" y="336" width="799" height="298"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.29">
+      <elements id="Tree6" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="799" height="279"/>
+        <selection>
+          <path>Base.fan - fan - fantest</path>
+          <path>Base</path>
+          <path>method1\(\)</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.32">
+      <elements id="EclipseWindow5" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - fantest/fan/Base.fan - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="1986" y="57" width="1020" height="756"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.33">
+      <elements id="View8" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Search">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="208" y="336" width="799" height="298"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.34">
+      <elements id="Tree8" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="799" height="279"/>
+        <selection>
+          <path>Base.fan - fan - fantest</path>
+          <path>Base</path>
+          <path>method1\(\)</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.35">
+      <elements id="Item18" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="method1()" selected="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds x="81" y="46" width="73" height="24"/>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>
