@@ -11,8 +11,16 @@ using [java] org.eclipse.dltk.core.search::AbstractSearchFactory
 using [java] org.eclipse.dltk.core.search::SearchPatternProcessor as DltkSearchPatternProcessor
 using [java] org.eclipse.dltk.core::ISearchPatternProcessor
 using [java] org.eclipse.dltk.core::ISearchPatternProcessor$ITypePattern as ITypePattern
+using [java] org.eclipse.dltk.core.search::IMatchLocatorParser
+using [java] org.eclipse.dltk.core.search.matching::MatchLocatorParser
+using [java] org.eclipse.dltk.core.search.matching::MatchLocator
+using [java] org.eclipse.dltk.core::ISourceModule
 using [java] fanx.interop::CharArray
+using [java] org.eclipse.dltk.ast.declarations::ModuleDeclaration
+using [java] org.eclipse.dltk.core.search.matching::PossibleMatch
+using [java]org.eclipse.dltk.core::SourceParserUtil
 
+using f4parser
 **************************************************************************
 ** SearchFactory
 **************************************************************************
@@ -26,6 +34,7 @@ class SearchFactory : AbstractSearchFactory
     SearchPatternProcessor()
   }
 }
+
 
 
 **************************************************************************
@@ -74,7 +83,8 @@ class SearchPatternProcessor : DltkSearchPatternProcessor
   ** methodName from [podName::]typeName.methodName
   override CharArray? extractSelector(Str? pattern)
   {
-    nullOrArray(podTypeMethod(pattern).getSafe(2))
+    val := podTypeMethod(pattern).getSafe(2)
+    return nullOrArray(val != null?val:pattern)
   }
   
   static CharArray? nullOrArray(Str? s) { s == null ? null : InteropUtil.toCharArray(s.chars) }

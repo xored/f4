@@ -18,9 +18,17 @@ class TypeReferencePredicate : IPredicate
       CType ctype := (CType)node
       if (ctype.resolvedType == null) return null
       return predicate.nameMatch(ctype.resolvedType.name, ctype)
-    } else {
-      return null
     }
+    else if( node is TypeRef)
+    {
+      return predicate.nameMatch(((TypeRef)node).text, node)
+    }
+    else if( node is ThisRef) {
+      ThisRef ref := node
+      if( ref.resolvedType == null ) return null
+      return predicate.nameMatch(ref.resolvedType.name, node)
+    }
+    return null
   }
   
 }

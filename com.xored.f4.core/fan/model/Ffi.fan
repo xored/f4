@@ -25,7 +25,8 @@ internal const class FfiPod : IFanPod
       if (!pf.exists) return
       pf.getClassFiles.each |IClassFile cf|
       {
-        allTypes.add(FfiType(name,cf.findPrimaryType))
+        primaryType := cf.findPrimaryType
+        if(primaryType != null) allTypes.add(FfiType(name,primaryType))
       }
       pf.getCompilationUnits.each |ICompilationUnit cu|
       {

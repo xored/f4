@@ -8,7 +8,7 @@ using "[java]org.eclipse.dltk.internal.core.search.matching"
 class MatchingPredicate : AbstractMatchingPredicate
 {
   
-  new make(SearchPattern pattern, Obj name) : super(pattern, name) {
+  new make(SearchPattern pattern, Obj? name) : super(pattern, name) {
   }
   
   public FanMatch? nameMatch(Str pattern, Node node) {

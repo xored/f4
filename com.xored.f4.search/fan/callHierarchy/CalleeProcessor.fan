@@ -75,6 +75,7 @@ class MethodVisitor : AstVisitor {
   private static IMethod[] resolve(SlotRef slot) {
     IMethod[] methods := [,]
     project := FantomProjectManager.instance.getByPod(slot.modelSlot.type.pod)
+    if( project == null) return methods
     project.scriptProject.getScriptFolders.each {
       ((IScriptFolder)it).getSourceModules.each {
         IType? type := ((ISourceModule)it).getTypes().find |IType type -> Bool| {

@@ -58,6 +58,8 @@ class IndexingVisitor : AstVisitor
     //usages
     else if(n is CType) { typeUsage(n) }
     else if(n is SlotRef) { slotUsage(n) }
+    else if(n is MethodVarRef) {localUsage(n)}
+    else if(n is LocalDef) {localDef(n)}
     return true
   }
   
@@ -90,6 +92,20 @@ class IndexingVisitor : AstVisitor
     info.nameSourceStart = def.name.start
     info.nameSourceEnd = def.name.end
     info.type = nodeText(def.ctype)
+    requestor.enterField(info)
+  }
+  private Void localDef(LocalDef def)
+  {
+    info := FieldInfo()
+    info.declarationStart = def.start
+    info.modifiers = 0
+    info.name = def.name.text
+    info.nameSourceStart = def.name.start
+    info.nameSourceEnd = def.name.end
+    if( def.ctype != null)
+    {
+      info.type = nodeText(def.ctype)
+    }
     requestor.enterField(info)
   }
   
@@ -193,9 +209,10 @@ class IndexingVisitor : AstVisitor
       else
         requestor.acceptFieldReference(ref.text, ref.start)
     }
-    else {
-      // TODO report unknown reference
-    }
+  }
+  private Void localUsage(MethodVarRef ref)
+  {
+    requestor.acceptFieldReference(ref.def.name.text, ref.start)
   }
   
   
