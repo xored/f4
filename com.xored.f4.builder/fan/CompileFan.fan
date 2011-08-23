@@ -59,6 +59,9 @@ class CompileFan : IScriptBuilder
 
   override Void build(IBuildChange? change, IBuildState? state, IProgressMonitor? m)
   {
+    if( m!= null && m.isCanceled) {
+      return
+    }
     fp := fantomProject(change.getScriptProject)
     
     buildPod(fp)

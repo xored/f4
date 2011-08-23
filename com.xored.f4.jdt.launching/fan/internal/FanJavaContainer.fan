@@ -7,6 +7,7 @@
 //
 
 using [java] org.eclipse.core.runtime
+using [java] org.eclipse.core.resources::IProject
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jdt.core
@@ -45,6 +46,17 @@ class FanJavaContainer : IClasspathContainer
     fp := FantomProjectManager.instance[project.getProject]
     fp.depends.each |loc, name|
     {
+      podFP := FantomProjectManager.instance.getByPod(name)
+      if( podFP != null)
+      {
+        IProject prj := podFP.project
+        if( prj.hasNature("org.eclipse.jdt.core.javanature"))
+        {
+         // Do not need to add entry
+          return
+        }
+      }
+      
       if(isJavaPod(loc))
         cpEntries.add(createLibrary(loc,name))
     }
