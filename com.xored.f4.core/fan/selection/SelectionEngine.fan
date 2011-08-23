@@ -62,6 +62,24 @@ class SelectionEngine : ISelectionEngine
   private Str? src
   private IModelElement[] selectType(CType? type)
   {
+    if( type != null && type.resolvedType != null)
+    {
+      resolvedType := type.resolvedType
+      resultME := resolvedType.me
+      if( resultME != null)
+      {
+        return [resultME]
+      }
+      if( resolvedType is RtNullableType)
+      {
+        RtNullableType nullType := resolvedType
+        IFanType fanType := nullType.type
+        if( fanType is DltkType)
+        {
+          if( fanType.me != null) return [fanType.me]
+        }
+      }
+    }
     me := type?.resolvedType?.me
     //TODO: Try to search
     return me == null ? [,] : [me] 
