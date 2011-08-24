@@ -35,8 +35,18 @@ class SelectionEngine : ISelectionEngine
     path := AstFinder.find(unit, start)
     node := path.last
     if (node == null) return IModelElement[,]
-    if (node is ListType) return selectType(node->valType)
-    else if (node is FuncTypeParam) return selectType(node->ctype)
+    if (node is ListType)
+    {
+      return selectListType(node, start, end,  src)
+    }
+    else if (node is FuncTypeParam)
+    {
+      if( node->ctype is ListType)
+      {
+        return selectListType(node->ctype, start, end, src)
+      }
+      return selectType(node->ctype)
+    }
     else if (node is TypeDef) return selectTypeDef(node)
     else if (node is CType) return selectType(node)
     else if (node is SlotRef) return selectSlotRef(node)
@@ -60,6 +70,33 @@ class SelectionEngine : ISelectionEngine
   private CUnit? unit
   private IFanNamespace? ns
   private Str? src
+  
+  private IModelElement[] selectListType(ListType? type, Int start, Int end, Str? src)
+  {
+    if( src[start] != '[' && src[start] != ']' )
+    {
+      if( type.valType is FuncType)
+      { 
+        IModelElement[] result := [,]
+        ((FuncType)type.valType).params.each
+        {
+          FuncTypeParam param := it
+          if( param.start<= start && start <= param.end)
+          {
+            if( param.ctype is ListType)
+              result.addAll(selectListType(param.ctype, start, end, src))
+            else
+              result.addAll(selectType(param.ctype))
+          }
+        }
+        if( result.size > 0) return result
+      }
+      // Select list type instead
+      return selectType(type.valType)
+    }
+    return selectType(type)
+  }
+  
   private IModelElement[] selectType(CType? type)
   {
     if( type != null && type.resolvedType != null)
