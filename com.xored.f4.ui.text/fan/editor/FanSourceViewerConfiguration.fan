@@ -183,6 +183,9 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
   protected override Void alterContentAssistant(ContentAssistant? assistant) {
     processor := FanCompletionProcessor(getEditor, assistant, IDocument.DEFAULT_CONTENT_TYPE)
     assistant.setContentAssistProcessor(processor, IDocument.DEFAULT_CONTENT_TYPE)
+ 
+    strProcessor := FanCompletionProcessor(getEditor, assistant, IFanPartitions.string)
+    assistant.setContentAssistProcessor(processor, IFanPartitions.string)
   }
 
   override ITextDoubleClickStrategy? getDoubleClickStrategy(

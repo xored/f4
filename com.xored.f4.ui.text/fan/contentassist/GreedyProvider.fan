@@ -24,7 +24,7 @@ class GreedyProvider : CompletionProvider
     super.complete(reporter)
 
     path := AstFinder.find(unit, pos)
-
+    if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral) return false
     // report locals and current type slots
     insideMethod := path.find(MethodDef#) != null
     if(insideMethod)

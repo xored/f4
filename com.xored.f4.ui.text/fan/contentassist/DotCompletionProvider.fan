@@ -30,6 +30,8 @@ class DotCompletionProvider : CompletionProvider
     //TODO: improve, looks too similar to magic now
     nodePos := pos - ending.size +1//+ (prefix.isEmpty ? 1 : 0)
     path = AstFinder.find(unit, nodePos) 
+    if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral) return false
+    
     if(path.last is CType) return true
     if(path.last is Expr) return true
     
@@ -89,7 +91,7 @@ class DotCompletionProvider : CompletionProvider
   ** Elements length should be decreasing (so we correctly define
   ** full ending)
   ** 
-  private static const Str[] endings := Str["?->", "->", "?.", ".", "#"]
+  public static const Str[] endings := Str["?->", "->", "?.", ".", "#"]
   
   ** path to node preceding to completion position
   private AstPath? path

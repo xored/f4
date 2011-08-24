@@ -14,6 +14,12 @@ class AstFinder : AstVisitor
     unit.accept(finder)
     return AstPath(finder.path, pos)
   }
+  static AstPath findNode(Node node, Int pos)
+  {
+    finder := AstFinder(pos)
+    node.accept(finder)
+    return AstPath(finder.path, pos)
+  }
   
   override Bool enterNode(Node node)
   { 

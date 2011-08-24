@@ -795,7 +795,7 @@ class Parser : AstFactory
     return left
   }
   
-  Expr expr() {return assignExpr}
+  public Expr expr() {return assignExpr}
   
   Expr assignExpr()
   {

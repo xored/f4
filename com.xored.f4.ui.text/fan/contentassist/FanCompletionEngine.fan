@@ -93,7 +93,8 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
         QnameCompletionProvider#,
         UsingCompletionProvider#,
         IsCompletionProvider#,
-        GreedyProvider#
+        StrProvider#,
+        GreedyProvider#,
         ].map |Type t->CompletionProvider|
         {
           t.make([ns, content, cunit])
