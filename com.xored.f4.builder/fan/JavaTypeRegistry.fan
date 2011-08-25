@@ -177,12 +177,7 @@ class JavaTypeRegistry
       if( !result.containsKey("<init>"))
       {
         // Add one default contructor if doesn't persist
-        ctor := JavaMethod()
-        ctor.parent = type
-        ctor.name = "<init>"
-        ctor.flags = FConst.Public.or(FConst.Ctor).or(FConst.Virtual)
-        ctor.returnType = type
-        ctor.setParamTypes([,])
+        ctor := JavaMethod(type, "<init>", FConst.Public.or(FConst.Ctor).or(FConst.Virtual), type, [,] )
         result["<init>"] = ctor
       }
   }
@@ -210,11 +205,7 @@ class JavaTypeRegistry
   {    
     fieldHandler := |IField f->Void|
     {
-      result := JavaField()
-      result.parent = type
-      result.name = f.getElementName
-      result.flags = memberFlags(f.getFlags)
-      result.fieldType = fanType(type.pod.bridge, f.getTypeSignature, false, info)
+      result := JavaField(type, f.getElementName, memberFlags(f.getFlags), fanType(type.pod.bridge, f.getTypeSignature, false, info) )
       
       //try to find slot with the same parameters
       if(!slots.containsKey(result.name)) slots[result.name] = [result]
@@ -236,17 +227,22 @@ class JavaTypeRegistry
     methodHandler := |IMethod m->Void|
     {
       isCtor := m.isConstructor
-      result := JavaMethod()
-      result.parent = type
-      if( !isCtor ) result.name = m.getElementName
-      else result.name = "<init>"
-      result.flags = memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)
+      result_name := ""
+      if( !isCtor ) result_name = m.getElementName
+      else result_name = "<init>"
+      result_flags := memberFlags(m.getFlags).or(isCtor ? FConst.Ctor : 0)
       returnTypeName := m.getReturnType
       
-      result.returnType = isCtor ? type : fanType(type.pod.bridge, returnTypeName, false, info)
+      result_returnType := isCtor ? type : fanType(type.pod.bridge, returnTypeName, false, info)
       
-      result.setParamTypes(m.getParameterTypes.map { fanType(type.pod.bridge, it, false, info)})
+      paramNames := m.getParameterNames
+      paramTypes := m.getParameterTypes
+      i := -1
+      result_params := m.getParameterTypes.map {
+        JDTParam(paramNames[i++], fanType(type.pod.bridge, it, false, info), false)
+      }
       //echo(" method "+ result.name + "(" + result.params +")")
+      result := JavaMethod( type, result_name, result_flags, result_returnType, result_params )
       
       list := slots.getOrAdd(result.name) |->JavaSlot[]| { JavaSlot[,] }
       //try to find slot with the same parameters
@@ -254,7 +250,9 @@ class JavaTypeRegistry
       {
         if(slot isnot JavaMethod) return false
         other := slot as JavaMethod
-        return other.params.map { it.paramType.qname } == result.params.map { it.paramType.qname }
+        part1 := other.params.map { it.paramType.qname }
+        part2 := result.params.map { it.paramType.qname }
+        return part1 == part2
       }
       if(!slotExists) list.add(result)
       //slots.getOrAdd(m.name) |->JavaSlot[]| { JavaSlot[,] }.add(result)
@@ -517,6 +515,18 @@ class JavaTypeRegistry
       case "float": return primitives.floatType
     }
     return null
+  }
+}
+internal class JDTParam: CParam
+{
+  override const Str name
+  override CType paramType
+  override const Bool hasDefault
+  new make(Str name, CType type, Bool def)
+  {
+    this.name = name
+    this.paramType = type
+    this.hasDefault = def
   }
 }
 

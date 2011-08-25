@@ -67,5 +67,5 @@ class FanUI
 
 	//private ICodeTemplateAccess? codeTemplateAccess := null
 
-  once ICodeTemplateAccess getCodeTemplateAccess() { FanCodeTemplateAccess() }
+  ICodeTemplateAccess getCodeTemplateAccess() { FanCodeTemplateAccess() }
 }

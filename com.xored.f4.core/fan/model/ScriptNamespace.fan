@@ -138,6 +138,7 @@ internal abstract const class ScriptSlot : IFanSlot, Flag
     this.type = container
     name = slotName
     this.flags = flags
+    this.qname = parent + "." + name
   }
   override const Str of
   override const Str parent

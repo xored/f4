@@ -177,6 +177,7 @@ internal abstract const class FfiSlot : IFanSlot, Flag
     if (JavaFlags.isSynthetic(javaFlags)) isSynthetic = true
     if (member is IMethod && !JavaFlags.isFinal(javaFlags)) flags = flags.or(Virtual)
     this.flags = flags
+    this.qname = parent + "." + name 
   }
   static Bool isInvisible(IMember member)
   {

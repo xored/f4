@@ -19,7 +19,7 @@ class FanTemplateCompletionProcessor : ScriptTemplateCompletionProcessor
   /*
    * @see org.eclipse.dltk.ui.templates.ScriptTemplateCompletionProcessor#getIgnore()
    */
-  protected override once CharArray? getIgnore()
+  protected override CharArray? getIgnore()
   {
     array := CharArray(1)
     array[0] = '.'
@@ -29,5 +29,5 @@ class FanTemplateCompletionProcessor : ScriptTemplateCompletionProcessor
   /*
    * @see org.eclipse.dltk.ui.templates.ScriptTemplateCompletionProcessor#getTemplateAccess()
    */
-  protected override once ScriptTemplateAccess? getTemplateAccess() { FanTemplateAccess() }
+  protected override ScriptTemplateAccess? getTemplateAccess() { FanTemplateAccess() }
 }

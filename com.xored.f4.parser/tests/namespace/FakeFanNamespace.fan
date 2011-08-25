@@ -60,6 +60,7 @@ const class FakeFanPod : IFanPod
     pod.types.each {tempTypesMap.add(it.name, FakeFanType(it))}
     this.typesMap = tempTypesMap
     this.typeNames = this.typesMap.keys
+    //this->typeNames = types.map { it.name }
   }
   
   new fake(Str name, IFanType[] types := [,], Version version := Version([0]), 

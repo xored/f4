@@ -49,11 +49,11 @@ class FanTypePattern : ITypePattern
     getSimpleName = podTypeMethod.getSafe(1, "unrecognized")
     
   }
-  override once CharArray? qualification() {
+  override CharArray? qualification() {
     SearchPatternProcessor.nullOrArray(getQualification)
   }
   
-  override once CharArray? simpleName() {
+  override CharArray? simpleName() {
     SearchPatternProcessor.nullOrArray(getSimpleName)
   }
   override Str? getQualification
