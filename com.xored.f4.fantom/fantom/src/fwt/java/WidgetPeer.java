@@ -28,9 +28,7 @@ import org.eclipse.swt.events.*;
  * Native methods for Widget
  */
 public class WidgetPeer
-  implements KeyListener, FocusListener,
-             MouseListener, MouseMoveListener, MouseTrackListener, MouseWheelListener,
-             DisposeListener
+  implements KeyListener, FocusListener, Listener, DisposeListener
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -52,6 +50,11 @@ public class WidgetPeer
   public fan.fwt.Widget parent()
   {
     return self.parent();
+  }
+
+  public Widget control()
+  {
+    return control;
   }
 
   public Widget parentControl()
@@ -103,6 +106,10 @@ public class WidgetPeer
     }
   };
 
+  public Cursor cursor(fan.fwt.Widget self) { return cursor.get(); }
+  public void cursor(fan.fwt.Widget self, Cursor v) { cursor.set(v); }
+  public final Prop.CursorProp cursor = new Prop.CursorProp(this);
+
   // Size size
   public fan.gfx.Point pos(fan.fwt.Widget self) { return pos.get(); }
   public void pos(fan.fwt.Widget self, fan.gfx.Point v) { pos.set(v); onPosChange(); }
@@ -127,6 +134,17 @@ public class WidgetPeer
     int h = (hints.h == null) ? SWT.DEFAULT : hints.h.intValue();
     Point s = ((Control)control).computeSize(w, h, true);
     return size(s);
+  }
+
+  public fan.gfx.Point posOnWindow(fan.fwt.Widget self)
+  {
+    if (!(control instanceof Control)) return null;
+    fan.fwt.Window window = self.window();
+    if (window == null || !(window.peer.control instanceof Control)) return null;
+    Control widgetControl = (Control)control;
+    Control windowControl = (Control)window.peer.control;
+    Point pt = Fwt.get().display.map(widgetControl, windowControl, 0, 0);
+    return point(pt);
   }
 
   public fan.gfx.Point posOnDisplay(fan.fwt.Widget self)
@@ -265,44 +283,32 @@ public class WidgetPeer
 // Mouse Eventing
 //////////////////////////////////////////////////////////////////////////
 
-  public void mouseDoubleClick(MouseEvent se) {}
-
-  public void mouseDown(MouseEvent se)
+  public void handleEvent(Event se)
   {
-    fireMouseEvent(self.onMouseDown(), EventId.mouseDown, se);
+    switch(se.type)
+    {
+      case SWT.MouseDown:  fireMouseEvent(self.onMouseDown(),  EventId.mouseDown,  se); break;
+      case SWT.MouseUp:    fireMouseEvent(self.onMouseUp(),    EventId.mouseUp,    se); break;
+      case SWT.MouseMove:  fireMouseEvent(self.onMouseMove(),  EventId.mouseMove,  se); break;
+      case SWT.MouseEnter: fireMouseEvent(self.onMouseEnter(), EventId.mouseEnter, se); break;
+      case SWT.MouseExit:  fireMouseEvent(self.onMouseExit(),  EventId.mouseExit,  se); break;
+      case SWT.MouseHover: fireMouseEvent(self.onMouseHover(), EventId.mouseHover, se); break;
+      case SWT.MouseVerticalWheel:
+        fireMouseEvent(self.onMouseWheel(), EventId.mouseWheel, se, 0, point(0, -se.count));
+        break;
+      case SWT.MouseHorizontalWheel:
+        fireMouseEvent(self.onMouseWheel(), EventId.mouseWheel, se, 0, point(-se.count, 0));
+        break;
+      default: System.out.println("WARNING: WidgetPeer.handleEvent: " + se);
+    }
   }
 
-  public void mouseUp(MouseEvent se)
+  private void fireMouseEvent(EventListeners listeners, EventId id, Event se)
   {
-    fireMouseEvent(self.onMouseUp(), EventId.mouseUp, se);
+    fireMouseEvent(listeners, id, se, se.count, null);
   }
 
-  public void mouseMove(MouseEvent se)
-  {
-    fireMouseEvent(self.onMouseMove(), EventId.mouseMove, se);
-  }
-
-  public void mouseEnter(MouseEvent se)
-  {
-    fireMouseEvent(self.onMouseEnter(), EventId.mouseEnter, se);
-  }
-
-  public void mouseExit(MouseEvent se)
-  {
-    fireMouseEvent(self.onMouseExit(), EventId.mouseExit, se);
-  }
-
-  public void mouseHover(MouseEvent se)
-  {
-    fireMouseEvent(self.onMouseHover(), EventId.mouseHover, se);
-  }
-
-  public void mouseScrolled(MouseEvent se)
-  {
-    fireMouseEvent(self.onMouseWheel(), EventId.mouseWheel, se);
-  }
-
-  private void fireMouseEvent(EventListeners listeners, EventId id, MouseEvent se)
+  private void fireMouseEvent(EventListeners listeners, EventId id, Event se, int count, fan.gfx.Point delta)
   {
     // save modifiers on mouse events for future selection, action,
     // and popup events which might occur;  this allows us to check
@@ -314,10 +320,12 @@ public class WidgetPeer
     // fire event
     fan.fwt.Event fe = event(id);
     fe.pos    = point(se.x, se.y);
-    fe.count  = Long.valueOf(se.count);
+    fe.count  = Long.valueOf(count);
     fe.button = Long.valueOf(se.button);
+    fe.delta  = delta;
     fe.key    = key;
     listeners.fire(fe);
+    if (fe.consumed) se.doit = false;
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -374,10 +382,15 @@ public class WidgetPeer
     checkKeyListeners(self);
     if (control instanceof Control)
     {
-      ((Control)control).addMouseListener(this);
-      ((Control)control).addMouseMoveListener(this);
-      ((Control)control).addMouseTrackListener(this);
-      ((Control)control).addMouseWheelListener(this);
+      Control c = (Control)control;
+      c.addListener(SWT.MouseDown, this);
+      c.addListener(SWT.MouseUp, this);
+      c.addListener(SWT.MouseMove, this);
+      c.addListener(SWT.MouseEnter, this);
+      c.addListener(SWT.MouseExit, this);
+      c.addListener(SWT.MouseHover, this);
+      c.addListener(SWT.MouseVerticalWheel, this);
+      c.addListener(SWT.MouseHorizontalWheel, this);
     }
     control.addDisposeListener(this);
     syncPropsToControl();
@@ -559,7 +572,7 @@ public class WidgetPeer
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
-  fan.fwt.Widget self;
+  public fan.fwt.Widget self;
   Widget control;
   Key modifiers;
   boolean activeKeyListener   = false;

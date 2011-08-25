@@ -111,6 +111,26 @@ fan.dom.WinPeer.prototype.reload  = function(self, force)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// History
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.hisBack      = function(self) { this.win.history.back(); }
+fan.dom.WinPeer.prototype.hisForward   = function(self) { this.win.history.forward(); }
+fan.dom.WinPeer.prototype.hisPushState = function(self, title, uri, map)
+{
+  // TODO FIXIT: serializtaion
+  var array = [];
+  map.each(fan.sys.Func.make(
+    fan.sys.List.make(fan.sys.Param.$type, [
+      new fan.sys.Param("val","sys::Obj",false),
+      new fan.sys.Param("key","sys::Str",false)
+    ]),
+    fan.sys.Void.$type,
+    function(val,key) { array[key] = val }));
+  this.win.history.pushState(array, title, uri.encode());
+}
+
+//////////////////////////////////////////////////////////////////////////
 // EventTarget
 //////////////////////////////////////////////////////////////////////////
 
@@ -118,7 +138,14 @@ fan.dom.WinPeer.prototype.onEvent = function(self, type, useCapture, handler)
 {
   var f = function(e)
   {
-    var evt = fan.dom.EventPeer.make(e);
+    var evt = fan.dom.DomEventPeer.make(e);
+    if (type == "popstate")
+    {
+      // copy state object into Event.meta
+      // TODO FIXIT: deserializtaion
+      var array = e.state;
+      for (var key in array) evt.m_meta.set(key, array[key]);
+    }
     handler.call(evt);
 
     if (type == "beforeunload")
@@ -165,7 +192,7 @@ fan.dom.WinPeer.prototype.fakeHashChange = function(self, handler)
     if (oldHash != newHash)
     {
       oldHash = newHash;
-      handler.call(fan.dom.EventPeer.make(null));
+      handler.call(fan.dom.DomEventPeer.make(null));
     }
   }
   setInterval(checkHash, 100);

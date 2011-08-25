@@ -86,13 +86,36 @@ class Win
   native Void reload(Bool force := false)
 
 //////////////////////////////////////////////////////////////////////////
+// History
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Go to previous page in session history.
+  **
+  native Void hisBack()
+
+  **
+  ** Go to next page in the session history.
+  **
+  native Void hisForward()
+
+  **
+  ** Push a new history item onto the history stack. Use 'onpopstate'
+  ** to listen for changes:
+  **
+  **   // Event.meta contains state map passed into pushState
+  **   Win.cur.onEvent("popstate", false) |e| { echo("# state: $e.meta") }
+  **
+  native Void hisPushState(Str title, Uri uri, Str:Obj map)
+
+//////////////////////////////////////////////////////////////////////////
 // Events
 //////////////////////////////////////////////////////////////////////////
 
   **
   ** Attach an event handler to the given event on this element.
   **
-  native Void onEvent(Str type, Bool useCapture, |Event e| handler)
+  native Void onEvent(Str type, Bool useCapture, |DomEvent e| handler)
 
 //////////////////////////////////////////////////////////////////////////
 // Storage

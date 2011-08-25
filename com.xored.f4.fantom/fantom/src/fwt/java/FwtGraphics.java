@@ -70,7 +70,7 @@ public class FwtGraphics implements Graphics
       }
       else
       {
-        throw ArgErr.make("Unsupported brush type: " + FanObj.typeof(brush)).val;
+        throw ArgErr.make("Unsupported brush type: " + FanObj.typeof(brush));
       }
     }
     finally
@@ -235,6 +235,32 @@ public class FwtGraphics implements Graphics
     else
     {
       gc.fillRectangle((int)x, (int)y, (int)w, (int)h);
+    }
+    return this;
+  }
+
+  public Graphics drawRoundRect(long x, long y, long w, long h, long wArc, long hArc)
+  {
+    gc.drawRoundRectangle((int)x, (int)y, (int)w, (int)h, (int)wArc, (int)hArc);
+    return this;
+  }
+
+  public Graphics fillRoundRect(long x, long y, long w, long h, long wArc, long hArc)
+  {
+    // this is one case where we optimize gradients for view rect
+    if (brush instanceof Gradient)
+    {
+      Fwt fwt = Fwt.get();
+      Pattern newbg = pattern(fwt, (Gradient)brush, x, y, w, h);
+      Pattern oldbg = gc.getBackgroundPattern();
+      gc.setBackgroundPattern(newbg);
+      gc.fillRoundRectangle((int)x, (int)y, (int)w, (int)h, (int)wArc, (int)hArc);
+      gc.setBackgroundPattern(oldbg);
+      newbg.dispose();
+    }
+    else
+    {
+      gc.fillRoundRectangle((int)x, (int)y, (int)w, (int)h, (int)wArc, (int)hArc);
     }
     return this;
   }

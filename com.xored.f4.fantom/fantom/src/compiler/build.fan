@@ -18,6 +18,13 @@ class Build : BuildPod
   {
     podName    = "compiler"
     summary    = "Fantom compiler"
+    meta       = ["org.name":     "Fantom",
+                  "org.uri":      "http://fantom.org/",
+                  "proj.name":    "Fantom Core",
+                  "proj.uri":     "http://fantom.org/",
+                  "license.name": "Academic Free License 3.0",
+                  "vcs.name":     "Mercurial",
+                  "vcs.uri":      "http://hg.fantom.org/fan-1.0/"]
     depends    = ["sys 1.0"]
     srcDirs    = [`fan/`,
                   `fan/assembler/`,
@@ -30,7 +37,7 @@ class Build : BuildPod
                   `fan/util/`]
     docSrc     = true
     dependsDir = devHomeDir.uri + `lib/fan/`
-    outDir     = devHomeDir.uri + `lib/fan/`
+    outPodDir  = devHomeDir.uri + `lib/fan/`
     index =
     [
       // DSL plugins

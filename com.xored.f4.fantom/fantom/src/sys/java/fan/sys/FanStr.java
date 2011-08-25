@@ -142,7 +142,7 @@ public class FanStr
     }
     catch (IndexOutOfBoundsException e)
     {
-      throw IndexErr.make(index).val;
+      throw IndexErr.make(index);
     }
   }
 
@@ -167,7 +167,7 @@ public class FanStr
 
     int s = r.start(size);
     int e = r.end(size);
-    if (e+1 < s) throw IndexErr.make(r).val;
+    if (e+1 < s) throw IndexErr.make(r);
 
     return self.substring(s, e+1);
   }
@@ -882,7 +882,7 @@ public class FanStr
         case '\'': if (q == '\'') s.append('\\').append('\''); else s.append((char)c); break;
         case '$':  s.append('\\').append('$'); break;
         default:
-          if (escu && c > 127)
+          if (c < ' ' || (escu && c > 127))
           {
             s.append('\\').append('u')
              .append((char)hex((c>>12)&0xf))
@@ -944,7 +944,7 @@ public class FanStr
     xmlEsc['&']  = "&amp;";
     xmlEsc['<']  = "&lt;";
     xmlEsc['>']  = "&gt;";
-    xmlEsc['\''] = "&apos;";
+    xmlEsc['\''] = "&#39;";
     xmlEsc['"']  = "&quot;";
   }
 

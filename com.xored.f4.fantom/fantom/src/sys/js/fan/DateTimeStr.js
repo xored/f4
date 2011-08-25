@@ -272,7 +272,7 @@ fan.sys.DateTimeStr.prototype.format = function()
             s += this.dst ? rule.dstAbbr : rule.stdAbbr;
             break;
           case 4:
-            s += this.tz.name();
+            s += this.tz.$name();
             break;
           default:
             invalidNum = true;
@@ -312,10 +312,18 @@ fan.sys.DateTimeStr.daySuffix = function(day)
   // eventually need localization
   switch (day)
   {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1:
+    case 21:
+    case 31:
+      return "st";
+    case 2:
+    case 22:
+      return "nd";
+    case 3:
+    case 23:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -336,7 +344,7 @@ fan.sys.DateTimeStr.prototype.parseDateTime = function(s, defTz, checked)
     if (this.tzName != null)
     {
       // use defTz if tzName was specified and matches any variations of defTz
-      if (this.tzName == defTz.name() ||
+      if (this.tzName == defTz.$name() ||
           this.tzName == defRule.stdAbbr ||
           this.tzName == defRule.dstAbbr)
       {

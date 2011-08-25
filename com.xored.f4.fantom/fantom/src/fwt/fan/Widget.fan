@@ -16,8 +16,6 @@ using gfx
 //   - focus management
 // Graphics:
 //   - affine transformations
-//   - buffered image
-//   - Image.resize / draw resized
 //
 
 **
@@ -52,6 +50,12 @@ abstract class Widget
   ** Controls whether this widget is visible or hidden.
   **
   native Bool visible
+
+  **
+  ** Mouse cursor to use when the mouse passes over the control.
+  ** If not specified cursor of the parent control will appear.
+  **
+  native Cursor? cursor
 
   **
   ** Meta-data that can be used by `Pane` for layout.
@@ -245,6 +249,12 @@ abstract class Widget
   }
 
   **
+  ** Get the position of this widget relative to the window.
+  ** If not on mounted on the screen then return null.
+  **
+  native Point? posOnWindow()
+
+  **
   ** Get the position of this widget on the screen coordinate's
   ** system.  If not on mounted on the screen then return null.
   **
@@ -300,6 +310,16 @@ abstract class Widget
     child.parent = this
     kids.add(child)
     try { child.attach } catch (Err e) { e.trace }
+    return this
+  }
+
+  **
+  ** Add all widgets in list by calling `add` on each widget.
+  ** Return this.
+  **
+  virtual This addAll(Widget?[] children)
+  {
+    children.each |kid| { add(kid) }
     return this
   }
 

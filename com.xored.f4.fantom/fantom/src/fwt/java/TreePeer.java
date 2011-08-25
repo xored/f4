@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Widget;
 
 public class TreePeer
   extends WidgetPeer
-  implements Listener, SelectionListener
+  implements SelectionListener
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -83,17 +83,17 @@ public class TreePeer
   public void selected(fan.fwt.Tree self, List v) { selected.set((List)v); }
   public final Prop.Custom selected = new Prop.Custom(this)
   {
-    void syncToControl() { set(val); }
-    void syncFromControl() { get(); }
+    public void syncToControl() { set(val); }
+    public void syncFromControl() { get(); }
 
-    Object get()
+    public Object get()
     {
       if (control == null) return val;
       val = nodes(((Tree)control).getSelection());
       return val.ro();
     }
 
-    void set(Object v)
+    public void set(Object v)
     {
       val = (List)v;
       if (control == null) return;
@@ -218,7 +218,7 @@ public class TreePeer
       case SWT.Expand:     handleExpand(event); break;
       case SWT.SetData:    handleSetData(event); break;
       case SWT.MenuDetect: handleMenuDetect(event); break;
-      default: System.out.println("WARNING: TreePeer.handleEvent: " + event);
+      default:             super.handleEvent(event); break;
     }
   }
 

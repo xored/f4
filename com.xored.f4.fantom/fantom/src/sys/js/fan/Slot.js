@@ -22,6 +22,7 @@ fan.sys.Slot.prototype.$ctor = function()
   this.m_qname  = null;
   this.m_name   = null;
   this.m_flags  = null;
+  this.m_facets = null;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,6 +31,11 @@ fan.sys.Slot.prototype.$ctor = function()
 
 fan.sys.Slot.prototype.$typeof = function() { return fan.sys.Slot.$type; }
 fan.sys.Slot.prototype.toStr = function() { return this.m_qname; }
+fan.sys.Slot.prototype.$literalEncode = function(out)
+{
+  this.m_parent.$literalEncode(out);
+  out.w(this.m_name);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Management
@@ -72,7 +78,7 @@ fan.sys.Slot.find = function(qname, checked)
 
 fan.sys.Slot.prototype.parent = function() { return this.m_parent; }
 fan.sys.Slot.prototype.qname = function() { return this.m_qname; }
-fan.sys.Slot.prototype.name = function() { return this.m_name; }
+fan.sys.Slot.prototype.$name = function() { return this.m_name; }
 fan.sys.Slot.prototype.isField = function() { return this instanceof fan.sys.Field; }
 fan.sys.Slot.prototype.isMethod = function() { return this instanceof fan.sys.Method; }
 
@@ -97,19 +103,19 @@ fan.sys.Slot.prototype.isVirtual = function()   { return (this.m_flags & fan.sys
 // Facets
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Slot.prototype.facets = function() { return this.m_facets; }
-fan.sys.Slot.prototype.hasFacet = function(type) { return false; }
+fan.sys.Slot.prototype.facets = function() { return this.m_facets.list(); }
+fan.sys.Slot.prototype.hasFacet = function(type) { return this.facet(type, false) != null; }
 fan.sys.Slot.prototype.facet = function(type, checked)
 {
   if (checked === undefined) checked = true;
-  return null;
+  return this.m_facets.get(type, checked);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Util
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Slot.prototype.$name = function(n)
+fan.sys.Slot.prototype.$$name = function(n)
 {
   // must keep in sync with compilerJs::JsNode
   switch (n)
@@ -119,6 +125,7 @@ fan.sys.Slot.prototype.$name = function(n)
     case "fan":    return "$fan";
     case "import": return "$import";
     case "in":     return "$in";
+    case "name":   return "$name";
     case "typeof": return "$typeof";
     case "var":    return "$var";
     case "with":   return "$with";

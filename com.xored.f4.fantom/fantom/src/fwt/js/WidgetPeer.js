@@ -39,7 +39,7 @@ fan.fwt.WidgetPeer.prototype.relayout = function(self)
   return self;
 }
 
-fan.fwt.WidgetPeer.prototype.posOnDisplay = function(self)
+fan.fwt.WidgetPeer.prototype.posOnWindow = function(self)
 {
   var x = this.m_pos.m_x;
   var y = this.m_pos.m_y;
@@ -54,10 +54,17 @@ fan.fwt.WidgetPeer.prototype.posOnDisplay = function(self)
       var dlg = p.peer.elem.parentNode;
       x += dlg.offsetLeft;
       y += dlg.offsetTop;
+      break; // dialogs are always relative to Window origin
     }
     p = p.parent();
   }
   return fan.gfx.Point.make(x, y);
+}
+
+fan.fwt.WidgetPeer.prototype.posOnDisplay = function(self)
+{
+  //equals to posOnWindow for now
+  return this.posOnWindow(self);
 }
 
 fan.fwt.WidgetPeer.prototype.prefSize = function(self, hints)
@@ -87,25 +94,39 @@ fan.fwt.WidgetPeer.prototype.pack = function(self)
   return self;
 }
 
+fan.fwt.WidgetPeer.prototype.m_enabled = true;
 fan.fwt.WidgetPeer.prototype.enabled = function(self) { return this.m_enabled; }
 fan.fwt.WidgetPeer.prototype.enabled$ = function(self, val)
 {
   this.m_enabled = val;
   if (this.elem != null) this.sync(self);
 }
-fan.fwt.WidgetPeer.prototype.m_enabled = true;
 
+fan.fwt.WidgetPeer.prototype.m_visible = true;
 fan.fwt.WidgetPeer.prototype.visible = function(self) { return this.m_visible; }
 fan.fwt.WidgetPeer.prototype.visible$ = function(self, val) { this.m_visible = val; }
-fan.fwt.WidgetPeer.prototype.m_visible = true;
 
+fan.fwt.WidgetPeer.prototype.m_$defCursor = "auto";
+fan.fwt.WidgetPeer.prototype.m_cursor = null;
+fan.fwt.WidgetPeer.prototype.cursor = function(self) { return this.m_cursor; }
+fan.fwt.WidgetPeer.prototype.cursor$ = function(self, val)
+{
+  this.m_cursor = val;
+  if (this.elem != null)
+  {
+    this.elem.style.cursor = val != null
+      ? fan.fwt.WidgetPeer.cursorToCss(val)
+      : this.m_$defCursor;
+  }
+}
+
+fan.fwt.WidgetPeer.prototype.m_pos = fan.gfx.Point.make(0,0);
 fan.fwt.WidgetPeer.prototype.pos = function(self) { return this.m_pos; }
 fan.fwt.WidgetPeer.prototype.pos$ = function(self, val) { this.m_pos = val; }
-fan.fwt.WidgetPeer.prototype.m_pos = fan.gfx.Point.make(0,0);
 
+fan.fwt.WidgetPeer.prototype.m_size = fan.gfx.Size.make(0,0);
 fan.fwt.WidgetPeer.prototype.size = function(self) { return this.m_size; }
 fan.fwt.WidgetPeer.prototype.size$ = function(self, val) { this.m_size = val; }
-fan.fwt.WidgetPeer.prototype.m_size = fan.gfx.Size.make(0,0);
 
 //////////////////////////////////////////////////////////////////////////
 // Focus
@@ -113,6 +134,12 @@ fan.fwt.WidgetPeer.prototype.m_size = fan.gfx.Size.make(0,0);
 
 fan.fwt.WidgetPeer.prototype.focus = function(self)
 {
+  if (this.elem != null) this.elem.focus();
+}
+
+fan.fwt.WidgetPeer.prototype.hasFocus = function(self)
+{
+  return this.elem != null && this.elem === document.activeElement;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -135,6 +162,7 @@ fan.fwt.WidgetPeer.prototype.attach = function(self)
   // create control and initialize
   var elem = this.create(parent.peer.elem, self);
   this.attachTo(self, elem);
+  self.cursor$(this.m_cursor);
 
   // callback on parent
   //parent.peer.childAdded(self);
@@ -145,13 +173,6 @@ fan.fwt.WidgetPeer.prototype.attachTo = function(self, elem)
   // sync to elem
   this.elem = elem;
   this.sync(self);
-  this.attachEvents(self, fan.fwt.EventId.m_mouseEnter, elem, "mouseover",  self.m_onMouseEnter.list());
-  this.attachEvents(self, fan.fwt.EventId.m_mouseExit,  elem, "mouseout",   self.m_onMouseExit.list());
-  this.attachEvents(self, fan.fwt.EventId.m_mouseDown,  elem, "mousedown",  self.m_onMouseDown.list());
-  this.attachEvents(self, fan.fwt.EventId.m_mouseMove,  elem, "mousemove",  self.m_onMouseMove.list());
-  this.attachEvents(self, fan.fwt.EventId.m_mouseUp,    elem, "mouseup",    self.m_onMouseUp.list());
-  //this.attachEvents(self, fan.fwt.EventId.m_mouseHover, elem, "mousehover", self.m_onMouseHover.list());
-  //this.attachEvents(self, fan.fwt.EventId.m_mouseWheel, elem, "mousewheel", self.m_onMouseWheel.list());
 
   // recursively attach my children
   var kids = self.m_kids;
@@ -159,65 +180,6 @@ fan.fwt.WidgetPeer.prototype.attachTo = function(self, elem)
   {
     var kid = kids.get(i);
     kid.peer.attach(kid);
-  }
-}
-
-fan.fwt.WidgetPeer.prototype.attachEvents = function(self, evtId, elem, event, list)
-{
-  var peer = this;
-  for (var i=0; i<list.size(); i++)
-  {
-    var meth = list.get(i);
-    var func = function(e)
-    {
-      // find pos relative to widget
-      var dis = peer.posOnDisplay(self);
-      var rel = fan.gfx.Point.make(e.clientX-dis.m_x, e.clientY-dis.m_y);
-
-      // TODO - need to fix for IE
-      // TODO - only valid for mouseDown - so need to clean up this code
-      var evt = fan.fwt.Event.make();
-      evt.m_id = evtId;
-      evt.m_pos = rel;
-      evt.m_widget = self;
-      //evt.count =
-      evt.m_key = fan.fwt.WidgetPeer.toKey(e);
-      meth.call(evt);
-      return false;
-    }
-
-    if (elem.addEventListener)
-      elem.addEventListener(event, func, false);
-    else
-      elem.attachEvent("on"+event, func);
-  }
-}
-
-fan.fwt.WidgetPeer.toKey = function(event)
-{
-  // find primary key
-  var key = null;
-  if (event.keyCode != null && event.keyCode > 0)
-    key = fan.fwt.WidgetPeer.keyCodeToKey(event.keyCode);
-
-  if (event.shiftKey)   key = key==null ? fan.fwt.Key.m_shift : key.plus(fan.fwt.Key.m_shift);
-  if (event.altKey)     key = key==null ? fan.fwt.Key.m_alt   : key.plus(fan.fwt.Key.m_alt);
-  if (event.ctrlKey)    key = key==null ? fan.fwt.Key.m_ctrl  : key.plus(fan.fwt.Key.m_ctrl);
-  // TODO FIXIT
-  //if (event.commandKey) key = key.plus(Key.command);
-  return key;
-}
-
-fan.fwt.WidgetPeer.keyCodeToKey = function(keyCode)
-{
-  // TODO FIXIT: map rest of non-alpha keys
-  switch (keyCode)
-  {
-    case 38: return fan.fwt.Key.m_up;
-    case 40: return fan.fwt.Key.m_down;
-    case 37: return fan.fwt.Key.m_left;
-    case 39: return fan.fwt.Key.m_right;
-    default: return fan.fwt.Key.fromMask(keyCode);
   }
 }
 
@@ -254,6 +216,7 @@ fan.fwt.WidgetPeer.prototype.detach = function(self)
   }
 
   // detach myself
+  self.peer.eventMask = 0;
   var elem = self.peer.elem;
   if (elem != null)
     elem.parentNode.removeChild(elem);
@@ -266,9 +229,19 @@ fan.fwt.WidgetPeer.prototype.detach = function(self)
 
 fan.fwt.WidgetPeer.prototype.sync = function(self, w, h)  // w,h override
 {
+  // sync event handlers
+  this.checkEventListener(self, 0x01, "mouseover",  fan.fwt.EventId.m_mouseEnter, self.m_onMouseEnter);
+  this.checkEventListener(self, 0x02, "mouseout",   fan.fwt.EventId.m_mouseExit,  self.m_onMouseExit);
+  this.checkEventListener(self, 0x04, "mousedown",  fan.fwt.EventId.m_mouseDown,  self.m_onMouseDown);
+  this.checkEventListener(self, 0x08, "mousemove",  fan.fwt.EventId.m_mouseMove,  self.m_onMouseMove);
+  this.checkEventListener(self, 0x10, "mouseup",    fan.fwt.EventId.m_mouseUp,    self.m_onMouseUp);
+//this.checkEventListener(self, 0x20, "mousehover", fan.fwt.EventId.m_mouseHover, self.m_onMouseHover);
+  this.checkEventListener(self, 0x40, "mousewheel", fan.fwt.EventId.m_mouseWheel, self.m_onMouseWheel);
+
+  // sync bounds
   with (this.elem.style)
   {
-    if (w === undefined) w = this.m_size.m_w;
+    if (w === undefined) w = this.m_size.m_w
     if (h === undefined) h = this.m_size.m_h;
 
     // TEMP fix for IE
@@ -283,6 +256,180 @@ fan.fwt.WidgetPeer.prototype.sync = function(self, w, h)  // w,h override
   }
 }
 
+fan.fwt.WidgetPeer.prototype.checkEventListener = function(self, mask, type, evtId, listeners)
+{
+  if (this.eventMask == null) this.eventMask = 0;  // verify defined
+  if ((this.eventMask & mask) > 0) return;         // already added
+  if (listeners.isEmpty()) return;                 // nothing to add yet
+
+  // attach and mark attached
+  this.attachEventListener(self, type, evtId, listeners);
+  this.eventMask |= mask;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// EventListeners
+//////////////////////////////////////////////////////////////////////////
+
+fan.fwt.WidgetPeer.prototype.attachEventListener = function(self, type, evtId, listeners)
+{
+  var peer = this;
+  var func = function(e)
+  {
+    // find pos relative to widget
+    var dis  = peer.posOnWindow(self);
+    var mx   = e.clientX - dis.m_x;
+    var my   = e.clientY - dis.m_y;
+
+    // make sure to rel against window root
+    var win = self.window();
+    if (win != null && win.peer.root != null)
+    {
+      mx -= win.peer.root.offsetLeft;
+      my -= win.peer.root.offsetTop;
+    }
+
+    // cache event type
+    var isClickEvent = evtId == fan.fwt.EventId.m_mouseDown ||
+                       evtId == fan.fwt.EventId.m_mouseUp;
+    var isWheelEvent = evtId == fan.fwt.EventId.m_mouseWheel;
+
+    // create fwt::Event and invoke handler
+    var evt = fan.fwt.Event.make();
+    evt.m_id     = evtId;
+    evt.m_pos    = fan.gfx.Point.make(mx, my);
+    evt.m_widget = self;
+    evt.m_key    = fan.fwt.WidgetPeer.toKey(e);
+    if (isClickEvent)
+    {
+      evt.m_button = e.button + 1;
+      evt.m_count  = fan.fwt.WidgetPeer.processMouseClicks(peer, evt);
+    }
+    if (isWheelEvent)
+    {
+      evt.m_button = 1;  // always set to middle button?
+      evt.m_delta = fan.fwt.WidgetPeer.toWheelDelta(e);
+    }
+
+    // invoke handlers
+    var list = listeners.list();
+    for (var i=0; i<list.m_size; i++)
+    {
+      list.get(i).call(evt);
+      if (evt.m_consumed) break;
+    }
+
+    // prevent bubbling
+    e.stopPropagation();
+    return false;
+  }
+
+  // special handler for firefox
+  if (type == "mousewheel" && fan.fwt.DesktopPeer.$isFirefox) type = "DOMMouseScroll";
+
+  // attach event handler
+  this.elem.addEventListener(type, func, false);
+}
+
+fan.fwt.WidgetPeer.processMouseClicks = function(peer, e)
+{
+  // init mouse clicks if not defined
+  if (peer.mouseClicks == null)
+  {
+    peer.mouseClicks = {
+      last: new Date().getTime(),
+      pos:  e.m_pos,
+      cur:  1
+    };
+    return peer.mouseClicks.cur;
+  }
+
+  // only process on mousedown
+  if (e.m_id != fan.fwt.EventId.m_mouseDown)
+    return peer.mouseClicks.cur;
+
+  // verify pos and frequency
+  var now  = new Date().getTime();
+  var diff = now - peer.mouseClicks.last;
+  if (diff < 600 && peer.mouseClicks.pos.equals(e.m_pos))
+  {
+    // increment click count
+    peer.mouseClicks.cur++;
+  }
+  else
+  {
+    // reset handler
+    peer.mouseClicks.pos = e.m_pos;
+    peer.mouseClicks.cur = 1;
+  }
+
+  // update ts and return result
+  peer.mouseClicks.last = now;
+  return peer.mouseClicks.cur;
+}
+
+fan.fwt.WidgetPeer.toWheelDelta = function(e)
+{
+  var wx = 0;
+  var wy = 0;
+
+  if (e.wheelDeltaX != null)
+  {
+    // WebKit
+    wx = -e.wheelDeltaX;
+    wy = -e.wheelDeltaY;
+
+    // Safari
+    if (wx % 120 == 0) wx = wx / 40;
+    if (wy % 120 == 0) wy = wy / 40;
+  }
+  else if (e.wheelDelta != null)
+  {
+    // IE
+    wy = -e.wheelDelta;
+    if (wy % 120 == 0) wy = wy / 40;
+  }
+  else if (e.detail != null)
+  {
+    // Firefox
+    wx = e.axis == 1 ? e.detail : 0;
+    wy = e.axis == 2 ? e.detail : 0;
+  }
+
+  // make sure we have ints and return
+  wx = wx > 0 ? Math.ceil(wx) : Math.floor(wx);
+  wy = wy > 0 ? Math.ceil(wy) : Math.floor(wy);
+  return fan.gfx.Point.make(wx, wy);
+}
+
+fan.fwt.WidgetPeer.toKey = function(event)
+{
+  // find primary key
+  var key = null;
+  if (event.keyCode != null && event.keyCode > 0)
+    key = fan.fwt.WidgetPeer.keyCodeToKey(event.keyCode);
+
+  if (event.shiftKey)   key = key==null ? fan.fwt.Key.m_shift : key.plus(fan.fwt.Key.m_shift);
+  if (event.altKey)     key = key==null ? fan.fwt.Key.m_alt   : key.plus(fan.fwt.Key.m_alt);
+  if (event.ctrlKey)    key = key==null ? fan.fwt.Key.m_ctrl  : key.plus(fan.fwt.Key.m_ctrl);
+  // TODO FIXIT
+  //if (event.commandKey) key = key.plus(Key.command);
+  return key;
+}
+
+fan.fwt.WidgetPeer.keyCodeToKey = function(keyCode)
+{
+  // TODO FIXIT: map rest of non-alpha keys
+  switch (keyCode)
+  {
+    case 38: return fan.fwt.Key.m_up;
+    case 40: return fan.fwt.Key.m_down;
+    case 37: return fan.fwt.Key.m_left;
+    case 39: return fan.fwt.Key.m_right;
+    default: return fan.fwt.Key.fromMask(keyCode);
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Utils
 //////////////////////////////////////////////////////////////////////////
@@ -293,8 +440,22 @@ fan.fwt.WidgetPeer.fontToCss = function(font)
   if (font.m_bold)   s += "bold ";
   if (font.m_italic) s += "italic ";
   s += font.m_size + "px ";
-  s += font.m_name;
+  s += font.m_$name;
   return s;
+}
+
+fan.fwt.WidgetPeer.cursorToCss = function(cursor)
+{
+  // predefined cursor
+  var img = cursor.m_image;
+  if (img == null) return cursor.toStr();
+
+  // image cursor
+  var s = "url(" + fan.fwt.WidgetPeer.uriToImageSrc(img.m_uri) + ")";
+  s += " " + cursor.m_x;
+  s += " " + cursor.m_y;
+  s += ", auto";
+  return s
 }
 
 fan.fwt.WidgetPeer.uriToImageSrc = function(uri)

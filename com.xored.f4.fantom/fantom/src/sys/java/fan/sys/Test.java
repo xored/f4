@@ -39,7 +39,7 @@ public class Test
   public Method curTestMethod()
   {
     if (curTestMethod == null)
-      throw Err.make("No test currently executing for " + typeof()).val;
+      throw Err.make("No test currently executing for " + typeof());
     return curTestMethod;
   }
 
@@ -92,6 +92,31 @@ public class Test
   {
     if (!OpUtil.compareEQ(expected, actual))
     {
+      // if we have two multi-line strings display line in error
+      if (expected instanceof String && actual instanceof String)
+      {
+        List eLines = FanStr.splitLines((String)expected);
+        List aLines = FanStr.splitLines((String)actual);
+        if (eLines.sz() > 1 || aLines.sz() > 1)
+        {
+          if (eLines.sz() != aLines.sz())
+          {
+            msg = "Expected " + eLines.sz() + " lines, actual " + aLines.sz() + " lines";
+          }
+          else
+          {
+            for (int i=0; i<eLines.sz(); ++i)
+            {
+              if (!eLines.get(i).equals(aLines.get(i)))
+              {
+                msg = "Line " + (i+1) + ": " + FanStr.toCode((String)eLines.get(i)) + " != " + FanStr.toCode((String)aLines.get(i));
+                break;
+              }
+            }
+          }
+        }
+      }
+
       if (msg == null) msg = s(expected) + " != " + s(actual);
       fail(msg);
     }
@@ -151,11 +176,11 @@ public class Test
     {
       f.call(this);
     }
-    catch (Err.Val e)
+    catch (Err e)
     {
       if (verbose) System.out.println("  verifyErr: " + e);
-      if (e.err().typeof() == errType) { verifyCount++; return; }
-      fail(e.err().typeof() + " thrown, expected " + errType);
+      if (e.typeof() == errType) { verifyCount++; return; }
+      fail(e.typeof() + " thrown, expected " + errType);
     }
     catch (Throwable e)
     {
@@ -176,9 +201,9 @@ public class Test
   private RuntimeException err(String msg)
   {
     if (msg == null)
-      return TestErr.make("Test failed").val;
+      return TestErr.make("Test failed");
     else
-      return TestErr.make("Test failed: " + msg).val;
+      return TestErr.make("Test failed: " + msg);
   }
 
   static String s(Object obj)

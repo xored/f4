@@ -631,8 +631,8 @@ class JsCallExpr : JsExpr
       this.targetType = ce.target.ctype == null ? parent : JsTypeRef(s, ce.target.ctype)
     }
 
-    // force these methods to route thru ObjUtil
-    if (name == "equals" || name == "compare") isObj = true
+    // force these methods to route thru ObjUtil if not a super.xxx expr
+    if ((name == "equals" || name == "compare") && (target isnot JsSuperExpr)) isObj = true
 
     // use isMock as hook to skip instance inits
     if (name.startsWith("instance\$init\$")) isMock = true
@@ -876,13 +876,26 @@ class JsFieldExpr : JsExpr
     if (fe.target != null) this.target = JsExpr.makeFor(s, fe.target)
     this.parent = JsTypeRef(s, fe.field.parent)
     this.field  = JsFieldRef(s, fe.field)
+    this.isSafe = fe.isSafe
     this.useAccessor = fe.useAccessor
   }
   override Void write(JsWriter out)
   {
-    if (target == null) parent.write(out)
-    else target.write(out)
-    if (field.name == "\$this") return // skip $this ref for closures
+    old := support.thisName
+    if (isSafe)
+    {
+      v := support.unique
+      support.thisName = "\$this"
+      out.w("(function(\$this) { var $v=")
+      writeTarget(out)
+      out.w("; return ($v==null) ? null : $v")
+      support.thisName = old
+    }
+    else
+    {
+      writeTarget(out)
+      if (field.name == "\$this") return // skip $this ref for closures
+    }
     out.w(".")
     if (useAccessor)
     {
@@ -890,11 +903,18 @@ class JsFieldExpr : JsExpr
       if (!isSet) out.w("()")
     }
     else out.w("m_$field.name")
+    if (isSafe) out.w("}($old))")
+  }
+  private Void writeTarget(JsWriter out)
+  {
+    if (target == null) parent.write(out)
+    else target.write(out)
   }
   JsExpr? target       // field target
   JsTypeRef parent     // field parent type
   JsFieldRef field     // field
   Bool useAccessor     // false if access using '*' storage operator
+  Bool isSafe          // is safe nav
   Bool isSet := false  // transiently use for setters
 }
 

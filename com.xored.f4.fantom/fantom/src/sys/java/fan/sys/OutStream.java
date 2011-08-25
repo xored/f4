@@ -37,7 +37,7 @@ public class OutStream
 // Obj
 //////////////////////////////////////////////////////////////////////////
 
-  public Type typeofs() { return Sys.OutStreamType; }
+  public Type typeof() { return Sys.OutStreamType; }
 
 //////////////////////////////////////////////////////////////////////////
 // Java OutputStream
@@ -69,7 +69,7 @@ public class OutStream
     catch (NullPointerException e)
     {
       if (out == null)
-        throw UnsupportedErr.make(typeof().qname() + " wraps null OutStream").val;
+        throw UnsupportedErr.make(typeof().qname() + " wraps null OutStream");
       else
         throw e;
     }
@@ -86,7 +86,7 @@ public class OutStream
     catch (NullPointerException e)
     {
       if (out == null)
-        throw UnsupportedErr.make(typeof().qname() + " wraps null OutStream").val;
+        throw UnsupportedErr.make(typeof().qname() + " wraps null OutStream");
       else
         throw e;
     }
@@ -188,7 +188,7 @@ public class OutStream
     }
 
     // sanity check
-    if (utflen > 65536) throw IOErr.make("String too big").val;
+    if (utflen > 65536) throw IOErr.make("String too big");
 
     // write length as 2 byte value
     w((utflen >>> 8) & 0xFF);
@@ -399,7 +399,7 @@ public class OutStream
           break;
         case '\'':
           if (!escQuotes) writeChar(ch);
-          else writeChar('&').writeChar('a').writeChar('p').writeChar('o').writeChar('s').writeChar(';');
+          else writeChar('&').writeChar('#').writeChar('3').writeChar('9').writeChar(';');
           break;
 
         // default

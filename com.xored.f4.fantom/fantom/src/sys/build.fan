@@ -20,13 +20,20 @@ class Build : BuildPod
 {
   new make()
   {
-    podName = "sys"
-    summary = "Fantom system runtime"
-    srcDirs = [`fan/`]
-    resDirs = [`locale/`]
-    docSrc  = true
-    outDir  = devHomeDir.uri + `lib/fan/`
-    index   = ["sys.uriScheme.fan": "sys::FanScheme",
-               "sys.uriScheme.file": "sys::FileScheme"]
+    podName   = "sys"
+    summary   = "Fantom system runtime"
+    meta      = ["org.name":     "Fantom",
+                 "org.uri":      "http://fantom.org/",
+                 "proj.name":    "Fantom Core",
+                 "proj.uri":     "http://fantom.org/",
+                 "license.name": "Academic Free License 3.0",
+                 "vcs.name":     "Mercurial",
+                 "vcs.uri":      "http://hg.fantom.org/fan-1.0/"]
+    srcDirs   = [`fan/`]
+    resDirs   = [`locale/`]
+    docSrc    = true
+    outPodDir = devHomeDir.uri + `lib/fan/`
+    index     = ["sys.uriScheme.fan": "sys::FanScheme",
+                 "sys.uriScheme.file": "sys::FileScheme"]
   }
 }

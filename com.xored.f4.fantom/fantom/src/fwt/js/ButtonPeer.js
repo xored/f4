@@ -34,12 +34,6 @@ fan.fwt.ButtonPeer.prototype.m_text = "";
 
 fan.fwt.ButtonPeer.prototype.m_pressed = false;
 
-fan.fwt.ButtonPeer.prototype.prefSize = function(self, hints)
-{
-  var pref = fan.fwt.WidgetPeer.prototype.prefSize.call(this, self, hints);
-  return fan.gfx.Size.make(pref.m_w, 25);
-}
-
 fan.fwt.ButtonPeer.prototype.create = function(parentElem, self)
 {
   if (self.m_mode == fan.fwt.ButtonMode.m_push || self.m_mode == fan.fwt.ButtonMode.m_toggle)
@@ -48,8 +42,14 @@ fan.fwt.ButtonPeer.prototype.create = function(parentElem, self)
   if (self.m_mode == fan.fwt.ButtonMode.m_check || self.m_mode == fan.fwt.ButtonMode.m_radio)
     return this.makeCheck(parentElem, self);
 
-  // TODO - sep
+  // else sep
+  var sep = this.emptyDiv();
+  sep.style.padding = "6px";
+  parentElem.appendChild(sep);
+  return sep;
 }
+
+fan.fwt.ButtonPeer.prototype.m_$defCursor = "default";
 
 fan.fwt.ButtonPeer.prototype.makePush = function(parentElem, self)
 {
@@ -61,7 +61,6 @@ fan.fwt.ButtonPeer.prototype.makePush = function(parentElem, self)
   style.webkitBorderRadius = "4px";
   style.borderRadius       = "4px";
   style.textAlign  = "center";
-  style.cursor     = "default";
   style.whiteSpace = "nowrap";
 
   var $this = this;
@@ -192,8 +191,45 @@ fan.fwt.ButtonPeer.prototype.sync = function(self)
       delete child;
     }
 
-    // add new text node
-    div.appendChild(document.createTextNode(this.m_text));
+    // create new text node
+    var textNode = document.createTextNode(this.m_text);
+
+    if (this.m_image != null)
+    {
+      // create img elem
+      var img = document.createElement("img");
+      img.border = "0";
+      img.src = fan.fwt.WidgetPeer.uriToImageSrc(this.m_image.m_uri);
+      img.style.verticalAlign = "middle";
+      img.style.lineHeight = this.m_image.m_h + "px";
+
+      // create wrapper
+      var wrap = document.createElement("div");
+      wrap.appendChild(img);
+
+      // add text if non-empty
+      if (this.m_text.length > 0)
+      {
+        img.style.paddingRight = "4px";
+
+        var text = document.createElement("div");
+        text.style.display = "inline-block";
+        text.style.position = "relative";
+        text.style.top = "-1px";
+        text.style.verticalAlign = "middle";
+
+        text.appendChild(textNode);
+        wrap.appendChild(text);
+      }
+
+      // add wrapper
+      div.appendChild(wrap);
+    }
+    else
+    {
+      // add new text node
+      div.appendChild(textNode);
+    }
 
     // account for padding/border
     h -= 8;
@@ -206,7 +242,8 @@ fan.fwt.ButtonPeer.prototype.sync = function(self)
 
     // set state
     var check = this.elem.firstChild;
-    check.checked = this.m_selected;
+    check.checked  = this.m_selected;
+    check.disabled = !this.m_enabled;
 
     // set text
     while (div.childNodes.length > 1) div.removeChild(div.lastChild);

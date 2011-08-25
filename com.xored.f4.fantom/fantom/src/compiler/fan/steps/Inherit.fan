@@ -302,6 +302,17 @@ class Inherit : CompilerStep
     if (!base.hasSameParams(def))
       throw err("Parameter mismatch in override of '$base.qname' - '$base.nameAndParamTypesToStr' != '$def.nameAndParamTypesToStr'", loc)
 
+    // check override has matching defaults
+    base.params.each |b, i|
+    {
+      d := def.params[i]
+      if (b.hasDefault == d.hasDefault) return
+      if (d.hasDefault)
+        throw err("Parameter '$d.name' must not have default to match overridden method", loc)
+      else
+        throw err("Parameter '$d.name' must have default to match overridden method", loc)
+    }
+
     // correct override
     return
   }
@@ -323,6 +334,10 @@ class Inherit : CompilerStep
       if (ft.isVal || rt.isVal)
         throw err("Cannot use covariance with value types '$base.qname' - '$rt' != '$ft'", loc)
     }
+
+    // check that field isn't static
+    if (def.isStatic)
+      throw err("Cannot override virtual method with static field '$def.name'", loc)
 
     // check that method has no parameters
     if (!base.params.isEmpty)

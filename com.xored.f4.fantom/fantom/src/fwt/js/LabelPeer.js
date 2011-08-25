@@ -66,6 +66,8 @@ fan.fwt.LabelPeer.prototype.image$ = function(self, val)
   this.needRebuild = true;
 }
 
+fan.fwt.LabelPeer.prototype.m_$defCursor = "default";
+
 fan.fwt.LabelPeer.prototype.create = function(parentElem, self)
 {
   this.needRebuild = true; // make sure we force rebuild
@@ -83,7 +85,8 @@ fan.fwt.LabelPeer.prototype.sync = function(self)
   {
     var i = this.m_image==null ? 0 : 1;
     var text = this.elem.childNodes[i];
-    text.style.width = this.m_size.m_w + "px";
+    if (this.m_size.m_w > 0) // skip if prefSize not calc yet
+      text.style.width = this.m_size.m_w + "px";
   }
   fan.fwt.WidgetPeer.prototype.sync.call(this, self);
 }
@@ -190,7 +193,6 @@ fan.fwt.LabelPeer.prototype.rebuild = function(self)
     case fan.gfx.Halign.m_right:  s.textAlign = "right"; break;
     default:                      s.textAlign = "left"; break;
   }
-  s.cursor = "default";
   s.whiteSpace = "nowrap";
 
   // override style

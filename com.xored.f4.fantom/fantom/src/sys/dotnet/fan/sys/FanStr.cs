@@ -887,7 +887,7 @@ namespace Fan.Sys
           case '\'': if (q == '\'') s.Append('\\').Append('\''); else s.Append((char)c); break;
           case '$':  s.Append('\\').Append('$'); break;
           default:
-            if (escu && c > 127)
+            if (c < ' ' || (escu && c > 127))
             {
               s.Append('\\').Append('u')
                .Append((char)hex((c>>12)&0xf))
@@ -980,7 +980,7 @@ namespace Fan.Sys
       m_xmlEsc['&']  = "&amp;";
       m_xmlEsc['<']  = "&lt;";
       m_xmlEsc['>']  = "&gt;";
-      m_xmlEsc['\''] = "&apos;";
+      m_xmlEsc['\''] = "&#39;";
       m_xmlEsc['"']  = "&quot;";
     }
 

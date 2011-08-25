@@ -125,7 +125,6 @@ class CheckErrors : CompilerStep
     if (flags.and(FConst.Protected) != 0) err("Cannot use 'protected' modifier on type", loc)
     if (flags.and(FConst.Static) != 0)    err("Cannot use 'static' modifier on type", loc)
     if (flags.and(FConst.Virtual) != 0)   err("Cannot use 'virtual' modifier on type", loc)
-    if (flags.and(Parser.Readonly) != 0)  err("Cannot use 'readonly' modifier on type", loc)
 
     // check invalid protection combinations
     checkProtectionFlags(flags, loc)
@@ -371,7 +370,6 @@ class CheckErrors : CompilerStep
     // these modifiers are never allowed on a method
     if (flags.and(FConst.Final) != 0)     err("Cannot use 'final' modifier on method", loc)
     if (flags.and(FConst.Const) != 0)     err("Cannot use 'const' modifier on method", loc)
-    if (flags.and(Parser.Readonly) != 0)  err("Cannot use 'readonly' modifier on method", loc)
 
     // check invalid protection combinations
     checkProtectionFlags(flags, loc)
@@ -408,6 +406,13 @@ class CheckErrors : CompilerStep
     {
       if (curType.isMixin)
         err("Mixins cannot have once methods", m.loc)
+    }
+
+    // mixins cannot have native methods
+    if (flags.and(FConst.Native) != 0)
+    {
+      if (curType.isMixin)
+        err("Mixins cannot have native methods", m.loc)
     }
 
     // normalize method flags after checking
@@ -489,7 +494,8 @@ class CheckErrors : CompilerStep
 
     // get fields which:
     //   - instance or static fields based on ctor or static {}
-    //   - aren't abstract, override, or native
+    //   - aren't abstract or native
+    //   - override of abstract (no concrete base)
     //   - not a calculated field (has storage)
     //   - have a non-nullable, non-value type
     //   - don't have have an init expression
@@ -497,7 +503,8 @@ class CheckErrors : CompilerStep
     fields := curType.fieldDefs.findAll |FieldDef f->Bool|
     {
       f.isStatic == isStaticInit &&
-      !f.isAbstract && !f.isOverride && !f.isNative && f.isStorage &&
+      !f.isAbstract && !f.isNative && f.isStorage &&
+      (!f.isOverride || f.concreteBase == null) &&
       !f.fieldType.isNullable && !f.fieldType.isVal && f.init == null
     }
     if (fields.isEmpty) return
@@ -891,9 +898,21 @@ class CheckErrors : CompilerStep
 
   private Void checkCompareNull(UnaryExpr expr)
   {
+    // check if operand is nullable, if so its ok
     t := expr.operand.ctype
-    if (!t.isNullable)
-      err("Comparison of non-nullable type '$t' to null", expr.loc)
+    if (t.isNullable) return
+
+    // check if operand is inside it-block ctor
+    if (curMethod != null && curMethod.isItBlockCtor)
+    {
+      // check that operand is this.{field} access
+      field := expr.operand as FieldExpr
+      if (field != null && field.target != null && field.target.id == ExprId.thisExpr)
+        return
+    }
+
+    // if we made it here, compirson to null is an error
+    err("Comparison of non-nullable type '$t' to null", expr.loc)
   }
 
   private Void checkBools(CondExpr expr)

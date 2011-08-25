@@ -46,7 +46,7 @@ fan.fwt.TablePeer.injectCss = function()
     " text-align: left;" +
     " white-space: nowrap;" +
     " border-right: 1px solid #bdbdbd;" +
-    " border-bottom: 1px solid #5e5e5e;" +
+    " border-bottom: 1px solid #a9a9a9;" +
     " cursor: default;" +
     " background: -moz-linear-gradient(top, #f9f9f9, #eee 50%, #e1e1e1 50%, #f5f5f5);" +
     " background: -webkit-gradient(linear, 0 0, 0 100%, color-stop(0,#f9f9f9), " +
@@ -73,7 +73,7 @@ fan.fwt.TablePeer.injectCss = function()
     "table.__fwt_table tr:nth-child(even) { background:#f1f5fa; }" +
     // selected
     "table.__fwt_table tr.selected { background:#3d80df; }" +
-    "table.__fwt_table tr.selected td { color:#fff !important; border-color:#346dbe; }" +
+    "table.__fwt_table tr.selected td { color:#fff !important; background:#3d80df !important; border-color:#346dbe; }" +
     "table.__fwt_table tr.selected a { color:#fff; }");
 }
 
@@ -122,7 +122,7 @@ fan.fwt.TablePeer.prototype.create = function(parentElem, self)
 
   var div = this.emptyDiv();
   style = div.style;
-  style.border     = "1px solid #404040";
+  style.border     = "1px solid #9f9f9f";
   style.overflow   = "auto";
   style.background = "#fff";
 

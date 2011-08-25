@@ -351,6 +351,13 @@ class WebOutStreamTest : Test
     out.formEnd
     verifyOut(buf, "</form>")
 
+    out.label
+    verifyOut(buf, "<label>")
+    out.label("for='foo'")
+    verifyOut(buf, "<label for='foo'>")
+    out.labelEnd
+    verifyOut(buf, "</label>")
+
     out.input
     verifyOut(buf, "<input />")
     out.input("class='foo'")
@@ -428,7 +435,7 @@ class WebOutStreamTest : Test
     verifyEsc("x>\u01bc", "x>\u01bc")
     verifyEsc(">", "&gt;")
     verifyEsc("]>", "]&gt;")
-    verifyEsc("<>&\"'", "&lt;>&amp;&quot;&apos;")
+    verifyEsc("<>&\"'", "&lt;>&amp;&quot;&#39;")
     verifyEsc("foo&", "foo&amp;")
     verifyEsc("foo&bar", "foo&amp;bar")
     verifyEsc("&bar", "&amp;bar")

@@ -19,6 +19,7 @@ fan.sys.List = fan.sys.Obj.$extend(fan.sys.Obj);
 
 fan.sys.List.make = function(of, values)
 {
+  if (of == null) throw fan.sys.NullErr();
   if (values === undefined) values = [];
 
   var self = new fan.sys.List();
@@ -724,7 +725,7 @@ fan.sys.List.prototype.sort = function(f)
   if (f != null)
     this.m_values.sort(function(a,b) { return f.call(a,b) });
   else
-    this.m_values.sort();
+    this.m_values.sort(function(a,b) { return fan.sys.ObjUtil.compare(a,b,false) });
   return this;
 }
 
@@ -735,8 +736,36 @@ fan.sys.List.prototype.sortr = function(f)
   if (f != null)
     this.m_values.sort(function(a,b) { return f.call(b,a) });
   else
-    this.m_values.sort().reverse();
+    this.m_values.sort(function(a,b) { return fan.sys.ObjUtil.compare(b,a,false) });
   return this;
+}
+
+fan.sys.List.prototype.binarySearch = function(key, f)
+{
+  var c = f != null
+    ? function(item,index) { return f.call(key,item) }
+    : function(item,index) { return fan.sys.ObjUtil.compare(key,item,false) };
+  return this.doBinaryFind(c);
+}
+
+fan.sys.List.prototype.binaryFind = function(f)
+{
+  return this.doBinaryFind(f.m_func);
+}
+
+fan.sys.List.prototype.doBinaryFind = function(f)
+{
+  var low = 0;
+  var high = this.m_size - 1;
+  while (low <= high)
+  {
+    var mid = Math.floor((low + high) / 2);
+    var cmp = f(this.m_values[mid], mid);
+    if (cmp > 0) low = mid + 1;
+    else if (cmp < 0) high = mid - 1;
+    else return mid;
+  }
+  return -(low + 1);
 }
 
 fan.sys.List.prototype.reverse = function()
@@ -753,6 +782,15 @@ fan.sys.List.prototype.reverse = function()
   return this;
 }
 
+fan.sys.List.prototype.swap = function(a, b)
+{
+  // modify in set()
+  var temp = this.get(a);
+  this.set(a, this.get(b));
+  this.set(b, temp);
+  return this;
+}
+
 fan.sys.List.prototype.moveTo = function(item, toIndex)
 {
   this.modify();
@@ -763,6 +801,46 @@ fan.sys.List.prototype.moveTo = function(item, toIndex)
   if (toIndex == -1) return this.add(item);
   if (toIndex < 0) ++toIndex;
   return this.insert(toIndex, item);
+}
+
+fan.sys.List.prototype.flatten = function()
+{
+  var acc = fan.sys.List.make(fan.sys.Obj.$type.toNullable());
+  this.doFlatten(acc);
+  return acc;
+}
+
+fan.sys.List.prototype.doFlatten = function(acc)
+{
+  for (var i=0; i<this.m_size; ++i)
+  {
+    var item = this.m_values[i];
+    if (item instanceof fan.sys.List)
+      item.doFlatten(acc);
+    else
+      acc.add(item);
+  }
+}
+
+fan.sys.List.prototype.random = function()
+{
+  if (this.m_size == 0) return null;
+  var i = Math.floor(Math.random() * 4294967296);
+  if (i < 0) i = -i;
+  return this.m_values[i % this.m_size];
+}
+
+fan.sys.List.prototype.shuffle = function()
+{
+  this.modify();
+  for (var i=0; i<this.m_size; ++i)
+  {
+    var randi = Math.floor(Math.random() * (i+1));
+    var temp = this.m_values[i];
+    this.m_values[i] = this.m_values[randi];
+    this.m_values[randi] = temp;
+  }
+  return this;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -821,6 +899,12 @@ fan.sys.List.prototype.toCode = function()
   }
   s += ']';
   return s;
+}
+
+fan.sys.List.prototype.$literalEncode = function(out)
+{
+  // route back to obj encoder
+  out.writeList(this);
 }
 
 //////////////////////////////////////////////////////////////////////////

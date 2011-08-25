@@ -79,7 +79,7 @@ class DateTimeStr
         while (true)
         {
           ++i;
-          if (i >= len) throw ArgErr.make("Invalid pattern: unterminated literal").val;
+          if (i >= len) throw ArgErr.make("Invalid pattern: unterminated literal");
           c = pattern.charAt(i);
           if (c == '\'') break;
           s.append((char)c);
@@ -260,7 +260,7 @@ class DateTimeStr
 
         default:
           if (FanInt.isAlpha(c))
-            throw ArgErr.make("Invalid pattern: unsupported char '" + (char)c + "'").val;
+            throw ArgErr.make("Invalid pattern: unsupported char '" + (char)c + "'");
 
           // check for symbol skip
           if (i+1 < len)
@@ -279,7 +279,7 @@ class DateTimeStr
 
       // if invalid number of characters
       if (invalidNum)
-        throw ArgErr.make("Invalid pattern: unsupported num of '" + (char)c + "' (x" + n + ")").val;
+        throw ArgErr.make("Invalid pattern: unsupported num of '" + (char)c + "' (x" + n + ")");
     }
 
     return s.toString();
@@ -287,13 +287,21 @@ class DateTimeStr
 
   private static String daySuffix(int day)
   {
-    // eventually need localization
+    // eventually need localization (or just skip if not english)
     switch (day)
     {
-      case 1: return "st";
-      case 2: return "nd";
-      case 3: return "rd";
-      default: return "th";
+      case 1:
+      case 21:
+      case 31:
+        return "st";
+      case 2:
+      case 22:
+        return "nd";
+      case 3:
+      case 23:
+        return "rd";
+      default:
+        return "th";
     }
   }
 
@@ -352,7 +360,7 @@ class DateTimeStr
     }
     catch (Exception e)
     {
-      if (checked) throw ParseErr.make("DateTime", s, Err.make(e)).val;
+      if (checked) throw ParseErr.make("DateTime", s, Err.make(e));
       return null;
     }
   }
@@ -366,7 +374,7 @@ class DateTimeStr
     }
     catch (Exception e)
     {
-      if (checked) throw ParseErr.make("Date", s, Err.make(e)).val;
+      if (checked) throw ParseErr.make("Date", s, Err.make(e));
       return null;
     }
   }
@@ -380,7 +388,7 @@ class DateTimeStr
     }
     catch (Exception e)
     {
-      if (checked) throw ParseErr.make("Time", s, Err.make(e)).val;
+      if (checked) throw ParseErr.make("Time", s, Err.make(e));
       return null;
     }
   }
