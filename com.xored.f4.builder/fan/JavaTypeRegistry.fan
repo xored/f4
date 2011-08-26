@@ -563,6 +563,7 @@ class JavaTypeRegistry
     {
       return null
     }
+    type = Signature.getTypeErasure(type)
     sigName := Signature.getSimpleName(type)
     finalName := Signature.toString(sigName)
     
