@@ -72,6 +72,7 @@ const class FakeFanPod : IFanPod
     Str:IFanType tempTypesMap := [:]
     types.each {tempTypesMap.add(it.name, it)}
     this.typesMap = tempTypesMap
+    this.typeNames = types.map { it.name }
 //    this.types = types
   }
   
@@ -275,6 +276,7 @@ abstract const class FakeFanSlot : IFanSlot
     this.qname = "$parent"+".$name"
     this.parent = parent
     this.of = of
+    this.type = FakeFanType.fake(name, of, [,], [,])
   }
   
   override Str toStr() {return qname}

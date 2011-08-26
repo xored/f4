@@ -246,7 +246,7 @@ class CompileFan : IScriptBuilder
     project.deleteMarkers(F4Consts.buildProblem, true, IResource.DEPTH_INFINITE)
   }
   
-  private once ILogConsole getConsole() { console }
+  private ILogConsole getConsole() { console }
   
   private Bool building := false
   
