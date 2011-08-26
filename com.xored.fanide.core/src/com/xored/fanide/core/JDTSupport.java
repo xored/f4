@@ -1,6 +1,7 @@
 package com.xored.fanide.core;
 
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
@@ -12,6 +13,14 @@ public class JDTSupport {
 
 	public static String[] resolve(IType type, String name) {
 		try {
+			ITypeParameter[] typeParameters = type.getTypeParameters();
+			if (typeParameters != null) {
+				for (ITypeParameter tp : typeParameters) {
+					if (tp.getElementName().equals(name)) {
+						return new String[] { Object.class.getName() };
+					}
+				}
+			}
 			String[][] values = type.resolveType(name);
 			if (values == null) {
 				return null;
