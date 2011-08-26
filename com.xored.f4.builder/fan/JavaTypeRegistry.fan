@@ -102,6 +102,20 @@ class JavaTypeRegistry
     pkgName := qname[0..ind-1]
     if( this.fragments.containsKey(pkgName))
     {
+      pType := project.findType(qname)
+      if( pType != null)
+      {
+        return pType
+      }
+      if( qname.contains("\$"))
+      {
+        pType = project.findType(qname[0..qname.index("\$")-1])
+        if( pType != null)
+        {
+          return findTypeFrom(pType, qname)
+        }
+      }
+      
       IPackageFragment[] fragments := this.fragments[pkgName]
       IType? resultType := fragments.eachWhile { findTypeFrom(it, qname) }
       return resultType

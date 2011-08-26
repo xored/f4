@@ -10,8 +10,9 @@ using [java] org.eclipse.dltk.core::IProjectFragment as Fragment
 using [java] org.eclipse.dltk.core::IModelElement as Element
 using [java] org.eclipse.dltk.core::IType
 using [java] org.eclipse.dltk.core::IParent
+using [java] org.eclipse.dltk.core::IScriptProject
 using f4model
-
+using [java] com.xored.fanide.core.utils::DLTKSearchAllTypes
 **
 **
 **
@@ -27,8 +28,9 @@ internal const class DltkPod : IFanPod
   }
   
   private IFanType[] allTypes(Fragment[] fragments)
-  {
-    IType[] types := IType[,]
+  { 
+//    IType[] types := DLTKSearchAllTypes.search(fragments)
+    IType[] types := [,]
     allITypes(fragments, types)
     return types.map { DltkType(name, it) }
   }

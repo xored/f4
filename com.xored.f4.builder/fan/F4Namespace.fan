@@ -11,6 +11,7 @@ using compilerJava
 using [java]org.eclipse.jdt.core.search
 using [java]org.eclipse.jdt.core
 using [java]com.xored.fanide.core::FanCore
+using [java]com.xored.fanide.core.utils::JDTSearchAllTypes
 using f4core
 **
 **
@@ -133,10 +134,11 @@ class F4JavaBridge : JavaBridge
       return JavaPod(this, name, [,])
     }
     
-    Str[] names := [,]
-    allFragments.each {
-      collectTypes(it, names)
-    }
+//    Str[] names := [,]
+//    allFragments.each {
+//      collectTypes(it, names)
+//    }
+    names := JDTSearchAllTypes.search(allFragments)
       
     // map package to JavaPod
     return JavaPod(this, name, names)
