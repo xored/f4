@@ -188,8 +188,13 @@ const class FantomProject
         case IBuildpathEntry.BPE_PROJECT:
           projectName := bp.getPath.segments.first
           project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
-          fp := FantomProjectManager.instance[project]
-          return (fp.outDir.uri + `${fp.podName}.pod`).toFile
+          if( project.isAccessible)
+          {
+            fp := FantomProjectManager.instance[project]
+            return (fp.outDir.uri + `${fp.podName}.pod`).toFile
+          }
+          // Return null if project is not accessible
+          return null
         default: return null
       }
     }
