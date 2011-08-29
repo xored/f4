@@ -26,6 +26,8 @@ using [java]org.eclipse.jdt.launching::JavaRuntime
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.dltk.launching::LibraryLocation
 using [java]com.xored.fanide.core.utils::FanProjectUtils
+using [java]org.eclipse.dltk.launching::ScriptRuntime
+using [java]org.eclipse.dltk.launching::IInterpreterInstall
 
 using [java]org.eclipse.dltk.logconsole::ILogConsoleManager
 using [java]org.eclipse.dltk.logconsole::ILogConsole
@@ -153,6 +155,14 @@ class CompileFan : IScriptBuilder
     building = true
     clearMarkers(fp.project)
     hasErrs := false
+    IInterpreterInstall? install := ScriptRuntime.getInterpreterInstall(fp.scriptProject)
+    if( install == null || !install.getInstallLocation.exists)
+    {
+      reportRuntimeError(fp.project)
+      writeToLog
+      return true
+    }
+    
     createBuilder(fp).build { writeToLog(it) }.each |err| 
     {
       reportErr(err, fp.project)
@@ -237,6 +247,22 @@ class CompileFan : IScriptBuilder
         -1, //start position
         -1, //end position
         err.line ?: 0
+        )
+      )
+  }
+  private Void reportRuntimeError(IProject project)
+  {
+    reporter := reporters.getOrAdd(project.getLocationURI.toString) |->Obj| { ProblemReporter(project) }
+    reporter.reportProblem(
+      DefaultProblem(
+        project.getLocation.toString, 
+        "Compilation of project ${project.getName} is not possible, there is no Fantom interpreter specified.", 
+        0, //id (don't know what this means)
+        Str[,], //arguments (don't know what this means)
+        ProblemSeverities.Error, //severity
+        -1, //start position
+        -1, //end position
+        -1
         )
       )
   }
