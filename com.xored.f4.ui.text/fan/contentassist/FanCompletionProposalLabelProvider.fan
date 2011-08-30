@@ -15,7 +15,7 @@ class FanCompletionProposalLabelProvider : CompletionProposalLabelProvider {
     buffer := StrBuf()
 
     // method name
-    buffer.add(method.name);
+    buffer.add(methodProposal.getName);
     // parameters
     buffer.addChar('(')
     buffer.add(params.map { "${prettyType(it.of)} $it.name" }.join(", "))

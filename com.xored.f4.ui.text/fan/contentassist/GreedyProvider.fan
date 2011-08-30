@@ -27,6 +27,7 @@ class GreedyProvider : CompletionProvider
     if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral) return false
     // report locals and current type slots
     insideMethod := path.find(MethodDef#) != null
+    insideDefOrCall := (path.find(LocalDef#) != null) || (path.find(CallExpr#) != null)
     if(insideMethod)
     {
       methodName := path.methodName
@@ -55,6 +56,20 @@ class GreedyProvider : CompletionProvider
       reportTypeSlots(itType)
     }
 
+    unit.types.each { 
+      
+    }
+    
+    if( insideDefOrCall)
+    {
+      //types
+      reportNsTypes(true)
+      //keywords
+      reportKeywords(defOrCallKeywords)
+      // Report FFI
+      reportUsings(true)
+      return true
+    }
     //pods
     reportNsPods
     //types
@@ -62,7 +77,7 @@ class GreedyProvider : CompletionProvider
     //keywords
     reportKeywords(insideMethod ? methodKeywords : typeKeywords)
     // Report FFI
-    reportFFI
+    reportUsings
     return true
   }
   
@@ -75,6 +90,11 @@ class GreedyProvider : CompletionProvider
       "true", "false", "null",
       "this", "super",
       "is", "as", "isnot"
+    ]
+  
+  ** keywords that can be used inside method
+  private static const Str[] defOrCallKeywords := [
+      "this", "super"
     ]
   
   private static const Str[] typeKeywords := [

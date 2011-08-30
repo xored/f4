@@ -101,7 +101,7 @@ abstract class CompletionProvider
     reporter.report(createProposal(ProposeKind.field, field.name, field.me))
   }
 
-  protected Void reportMethod(IFanMethod method)
+  protected Void reportMethod(IFanMethod method, Str? mname := null)
   {
     params := method.params
    
@@ -137,9 +137,10 @@ abstract class CompletionProvider
         }
       }
       
+      methodName := mname != null?mname:method.name
       allRelatedParams.each |relatedParams|
       {
-        proposal := createProposal(ProposeKind.method, method.name, method.me)
+        proposal := createProposal(ProposeKind.method, methodName, method.me)
         proposal.setIsConstructor(method.isCtor)
         proposal.setParameterNames(relatedParams.map{ it.name } as Str[])
         proposal.setExtraInfo(FanMethodCompletionProposalExtraInfo(method, relatedParams))
@@ -147,27 +148,74 @@ abstract class CompletionProvider
       }
     }
   }
+  private Bool isFromStr(IFanMethod method)
+  {
+    return method.name.equals("fromStr") && method.isStatic && method.params.size == 1 && method.params[0].of.contains("Str")
+  }
 
-  protected Void reportPodTypes(IFanPod? pod)
+  protected Void reportPodTypes(IFanPod? pod, Bool constructors := false)
   {
     if(pod == null || reporter.ignores(ProposeKind.type)) return
     pod.typeNames
       .findAll { it.startsWith(prefix) }
-      .each { reportType(pod.findType(it)) }
+      .each {
+        if(constructors && !reporter.ignores(ProposeKind.method) && it.startsWith(prefix)) {
+          IFanType? type := pod.findType(it)
+          if( type != null)
+          {
+            type.methods.each { 
+              if( it.isCtor|| isFromStr(it))
+              {
+                reportMethod(it, type.name)
+              }
+            }
+          }
+        }
+        else {
+          if( prefix.equals(it))
+          {
+            // Constructors
+            IFanType? type := pod.findType(it)
+            if( type != null)
+            {
+              type.methods.each { 
+                if( it.isCtor|| isFromStr(it))
+                {
+                  reportMethod(it, type.name)
+                }
+              }
+            }
+          }
+          else {
+            reportType(pod.findType(it))
+          }
+        }
+      }
   }
   
-  protected Void reportNsTypes()
+  protected Void reportNsTypes(Bool constructors := false)
   {
     if(reporter.ignores(ProposeKind.type)) return
+    availablePods := [,]
+    
+    unit.usings.each {
+      pName := it.podName.text
+      if( pName.startsWith("[java]")) {
+        pName = pName[6..-1]
+      }
+      availablePods.add(pName)
+    }
+    availablePods.add(ns.currPod.name)
+    
     ns.podNames.each
     {
-      reportPodTypes(ns.findPod(it))
+      if( availablePods.contains(it))
+        reportPodTypes(ns.findPod(it), constructors)
     }
   }
   
-  protected Void reportFFI()
+  protected Void reportUsings(Bool constructors := false)
   {
-    if(reporter.ignores(ProposeKind.type)) return
     unit.usings.each { 
       if( it.typeName != null && it.typeName.resolvedType != null )
       {
@@ -176,7 +224,18 @@ abstract class CompletionProvider
         {
           if( tname.startsWith(prefix))
           {
-            reporter.report(createProposal(ProposeKind.type, tname , it.typeName.resolvedType.me))          
+            if(constructors || prefix.equals(tname)) 
+            {
+              it.typeName.resolvedType.methods.each { 
+                if( it.isCtor || isFromStr(it))
+                {
+                  reportMethod(it, tname)
+                }
+              }
+            }
+            else if( !reporter.ignores(ProposeKind.type)) {
+              reporter.report(createProposal(ProposeKind.type, tname , it.typeName.resolvedType.me))
+            }
           }
         }
       }
@@ -190,8 +249,20 @@ abstract class CompletionProvider
             if( it.startsWith(prefix))
             {
               type := modelpod.findType(it)
-              if( type != null )
-                reporter.report(createProposal(ProposeKind.type, it , type.me))          
+              if( type != null ) {
+                if(constructors || prefix.equals(it)) 
+                {
+                  type.methods.each { 
+                    if( it.isCtor|| isFromStr(it))
+                    {
+                      reportMethod(it, type.name)
+                    }
+                  }
+                }
+                else if( !reporter.ignores(ProposeKind.type)) {
+                  reporter.report(createProposal(ProposeKind.type, it , type.me))
+                }
+              }
             }
           }
         }
