@@ -43,22 +43,29 @@ class FanJavaContainer : IClasspathContainer
         createLibrary(f.normalize,f.basename)
       }
     
-    fp := FantomProjectManager.instance[project.getProject]
-    fp.depends.each |loc, name|
-    {
-      podFP := FantomProjectManager.instance.getByPod(name)
-      if( podFP != null)
+    try {
+      fp := FantomProjectManager.instance[project.getProject]
+      fp.depends.each |loc, name|
       {
-        IProject prj := podFP.project
-        if( prj.hasNature("org.eclipse.jdt.core.javanature"))
+        podFP := FantomProjectManager.instance.getByPod(name)
+        if( podFP != null)
         {
-         // Do not need to add entry
-          return
+          IProject prj := podFP.project
+          if( prj.hasNature("org.eclipse.jdt.core.javanature"))
+          {
+           // Do not need to add entry
+            return
+          }
         }
+        
+        if(isJavaPod(loc))
+          cpEntries.add(createLibrary(loc,name))
+        
       }
-      
-      if(isJavaPod(loc))
-        cpEntries.add(createLibrary(loc,name))
+    }
+    catch(Err e) {
+      // TODO: This should not happen
+//      e.trace
     }
     return cpEntries
   }
