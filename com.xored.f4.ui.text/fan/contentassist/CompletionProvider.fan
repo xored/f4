@@ -165,6 +165,40 @@ abstract class CompletionProvider
     }
   }
   
+  protected Void reportFFI()
+  {
+    if(reporter.ignores(ProposeKind.type)) return
+    unit.usings.each { 
+      if( it.typeName != null && it.typeName.resolvedType != null )
+      {
+        Str? tname := (it.asTypeName != null)?it.asTypeName.text:it.typeName.text
+        if( tname != null) 
+        {
+          if( tname.startsWith(prefix))
+          {
+            reporter.report(createProposal(ProposeKind.type, tname , it.typeName.resolvedType.me))          
+          }
+        }
+      }
+      else if( !ns.podNames.contains(it.podName.text))
+      {
+        if( it.podName.modelPod != null )
+        {
+          modelpod := it.podName.modelPod
+          types := modelpod.typeNames
+          types.each {
+            if( it.startsWith(prefix))
+            {
+              type := modelpod.findType(it)
+              if( type != null )
+                reporter.report(createProposal(ProposeKind.type, it , type.me))          
+            }
+          }
+        }
+      }
+    }
+  }
+  
   protected Void reportPod(IFanPod? pod)
   {
     if(pod == null) return

@@ -61,6 +61,8 @@ class GreedyProvider : CompletionProvider
     reportNsTypes
     //keywords
     reportKeywords(insideMethod ? methodKeywords : typeKeywords)
+    // Report FFI
+    reportFFI
     return true
   }
   
