@@ -650,6 +650,10 @@ public class FanPreferenceConstants extends PreferenceConstants {
 				FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
 				new RGB(200, 0, 0));
 		PreferenceConverter.setDefault(store,
+				FanPreferenceConstants.EDITOR_VAR_DEF_COLOR,
+				new RGB(200, 0, 0));
+		
+		PreferenceConverter.setDefault(store,
 				FanPreferenceConstants.EDITOR_FIELD_COLOR, new RGB(0, 0, 200));
 
 		PreferenceConverter.setDefault(store,
