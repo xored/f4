@@ -6,7 +6,7 @@
 //   Alexey Alexandrov Apr 13, 2010 - Initial Contribution
 //
 
-using [java]org.eclipse.dltk.core
+//using [java]org.eclipse.dltk.core
 using [java]org.eclipse.dltk.compiler.env::IModuleSource
 using [java]org.eclipse.dltk.ui.editor.highlighting::AbstractSemanticHighlighter
 using [java]org.eclipse.dltk.ui.editor.highlighting::ISemanticHighlightingRequestor
@@ -140,6 +140,15 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
     {
       FieldDef f := node
       addPosition(f.name.start, f.name.end+1, index(f.modifiers.has(ModifierId.Static) ? staticField : field))
+    }
+    else if( node is Literal && ((Literal)node).id == ExprId.strLiteral ) {
+      // Check for variable access and highlight accordingly
+      Literal lit := node
+      Str value := lit.val
+      StrParser parser := StrParser(value)
+      parser.parse |Int start, Int end| {
+        addPosition(lit.start+start, lit.start + end, index(var) )
+      }
     }
     return true
   }
