@@ -1,0 +1,814 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.diagram="http:///com/xored/tesla/core/diagram.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="DebugTest" version="3.0" id="_KCUXMNRLEeCKlPPbNL0FHw" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan/A.fan" | double-click -nowait
+with [get-editor "A.fan" | get-editbox] {
+    set-text-offset 3 13
+    key-type CR
+    type-text "public Void main()"
+    key-type CR
+    type-text "{"
+    key-type CR
+    type-text "echo(\"This is hello world"
+    key-type "M1+s"
+}
+with [get-editor "A.fan"] {
+    with [get-editbox] {
+        set-text-offset 31 16
+        key-type CR
+        type-text "a := 20"
+        key-type CR
+        type-text "echo(\"Value of $"
+        key-type "M1+SPACE"
+        key-type CR
+        key-type "M1+s"
+    }
+}
+with [get-editor "A.fan" | get-editbox] {
+    set-text-offset 11 17
+    key-type "M1+M2+b"
+}
+get-view "Fantom Explorer" | get-tree | select "fantest/fan/A.fan" | get-menu "Debug As/2 Fantom Class" | click
+get-window "Confirm Perspective Switch" | get-button No | click
+get-view Debug | get-button "Resume (F8)" | click
+get-view Console | get-editbox | get-property rawValue | equals "This is hello world\\n"
+    + "Value of 20\\n" | verify-true]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow0" kind="EclipseWindow" description="Fantom - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View0" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree0" kind="Tree"/>
+      <path>fantest</path>
+      <path>fan</path>
+      <path>A.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:DoubleClick">
+      <element id="Tree0" kind="Tree"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="A.fan" multiplicity="1">
+        <parent id="EclipseWindow0" kind="EclipseWindow" description="Fantom - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor0" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="3" line="13">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="public Void main()">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="{">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="echo(&quot;This is hello world">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree0" kind="Tree"/>
+      <path>fantest</path>
+      <path>fan</path>
+      <path>A.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Run As</path>
+        <path>2 Fantom Class</path>
+        <parent id="Tree0" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu0" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State0" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Console" multiplicity="1">
+        <parent id="EclipseWindow1" kind="EclipseWindow" description="Fantom - fantest/fan/A.fan - F4 IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="View2" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="value" value="This is hello world">
+      <element id="Text1" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="A.fan" multiplicity="1">
+        <parent id="EclipseWindow2_11" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor1_11" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="31" line="16">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="a := 20">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="echo(&quot;Value of $">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="32" character="32" meta="1">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
+      <element id="Text2_11" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Canvas" index="3" multiplicity="1">
+        <parent id="Editor1_11" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="6" y="314" button="3" boundsWidth="12" boundsHeight="431">
+      <element id="Canvas0_11" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Canvas" index="1" multiplicity="1">
+        <parent id="Editor1_11" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Toggle Breakpoint</path>
+        <parent id="Canvas1_12" kind="Canvas"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu1_11" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State1_11" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="A.fan" multiplicity="1">
+        <parent id="EclipseWindow3_18" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor2_18" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="11" line="17">
+      <element id="Text3_18" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="393216" code="98" character="2" meta="3">
+      <element id="Text3_18" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow3_18" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View3_18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree2_18" kind="Tree"/>
+      <path>fantest</path>
+      <path>fan</path>
+      <path>A.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Debug As</path>
+        <path>2 Fantom Class</path>
+        <parent id="Tree2_18" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu2_18" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State2_18" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Confirm Perspective Switch" multiplicity="1">
+        <parent id="EclipseWindow3_18" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="No" multiplicity="1">
+        <parent id="Window0_18" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button0_18" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State3_19" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Debug" multiplicity="1">
+        <parent id="EclipseWindow3_18" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Resume (F8)" multiplicity="1">
+        <parent id="View4_19" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button1_19" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State4_20" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Console" multiplicity="1">
+        <parent id="EclipseWindow4_31" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="View5_31" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="rawValue" value="This is hello world\nValue of 20\n">
+      <element id="Text4_31" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow0" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2125" y="34" width="1035" height="772"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="View0" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="3" y="66" width="199" height="584"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="Tree0" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="199" height="584"/>
+        <selection>
+          <path>fantest</path>
+          <path>fan</path>
+          <path>A.fan</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="Editor0" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="3" y="34" width="603" height="449"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.6">
+      <elements id="Text0" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A{  public Int alfa := 20  public Str beta := &quot;String value&quot;    public Int intMethod()  {    return this.alfa + 20  }  public Str strMethod()  {    return beta + &quot; Postfix&quot;  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds x="30" width="560" height="449"/>
+        <rawValue><![CDATA[\nclass A\n{\n  public Int alfa := 20\n  public Str beta := "String value"\n  \n  public Int intMethod()\n  {\n    return this.alfa + 20\n  }\n  public Str strMethod()\n  {\n    return beta + " Postfix"\n  }\n}\n]]></rawValue>
+        <styleRanges>0, 1, fontStyle=normal</styleRanges>
+        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6, 1, fontStyle=normal</styleRanges>
+        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8, 1, fontStyle=normal</styleRanges>
+        <styleRanges>9, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10, 3, fontStyle=normal</styleRanges>
+        <styleRanges>13, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19, 1, fontStyle=normal</styleRanges>
+        <styleRanges>20, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>23, 1, fontStyle=normal</styleRanges>
+        <styleRanges>24, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>28, 1, fontStyle=normal</styleRanges>
+        <styleRanges>29, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>31, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>34, 3, fontStyle=normal</styleRanges>
+        <styleRanges>37, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>43, 1, fontStyle=normal</styleRanges>
+        <styleRanges>44, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>55, 1, fontStyle=normal</styleRanges>
+        <styleRanges>56, 7, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>70, 6, fontStyle=normal</styleRanges>
+        <styleRanges>76, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal</styleRanges>
+        <styleRanges>87, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>98, 3, fontStyle=normal</styleRanges>
+        <styleRanges>101, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 5, fontStyle=normal</styleRanges>
+        <styleRanges>107, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal</styleRanges>
+        <styleRanges>114, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>118, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>119, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>123, 1, fontStyle=normal</styleRanges>
+        <styleRanges>124, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>125, 1, fontStyle=normal</styleRanges>
+        <styleRanges>126, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>128, 3, fontStyle=normal</styleRanges>
+        <styleRanges>131, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>132, 3, fontStyle=normal</styleRanges>
+        <styleRanges>135, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>141, 1, fontStyle=normal</styleRanges>
+        <styleRanges>142, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>145, 1, fontStyle=normal</styleRanges>
+        <styleRanges>146, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>157, 3, fontStyle=normal</styleRanges>
+        <styleRanges>160, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>161, 5, fontStyle=normal</styleRanges>
+        <styleRanges>166, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>172, 1, fontStyle=normal</styleRanges>
+        <styleRanges>173, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>177, 1, fontStyle=normal</styleRanges>
+        <styleRanges>178, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>179, 1, fontStyle=normal</styleRanges>
+        <styleRanges>180, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>181, 1, fontStyle=normal</styleRanges>
+        <styleRanges>182, 7, fontStyle=normal, foreground=Color {42, 0, 255}, underline=error, underlineColor=Color {255, 128, 64}</styleRanges>
+        <styleRanges>189, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>190, 3, fontStyle=normal</styleRanges>
+        <styleRanges>193, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>194, 1, fontStyle=normal</styleRanges>
+        <styleRanges>195, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>196, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.16">
+      <elements id="Menu0" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;2 Fantom Class" enablement="true" index="1" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.17">
+      <elements id="State0" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.20">
+      <elements id="EclipseWindow1" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - fantest/fan/A.fan - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2125" y="34" width="1035" height="772"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.21">
+      <elements id="View2" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Console">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="211" y="542" width="811" height="108"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.22">
+      <elements id="Text1" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="This is hello world">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="811" height="108"/>
+        <rawValue>This is hello world\n</rawValue>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.24">
+      <elements id="EclipseWindow2_11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - fantest/fan/A.fan - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2125" y="34" width="1035" height="772"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.25">
+      <elements id="Editor1_11" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="3" y="34" width="603" height="449"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.26">
+      <elements id="Text2_11" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A{  public Int alfa := 20  public Str beta := &quot;String value&quot;    public Int intMethod()  {    return this.alfa + 20  }  public Str strMethod()  {    return beta + &quot; Postfix&quot;  }  public Void main()  {    echo(&quot;This is hello world&quot;)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds x="30" width="560" height="449"/>
+        <rawValue><![CDATA[\nclass A\n{\n  public Int alfa := 20\n  public Str beta := "String value"\n  \n  public Int intMethod()\n  {\n    return this.alfa + 20\n  }\n  public Str strMethod()\n  {\n    return beta + " Postfix"\n  }\n  public Void main()\n  {\n    echo("This is hello world")\n  }\n}\n]]></rawValue>
+        <styleRanges>0, 1, fontStyle=normal</styleRanges>
+        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6, 1, fontStyle=normal</styleRanges>
+        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8, 1, fontStyle=normal</styleRanges>
+        <styleRanges>9, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10, 3, fontStyle=normal</styleRanges>
+        <styleRanges>13, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19, 1, fontStyle=normal</styleRanges>
+        <styleRanges>20, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>23, 1, fontStyle=normal</styleRanges>
+        <styleRanges>24, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>28, 1, fontStyle=normal</styleRanges>
+        <styleRanges>29, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>31, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>34, 3, fontStyle=normal</styleRanges>
+        <styleRanges>37, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>43, 1, fontStyle=normal</styleRanges>
+        <styleRanges>44, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>55, 1, fontStyle=normal</styleRanges>
+        <styleRanges>56, 7, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>70, 6, fontStyle=normal</styleRanges>
+        <styleRanges>76, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal</styleRanges>
+        <styleRanges>87, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>98, 3, fontStyle=normal</styleRanges>
+        <styleRanges>101, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 5, fontStyle=normal</styleRanges>
+        <styleRanges>107, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal</styleRanges>
+        <styleRanges>114, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>118, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>119, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>123, 1, fontStyle=normal</styleRanges>
+        <styleRanges>124, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>125, 1, fontStyle=normal</styleRanges>
+        <styleRanges>126, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>128, 3, fontStyle=normal</styleRanges>
+        <styleRanges>131, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>132, 3, fontStyle=normal</styleRanges>
+        <styleRanges>135, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>141, 1, fontStyle=normal</styleRanges>
+        <styleRanges>142, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>145, 1, fontStyle=normal</styleRanges>
+        <styleRanges>146, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>157, 3, fontStyle=normal</styleRanges>
+        <styleRanges>160, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>161, 5, fontStyle=normal</styleRanges>
+        <styleRanges>166, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>172, 1, fontStyle=normal</styleRanges>
+        <styleRanges>173, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>177, 1, fontStyle=normal</styleRanges>
+        <styleRanges>178, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>179, 1, fontStyle=normal</styleRanges>
+        <styleRanges>180, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>181, 1, fontStyle=normal</styleRanges>
+        <styleRanges>182, 7, fontStyle=normal, foreground=Color {42, 0, 255}, underline=error, underlineColor=Color {255, 128, 64}</styleRanges>
+        <styleRanges>189, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>190, 3, fontStyle=normal</styleRanges>
+        <styleRanges>193, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>194, 3, fontStyle=normal</styleRanges>
+        <styleRanges>197, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>203, 1, fontStyle=normal</styleRanges>
+        <styleRanges>204, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>208, 1, fontStyle=normal</styleRanges>
+        <styleRanges>209, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>215, 3, fontStyle=normal</styleRanges>
+        <styleRanges>218, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>219, 5, fontStyle=normal</styleRanges>
+        <styleRanges>224, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>228, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>229, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>234, 1, fontStyle=normal</styleRanges>
+        <styleRanges>235, 2, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>237, 1, fontStyle=normal</styleRanges>
+        <styleRanges>238, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>243, 1, fontStyle=normal</styleRanges>
+        <styleRanges>244, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>250, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>251, 3, fontStyle=normal</styleRanges>
+        <styleRanges>254, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>255, 1, fontStyle=normal</styleRanges>
+        <styleRanges>256, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>257, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.35">
+      <elements id="Canvas0_11" kind="Canvas"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.jface.text.source.AnnotationRulerColumn$5" enablement="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds width="12" height="431"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.37">
+      <elements id="Canvas1_12" kind="Canvas"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.jface.text.source.CompositeRuler$CompositeRulerCanvas" enablement="true" containMenu="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds width="29" height="431"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.38">
+      <elements id="Menu1_11" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="Toggle &amp;Breakpoint" enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.39">
+      <elements id="State1_11" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.42">
+      <elements id="EclipseWindow3_18" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - fantest/fan/A.fan - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2125" y="34" width="1035" height="772"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.43">
+      <elements id="Editor2_18" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="3" y="34" width="603" height="449"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.44">
+      <elements id="Text3_18" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A{  public Int alfa := 20  public Str beta := &quot;String value&quot;    public Int intMethod()  {    return this.alfa + 20  }  public Str strMethod()  {    return beta + &quot; Postfix&quot;  }  public Void main()  {    echo(&quot;This is hello world&quot;)    a := 20    echo(&quot;Value of $a&quot;)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds x="30" width="560" height="449"/>
+        <rawValue><![CDATA[\nclass A\n{\n  public Int alfa := 20\n  public Str beta := "String value"\n  \n  public Int intMethod()\n  {\n    return this.alfa + 20\n  }\n  public Str strMethod()\n  {\n    return beta + " Postfix"\n  }\n  public Void main()\n  {\n    echo("This is hello world")\n    a := 20\n    echo("Value of $a")\n  }\n}\n]]></rawValue>
+        <styleRanges>0, 1, fontStyle=normal</styleRanges>
+        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6, 1, fontStyle=normal</styleRanges>
+        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8, 1, fontStyle=normal</styleRanges>
+        <styleRanges>9, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10, 3, fontStyle=normal</styleRanges>
+        <styleRanges>13, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19, 1, fontStyle=normal</styleRanges>
+        <styleRanges>20, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>23, 1, fontStyle=normal</styleRanges>
+        <styleRanges>24, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>28, 1, fontStyle=normal</styleRanges>
+        <styleRanges>29, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>31, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>34, 3, fontStyle=normal</styleRanges>
+        <styleRanges>37, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>43, 1, fontStyle=normal</styleRanges>
+        <styleRanges>44, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>55, 1, fontStyle=normal</styleRanges>
+        <styleRanges>56, 7, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>70, 6, fontStyle=normal</styleRanges>
+        <styleRanges>76, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal</styleRanges>
+        <styleRanges>87, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>98, 3, fontStyle=normal</styleRanges>
+        <styleRanges>101, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 5, fontStyle=normal</styleRanges>
+        <styleRanges>107, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal</styleRanges>
+        <styleRanges>114, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>118, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>119, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>123, 1, fontStyle=normal</styleRanges>
+        <styleRanges>124, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>125, 1, fontStyle=normal</styleRanges>
+        <styleRanges>126, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>128, 3, fontStyle=normal</styleRanges>
+        <styleRanges>131, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>132, 3, fontStyle=normal</styleRanges>
+        <styleRanges>135, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>141, 1, fontStyle=normal</styleRanges>
+        <styleRanges>142, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>145, 1, fontStyle=normal</styleRanges>
+        <styleRanges>146, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>157, 3, fontStyle=normal</styleRanges>
+        <styleRanges>160, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>161, 5, fontStyle=normal</styleRanges>
+        <styleRanges>166, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>172, 1, fontStyle=normal</styleRanges>
+        <styleRanges>173, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
+        <styleRanges>177, 1, fontStyle=normal</styleRanges>
+        <styleRanges>178, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>179, 1, fontStyle=normal</styleRanges>
+        <styleRanges>180, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>181, 1, fontStyle=normal</styleRanges>
+        <styleRanges>182, 7, fontStyle=normal, foreground=Color {42, 0, 255}, underline=error, underlineColor=Color {255, 128, 64}</styleRanges>
+        <styleRanges>189, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>190, 3, fontStyle=normal</styleRanges>
+        <styleRanges>193, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>194, 3, fontStyle=normal</styleRanges>
+        <styleRanges>197, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>203, 1, fontStyle=normal</styleRanges>
+        <styleRanges>204, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>208, 1, fontStyle=normal</styleRanges>
+        <styleRanges>209, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>215, 3, fontStyle=normal</styleRanges>
+        <styleRanges>218, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>219, 5, fontStyle=normal</styleRanges>
+        <styleRanges>224, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>228, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>229, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>234, 1, fontStyle=normal</styleRanges>
+        <styleRanges>235, 2, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>237, 1, fontStyle=normal</styleRanges>
+        <styleRanges>238, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>243, 1, fontStyle=normal</styleRanges>
+        <styleRanges>244, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>250, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>251, 5, fontStyle=normal</styleRanges>
+        <styleRanges>256, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>257, 1, fontStyle=normal</styleRanges>
+        <styleRanges>258, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>260, 1, fontStyle=normal</styleRanges>
+        <styleRanges>261, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>263, 5, fontStyle=normal</styleRanges>
+        <styleRanges>268, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>272, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>273, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>279, 1, fontStyle=normal</styleRanges>
+        <styleRanges>280, 2, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>282, 3, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>285, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>286, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>287, 3, fontStyle=normal</styleRanges>
+        <styleRanges>290, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>291, 1, fontStyle=normal</styleRanges>
+        <styleRanges>292, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>293, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.47">
+      <elements id="View3_18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="3" y="66" width="199" height="584"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.48">
+      <elements id="Tree2_18" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="199" height="584"/>
+        <selection>
+          <path>fantest</path>
+          <path>fan</path>
+          <path>A.fan</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.50">
+      <elements id="Menu2_18" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;2 Fantom Class" enablement="true" index="1" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.51">
+      <elements id="State2_18" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.54">
+      <elements id="Window0_18" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Confirm Perspective Switch" hasBorder="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2295" y="62" width="694" height="240"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.55">
+      <elements id="Button0_18" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds width="122" height="29"/>
+        <caption><![CDATA[&No]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.56">
+      <elements id="State3_19" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.59">
+      <elements id="View4_19" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Debug">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="211" y="555" width="811" height="95"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.60">
+      <elements id="Button1_19" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:ToolItem" enablement="true" tooltip="Resume (F8)" kind="Tool" index="1">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <caption></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.61">
+      <elements id="State4_20" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.64">
+      <elements id="EclipseWindow4_31" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="Fantom - fantest/fan/A.fan - F4 IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="2125" y="34" width="1035" height="772"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.65">
+      <elements id="View5_31" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Console">
+        <backgroundColor red="237" green="236" blue="235"/>
+        <foregroundColor/>
+        <bounds x="211" y="542" width="811" height="108"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.66">
+      <elements id="Text4_31" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="This is hello worldValue of 20">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor red="26" green="26" blue="26"/>
+        <bounds width="811" height="108"/>
+        <rawValue>This is hello world\nValue of 20\n</rawValue>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>
