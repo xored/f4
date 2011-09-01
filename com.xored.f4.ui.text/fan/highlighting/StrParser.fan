@@ -29,7 +29,7 @@ class StrParser
   {
     while(pos < buf.size)
     {
-      if( (peek == '$' && cur != '\\') || (cur =='$' && pos == 0 ) || (cur == '$' && pos > 0 && buf[pos-1] != '\\'))
+      if( (cur =='$' && pos == 0 ) || (cur == '$' && pos > 0 && buf[pos-1] != '\\'))
         subst(region)
       else
         consume
