@@ -22,6 +22,7 @@ class QnameCompletionProvider : CompletionProvider
   override Bool setInput(Int pos, Str prefix)
   {
     super.setInput(pos, prefix)
+    if( pos == 0) return false
     if(src[pos-1..pos] != "::") return false
     path = AstFinder.find(unit, pos-1)
     return true
