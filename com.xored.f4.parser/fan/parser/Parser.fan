@@ -1836,6 +1836,8 @@ class Parser : AstFactory
           return def.podName.modelPod?.findType(typeName,false)
         else if (typeName == def.typeName.text)
           return def.typeName.resolvedType
+        else if( typeName == def.asTypeName?.text)
+          return def.typeName.resolvedType
         return null;
       }
       if (found == null)

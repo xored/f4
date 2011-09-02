@@ -76,7 +76,15 @@ class DotCompletionProvider : CompletionProvider
   }
   private IFanType? getType(AstPath path)
   {
-    return getNode(path)->resolvedType
+    try
+    {
+      return getNode(path)->resolvedType
+    }
+    catch(UnknownSlotErr e)
+    {
+      // Ignore. Assume not correct parsed node
+    }
+    return null
   }
   
   
