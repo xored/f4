@@ -30,24 +30,43 @@ class InterpreterContainer :
   {
     try
     {
-    IBuildpathEntry[] entries := entriesList.toArray
-    fanSrc := PathUtil.srcByInterpreter(install.getInstallLocation.getPath)
-    if(!fanSrc.exists) return
-    
-    
-    entries.each | IBuildpathEntry entry|
-    {
-      path := PathUtil.resolveLocalPath(entry.getPath, false)
-      if(path == null || !path.exists || path.ext != "pod") return
+      IBuildpathEntry[] entries := entriesList.toArray
+      fanSrc := PathUtil.srcByInterpreter(install.getInstallLocation.getPath)
+      //if(!fanSrc.exists) return
+      fanSrcExist := fanSrc.exists
       
-      src := fanSrc + Uri.fromStr(path.basename).plusSlash
-      if(src.exists)
+      entries.each | IBuildpathEntry entry|
       {
-        entry.setSourceAttachmentPath(PathUtil.toPath(src))
-        entry.setSourceAttachmentRootPath(Path.EMPTY)
+        path := PathUtil.resolveLocalPath(entry.getPath, false)
+        if(path == null || !path.exists || path.ext != "pod") return
+        
+        if( fanSrcExist)
+        {
+          src := fanSrc + Uri.fromStr(path.basename).plusSlash
+          if(src.exists)
+          {
+            entry.setSourceAttachmentPath(PathUtil.toPath(src))
+            entry.setSourceAttachmentRootPath(Path.EMPTY)
+          }
+        }
+        else
+        {
+          podFile := File(Uri.fromStr(path.toStr))
+          if( podFile.exists) 
+          {
+            Zip zipfile := Zip.open(podFile)
+            srcDir := zipfile.contents.find |File f, Uri uri->Bool| {
+              return uri.toStr.startsWith("/src/") && uri.toStr.endsWith(".fan")
+            }
+            if( srcDir != null )
+            {
+              // try to use pod itself as source container
+              entry.setSourceAttachmentPath(PathUtil.toPath(path))
+              entry.setSourceAttachmentRootPath(Path.EMPTY)
+            }
+          }
+        }
       }
-    }
-      
     } catch(Err e) { e.trace }
   }
   
