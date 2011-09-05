@@ -57,7 +57,7 @@ class InternalBuilder : Builder
       input.jsFiles     = fp.jsDirs
       errs := compile(input)
       if (!errs[0].isEmpty) return errs.flatten
-      if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer))
+      if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
       
       // Compare pod file in output directory to podFile in project and overwrite it if they are different
       npodFile := input.outDir.listFiles.find { it.name == fp.podName + ".pod" }
@@ -135,16 +135,17 @@ class InternalBuilder : Builder
     return [caughtErrs.addAll(compiler.errs), compiler.warns]
   }
 
-  private CompilerErr[] compileJava(|Str|? consumer)
+  private CompilerErr[] compileJava(|Str|? consumer, IPath projectPath )
   {
-    jtemp    := fp.baseDir+`temp-java/`
+    jtemp    := projectPath.append("temp-java").toFile
 
-    jtemp.create
+    jtemp.mkdirs
+    jtempPath := jtemp.getAbsolutePath
     wc := createLaunchConfig(JavaConsts.ID_JAVA_APPLICATION, "Jstub configuration")
     wc.setAttribute(JavaConsts.ATTR_MAIN_TYPE_NAME, "fanx.tools.Jstub")
     fanHome := PathUtil.fanHome(fp.getInterpreterInstall.getInstallLocation.getPath).toFile.osPath
     wc.setAttribute(JavaConsts.ATTR_VM_ARGUMENTS, "-Dfan.home=\"$fanHome\"")
-    wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtemp $fp.podName")
+    wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtempPath $fp.podName")
     wc.setAttribute(JavaConsts.ATTR_PROJECT_NAME, fp.project.getName)
     launch(wc, consumer)
     
@@ -152,14 +153,14 @@ class InternalBuilder : Builder
     wc = createJdkConfig("Javac configutation", "javac", jp)
     IRuntimeClasspathEntry[] entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
     entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
-    classpath := entries.map { getLocation }.add(jtemp.osPath).join(File.pathSep)
+    classpath := entries.map { getLocation }.add(jtempPath).join(File.pathSep)
     javaFiles := listFiles(fp.javaDirs).join(" ")
-    wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d $jtemp -cp \"$classpath\" $javaFiles")
+    wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d $jtempPath -cp \"$classpath\" $javaFiles")
     launch(wc, consumer)
     
     wc = createJdkConfig("Jar configuration", "jar", jp)
-    podFile := (fp.outDir+`${fp.podName}.pod`).osPath
-    wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-fu $podFile -C $jtemp.osPath \".\"")
+    podFile := projectPath.append("${fp.podName}.pod").toOSString
+    wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-fu $podFile -C $jtempPath \".\"")
     launch(wc, consumer)
     
     jtemp.delete
