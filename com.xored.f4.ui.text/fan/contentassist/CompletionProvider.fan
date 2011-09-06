@@ -223,6 +223,7 @@ abstract class CompletionProvider
   protected Void reportUsings(Bool constructors := false)
   {
     unit.usings.each { 
+      ffiPod := it.podName.text.startsWith("[")
       if( it.typeName != null && it.typeName.resolvedType != null )
       {
         Str? tname := (it.asTypeName != null)?it.asTypeName.text:it.typeName.text
@@ -235,7 +236,7 @@ abstract class CompletionProvider
               it.typeName.resolvedType.methods.each { 
                 if( it.isCtor || isFromStr(it))
                 {
-                  if( it.name != "make" && it.name != "fromStr")
+                  if( (it.name != "make" && it.name != "fromStr")&& !ffiPod)
                     reportMethod(it, tname + "." + it.name)
                   else
                     reportMethod(it, tname)
@@ -264,7 +265,7 @@ abstract class CompletionProvider
                   type.methods.each { 
                     if( it.isCtor|| isFromStr(it))
                     {
-                      if( it.name != "make" && it.name != "fromStr")
+                      if( (it.name != "make" && it.name != "fromStr")&& !ffiPod)
                         reportMethod(it, type.name + "." + it.name)
                       else
                         reportMethod(it, type.name)
