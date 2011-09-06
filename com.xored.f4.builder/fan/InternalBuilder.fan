@@ -20,6 +20,8 @@ using [java]org.eclipse.core.runtime::IPath
 using [java]org.eclipse.core.runtime::Path
 using [java]java.io::File as JFile
 
+using [java]com.xored.fanide.core::JStubGenerator
+
 **
 ** This builder uses embedded compiler via API
 ** 
@@ -38,6 +40,7 @@ class InternalBuilder : Builder
     
     buf := StrBuf()
     input := CompilerInput.make
+    Bool podChanged := false
     try {
       input.log         = CompilerLog(buf.out)
       input.podName     = fp.podName
@@ -59,6 +62,7 @@ class InternalBuilder : Builder
       if (!errs[0].isEmpty) return errs.flatten
       if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
       
+      
       // Compare pod file in output directory to podFile in project and overwrite it if they are different
       npodFile := input.outDir.listFiles.find { it.name == fp.podName + ".pod" }
       if( npodFile != null)
@@ -68,6 +72,7 @@ class InternalBuilder : Builder
         {
           // No pod exist, just copy
           npodFile.copyInto(fp.outDir, ["overwrite": true])
+          podChanged = true
         }
         else
         {
@@ -79,6 +84,7 @@ class InternalBuilder : Builder
           catch(Err e)  {
              // Content different override
             npodFile.copyInto(fp.outDir, ["overwrite": true])
+            podChanged = true
             npodZip.close
             return errs.flatten
           }
@@ -88,6 +94,7 @@ class InternalBuilder : Builder
           {
             // Content different override
             npodFile.copyInto(fp.outDir, ["overwrite": true])
+            podChanged = true
           }
           else
           {
@@ -110,6 +117,7 @@ class InternalBuilder : Builder
             {
               // Content are changed, replacing file
               npodFile.copyInto(fp.outDir, ["overwrite": true])
+              podChanged = true
             }
           } 
           npodZip.close
@@ -121,6 +129,12 @@ class InternalBuilder : Builder
     } finally {
       if (input.ns is F4Namespace)
         ((F4Namespace)input.ns).close
+      if(podChanged)
+      {
+        // We need to clear java zip archive cache and trigger java interpreter container update
+        jp := JavaCore.create(fp.project)
+        jp.getJavaModel.refreshExternalArchives([jp], null)
+      }
     }
   }
   
@@ -141,16 +155,19 @@ class InternalBuilder : Builder
 
     jtemp.mkdirs
     jtempPath := jtemp.getAbsolutePath
-    wc := createLaunchConfig(JavaConsts.ID_JAVA_APPLICATION, "Jstub configuration")
-    wc.setAttribute(JavaConsts.ATTR_MAIN_TYPE_NAME, "fanx.tools.Jstub")
-    fanHome := PathUtil.fanHome(fp.getInterpreterInstall.getInstallLocation.getPath).toFile.osPath
-    wc.setAttribute(JavaConsts.ATTR_VM_ARGUMENTS, "-Dfan.home=\"$fanHome\"")
-    wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtempPath $fp.podName")
-    wc.setAttribute(JavaConsts.ATTR_PROJECT_NAME, fp.project.getName)
-    launch(wc, consumer)
+    podFile := projectPath.append("${fp.podName}.pod").toOSString
+//    wc := createLaunchConfig(JavaConsts.ID_JAVA_APPLICATION, "Jstub configuration")
+//    wc.setAttribute(JavaConsts.ATTR_MAIN_TYPE_NAME, "fanx.tools.Jstub")
+//    fanHome := PathUtil.fanHome(fp.getInterpreterInstall.getInstallLocation.getPath).toFile.osPath
+//    wc.setAttribute(JavaConsts.ATTR_VM_ARGUMENTS, "-Dfan.home=\"$fanHome\"")
+//    wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtempPath $fp.podName")
+//    wc.setAttribute(JavaConsts.ATTR_PROJECT_NAME, fp.project.getName)
+//    launch(wc, consumer)
+    JStubGenerator.generateStubs(podFile, jtemp.getAbsolutePath)
+    
     
     jp := JavaCore.create(fp.project)
-    wc = createJdkConfig("Javac configutation", "javac", jp)
+    wc := createJdkConfig("Javac configutation", "javac", jp)
     IRuntimeClasspathEntry[] entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
     entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
     classpath := entries.map { getLocation }.add(jtempPath).join(File.pathSep)
@@ -159,11 +176,22 @@ class InternalBuilder : Builder
     launch(wc, consumer)
     
     wc = createJdkConfig("Jar configuration", "jar", jp)
-    podFile := projectPath.append("${fp.podName}.pod").toOSString
+   
     wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-fu $podFile -C $jtempPath \".\"")
     launch(wc, consumer)
     
-    jtemp.delete
+    |JFile file|? delFunc := null
+    delFunc = |JFile file|
+    {
+      if( file.isDirectory)
+      {
+        file.listFiles().each(delFunc)
+        file.delete
+      }
+      else
+        file.delete
+    }
+    jtemp.listFiles().each(delFunc)
     return [,]
   }
   private ILaunchConfigurationWorkingCopy createJdkConfig(Str name,Str exec, IJavaProject jp)

@@ -28,6 +28,7 @@ using [java]com.xored.fanide.core::JDTSupport
 class JavaTypeRegistry
 {
   private Str:IPackageFragment[] fragments := [:]
+  private Str:[Str:Str] jdtResolveMap := [:]
   new make(F4Cp cp, IJavaProject? project)
   {
     this.cp = cp
@@ -483,6 +484,17 @@ class JavaTypeRegistry
   
   private Str?[]? resolveJDTType(IType? info, Str stype)
   {
+    if( info == null)
+    {
+      return null
+    }
+    tkey := info.getFullyQualifiedName('$')
+    if( jdtResolveMap.containsKey(tkey))
+    {
+      if( jdtResolveMap[tkey].containsKey(stype) )
+        return [jdtResolveMap[tkey][stype]]
+    }
+    
     Str?[]? resultName := JDTSupport.resolve(info, stype)
     // Try to resolve agains base class
     if( resultName == null && info != null)
@@ -493,6 +505,16 @@ class JavaTypeRegistry
         resultName = JDTSupport.resolve(base, stype)
         base = getBase(base)
       }
+    }
+    if(resultName != null && resultName.size == 1)
+    {
+      [Str:Str]? rmap := jdtResolveMap[tkey]
+      if( rmap == null)
+      {
+        rmap = [:]
+        jdtResolveMap[tkey] = rmap
+      }
+      rmap[stype] = resultName[0]
     }
     return resultName
   }
