@@ -166,7 +166,10 @@ abstract class CompletionProvider
             type.methods.each { 
               if( it.isCtor|| isFromStr(it))
               {
-                reportMethod(it, type.name)
+                if( it.name != "make" && it.name != "fromStr")
+                  reportMethod(it, type.name + "." + it.name)
+                else
+                  reportMethod(it, type.name)
               }
             }
           }
@@ -181,7 +184,10 @@ abstract class CompletionProvider
               type.methods.each { 
                 if( it.isCtor|| isFromStr(it))
                 {
-                  reportMethod(it, type.name)
+                  if( it.name != "make" && it.name != "fromStr")
+                    reportMethod(it, type.name + "." + it.name)
+                  else
+                    reportMethod(it, type.name)
                 }
               }
             }
@@ -229,7 +235,10 @@ abstract class CompletionProvider
               it.typeName.resolvedType.methods.each { 
                 if( it.isCtor || isFromStr(it))
                 {
-                  reportMethod(it, tname)
+                  if( it.name != "make" && it.name != "fromStr")
+                    reportMethod(it, tname + "." + it.name)
+                  else
+                    reportMethod(it, tname)
                 }
               }
             }
@@ -255,7 +264,10 @@ abstract class CompletionProvider
                   type.methods.each { 
                     if( it.isCtor|| isFromStr(it))
                     {
-                      reportMethod(it, type.name)
+                      if( it.name != "make" && it.name != "fromStr")
+                        reportMethod(it, type.name + "." + it.name)
+                      else
+                        reportMethod(it, type.name)
                     }
                   }
                 }
