@@ -1,5 +1,8 @@
 package com.xored.fanide.core;
 
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IImportDeclaration;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
@@ -12,6 +15,7 @@ public class JDTSupport {
 	}
 
 	public static String[] resolve(IType type, String name) {
+		// long start = System.currentTimeMillis();
 		try {
 			ITypeParameter[] typeParameters = type.getTypeParameters();
 			if (typeParameters != null) {
@@ -21,6 +25,18 @@ public class JDTSupport {
 					}
 				}
 			}
+			ICompilationUnit unit = (ICompilationUnit) type
+					.getAncestor(IJavaElement.COMPILATION_UNIT);
+			if (unit != null) {
+				IImportDeclaration[] imports = unit.getImports();
+				for (IImportDeclaration im : imports) {
+					String imName = im.getElementName();
+					if (imName.endsWith("." + name)) {
+						return new String[] { imName };
+					}
+				}
+			}
+
 			String[][] values = type.resolveType(name);
 			if (values == null) {
 				return null;
@@ -33,6 +49,10 @@ public class JDTSupport {
 			}
 			return result;
 		} catch (JavaModelException e) {
+		} finally {
+			// System.out.println("Resolve: " + type.getTypeQualifiedName()
+			// + " name: " + name + " time: "
+			// + Long.toString(System.currentTimeMillis() - start));
 		}
 		return null;
 	}
