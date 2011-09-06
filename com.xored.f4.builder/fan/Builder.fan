@@ -50,25 +50,7 @@ abstract class Builder
   
   protected static Str:File getAllPods(FantomProject fp)
   {
-    result :=  [:]
-    
-    //add interpreter libraries
-    libLocs := ScriptRuntime.getLibraryLocations(fp.getInterpreterInstall) as LibraryLocation[]
-    libLocs.each 
-    {
-      file := PathUtil.resolveLocalPath(it.getLibraryPath())
-      result[file.basename] = file
-    }
-    
-    //add workspace pods
-    FantomProjectManager.instance.listProjects.each |FantomProject p|
-    {
-      result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
-    }
-    
-    //uncomment if necessary 
-    //result.setAll(fp.depends)
-    return result
+   return fp.getAllPods()
   }
   
   protected StrBuf launch(ILaunchConfiguration wc, |Str|? consumer)

@@ -8,6 +8,6 @@ class Build : build::BuildPod
     summary = ""
     srcDirs = [`fan/`, `fan/wizards/`, `fan/integration/`]
     outDir = `./`
-    depends = ["sys 1.0", "f4uiCore 1.0", "f4jdtLaunching 1.0"]
+    depends = ["sys 1.0", "f4uiCore 1.0", "f4jdtLaunching 1.0", "f4core 1.0"]
   }
 }

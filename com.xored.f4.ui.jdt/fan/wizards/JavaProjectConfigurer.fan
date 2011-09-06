@@ -4,6 +4,7 @@ using [java] org.eclipse.jdt.core
 using [java] org.eclipse.jdt.launching
 using [java] com.xored.fanide.core
 using f4jdtLaunching
+using f4core
 
 class JavaProjectConfigurer : IProjectConfigurer {
 
@@ -35,11 +36,16 @@ class JavaProjectConfigurer : IProjectConfigurer {
     //default class path
     if(isDefaultClasspath(cp,project)) cp.clear
     
+    FantomProject fp := FantomProject.makeFromProject(project)
+    fp.javaDirs.each {
+      cp.add(JavaCore.newSourceEntry(project.getFullPath.append(Path(it.toStr))))
+    }
+    
     IPath jreContainerPath := Path(JavaRuntime.JRE_CONTAINER)
     cp.add(JavaCore.newContainerEntry(Path(JavaLaunchConsts.fanJavaContainer)))
     cp.add(JavaCore.newContainerEntry(jreContainerPath))
     try {
-      prj.setRawClasspath(cp, prj.readOutputLocation ?: prj.getPath, null);
+      prj.setRawClasspath(cp, prj.readOutputLocation ?: prj.getPath.append("bin"), null);
     } catch (Err e) {
       FanCore.log(e.msg)
     }

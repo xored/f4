@@ -19,6 +19,7 @@ using [java]com.xored.fanide.core::FanCore
 using [java]org.eclipse.core.runtime::IPath
 using [java]org.eclipse.core.runtime::Path
 using [java]java.io::File as JFile
+using [java]java.util::HashMap as JHashMap
 
 using [java]com.xored.fanide.core::JStubGenerator
 
@@ -163,7 +164,13 @@ class InternalBuilder : Builder
 //    wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtempPath $fp.podName")
 //    wc.setAttribute(JavaConsts.ATTR_PROJECT_NAME, fp.project.getName)
 //    launch(wc, consumer)
-    JStubGenerator.generateStubs(podFile, jtemp.getAbsolutePath)
+    
+    JHashMap jmap := JHashMap()
+    fp.getAllPods.each |File file, Str key| {
+      jmap.put(key, file)
+    }
+    
+    JStubGenerator.generateStubs(podFile, jtemp.getAbsolutePath, jmap)
     
     
     jp := JavaCore.create(fp.project)

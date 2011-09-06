@@ -19,6 +19,7 @@ using [java]org.eclipse.dltk.core::DLTKCore
 using [java]org.eclipse.dltk.core::IScriptProject
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.dltk.core::IBuildpathEntry
+using [java]org.eclipse.dltk.launching::LibraryLocation
 using f4model
 **
 ** Models a Fantom project
@@ -234,6 +235,29 @@ const class FantomProject
     {
       bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
     }, baseDir.uri)
+  }
+  
+  Str:File getAllPods()
+  {
+    result :=  [:]
+    
+    //add interpreter libraries
+    libLocs := ScriptRuntime.getLibraryLocations(this.getInterpreterInstall) as LibraryLocation[]
+    libLocs.each 
+    {
+      file := PathUtil.resolveLocalPath(it.getLibraryPath())
+      result[file.basename] = file
+    }
+    
+    //add workspace pods
+    FantomProjectManager.instance.listProjects.each |FantomProject p|
+    {
+      result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
+    }
+    
+    //uncomment if necessary 
+    //result.setAll(fp.depends)
+    return result
   }
   
   const Uri[] resDirs
