@@ -13,6 +13,10 @@ using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.core.runtime::IPath
 
+using [java]org.eclipse.jdt.core::JavaCore
+using [java]org.eclipse.jdt.core::IJavaProject
+using [java]org.eclipse.jdt.core::IClasspathEntry
+
 using concurrent
 **
 ** Listens for Build.fan changes and updates container
@@ -21,8 +25,7 @@ using concurrent
 const class ContainerResetter : Actor
 {
   new make(ActorPool pool) : 
-    super.makeCoalescing
-    (
+    super.makeCoalescing (
       pool, 
       |Unsafe val -> Str|
       {
@@ -54,6 +57,14 @@ const class ContainerResetter : Actor
         DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
           .initialize(containerPath(scriptProject), scriptProject)
       }
+      // Reinitialize also Java container
+      javaProject := JavaCore.create(project)
+      if( javaProject.exists)
+      {
+        JavaCore.getClasspathContainerInitializer("com.xored.fanide.jdt.launching.FANJAVA_CONTAINER")
+          .initialize(javaContainerPath(javaProject), javaProject)
+      }
+      
     } catch(Err e)
     {
       e.trace
@@ -71,6 +82,15 @@ const class ContainerResetter : Actor
       entry.getPath.segments.first == ScriptRuntime.INTERPRETER_CONTAINER
     }
     return entry?.getPath
-  } 
+  }
+  private IPath? javaContainerPath(IJavaProject project) 
+  { 
+    IClasspathEntry? entry := project.getRawClasspath.find |IClasspathEntry entry->Bool|
+    {
+      entry.getEntryKind == IClasspathEntry.CPE_CONTAINER &&
+      entry.getPath.segments.first == "com.xored.fanide.jdt.launching.FANJAVA_CONTAINER"
+    }
+    return entry?.getPath
+  }
   
 }

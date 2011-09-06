@@ -44,7 +44,7 @@ class FanJavaContainer : IClasspathContainer
       }
     
     try {
-      fp := FantomProjectManager.instance[project.getProject]
+      FantomProject fp := FantomProjectManager.instance[project.getProject]
       fp.depends.each |loc, name|
       {
         podFP := FantomProjectManager.instance.getByPod(name)
@@ -61,6 +61,10 @@ class FanJavaContainer : IClasspathContainer
         if(isJavaPod(loc))
           cpEntries.add(createLibrary(loc,name))
         
+      }
+      if( !fp.javaDirs.isEmpty )
+      {
+          cpEntries.add(createLibrary(fp.outDir + `${fp.podName}.pod`,fp.podName))        
       }
     }
     catch(Err e) {
