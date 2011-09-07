@@ -28,9 +28,10 @@ class DotCompletionProvider : CompletionProvider
     isPound = ending == "#"
     
     //TODO: improve, looks too similar to magic now
-    nodePos := pos - ending.size +1//+ (prefix.isEmpty ? 1 : 0)
-    path = AstFinder.find(unit, nodePos) 
-    if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral) return false
+    esize := ending.size
+    nodePos := pos - esize //+ (prefix.isEmpty ? 1 : 0)
+    path = AstFinder.find(unit, nodePos)
+    if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral &&  path.last.end > pos) return false
     
     if(path.last is CType) return true
     if(path.last is Expr) return true
@@ -68,9 +69,9 @@ class DotCompletionProvider : CompletionProvider
     if (!isPound) {
       slotLiteral := path.findLast(SlotLiteral#) as SlotLiteral
       if(slotLiteral != null) return slotLiteral
-      if(prefix != "") {
-        return  path[-2]
-      }
+//      if(prefix != "") {
+//        return  path[-2]
+//      }
     }
     return path.last
   }
