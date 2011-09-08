@@ -47,7 +47,7 @@ import com.xored.fanide.internal.ui.preferences.FanBuildPathsBlock;
 public class FanProjectCreationWizard extends ProjectWizard {
 	public static final String WIZARD_ID = "com.xored.fanide.ui.internal.wizards.newproject";
 
-	private ProjectWizardFirstPage fFirstPage;
+	private FanProjectWizardFirstPage fFirstPage;
 	private ProjectWizardSecondPage fSecondPage;
 
 	public FanProjectCreationWizard() {
@@ -64,21 +64,7 @@ public class FanProjectCreationWizard extends ProjectWizard {
 	@Override
 	public void addPages() {
 		super.addPages();
-		fFirstPage = new ProjectWizardFirstPage() {
-
-			@Override
-			protected boolean interpeterRequired() {
-				return true;
-			}
-
-			@Override
-			public boolean isSrc() {
-				final IDLTKUILanguageToolkit fanToolkit = DLTKUILanguageManager
-						.getLanguageToolkit(getScriptNature());
-				return fanToolkit
-						.getBoolean(PreferenceConstants.SRCBIN_FOLDERS_IN_NEWPROJ);
-			}
-		};
+		fFirstPage = new FanProjectWizardFirstPage();
 		fFirstPage
 				.setTitle(FanWizardMessages.ProjectCreationWizardFirstPage_title);
 		fFirstPage
@@ -135,7 +121,8 @@ public class FanProjectCreationWizard extends ProjectWizard {
 		super.finishPage(monitor);
 		IProject project = fSecondPage.getScriptProject().getProject();
 
-		createBuildFanFile(fSecondPage.getScriptProject(), monitor);
+		createBuildFanFile(fSecondPage.getScriptProject(), monitor,
+				fFirstPage.isCreateJavaSourceFolder());
 		// TODO We should add possibility to choose available configurer types
 		// and run configure method of selected configurer.
 		// At this moment 'jdt' is hardcoded.
@@ -144,7 +131,8 @@ public class FanProjectCreationWizard extends ProjectWizard {
 	}
 
 	public static void createBuildFanFile(IScriptProject project,
-			IProgressMonitor monitor) throws CoreException {
+			IProgressMonitor monitor, boolean createJavaSourceFolder)
+			throws CoreException {
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
@@ -152,7 +140,7 @@ public class FanProjectCreationWizard extends ProjectWizard {
 		if (!file.exists()) {
 			final String fileContent = BuildFan.generateContent(project
 					.getProject().getName(), FanProjectUtils
-					.getSrcDirs(project));
+					.getSrcDirs(project), createJavaSourceFolder?"`java/`":null);
 			byte[] bytes;
 			try {
 				bytes = fileContent.getBytes(Util.UTF_8);

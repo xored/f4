@@ -24,6 +24,9 @@ public class JStubGenerator {
 	public static void generateStubs(String podFileName, String outDir,
 			Map allPods) {
 		File podFile = new File(podFileName);
+		if( !podFile.exists()) {
+			return;
+		}
 		File outDirFile = new File(outDir);
 		FStore store;
 		String podName = podFile.getName();

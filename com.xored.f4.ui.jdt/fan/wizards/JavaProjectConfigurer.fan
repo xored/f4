@@ -38,6 +38,11 @@ class JavaProjectConfigurer : IProjectConfigurer {
     
     FantomProject fp := FantomProject.makeFromProject(project)
     fp.javaDirs.each {
+      IFolder fld := project.getFolder(it.toStr)
+      if( !fld.exists())
+      {
+        fld.create(true, true, null)
+      }
       cp.add(JavaCore.newSourceEntry(project.getFullPath.append(Path(it.toStr))))
     }
     

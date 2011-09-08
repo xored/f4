@@ -32,6 +32,7 @@ public class BuildFan {
 	public static final String FILENAME = "build.fan"; //$NON-NLS-1$
 	private static final String POD_NAME = "podName";
 	private static final String SRC_DIRS = "srcDirs";
+	private static final String JAVA_DIRS = "javaDirs";
 	private static final String DEPS = "depends";
 	//private static final String VERSION = "version";
 	//private static final Version defaultVersion = Version.fromStr("0");
@@ -237,7 +238,7 @@ public class BuildFan {
 		}
 	}
 
-	public static String generateContent(String podName, String srcDirs) {
+	public static String generateContent(String podName, String srcDirs, String javaDirs) {
 		List<String> sb = new ArrayList<String>();
 		sb.add("using build");
 		sb.add("class Build : build::BuildPod");
@@ -247,6 +248,9 @@ public class BuildFan {
 		sb.add("    " + POD_NAME + " = \"" + podName + "\"");
 		sb.add("    summary = \"\"");
 		sb.add("    " + SRC_DIRS + " = [" + srcDirs + "]");
+		if( javaDirs != null) {
+			sb.add("    " + JAVA_DIRS + " = [" + javaDirs + "]");
+		}
 		sb.add("    " + DEPS + " = [\"sys 1.0\"]");
 		sb.add("  }");
 		sb.add("}");

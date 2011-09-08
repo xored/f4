@@ -64,7 +64,11 @@ class FanJavaContainer : IClasspathContainer
       }
       if( !fp.javaDirs.isEmpty )
       {
-          cpEntries.add(createLibrary(fp.outDir + `${fp.podName}.pod`,fp.podName))        
+        podFile := fp.outDir + `${fp.podName}.pod`
+//        if( podFile.exists)
+//        {
+          cpEntries.add(createLibrary(podFile,fp.podName))
+//        }
       }
     }
     catch(Err e) {
