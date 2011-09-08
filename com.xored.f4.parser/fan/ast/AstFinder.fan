@@ -23,7 +23,7 @@ class AstFinder : AstVisitor
   
   override Bool enterNode(Node node)
   { 
-    if ((pos+1) >= node.start && (pos-1) <= node.end)
+    if (node.start <= pos && pos <= node.end)
     {
       path.push(node)
       return true

@@ -48,9 +48,9 @@ class ParseUtil : TypeUtil
   
   static Str wordStart(Str content, Int position, Int maxLen := 50)
   {
-    if (position <= 0 || position > content.size) return ""
+    if (position < 0 || position > content.size) return ""
     original := position
-    while (position > 0 &&
+    while (position >= 0 &&
            maxLen > 0 &&
            isWordChar(content[position]))
     {
