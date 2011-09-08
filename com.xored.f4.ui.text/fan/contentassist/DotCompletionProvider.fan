@@ -35,6 +35,8 @@ class DotCompletionProvider : CompletionProvider
     
     if(path.last is CType) return true
     if(path.last is Expr) return true
+    // Skipt completion from using
+    if( path.findLast(UsingDef#) != null) return false
     
     Expr? callExpr := path.findLast(CallExpr#)
     if(callExpr == null) return false

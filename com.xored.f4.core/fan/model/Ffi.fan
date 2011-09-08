@@ -48,10 +48,11 @@ internal const class FfiPod : IFanPod
   private const Str:IFanType types
 }
 
-internal const class FfiType : IFanType, Flag
+internal const class FfiType : IFanType, Flag, IFfiFanType
 {
   new make(Str podName,IType type)
   {
+    typeRef = Unsafe(type)
     pod = podName
     name = type.getTypeQualifiedName
     qname = podName + "::" + name
@@ -137,6 +138,8 @@ internal const class FfiType : IFanType, Flag
   override const Str qname
   override const Str[] inheritance
   private const Int flags
+  const Unsafe typeRef
+  override Obj? foreign() { typeRef.val }
   override Bool isAbstract() { flags.and(Abstract) != 0 }
   override Bool isClass() { flags.and(Mixin.or(Flag.Enum)) == 0 }
   override Bool isConst() { flags.and(Const) != 0 }

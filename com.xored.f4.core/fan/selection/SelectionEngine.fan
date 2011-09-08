@@ -7,6 +7,7 @@
 //
 
 using [java] org.eclipse.dltk.codeassist::ISelectionEngine
+
 using [java] org.eclipse.dltk.codeassist::ISelectionRequestor
 using [java] org.eclipse.dltk.compiler.env::IModuleSource
 using [java] org.eclipse.dltk.core::IModelElement
@@ -22,7 +23,10 @@ using f4model
 **
 class SelectionEngine : ISelectionEngine
 {
-  override Void setRequestor(ISelectionRequestor? requestor) {}
+  ISelectionRequestor? requestor
+  override Void setRequestor(ISelectionRequestor? requestor) {
+    this.requestor = requestor
+  }
 
   override Void setOptions(JMap? map) {}
   
@@ -106,6 +110,14 @@ class SelectionEngine : ISelectionEngine
       if( resultME != null)
       {
         return [resultME]
+      }
+      else if( resolvedType is IFfiFanType)
+      {
+        IFfiFanType ffiType := (IFfiFanType)resolvedType
+        if( ffiType.foreign != null)
+        {
+          requestor.acceptForeignElement(ffiType.foreign)
+        }
       }
       if( resolvedType is RtNullableType)
       {

@@ -29,7 +29,7 @@ class UsingCompletionProvider : CompletionProvider
     if(path.find(TypeDef#) != null) return false
 
     line := ParseUtil.lineStart(src, pos).trim
-    if(!line.startsWith("using")) return false
+    if(!line.startsWith("using") || line.index("[") != null) return false
     
     return true
   }
