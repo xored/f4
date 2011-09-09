@@ -1,8 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="accessibilityStaticMethodFromAnotherClass" version="3.0" id="_B2cFcNkuEeCWXvk8UUBU4Q" description="1. Create class A&#xD;&#xA;2. Create class B with static method &#xD;&#xA;3. Call static merhod from A class&#xD;&#xA;4. Make sure that method is executed" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="accessibilityStaticMethodFromAnotherClass" version="3.0" id="_B2cFcNkuEeCWXvk8UUBU4Q" description="1. Create class A&#xD;&#xA;2. Create class B with static method &#xD;&#xA;3. Call static merhod from A class&#xD;&#xA;4. Make sure that method is executed" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_2spO4NkfEeCWXvk8UUBU4Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassA.fan" | double-click -nowait
+with [get-editor "ClassA.fan" | get-editbox] {
+    set-text-selection -offset 13 -startLine 1 -endLine 1 -endOffset 21
+    key-type DEL
+    set-text-selection -offset 9 -startLine 5 -endLine 5 -endOffset 19
+    key-type DEL
+    key-type "M1+s"
+}
+get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassB.fan" | double-click -nowait
+with [get-editor "ClassB.fan" | get-editbox] {
+    set-text-offset 1 3
+    type-text static
+    key-type "M1+s"
+}
+with [get-editor "ClassA.fan"] {
+    click -nowait
+    with [get-editbox] {
+        type-text "ClassB."
+        show-content-assist
+    }
+}
+with [get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table] {
+    get-property itemCount | equals 4 | verify-true
+    get-item "testMethod\\(\\) : Str - fantest::ClassB" | get-property caption 
+        | equals "testMethod() : Str - fantest::ClassB" | verify-true
+}
+get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table 
+    | select "testMethod\\(\\) : Str - fantest::ClassB" | click -nowait -default
+get-eclipse-window | key-type "M1+s"
+get-view Problems | get-tree | get-property itemCount | equals 0 | verify-true
+get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassA.fan" | get-menu "Run As/1 Fantom Class" 
+    | click
+get-view Console | get-editbox | get-property value | contains "Hello world and bye" | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
