@@ -91,7 +91,15 @@ class ParseUtil : TypeUtil
   ** 
   static FuncType parseFuncType(Str funcType)
   {
-    Parser(funcType, EmptyNamespace()).funcType(false)
+    try
+    {
+      return Parser(funcType, EmptyNamespace()).funcType(false)
+    }
+    catch(Err e)
+    {
+      e.trace
+      return Parser("|Void->Void|", EmptyNamespace()).funcType(false)      
+    }
   }
   
   **

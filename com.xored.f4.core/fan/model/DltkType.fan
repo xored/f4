@@ -107,7 +107,20 @@ internal const class DltkType : IFanType, Flags
   Str evaluateType(Str type)
   {
     splitted := ParseUtil.splitByQnames(type)
-    replaced := splitted.map { parametrization[it]?.genericQname ?: it }
+    replaced := splitted.map |Str val-> Str | {
+      val2 := parametrization[val]?.genericQname
+      if( val2 == null)
+        val2 = val
+      if( val2 != null && val2.trim.startsWith("[java]"))
+      {
+        val2 = val2[6..-1]
+      }
+      if( val2 != null && val2.trim.index("::") != null)
+      {
+        val2 = val2[val2.trim.index("::")+2..-1]
+      }
+      return val2
+    }
     return replaced.join
   }
  

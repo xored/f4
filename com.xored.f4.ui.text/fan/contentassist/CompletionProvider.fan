@@ -142,6 +142,10 @@ abstract class CompletionProvider
       {
         proposal := createProposal(ProposeKind.method, methodName, method.me)
         proposal.setIsConstructor(method.isCtor)
+        if( method is IFfiForeigh)
+        {
+          proposal.setForeign(((IFfiForeigh)method).foreign)
+        }
         proposal.setParameterNames(relatedParams.map{ it.name } as Str[])
         proposal.setExtraInfo(FanMethodCompletionProposalExtraInfo(method, relatedParams))
         reporter.report(proposal)
