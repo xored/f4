@@ -111,9 +111,9 @@ class SelectionEngine : ISelectionEngine
       {
         return [resultME]
       }
-      else if( resolvedType is IFfiFanType)
+      else if( resolvedType is IFfiForeigh)
       {
-        IFfiFanType ffiType := (IFfiFanType)resolvedType
+        IFfiForeigh ffiType := (IFfiForeigh)resolvedType
         if( ffiType.foreign != null)
         {
           requestor.acceptForeignElement(ffiType.foreign)
@@ -140,7 +140,25 @@ class SelectionEngine : ISelectionEngine
     return me == null ? [,] : [me] 
   }
   
-  private IModelElement[] selectSlotRef(SlotRef ref) { [ref.modelSlot.me] }
+  private IModelElement[] selectSlotRef(SlotRef ref)
+  {
+    if( ref.modelSlot != null)
+    {
+      if( ref.modelSlot.me != null)
+      {
+        return [ref.modelSlot.me]
+      }
+      if( ref.modelSlot is IFfiForeigh)
+      {
+        IFfiForeigh refFor := (IFfiForeigh)ref.modelSlot 
+        if( refFor.foreign != null)
+        {
+          requestor.acceptForeignElement(refFor.foreign)
+        }
+      }
+    }
+    return [,]
+  }
   
   private IModelElement[] selectSlotDef(AstPath path)
   {

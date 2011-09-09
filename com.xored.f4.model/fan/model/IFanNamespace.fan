@@ -36,9 +36,29 @@ mixin IFanNamespace
   {
     if(name.endsWith("[]"))
     {
-      valueTypename := name[0..-3]
-      valueType := findType(valueTypename)
-      return findType("sys::List")?.parameterize(["sys::V" : valueType])
+      bracesCount := 0
+      isMap := false
+      for (i := 0; i < name.size; i++)
+      {
+        if( isMap ) break
+        switch (name[i])
+        {
+          case '[': bracesCount++
+          case ']': bracesCount--
+          case ':':
+            if( bracesCount == 0)
+            {
+              // This is map because there is : not in brackets
+              isMap = true
+            }
+        }
+      }
+      if( !isMap)
+      {
+        valueTypename := name[0..-3]
+        valueType := findType(valueTypename)
+        return findType("sys::List")?.parameterize(["sys::V" : valueType])
+      }
     }
     if(TypeUtil.isMapType(name))
     {

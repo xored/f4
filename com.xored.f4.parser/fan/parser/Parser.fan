@@ -1710,7 +1710,27 @@ class Parser : AstFactory
           if (slot != null)
           {
             id := slot.isField ? ExprId.fieldRef : ExprId.methodRef
-            expr = SlotRef(s.start, s.end, name, id, slot, ns.findType(slot.of), slotThisType)
+            resolvedType := ns.findType(slot.of)
+            if(resolvedType == null)
+            {
+              // check usings for type name
+              typeName := slot.of
+              resolvedType = usings.eachWhile |UsingDef udef->IFanType?|
+              {
+                if (udef.typeName == null)
+                  return udef.podName.modelPod?.findType(typeName,false)
+                else if (typeName == udef.typeName.text)
+                  return udef.typeName.resolvedType
+                else if( typeName == udef.asTypeName?.text)
+                  return udef.typeName.resolvedType
+                return null;
+              }
+              if (resolvedType == null)
+                resolvedType = currPod.findType(typeName,false)
+              if (resolvedType == null)
+                resolvedType = ns.findPod("sys")?.findType(typeName,false)
+            }
+            expr = SlotRef(s.start, s.end, name, id, slot, resolvedType, slotThisType)
           }
         }
       }

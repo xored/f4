@@ -29,7 +29,7 @@ class DotCompletionProvider : CompletionProvider
     
     //TODO: improve, looks too similar to magic now
     esize := ending.size
-    nodePos := pos - esize //+ (prefix.isEmpty ? 1 : 0)
+    nodePos := pos - esize + 1 //+ (prefix.isEmpty ? 1 : 0)
     path = AstFinder.find(unit, nodePos)
     if( path.last is Literal && ((Literal)path.last).id == ExprId.strLiteral &&  path.last.end > pos) return false
     

@@ -58,13 +58,16 @@ class FanSourceElementRequestVisitor : StructureVisitor
     requestor.exitModule(end)
   }
   
-  override Void visitUsing(Int start, Int end, Str name)
+  override Void visitUsing(Int start, Int end, Str name, Str? asName)
   {
     info := ImportInfo()
     info.sourceStart = start
     info.sourceEnd = end
-    info.name = name
     info.containerName = ""
+    if( asName != null)
+      info.name = name + " as " + asName
+    else
+      info.name = name
     info.version = ""
     requestor.acceptImport(info)
   }

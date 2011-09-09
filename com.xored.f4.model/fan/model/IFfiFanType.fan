@@ -1,5 +1,5 @@
 
-mixin IFfiFanType
+mixin IFfiForeigh
 {
   abstract Obj? foreign()
 }

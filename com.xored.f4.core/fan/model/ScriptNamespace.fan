@@ -59,7 +59,7 @@ internal class CreationVisitor : StructureVisitor
   {
     this.podName = podName
   }
-  override Void visitUsing(Int start, Int end, Str name)
+  override Void visitUsing(Int start, Int end, Str name, Str? asName)
   {
     usings.add(name)
   }

@@ -30,7 +30,11 @@ public class JDTOpenDelegate implements IOpenDelegate {
 	public IEditorPart openInEditor(Object object, boolean activate)
 			throws PartInitException, CoreException {
 		if (object instanceof IJavaElement) {
-			return EditorUtility.openInEditor(object,activate);
+			IEditorPart editor = EditorUtility.openInEditor(object,activate);
+			if( editor != null) {
+				EditorUtility.revealInEditor(editor, (IJavaElement)object);
+			}
+			return editor;
 		}
 		return null;
 	}

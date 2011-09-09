@@ -48,7 +48,7 @@ internal const class FfiPod : IFanPod
   private const Str:IFanType types
 }
 
-internal const class FfiType : IFanType, Flag, IFfiFanType
+internal const class FfiType : IFanType, Flag, IFfiForeigh
 {
   new make(Str podName,IType type)
   {
@@ -158,7 +158,7 @@ internal const class FfiType : IFanType, Flag, IFfiFanType
   override protected const Str:IFanSlot slotsMap
 }
 
-internal abstract const class FfiSlot : IFanSlot, Flag
+internal abstract const class FfiSlot : IFanSlot, Flag, IFfiForeigh
 {
   new make(IFanType container, IMember member)
   {
@@ -187,6 +187,7 @@ internal abstract const class FfiSlot : IFanSlot, Flag
     javaFlags := member.getFlags
     return JavaFlags.isPrivate(javaFlags)
   }
+  override Obj? foreign() { member.val }
   override const Str parent
   override const IFanType type
   override const Str name

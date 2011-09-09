@@ -14,7 +14,7 @@ mixin StructureVisitor
   virtual Void visitType(Int start, Int flags, TokenVal name, Str[] superTypes) {}
   virtual Void endVisitType(Int end) {}
   
-  virtual Void visitUsing(Int start, Int end, Str name) {}
+  virtual Void visitUsing(Int start, Int end, Str name, Str? asName) {}
   
   virtual Void visitField(Int start, Int flags, Str? type, TokenVal name) {}
   virtual Void endVisitField(Int end) {}

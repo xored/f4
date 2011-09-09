@@ -257,12 +257,18 @@ class StructureParser
       end = prev.end     
     }
       // using [ffi] pod::type as rename
-      if (curt === Token.asKeyword)
-      {
-        consume
-        consume
-      }    
-    visitor?.visitUsing(start, prev.end, script[nameStart..end] )
+    Bool haveAs := false
+    asStart := 0
+    asEnd := 0
+    if (curt === Token.asKeyword)
+    {
+      consume
+      asStart = cur.start
+      asEnd = cur.end
+      consume
+      haveAs = true
+    }
+    visitor?.visitUsing(start, prev.end, script[nameStart..end], haveAs?script[asStart..asEnd]:null )
     endOfStmt
   }
 
