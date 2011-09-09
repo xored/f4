@@ -429,7 +429,7 @@ class Parser : AstFactory
       default: throw err(curLoc, ProblemKind.parser_expectedThisOrSuperInCtorChain)
     }
     if (matchAndConsume(Token.dot)) s["ctor"] = baseCtorRef
-    if (!nl && matchAndConsume(Token.lparen))
+    if (/*!nl &&*/ matchAndConsume(Token.lparen))
     {
       if (!match(Token.rparen))
       {
