@@ -4,7 +4,17 @@
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_1ljj0NRlEeCKlPPbNL0FHw</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
-    <content><![CDATA[get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
+    <content><![CDATA[get-view "Fantom Explorer" | get-menu "Customize View..." | click
+with [get-window "Available Customizations"] {
+    get-tab-folder | get-tab-item Filters | click
+    with [get-table] {
+        get-item ".\\* resources" | check
+        select ".\\* resources"
+    }
+    get-button OK | click
+}
+
+get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
 with [get-window "Create Fantom project"] {
     get-editbox -after [get-label "Project name:"] | set-text test
     get-button Finish | click

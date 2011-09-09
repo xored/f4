@@ -4,7 +4,17 @@
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_1ljj0NRlEeCKlPPbNL0FHw</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
-    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/build.fan" | get-menu "Rename..." | click
+    <content><![CDATA[get-view "Fantom Explorer" | get-menu "Customize View..." | click
+with [get-window "Available Customizations"] {
+    get-tab-folder | get-tab-item Filters | click
+    with [get-table] {
+        get-item ".\\* resources" | check
+        select ".\\* resources"
+    }
+    get-button OK | click
+}
+
+get-view "Fantom Explorer" | get-tree | select "fantest/build.fan" | get-menu "Rename..." | click
 with [get-window "Rename Resource"] {
     get-editbox -after [get-label "New name:"] | set-text "build_test.fan"
     get-button OK | click
