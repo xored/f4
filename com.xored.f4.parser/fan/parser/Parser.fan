@@ -49,7 +49,7 @@ class Parser : AstFactory
     numTokens = tokens.size
     reset(0)
     this.currPod = ns.currPod
-    this.ns = ns
+    this.ns = UsingResolverNS(ns, this)
     this.fName = fName
     this.collector = collector
   }
@@ -1048,7 +1048,10 @@ class Parser : AstFactory
       method := left.resolvedType.method(methodName, false)
       if (method == null)
         err(locOf(op), ProblemKind.parser_methodNotFound, [left.resolvedType.name + "." + methodName])
-      else rt = ns.findType(method.of)
+      else 
+      { 
+        rt = ns.findType(method.of)
+      }
     }
     if (right == null) return UnaryExpr(start, end, left, id, rt)
     return BinaryExpr(start, end, left, right, id, rt)
@@ -1249,7 +1252,8 @@ class Parser : AstFactory
       if (slot != null)
       {
         id := slot.isField ? ExprId.fieldRef : ExprId.methodRef
-        ref = SlotRef(ss.start, ss.end, name, id, slot, ns.findType(slot.of), resolvedType)
+        rt := ns.findType(slot.of)
+        ref = SlotRef(ss.start, ss.end, name, id, slot, rt, resolvedType)
       }
     }
     endRule(s)
@@ -1349,7 +1353,8 @@ class Parser : AstFactory
   {
     withSlot := resolveWithSlot
     if (withSlot == null) { return null }
-    withRef := SlotRef(callee.start, callee.start, "with", ExprId.methodRef, withSlot, ns.findType(withSlot.of), caller.resolvedType)
+    resolvedType := ns.findType(withSlot.of)
+    withRef := SlotRef(callee.start, callee.start, "with", ExprId.methodRef, withSlot, resolvedType, caller.resolvedType)
     return CallExpr(callee.start, callee.end, withRef, [callee])
   }
 
@@ -1711,25 +1716,6 @@ class Parser : AstFactory
           {
             id := slot.isField ? ExprId.fieldRef : ExprId.methodRef
             resolvedType := ns.findType(slot.of)
-            if(resolvedType == null)
-            {
-              // check usings for type name
-              typeName := slot.of
-              resolvedType = usings.eachWhile |UsingDef udef->IFanType?|
-              {
-                if (udef.typeName == null)
-                  return udef.podName.modelPod?.findType(typeName,false)
-                else if (typeName == udef.typeName.text)
-                  return udef.typeName.resolvedType
-                else if( typeName == udef.asTypeName?.text)
-                  return udef.typeName.resolvedType
-                return null;
-              }
-              if (resolvedType == null)
-                resolvedType = currPod.findType(typeName,false)
-              if (resolvedType == null)
-                resolvedType = ns.findPod("sys")?.findType(typeName,false)
-            }
             expr = SlotRef(s.start, s.end, name, id, slot, resolvedType, slotThisType)
           }
         }
@@ -1743,7 +1729,8 @@ class Parser : AstFactory
           if (slot != null)
           {
             id := slot.isField ? ExprId.fieldRef : ExprId.methodRef
-            expr = SlotRef(s.start, s.end, name, id, slot, ns.findType(slot.of), prev?.resolvedType)
+            resolvedType := ns.findType(slot.of)
+            expr = SlotRef(s.start, s.end, name, id, slot, resolvedType, prev?.resolvedType)
           }
         }
       }
@@ -1755,6 +1742,25 @@ class Parser : AstFactory
     }
     else throw err(curLoc, ProblemKind.parser_expectedId)
     return expr
+  }
+  IFanType? resolveTypeByName(Str typeName)
+  {
+    // check usings for type name
+    resolvedType := usings.eachWhile |UsingDef udef->IFanType?|
+    {
+      if (udef.typeName == null)
+        return udef.podName.modelPod?.findType(typeName,false)
+      else if (typeName == udef.typeName.text)
+        return udef.typeName.resolvedType
+      else if( typeName == udef.asTypeName?.text)
+        return udef.typeName.resolvedType
+      return null;
+    }
+    if (resolvedType == null)
+      resolvedType = currPod.findType(typeName,false)
+    if (resolvedType == null)
+      resolvedType = ns.findPod("sys")?.findType(typeName,false)
+    return resolvedType
   }
   
   Bool isComplexLit()
@@ -2386,4 +2392,30 @@ class Parser : AstFactory
     return this
   }
 
+}
+internal class UsingResolverNS:IFanNamespace
+{
+  private IFanNamespace ns
+  private Parser parser
+  new make(IFanNamespace ns, Parser parser)
+  {
+    this.ns = ns
+    this.parser = parser
+  }
+  override IFanPod currPod()
+  {
+    return ns.currPod
+  }
+  override Str[] podNames()
+  {
+    return ns.podNames
+  }
+  override IFanPod? findPod(Str name)
+  {
+    return ns.findPod(name)
+  }
+  override IFanType? tryResolve(Str name)
+  {
+    return parser.resolveTypeByName(name)
+  }
 }

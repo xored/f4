@@ -1,9 +1,9 @@
-mixin IFanNamespace
+abstract class IFanNamespace
 { 
   abstract IFanPod currPod()
   abstract Str[] podNames()
   abstract IFanPod? findPod(Str name)
-  IFanType? findType(Str name) 
+  virtual IFanType? findType(Str name) 
   { 
     if(name.isEmpty) return null
     if(name[-1] == '?') name = name[0..-2]
@@ -24,11 +24,17 @@ mixin IFanNamespace
     result = pods.eachWhile { findPod(it)?.findType(name, false) }
     if(result == null)
     {
+      result = tryResolve(name)
       //typeof.pod.log.warn("Unresolved type $name")
     }
+    
+    
     return result
   } 
-  
+  virtual IFanType? tryResolve(Str name)
+  {
+    return null
+  }
   **
   ** Returns List or Map if applicable
   ** 
