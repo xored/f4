@@ -49,10 +49,10 @@ class SelectionEngine : ISelectionEngine
       {
         return selectListType(node->ctype, start, end, src)
       }
-      return selectType(node->ctype)
+      return selectType(node->ctype, start, end)
     }
     else if (node is TypeDef) return selectTypeDef(node)
-    else if (node is CType) return selectType(node)
+    else if (node is CType) return selectType(node, start, end)
     else if (node is SlotRef) return selectSlotRef(node)
     else if (node is SlotDef) return selectSlotDef(path)
     else if (node is MethodVarRef) return selectMethodVarRef(node)
@@ -90,19 +90,30 @@ class SelectionEngine : ISelectionEngine
             if( param.ctype is ListType)
               result.addAll(selectListType(param.ctype, start, end, src))
             else
-              result.addAll(selectType(param.ctype))
+              result.addAll(selectType(param.ctype, start, end))
           }
         }
         if( result.size > 0) return result
       }
       // Select list type instead
-      return selectType(type.valType)
+      return selectType(type.valType, start, end)
     }
-    return selectType(type)
+    return selectType(type, start, end)
   }
   
-  private IModelElement[] selectType(CType? type)
+  private IModelElement[] selectType(CType? type, Int start, Int end)
   {
+    if( type is NullableType && ((NullableType)type).valType is ListType)
+    {
+      if( src[start]=='?')
+      {
+        me := type?.resolvedType?.me
+        //TODO: Try to search
+        return me == null ? [,] : [me] 
+      }
+      vt := ((NullableType)type).valType as ListType
+      return selectListType(vt, start, end, src)
+    }
     if( type != null && type.resolvedType != null)
     {
       resolvedType := type.resolvedType
@@ -125,7 +136,16 @@ class SelectionEngine : ISelectionEngine
         IFanType fanType := nullType.type
         if( fanType is DltkType)
         {
-          if( fanType.me != null) return [fanType.me]
+          if( fanType.me != null)
+            return [fanType.me]
+        }
+        if( fanType is IFfiForeigh)
+        {
+          IFfiForeigh ffiType := (IFfiForeigh)fanType
+          if( ffiType.foreign != null)
+          {
+            requestor.acceptForeignElement(ffiType.foreign)
+          }
         }
       }
     }

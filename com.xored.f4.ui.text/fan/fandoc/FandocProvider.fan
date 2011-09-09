@@ -9,6 +9,8 @@
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui.documentation
 using [java] com.xored.f4.ui.text
+using [java] org.eclipse.jdt.core::IJavaElement
+using [java] org.eclipse.jdt.core::IMember as JavaMember
 
 using f4core
 using f4parser
@@ -17,7 +19,7 @@ using fandoc
 **
 **
 **
-class FandocProvider : ScriptDocumentationProviderBridge
+class FandocProvider : ScriptDocumentationProviderBridge, IScriptDocumentationProviderExtension2
 {
   override Str? getStrInfo(Str? content) { "" }
   
@@ -27,6 +29,22 @@ class FandocProvider : ScriptDocumentationProviderBridge
     defNode := elem is IType ? type(elem) : slot(elem)
     if(defNode == null) return ""
     return compile(result(src, defNode)) 
+  }
+  override IDocumentationResponse? getDocumentationFor(Obj? element)
+  {
+    if( element is JavaMember )
+    {
+      Str? doc := JDTJavaDocBridge.getJavaDoc((IJavaElement)element);
+      if( doc != null)
+      {
+        return TextDocumentationResponse(element, doc)
+      }
+    }
+    else if( element is IMember)
+    {
+      return TextDocumentationResponse(element, getMemberInfo((IMember)element, true, true))
+    }
+    return null
   }
     
   protected CUnit unit(IMember member)
