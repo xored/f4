@@ -1,8 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ffiCompletion" version="3.0" id="_SNy_QdUZEeCEhrVGhzKArw" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="ffiCompletion" version="3.0" id="_SNy_QdUZEeCEhrVGhzKArw" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan" | get-menu "New/Fantom Class" | click
+with [get-window "New Fantom Class"] {
+    get-editbox -after [get-label "Name:"] | set-text usingFFI
+    get-button Finish | click
+}
+with [get-editor "usingFFI.fan" | get-editbox] {
+    type-text u
+    key-type "Ctrl+SPACE"
+    type-text "sing []"
+    key-type "ARROW_LEFT"
+    type-text java
+    key-type "ARROW_RIGHT"
+    type-text "java."
+    show-content-assist
+    type-text "util::ArrayList"
+    key-type "ARROW_DOWN"
+    key-type "ARROW_DOWN"
+    key-type CR
+    type-text "Void main()"
+    key-type CR
+    type-text "{"
+    key-type CR
+    type-text A
+    key-type "Ctrl+SPACE"
+    type-text " al := "
+    key-type "Ctrl+SPACE"
+    type-text A
+    key-type "ARROW_DOWN"
+    key-type CR
+    key-type "Ctrl+SPACE"
+    key-type BS
+    key-type "ARROW_RIGHT"
+    key-type CR
+    type-text "al."
+    show-content-assist
+    type-text a
+    key-type "ARROW_DOWN"
+    key-type "ARROW_UP"
+    key-type CR
+    set-text-offset 25 6
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    key-type BS
+    type-text "\"qwe"
+    key-type "M1+s"
+}
+get-editor "usingFFI.fan" | get-editbox | get-property rawValue | equals "using [java]java.util::ArrayList\\n"
+    + "class usingFFI\\n"
+    + "{\\n"
+    + "  Void main()\\n"
+    + "  {\\n"
+    + "    ArrayList al := ArrayList()\\n"
+    + "    al.add(\"qwe\")\\n"
+    + "  }\\n"
+    + "}\\n" | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>

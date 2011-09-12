@@ -1,8 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="classCompletion" version="3.0" id="_MZczYNRbEeCKlPPbNL0FHw" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="classCompletion" version="3.0" id="_MZczYNRbEeCKlPPbNL0FHw" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan" | get-menu "New/Empty Fantom Script" | click
+with [get-window "New Fantom Script"] {
+    get-combo -after [get-label Template] | set-text "<None>"
+    get-editbox -after [get-label "Name:"] | set-text test
+    get-button Finish | click
+}
+with [get-editor "test.fan" | get-editbox] {
+    type-text "class test"
+    key-type CR
+    type-text "{"
+    key-type CR
+    type-text "Void test()"
+    key-type CR
+    type-text "{"
+    key-type CR
+    type-text A
+    key-type "Ctrl+SPACE"
+    key-type CR
+    type-text " a := "
+    key-type "Ctrl+SPACE"
+    type-text A
+    key-type CR
+    key-type "Ctrl+SPACE"
+    key-type CR
+    type-text "()"
+    key-type CR
+    type-text "a."
+    show-content-assist
+    key-type CR
+    key-type CR
+    type-text "a."
+    show-content-assist
+    type-text be
+    key-type CR
+    key-type CR
+    type-text "// check for inheritance completion"
+    key-type CR
+    type-text Re
+    key-type "Ctrl+SPACE"
+    key-type "ARROW_DOWN"
+    key-type CR
+    type-text " rb := "
+    key-type "Ctrl+SPACE"
+    type-text Re
+    key-type "ARROW_DOWN"
+    key-type CR
+    key-type "Ctrl+SPACE"
+    key-type CR
+    key-type CR
+    type-text "rb."
+    show-content-assist
+    type-text me
+    key-type CR
+    key-type CR
+    type-text "rb."
+    show-content-assist
+    type-text me
+    key-type BS
+    key-type BS
+    type-text my
+    key-type "Ctrl+SPACE"
+    key-type BS
+    key-type BS
+    type-text ism
+    key-type CR
+}
+get-editor "test.fan" | get-editbox | get-property rawValue | equals "class test\\n"
+    + "{\\n"
+    + "  Void test()\\n"
+    + "  {\\n"
+    + "    A a := A()\\n"
+    + "    a.alfa\\n"
+    + "    a.beta\\n"
+    + "    // check for inheritance completion\\n"
+    + "    RectangleBase rb := RectangleBase\\n"
+    + "    rb.method1\\n"
+    + "    rb.isMyMethod\\n"
+    + "  }\\n"
+    + "}" | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
@@ -339,7 +420,7 @@
         <backgroundColor red="255" green="255" blue="255"/>
         <foregroundColor red="26" green="26" blue="26"/>
         <bounds x="99" y="72" width="457" height="27"/>
-        <values><![CDATA[<None>]]></values>
+        <values>&lt;None></values>
         <values>Fantom Script</values>
       </controls>
     </elementMapping>

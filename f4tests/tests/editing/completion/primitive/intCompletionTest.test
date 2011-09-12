@@ -1,8 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="intCompletionTest" version="3.0" id="_mFHgUNRbEeCKlPPbNL0FHw" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="intCompletionTest" version="3.0" id="_mFHgUNRbEeCKlPPbNL0FHw" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan/A.fan" | double-click -nowait
+with [get-editor "A.fan" | get-editbox] {
+    set-text-offset 3 11
+    key-type CR
+    type-text "20."
+    show-content-assist
+    type-text div
+    key-type CR
+    type-text 2
+    key-type "ARROW_RIGHT"
+    set-text-offset 4 12
+    type-text "c:= "
+    set-text-offset 16 12
+    key-type "ARROW_RIGHT"
+    key-type CR
+    type-text "d:= c."
+    show-content-assist
+    type-text div
+    key-type CR
+    type-text 2
+    key-type "ARROW_RIGHT"
+    key-type CR
+    type-text "e := in"
+    key-type "Ctrl+SPACE"
+    type-text "."
+    show-content-assist
+    type-text di
+    key-type CR
+    type-text 2
+}
+get-editor "A.fan" | get-editbox | get-property rawValue | equals "\\n"
+    + "class A\\n"
+    + "{\\n"
+    + "  public Int alfa := 20\\n"
+    + "  public Str beta := \"String value\"\\n"
+    + "  \\n"
+    + "  public Int intMethod()\\n"
+    + "  {\\n"
+    + "    return this.alfa + 20\\n"
+    + "  }\\n"
+    + "  public Str strMethod()\\n"
+    + "  {\\n"
+    + "    c:= 20.div(2)\\n"
+    + "    d:= c.div(2)\\n"
+    + "    e := intMethod.div(2)\\n"
+    + "    return beta + \" Postfix\"\\n"
+    + "  }\\n"
+    + "}\\n" | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>

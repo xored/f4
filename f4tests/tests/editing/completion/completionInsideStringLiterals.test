@@ -1,8 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="completionInsideStringLiterals" version="3.0" id="_D4eZENq3EeCxzq4gq9uuPw" description="Completion is available after $ and inside ${}&#xD;&#xA;" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-8">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="completionInsideStringLiterals" version="3.0" id="_D4eZENq3EeCxzq4gq9uuPw" description="Completion is available after $ and inside ${}&#xD;&#xA;" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-8">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_2spO4NkfEeCWXvk8UUBU4Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassA.fan" | double-click -nowait
+with [get-editor "ClassA.fan" | get-editbox] {
+    set-text-offset 30 6
+    key-type CR
+    type-text "echo()"
+    key-type "ARROW_LEFT"
+    type-text "\"Value $"
+    key-type "Ctrl+SPACE"
+}
+with [get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table] {
+    get-property className | equals "org.eclipse.swt.widgets.Table" | verify-true
+    get-item "a: Str" | get-property caption | equals "a: Str" | verify-true
+    get-item "a: Str" | get-property index | equals 0 | verify-true
+}
+get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "a: Str" | click -nowait 
+    -default
+with [get-editor "ClassA.fan" | get-editbox] {
+    set-text-offset 20 7
+    key-type CR
+    key-type CR
+    type-text "Str testline := \"testing completion"
+    key-type "ARROW_RIGHT"
+    key-type CR
+    type-text "${}"
+    key-type "ARROW_LEFT"
+    key-type "Ctrl+SPACE"
+}
+with [get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table] {
+    get-property className | equals "org.eclipse.swt.widgets.Table" | verify-true
+    get-item "a: Str" | get-property caption | equals "a: Str" | verify-true
+    get-item "a: Str" | get-property index | equals 0 | verify-true
+    get-item "testline: Str" | get-property caption | equals "testline: Str" | verify-true
+    get-item "testline: Str" | get-property index | equals 1 | verify-true
+}
+with [get-editor "ClassA.fan" | get-editbox] {
+    set-text-offset 6 10
+    type-text te
+    key-type "Ctrl+SPACE"
+}
+get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "testline: Str" | click 
+    -nowait -default
+get-editor "ClassA.fan" | get-editbox | get-property value 
+    | equals "class ClassA : ClassB{   Void main()  {     a := testMethod    echo(\"Hello world and $a\")    echo(\"Value $a\")        Str testline := \"testing completion\"    ${testline}  } }" 
+    | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
