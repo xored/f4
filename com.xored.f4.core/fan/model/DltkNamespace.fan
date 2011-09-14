@@ -18,10 +18,13 @@ internal class DltkNamespace : IFanNamespace
   private Str:Fragment[] fragmentsByPod := [:]
   private Str:IFanPod pods := [:]
   private const Str currPodName
-  new make(FantomProject project)
+  new make(FantomProject project, Str? podName := null)
   {
     this.project = project.scriptProject
-    this.currPodName = project.podName
+    if( podName == null)
+      this.currPodName = project.podName
+    else
+      this.currPodName = podName
     groupFragments
     this.podNames = fragmentsByPod.keys
   }

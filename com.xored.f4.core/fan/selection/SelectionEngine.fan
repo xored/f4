@@ -15,6 +15,8 @@ using [java] org.eclipse.dltk.core::ISourceModule
 using [java] org.eclipse.dltk.core::SourceParserUtil
 using [java] org.eclipse.dltk.core.model::LocalVariable
 using [java] java.util::Map as JMap
+using "[java]com.xored.fanide.internal.core.model"::PodFragment
+using [java]org.eclipse.core.runtime::IPath
 
 using f4parser
 using f4model
@@ -34,7 +36,9 @@ class SelectionEngine : ISelectionEngine
   { 
     DltkAst ast := SourceParserUtil.parse(module as ISourceModule, null)
     src = module.getSourceContents
-    ns = FantomProjectManager.instance[module.getModelElement.getScriptProject.getProject].ns
+    fp := FantomProjectManager.instance[module.getModelElement.getScriptProject.getProject]
+    ns = ParseUtil.ns((ISourceModule)module.getModelElement)
+    
     unit = ast.unit
     path := AstFinder.find(unit, start)
     node := path.last

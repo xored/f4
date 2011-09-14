@@ -7,6 +7,8 @@
 //
 
 using [java] org.eclipse.dltk.core
+using "[java]com.xored.fanide.internal.core.model"::PodFragment
+using [java]org.eclipse.core.runtime::IPath
 
 using f4parser
 using f4model
@@ -42,6 +44,17 @@ class ParseUtil : TypeUtil
   {
     sp := module.getScriptProject
     fp := FantomProjectManager.instance[sp.getProject]
+    if( module.isBinary)
+      {
+      fragment := module.getAncestor(IModelElement.PROJECT_FRAGMENT)
+      if(fragment is  PodFragment)
+      {
+        PodFragment fg := (PodFragment)fragment
+        podFileName := fg.getPath.lastSegment
+        podName := podFileName[0..podFileName.indexr(".")-1]
+        return DltkNamespace(fp, podName)
+      }
+    }
     IFanNamespace? ns
     return module.getResource == null || sp.isOnBuildpath(module.getResource) ? fp.ns : ScriptNamespace(fp, module.getSource)
   }
