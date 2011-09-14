@@ -21,13 +21,15 @@ class ProblemReporter : ProblemCollector
   
   Void flush()
   {
-    problems.toArray.each |IProblem p|
-    {
-      marker := resource.createMarker(F4Consts.buildProblem)
-      marker.setAttribute(IMarker.LINE_NUMBER, Integer(p.getSourceLineNumber))
-      marker.setAttribute(IMarker.MESSAGE, p.getMessage)
-      marker.setAttribute(IMarker.LOCATION, resource.getFullPath.toString)
-      marker.setAttribute(IMarker.SEVERITY, p.isWarning? IMarker.SEVERITY_WARNING: IMarker.SEVERITY_ERROR)
+    if( resource.isAccessible) {
+      problems.toArray.each |IProblem p|
+      {
+        marker := resource.createMarker(F4Consts.buildProblem)
+        marker.setAttribute(IMarker.LINE_NUMBER, Integer(p.getSourceLineNumber))
+        marker.setAttribute(IMarker.MESSAGE, p.getMessage)
+        marker.setAttribute(IMarker.LOCATION, resource.getFullPath.toString)
+        marker.setAttribute(IMarker.SEVERITY, p.isWarning? IMarker.SEVERITY_WARNING: IMarker.SEVERITY_ERROR)
+      }
     }
     problems.clear
   }

@@ -89,7 +89,10 @@ class CompileFan : IScriptBuilder
 
   override Void endBuild(IScriptProject? project, IBuildState? state, IProgressMonitor? monitor) 
   {
-    reporters.vals.each { it.flush }
+    reporters.vals.each {
+      
+      it.flush
+    }
     reporters.clear
     building = false
   }
