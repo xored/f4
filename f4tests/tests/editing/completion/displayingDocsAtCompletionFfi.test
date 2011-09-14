@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="displayingDocsAtCompletionFfi" version="3.0" id="__AKz8N60EeCb36lRJMHQOw" description="1. Select element in the code and press F2&#xD;&#xA;2. Make sure that doc is displayed&#xD;&#xA;3. Input element, make sure that completion is displayed, that doc is displayed too" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-54">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="displayingDocsAtCompletionFfi" version="3.0" id="__AKz8N60EeCb36lRJMHQOw" description="1. Select element in the code and press F2&#xD;&#xA;2. Make sure that doc is displayed&#xD;&#xA;3. Input element, make sure that completion is displayed, that doc is displayed too" tags="skipExecution" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-54">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
@@ -29,6 +29,7 @@ with [get-editor "usingFFI.fan" | get-editbox] {
     show-content-assist
     type-text ad
 }
+/*
 with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
     with [get-table] {
         get-property className | equals "org.eclipse.swt.widgets.Table" | verify-true
@@ -42,12 +43,12 @@ with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
         get-property className | equals "org.eclipse.swt.browser.Browser" | verify-true
         get-property enablement | equals true | verify-true
         get-property text | equals "<HTML><HEAD>\\n"
-            + "<STYLE type=text/css CHARSET=\"ISO-8859-1\">/* Font definitions */\\n"
-            + "html         { font-family: \'Segoe UI\',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\\n"
+            + "<STYLE type=text/css CHARSET=\"ISO-8859-1\">/* Font definitions */\\n "
+/*            + "html         { font-family: \'Segoe UI\',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\\n"
             + "body, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\\n"
             + "pre\t\t\t\t{ font-family: monospace; }\\n\\n"
-            + "/* Margins */\\n"
-            + "body\t     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\\n"
+            + "/* Margins */ /*\\n "
+/*            + "body\t     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\\n"
             + "h1           { margin-top: 0.3em; margin-bottom: 0.04em; }\t\\n"
             + "h2           { margin-top: 2em; margin-bottom: 0.25em; }\\n"
             + "h3           { margin-top: 1.7em; margin-bottom: 0.25em; }\\n"
@@ -62,7 +63,7 @@ with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
             + "dl\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
             + "dt\t         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\\n"
             + "dd\t         { margin-top: 0px; margin-bottom: 0px; }\\n\\n"
-            + "/* Styles and colors */\\n"
+            + "/* Styles and colors */ //\\n"
             + "a:link\t     { color: #0000FF; }\\n"
             + "a:hover\t     { color: #000080; }\\n"
             + "a:visited    { text-decoration: underline; }\\n"
@@ -97,6 +98,7 @@ with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
         get-property uri | equals "about:blank" | verify-true
     }
 }
+*/
 get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table 
     | select "add\\(Int index, \\[java\\]::E? element\\) : Void - ArrayList" | click -nowait -default
 with [get-editor "usingFFI.fan" | get-editbox] {

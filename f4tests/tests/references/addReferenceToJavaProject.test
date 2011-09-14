@@ -19,17 +19,21 @@ with [get-window "Properties for fantest" | get-tree -after [get-label "Required
     get-item javatest | get-property caption | equals javatest | verify-true
 }
 get-window "Properties for fantest" | get-button OK | click
-get-button "Open Perspective" | click
-get-menu "Other..." | click
-with [get-window "Open Perspective"] {
-    get-table | select Java
+get-menu "Window/Show View/Other..." | click
+with [get-window "Show View"] {
+    get-tree | select "General/Project Explorer"
     get-button OK | click
 }
-get-view "Package Explorer" | get-tree | select "fantest/.classpath" | double-click -nowait
+get-view "Project Explorer" | get-menu "Customize View..." | click
+with [get-window "Available Customizations"] {
+    get-table | get-item ".\\* resources" | uncheck
+    get-button OK | click
+}
+get-view "Project Explorer" | get-tree | select "fantest/.classpath" | double-click -nowait
 get-editor ".classpath" | get-editbox | get-property value 
     | equals "<?xml version=\"1.0\" encoding=\"UTF-8\"?><classpath> <classpathentry kind=\"con\" path=\"com.xored.fanide.jdt.launching.FANJAVA_CONTAINER\"/> <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER\"/> <classpathentry combineaccessrules=\"false\" kind=\"src\" path=\"/javatest\"/> <classpathentry kind=\"output\" path=\"\"/></classpath>" 
     | verify-true
-get-view "Package Explorer" | get-tree | select "fantest/build.fan" | double-click -nowait
+get-view "Project Explorer" | get-tree | select "fantest/build.fan" | double-click -nowait
 get-editor "build.fan" | get-editbox | get-property value 
     | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"fantest\"    summary = \"\"    srcDirs = [`inheritance/`, `fan/`]    depends = [\"sys 1.0\"]  }}" 
     | verify-true
@@ -46,7 +50,7 @@ with [get-editor ".classpath"] {
 get-editor ".classpath" | get-editbox | get-property value 
     | equals "<?xml version=\"1.0\" encoding=\"UTF-8\"?><classpath> <classpathentry kind=\"con\" path=\"com.xored.fanide.jdt.launching.FANJAVA_CONTAINER\"/> <classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER\"/> <classpathentry combineaccessrules=\"false\" kind=\"src\" path=\"/javatest\"/>    <classpathentry combineaccessrules=\"false\" kind=\"src\" path=\"/JavaProject\"/> <classpathentry kind=\"output\" path=\"\"/></classpath>" 
     | verify-true
-get-view "Package Explorer" | get-tree | select fantest | get-menu Properties | click
+get-view "Project Explorer" | get-tree | select fantest | get-menu Properties | click
 with [get-window "Properties for fantest"] {
     get-tree | select "Java Build Path"
     get-tab-folder | get-tab-item Projects | click
