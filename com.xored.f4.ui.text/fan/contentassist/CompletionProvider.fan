@@ -216,10 +216,11 @@ abstract class CompletionProvider
       availablePods.add(pName)
     }
     availablePods.add(ns.currPod.name)
+    availablePods.add("sys")
     
     ns.podNames.each
     {
-      if( availablePods.contains(it))
+      //if( availablePods.contains(it))
         reportPodTypes(ns.findPod(it), constructors)
     }
   }
