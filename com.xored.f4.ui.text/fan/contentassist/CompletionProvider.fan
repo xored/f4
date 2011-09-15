@@ -167,14 +167,20 @@ abstract class CompletionProvider
           IFanType? type := pod.findType(it)
           if( type != null)
           {
+            added := false
             type.methods.each { 
               if( it.isCtor|| isFromStr(it))
               {
+                added = true
                 if( it.name != "make" && it.name != "fromStr")
                   reportMethod(it, type.name + "." + it.name)
                 else
                   reportMethod(it, type.name)
               }
+            }
+            if( !added)
+            {
+              reportType(type)
             }
           }
         }
@@ -185,14 +191,20 @@ abstract class CompletionProvider
             IFanType? type := pod.findType(it)
             if( type != null)
             {
+              added := false
               type.methods.each { 
                 if( it.isCtor|| isFromStr(it))
                 {
+                  added = true
                   if( it.name != "make" && it.name != "fromStr")
                     reportMethod(it, type.name + "." + it.name)
                   else
                     reportMethod(it, type.name)
                 }
+              }
+              if( !added)
+              {
+                reportType(type)
               }
             }
           }
