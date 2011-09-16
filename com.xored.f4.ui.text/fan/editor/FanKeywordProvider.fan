@@ -6,5 +6,5 @@ class FanKeywordProvider {
     "it", "mixin", "native", "new", "null", "once", "override", "private",
     "protected", "public", "readonly", "return", "static", "super", "switch",
     "this", "throw", "true", "try", "using", "virtual", "volatile", "void",
-    "while"]
+    "while", "facet"]
 }

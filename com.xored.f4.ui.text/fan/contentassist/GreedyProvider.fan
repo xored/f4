@@ -100,7 +100,7 @@ class GreedyProvider : CompletionProvider
   private static const Str[] typeKeywords := [
       "class", "mixin", "abstract", "const", "final",
       "using", "private", "protected", "public", "internal", "once",
-      "native"
+      "native", "facet"
     ]
   
   //////////////////////////////////////////////////////////////////////////
