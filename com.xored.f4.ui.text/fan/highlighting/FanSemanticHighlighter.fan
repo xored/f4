@@ -8,6 +8,8 @@
 
 //using [java]org.eclipse.dltk.core
 using [java]org.eclipse.dltk.compiler.env::IModuleSource
+using [java]org.eclipse.dltk.core::IModelElement
+using [java]org.eclipse.dltk.core::ISourceModule
 using [java]org.eclipse.dltk.ui.editor.highlighting::AbstractSemanticHighlighter
 using [java]org.eclipse.dltk.ui.editor.highlighting::ISemanticHighlightingRequestor
 using [java]org.eclipse.dltk.ui.editor.highlighting::SemanticHighlighting
@@ -54,7 +56,7 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
   private SH var := SH(FanPreferenceConstants.EDITOR_VAR_REF_COLOR,
           PreferencesMessages.DLTKEditorPreferencePage_variables)
   
-  
+  private Str? source
   
   override SemanticHighlighting?[]? getSemanticHighlightings()
   {
@@ -65,8 +67,9 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
 
   protected override Bool doHighlighting(IModuleSource? sourceModule)
   {
-    me := sourceModule.getModelElement
+    IModelElement? me := sourceModule.getModelElement
     if(me == null) return false
+    source = sourceModule.getSourceContents
     ParseUtil.parse(me).accept(this) 
     return true
   }
@@ -145,6 +148,9 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
       // Check for variable access and highlight accordingly
       Literal lit := node
       Str value := lit.val
+      if( source != null) {
+        value = source[lit.start+1..lit.end-1]
+      }
       StrParser parser := StrParser(value)
       parser.parse |Int start, Int end| {
         addPosition(lit.start+start, lit.start + end, index(var) )
