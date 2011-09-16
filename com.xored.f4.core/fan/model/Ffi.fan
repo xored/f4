@@ -8,6 +8,7 @@ using [java]org.eclipse.jdt.core::IPackageFragmentRoot
 using [java]org.eclipse.jdt.core::IType
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.core::Flags as JavaFlags
+using [java]com.xored.fanide.core::JDTSupport
 
 using f4model
 using f4parser
@@ -56,10 +57,24 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
     pod = podName
     name = type.getTypeQualifiedName
     qname = podName + "::" + name
-    superTypes := [type.getSuperclassName]
+    superTypes := type.getSuperclassName == null?[,]:[type.getSuperclassName]
     superTypes.addAll(type.getSuperInterfaceNames)
-    inheritance = superTypes.exclude { it == null }.map(#toFanClass.func)
+    inheritance = superTypes.exclude { it == null }.map |Str name->Str| {
+      javaName := name
+      if( javaName.index(".") == null || javaName.index("\$") != null)
+      {
+        Str[]? val := JDTSupport.resolve((IType)typeRef.val, name)
+        if( val != null && val.size ==1)
+        {
+          javaName = val[0]
+        }
+      }
+      return toFanClass(javaName)
+    }
     javaFlags := type.getFlags
+    if( type.isInterface) {
+      javaFlags = javaFlags.or(JavaFlags.AccAbstract).or(JavaFlags.AccInterface)
+    }
     flags := 0
     if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Abstract)
     if (type.isEnum) flags = flags.or(Flag.Enum)
@@ -80,6 +95,9 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
       slot := FfiMethod.tryMake(this,method)
       if (slot != null) slots.add(slot)
     }
+    
+    
+    
     slotsMap = Str:IFanSlot[:].setList(slots) { it.name }
   }
   static Str toFanClass(Str javaName)
@@ -148,6 +166,7 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
   override Bool isInternal() { flags.and(Internal) != 0 }
   override Bool isMixin() { flags.and(Mixin) != 0 }
   override Bool isPublic() { flags.and(Public) != 0 }
+  override Bool isFacet() { flags.and(Flag.Facet) != 0}
   override const Bool isSynthetic
   override Str[] params() { Str[,] }
   override IFanType parameterize(Str:IFanType parametrization) { throw UnsupportedErr("No user-defined generics") }
@@ -167,6 +186,20 @@ internal abstract const class FfiSlot : IFanSlot, Flag, IFfiForeigh
     this.type = container
     name = isCtor ? "make" : member.getElementName
     javaFlags := member.getFlags
+    
+    IType mType := member.getParent
+    if( mType.isInterface)
+    {
+      if( member.getElementType == IMember.FIELD)
+      {
+        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccStatic).or(JavaFlags.AccFinal)
+      }
+      else if( member.getElementType == IMember.METHOD)
+      {
+        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccAbstract)
+      }
+    }
+    
     flags := 0
     if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Abstract)
     if (member is IField && JavaFlags.isFinal(javaFlags)) flags = flags.or(Const)

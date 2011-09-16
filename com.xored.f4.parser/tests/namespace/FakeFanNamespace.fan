@@ -105,6 +105,7 @@ const class FakeFanType : IFanType
   override const Bool isMixin
   override const Bool isPublic
   override const Bool isSynthetic
+  override const Bool isFacet
   
   override const IFanField[] fields
   override const IFanMethod[] methods
@@ -139,6 +140,7 @@ const class FakeFanType : IFanType
     this.isInternal = t.isInternal
     this.isMixin = t.isMixin
     this.isPublic = t.isPublic
+    this.isFacet = t.isFacet
     this.isSynthetic = t.isSynthetic
     this.isNullable = false
     

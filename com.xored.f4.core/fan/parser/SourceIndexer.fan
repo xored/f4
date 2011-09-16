@@ -158,6 +158,7 @@ class IndexingVisitor : AstVisitor
         case "Mixin": flags = flags.or(FanModifiers.AccMixin)
         case "Native": flags = flags.or(FanModifiers.AccNative)
         case "Override": flags = flags.or(FanModifiers.AccOverride)
+        case "Facet": flags = flags.or(FanModifiers.AccAnnotation)
         case "Private": flags = flags.or(FanModifiers.AccPrivate);   protection = true
         case "Protected": flags = flags.or(FanModifiers.AccProtected); protection = true
         case "Public": flags = flags.or(FanModifiers.AccPublic);    protection = true

@@ -107,6 +107,7 @@ enum class Token
   nullKeyword,
   onceKeyword,
   overrideKeyword,
+  facetKeyword,
   privateKeyword,
   protectedKeyword,
   publicKeyword,

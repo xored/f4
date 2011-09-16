@@ -339,6 +339,7 @@ class StructureParser
         case Token.newKeyword:       flags = flags.or(Flag.Ctor)
         case Token.onceKeyword:      flags = flags.or(Flag.Once)
         case Token.overrideKeyword:  flags = flags.or(Flag.Override)
+        case Token.facetKeyword:     flags = flags.or(Flag.Facet)
         case Token.privateKeyword:   flags = flags.or(Flag.Private);   protection = true
         case Token.protectedKeyword: flags = flags.or(Flag.Protected); protection = true
         case Token.publicKeyword:    flags = flags.or(Flag.Public);    protection = true
@@ -685,8 +686,7 @@ class StructureParser
   {
     while (true) {
       if (curt === Token.eof) throw EOF()
-      if (curt === Token.lbrace 
-        && scope === ParserScope.insideType)
+      if (curt === Token.lbrace && scope === ParserScope.insideType)
       {
         skipBlock
         exitSlot
@@ -699,7 +699,7 @@ class StructureParser
         case ParserScope.nowhere : return
         case ParserScope.insideUsings : 
           if (isUsing) return
-          else if (isType) throw TypeFound()
+          else if (isType) throw TypeFound() 
         case ParserScope.insideUnit : 
           if (isType) return
           else if (isSlot) throw SlotFound()
@@ -798,18 +798,19 @@ class StructureParser
   private Bool isTypeStart()
   {
     ParserState saved := ParserState(pos,scope)
-    try {
-    if (isFlagsStart) {
-      flags
-    }
-    switch (curt)
+    try
     {
-      case Token.classKeyword: return true
-      case Token.mixinKeyword: return true
-      case Token.identifier: return cur.val == "enum" || cur.val == "facet"
-    }
-    return false
-    
+      if (isFlagsStart)
+      {
+        flags
+      }
+      switch (curt)
+      {
+        case Token.classKeyword: return true
+        case Token.mixinKeyword: return true
+        case Token.identifier: return cur.val == "enum" || cur.val == "facet"
+      }
+      return false
     } finally {
       reset(saved)
     }
@@ -834,11 +835,12 @@ class StructureParser
   {
     switch (curt)
     {
-      case Token.abstractKeyword:  return true
+      case Token.abstractKeyword:  return true 
       case Token.constKeyword:     return true
       case Token.finalKeyword:     return true
       case Token.internalKeyword:  return true
       case Token.nativeKeyword:    return true
+      case Token.facetKeyword:     return true
       case Token.newKeyword:       return true
       case Token.onceKeyword:      return true
       case Token.overrideKeyword:  return true

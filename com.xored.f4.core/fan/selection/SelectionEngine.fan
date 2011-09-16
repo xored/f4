@@ -56,6 +56,7 @@ class SelectionEngine : ISelectionEngine
       return selectType(node->ctype, start, end)
     }
     else if (node is TypeDef) return selectTypeDef(node)
+    else if( node is FacetDef) return selectType(((FacetDef)node).ctype, start, end)
     else if (node is CType) return selectType(node, start, end)
     else if (node is SlotRef) return selectSlotRef(node)
     else if (node is SlotDef) return selectSlotDef(path)

@@ -26,6 +26,7 @@ const mixin Flags
   Bool isInternal() { flags.and(FanModifiers.AccInternal) != 0 }
   Bool isPublic() { flags.and(FanModifiers.AccPublic) != 0 }
   Bool isSynthetic() { flags.and(FanModifiers.AccSynthetic) != 0 }
+  Bool isFacet() { flags.and(FanModifiers.AccAnnotation) != 0 }
   
   //////////////////////////////////////////////////////////////////////////
   // Slot flags

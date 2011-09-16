@@ -157,6 +157,7 @@ class FanSourceElementRequestVisitor : StructureVisitor
     if (flags.and(Flag.Mixin) != 0)     dltkFlags = dltkFlags.or(FanModifiers.AccInterface)
     if (flags.and(Flag.Native) != 0)    dltkFlags = dltkFlags.or(FanModifiers.AccNative)
     if (flags.and(Flag.Override) != 0)  dltkFlags = dltkFlags.or(FanModifiers.AccOverride)
+    if( flags.and(Flag.Facet) != 0)     dltkFlags = dltkFlags.or(FanModifiers.AccAnnotation)
     if (flags.and(Flag.Private) != 0)   dltkFlags = dltkFlags.or(FanModifiers.AccPrivate)
     if (flags.and(Flag.Protected) != 0) dltkFlags = dltkFlags.or(FanModifiers.AccProtected)
     if (flags.and(Flag.Public) != 0)    dltkFlags = dltkFlags.or(FanModifiers.AccPublic)

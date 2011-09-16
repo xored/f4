@@ -37,4 +37,5 @@ const class RtNullableType : IFanType
   override Str toStr() { genericQname }
   override const IFanType toNullable := this
   override const Bool isNullable := true
+  override Bool isFacet() { type.isFacet }
 }

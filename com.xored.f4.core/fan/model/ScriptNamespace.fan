@@ -192,6 +192,7 @@ internal const class ScriptType : IFanType, Flag
   override Bool isInternal() { flags.and(Internal) != 0 }
   override Bool isMixin() { flags.and(Mixin) != 0 }
   override Bool isPublic() { flags.and(Public) != 0 }
+  override Bool isFacet() { flags.and(Flag.Facet) != 0 }
   override Bool isSynthetic() { false }
   override Str[] params() { Str[,] }
   override IFanType parameterize(Str:IFanType parametrization) { throw UnsupportedErr("No user-defined generics") }

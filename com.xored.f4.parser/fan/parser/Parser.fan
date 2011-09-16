@@ -219,6 +219,7 @@ class Parser : AstFactory
       case Token.newKeyword:       s["id"] = ModifierId.Ctor
       case Token.onceKeyword:      s["id"] = ModifierId.Once
       case Token.overrideKeyword:  s["id"] = ModifierId.Override
+      case Token.facetKeyword:     s["id"] = ModifierId.Facet
       case Token.privateKeyword:   s["id"] = ModifierId.Private
       case Token.protectedKeyword: s["id"] = ModifierId.Protected
       case Token.publicKeyword:    s["id"] = ModifierId.Public
@@ -453,6 +454,12 @@ class Parser : AstFactory
   {
     s := startRule
     consume(Token.at)
+    if( curt == Token.at)
+    {
+      // Situation @ @Aaa class, to allow easy completion providing
+      s["type"] = SimpleType(s.start, s.start+1, null, TypeRef(s.start, s.start+1, "@"))
+      return endRule(s).makeFacetDef(s)
+    }
     if (curt !== Token.identifier) throw err(curLoc, ProblemKind.parser_missingId)
     s["type"] = ctype
     if (curt === Token.lbrace)

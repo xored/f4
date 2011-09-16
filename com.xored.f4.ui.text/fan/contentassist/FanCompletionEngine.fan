@@ -89,7 +89,8 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
       Int? prevNodePos := null
       
       CompletionProvider[] providers := [
-        DotCompletionProvider#, 
+        DotCompletionProvider#,
+        FacetCompletionProvider#,
         QnameCompletionProvider#,
         UsingCompletionProvider#,
         IsCompletionProvider#,
