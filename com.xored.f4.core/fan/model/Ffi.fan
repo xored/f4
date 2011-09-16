@@ -72,9 +72,9 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
       return toFanClass(javaName)
     }
     javaFlags := type.getFlags
-    if( type.isInterface) {
-      javaFlags = javaFlags.or(JavaFlags.AccAbstract).or(JavaFlags.AccInterface)
-    }
+   // if( type.isInterface) {
+   //   javaFlags = javaFlags.or(JavaFlags.AccAbstract).or(JavaFlags.AccInterface)
+   // }
     flags := 0
     if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Abstract)
     if (type.isEnum) flags = flags.or(Flag.Enum)
@@ -187,18 +187,18 @@ internal abstract const class FfiSlot : IFanSlot, Flag, IFfiForeigh
     name = isCtor ? "make" : member.getElementName
     javaFlags := member.getFlags
     
-    IType mType := member.getParent
-    if( mType.isInterface)
-    {
-      if( member.getElementType == IMember.FIELD)
-      {
-        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccStatic).or(JavaFlags.AccFinal)
-      }
-      else if( member.getElementType == IMember.METHOD)
-      {
-        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccAbstract)
-      }
-    }
+//    IType mType := member.getParent
+//    if( mType.isInterface)
+//    {
+//      if( member.getElementType == IMember.FIELD)
+//      {
+//        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccStatic).or(JavaFlags.AccFinal)
+//      }
+//      else if( member.getElementType == IMember.METHOD)
+//      {
+//        javaFlags = javaFlags.or(JavaFlags.AccPublic).or(JavaFlags.AccAbstract)
+//      }
+//    }
     
     flags := 0
     if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Abstract)

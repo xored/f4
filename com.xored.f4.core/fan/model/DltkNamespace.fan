@@ -17,6 +17,7 @@ internal class DltkNamespace : IFanNamespace
   private IScriptProject project
   private Str:Fragment[] fragmentsByPod := [:]
   private Str:IFanPod pods := [:]
+  private Str:IFanPod ffiPods := [:]
   private const Str currPodName
   new make(FantomProject project, Str? podName := null)
   {
@@ -55,7 +56,16 @@ internal class DltkNamespace : IFanNamespace
   override IFanPod currPod() { findPod(currPodName) }
   override IFanPod? findPod(Str name)
   {
-    if (name.startsWith("[java]")) return FfiPod(project.getProject,name)
+    if (name.startsWith("[java]"))
+    {
+      if( ffiPods.containsKey(name))
+      {
+        return ffiPods[name]
+      }
+      pod := FfiPod(project.getProject,name)
+      ffiPods[name] = pod
+      return pod
+    }
     return !fragmentsByPod.containsKey(name) ? null
       : pods.getOrAdd(name) |->Obj| { DltkPod(name, fragmentsByPod[name]) }
   }

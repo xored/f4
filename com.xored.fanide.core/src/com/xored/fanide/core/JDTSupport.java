@@ -48,7 +48,7 @@ public class JDTSupport {
 				i++;
 			}
 			return result;
-		} catch (JavaModelException e) {
+		} catch (Throwable e) {
 		} finally {
 			// System.out.println("Resolve: " + type.getTypeQualifiedName()
 			// + " name: " + name + " time: "

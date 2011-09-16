@@ -62,7 +62,7 @@ class StrProvider : CompletionProvider
       if( src[pos] == '{')pos++;
       cend := pos+prefix.size 
       realPrefix := src[cpos..cend]
-      partUnit := null
+      Expr? partUnit := null
       
       methodName := path.methodName
       typeName := path.typeName
@@ -102,9 +102,9 @@ class StrProvider : CompletionProvider
         {
           isPound = ending == "#"
           // DotCompletion
-          npos := cend-cpos
-          nodePos := npos - ending.size +1//+ (prefix.isEmpty ? 1 : 0)
-          partpath := AstFinder.findNode(partUnit, nodePos) 
+          npos := cend - cpos
+          nodePos := npos - ending.size//+ (prefix.isEmpty ? 1 : 0)
+          partpath := StrAstFinder.findNode(partUnit, nodePos) 
           
           skipCallProcess := (partpath.last is CType) || (partpath.last is Expr)
     
@@ -222,4 +222,33 @@ internal class LocalDefCollector: AstVisitor
     return true
   }
   override Void exitNode(Node n) {}
+}
+internal class StrAstFinder : AstVisitor
+{
+  private Node[] path
+  private Int? pos
+  private new make(Int? pos := null, Node[] path := Node[,]) 
+  {
+    this.pos = pos
+    this.path = path
+  }
+  
+  static AstPath find(CUnit unit, Int pos)
+  {
+    lfinder := StrAstFinder(pos)
+    unit.accept(lfinder)
+    return AstPath(lfinder.path, pos)
+  }
+  static AstPath findNode(Node node, Int pos)
+  {
+    lfinder := StrAstFinder(pos)
+    node.accept(lfinder)
+    return AstPath(lfinder.path, pos)
+  }
+  
+  override Bool enterNode(Node node)
+  { 
+    path.push(node)
+    return true
+  }
 }

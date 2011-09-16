@@ -281,6 +281,8 @@ const class FantomProject
   const Str summary
     
   const Version version
+  
+  
 //////////////////////////////////////////////////////////////////////////
 // Private helper methods
 //////////////////////////////////////////////////////////////////////////
@@ -307,7 +309,16 @@ const class FantomProject
   
   IScriptProject scriptProject() { DLTKCore.create(project) }
   
-  IFanNamespace ns() { DltkNamespace(this) }
+  private const Unsafe namespace := Unsafe(DltkNamespace[,])
+  
+  IFanNamespace ns() {
+    DltkNamespace[] nss := namespace.val
+    if( nss->size == 0)
+    {
+      nss.add(DltkNamespace(this))
+    }
+    return nss[0]
+  }
 }
 
 **************************************************************************

@@ -236,6 +236,11 @@ const mixin IFanType : DltkModelElement
       if (!excluded.contains(type.qname))
         type?.addSlotsTo(ns,map,excluded)
     }
-    map.setAll(slotsMap)
+    slotsMap.each |IFanSlot slot, Str name| { 
+      if( !map.containsKey(name))
+      {
+        map[name] = slot
+      }
+    }
   }
 }
