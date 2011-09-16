@@ -17,7 +17,7 @@ internal class DltkNamespace : IFanNamespace
   private IScriptProject project
   private Str:Fragment[] fragmentsByPod := [:]
   private Str:IFanPod pods := [:]
-  private Str:IFanPod ffiPods := [:]
+  public Str:IFanPod ffiPods := [:]
   private const Str currPodName
   new make(FantomProject project, Str? podName := null)
   {
