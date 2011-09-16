@@ -19,7 +19,7 @@ internal const class FfiPod : IFanPod
   {
     this.name = name
     package := name[6..-1]
-    allTypes := IFanType[,]
+    jTypes := this.jTypes
     JavaCore.create(project).getAllPackageFragmentRoots.each |IPackageFragmentRoot pfr|
     {
       pf := pfr.getPackageFragment(package)
@@ -27,26 +27,40 @@ internal const class FfiPod : IFanPod
       pf.getClassFiles.each |IClassFile cf|
       {
         primaryType := cf.findPrimaryType
-        if(primaryType != null) allTypes.add(FfiType(name,primaryType))
+        if(primaryType != null)
+          jTypes[primaryType.getTypeQualifiedName] = primaryType
       }
       pf.getCompilationUnits.each |ICompilationUnit cu|
       {
         cu.getAllTypes.each |IType t|
         {
-          allTypes.add(FfiType(name,t))
+          jTypes[t.getTypeQualifiedName] = t
         }
       }
     }
-    this.typeNames = allTypes.map { it.name }
-    this.types = Str:IFanType[:].setList(allTypes) { it.name }
+    this.typeNames = jTypes.keys
   }
   override IFanType? findType(Str name, Bool checked := true)
   {
-    types[name] ?: (checked ? throw UnknownTypeErr() : null)
+    fType := fTypes[name]
+    if( fType == null)
+    {
+      jType := jTypes[name]
+      if( jType != null)
+      {
+        fType = FfiType(this.name, jType)
+        fTypes[name] = fType
+      }
+    }
+    return fType ?: (checked ? throw UnknownTypeErr() : null)
   }
+  
+  private Str:IFanType fTypes() {(Str:IFanType)types.val}
+   private Str:IType jTypes() {(Str:IType)javaTypes.val}
   override const Str name
   override const Str[] typeNames
-  private const Str:IFanType types
+  private const Unsafe types := Unsafe(Str:IFanType[:])
+  private const Unsafe javaTypes := Unsafe(Str:IType[:])
 }
 
 internal const class FfiType : IFanType, Flag, IFfiForeigh
