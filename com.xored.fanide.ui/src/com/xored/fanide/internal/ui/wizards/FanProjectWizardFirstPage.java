@@ -32,7 +32,7 @@ public class FanProjectWizardFirstPage extends ProjectWizardFirstPage {
 
 	@Override
 	protected void createCustomGroups(Composite composite) {
-		Group g = new Group(composite, SWT.BORDER);
+		Group g = new Group(composite, SWT.NONE);
 		g.setText("Fantom Java Options");
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(g);
 		g.setLayout(initGridLayout(new GridLayout(1, false), true));
