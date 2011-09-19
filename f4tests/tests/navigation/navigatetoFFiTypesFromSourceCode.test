@@ -1,0 +1,1513 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="navigatetoFFiTypesFromSourceCode" version="3.0" id="_LIWMkeJsEeC1mskq8T5RyQ" description="" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-53">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan" | get-menu "New/Fantom Class" | click
+with [get-window "New Fantom Class"] {
+    get-editbox -after [get-label "Name:"] | set-text test
+    get-button Finish | click
+}
+with [get-editor "test.fan" | get-editbox] {
+    set-text-offset 1 3
+    key-type "ARROW_UP"
+    key-type CR
+    type-text "Void test()"
+    key-type CR
+    type-text "{"
+    key-type CR
+    set-text-offset 0 0
+    type-text "using []"
+    key-type "ARROW_LEFT"
+    type-text java
+    key-type "ARROW_RIGHT"
+    type-text "java."
+    show-content-assist
+    type-text "util::ArrayList"
+    key-type "ARROW_DOWN"
+    key-type "ARROW_DOWN"
+    key-type "ARROW_DOWN"
+    key-type "ARROW_DOWN"
+    key-type "ARROW_DOWN"
+    type-text "ArrayList al := ArrayList()"
+    key-type CR
+    type-text "al."
+    show-content-assist
+    type-text i
+    key-type "ARROW_DOWN"
+    key-type CR
+    key-type "M1+s"
+}
+with [get-editor "test.fan" | get-editbox] {
+    set-text-offset 7 5
+    key-type F3
+}
+with [get-tab-folder] {
+    get-property pages -index 0 | equals "test.fan" | verify-true
+    get-property pages -index 1 | equals "ArrayList.class" | verify-true
+    get-property activePage | equals "ArrayList.class" | verify-true
+    get-property tabCount | equals 2 | verify-true
+}
+get-editor "ArrayList.class" | close
+with [get-editor "test.fan"] {
+    click -nowait
+    with [get-editbox] {
+        set-text-offset 12 6
+        key-type F3
+    }
+}
+with [get-tab-folder] {
+    get-property pages -index 0 | equals "test.fan" | verify-true
+    get-property pages -index 1 | equals "ArrayList.class" | verify-true
+    get-property activePage | equals "ArrayList.class" | verify-true
+    get-property tabCount | equals 2 | verify-true
+}]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="test.fan" multiplicity="1">
+        <parent id="EclipseWindow3" kind="EclipseWindow" description="Fantom - fantest/fan/test.fan - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor2" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="7" line="5">
+      <element id="Text3" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777228" meta="0">
+      <element id="Text3" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="TabFolder" multiplicity="1">
+        <parent id="EclipseWindow4" kind="EclipseWindow" description="Fantom - java.util.ArrayList - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="pages" value="test.fan" index="0">
+      <element id="TabFolder0" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="pages" value="ArrayList.class" index="1">
+      <element id="TabFolder0" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="activePage" value="ArrayList.class">
+      <element id="TabFolder0" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="tabCount" value="2">
+      <element id="TabFolder0" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="ArrayList.class" multiplicity="1">
+        <parent id="EclipseWindow5" kind="EclipseWindow" description="Fantom - java.util.ArrayList - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Close">
+      <element id="Editor4" kind="Editor"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="test.fan" multiplicity="1">
+        <parent id="EclipseWindow5" kind="EclipseWindow" description="Fantom - java.util.ArrayList - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click" withWait="false">
+      <element id="Editor5" kind="Editor"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor5" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="12" line="6">
+      <element id="Text5" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777228" meta="0">
+      <element id="Text5" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="ArrayList.class" multiplicity="1">
+        <parent id="EclipseWindow5" kind="EclipseWindow" description="Fantom - java.util.ArrayList - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor6" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="TabFolder" multiplicity="1">
+        <parent id="EclipseWindow6" kind="EclipseWindow" description="Fantom - java.util.ArrayList - F4 - Fantom IDE"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="pages" value="test.fan" index="0">
+      <element id="TabFolder2" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="pages" value="ArrayList.class" index="1">
+      <element id="TabFolder2" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="activePage" value="ArrayList.class">
+      <element id="TabFolder2" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="tabCount" value="2">
+      <element id="TabFolder2" kind="TabFolder"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow3" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/test.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1076" y="29" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="Editor2" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="test.fan">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="Text3" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass test{  Void test()  {    ArrayList al := ArrayList()    al.isEmpty  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass test\n{\n  Void test()\n  {\n    ArrayList al := ArrayList()\n    al.isEmpty\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>43, 1, fontStyle=normal</styleRanges>
+        <styleRanges>44, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>45, 3, fontStyle=normal</styleRanges>
+        <styleRanges>48, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>59, 3, fontStyle=normal</styleRanges>
+        <styleRanges>62, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 5, fontStyle=normal</styleRanges>
+        <styleRanges>68, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>77, 1, fontStyle=normal</styleRanges>
+        <styleRanges>78, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>80, 1, fontStyle=normal</styleRanges>
+        <styleRanges>81, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>83, 1, fontStyle=normal</styleRanges>
+        <styleRanges>84, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>95, 5, fontStyle=normal</styleRanges>
+        <styleRanges>100, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>102, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>103, 7, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>110, 3, fontStyle=normal</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>114, 1, fontStyle=normal</styleRanges>
+        <styleRanges>115, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>116, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="EclipseWindow4" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - java.util.ArrayList - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1076" y="29" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.6">
+      <elements id="TabFolder0" kind="TabFolder"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TabFolder" activePage="ArrayList.class" tabCount="2">
+        <pages>test.fan</pages>
+        <pages>ArrayList.class</pages>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.11">
+      <elements id="EclipseWindow5" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - java.util.ArrayList - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1076" y="29" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.12">
+      <elements id="Editor4" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ArrayList.class">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.14">
+      <elements id="Editor5" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="test.fan">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.16">
+      <elements id="Text5" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass test{  Void test()  {    ArrayList al := ArrayList()    al.isEmpty  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass test\n{\n  Void test()\n  {\n    ArrayList al := ArrayList()\n    al.isEmpty\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>43, 1, fontStyle=normal</styleRanges>
+        <styleRanges>44, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>45, 3, fontStyle=normal</styleRanges>
+        <styleRanges>48, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>59, 3, fontStyle=normal</styleRanges>
+        <styleRanges>62, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 5, fontStyle=normal</styleRanges>
+        <styleRanges>68, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>77, 1, fontStyle=normal</styleRanges>
+        <styleRanges>78, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>80, 1, fontStyle=normal</styleRanges>
+        <styleRanges>81, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>83, 1, fontStyle=normal</styleRanges>
+        <styleRanges>84, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>95, 5, fontStyle=normal</styleRanges>
+        <styleRanges>100, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>102, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>103, 7, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>110, 3, fontStyle=normal</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>114, 1, fontStyle=normal</styleRanges>
+        <styleRanges>115, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>116, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.19">
+      <elements id="Editor6" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ArrayList.class">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.20">
+      <elements id="Text6" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="* %W% %E%package java.util;/** * Resizable-array implementation of the &lt;tt>List&lt;/tt> interface.  Implements * all optional list operations, and permits all elements, including * &lt;tt>null&lt;/tt>.  In addition to implementing the &lt;tt>List&lt;/tt> interface, * this class provides methods to manipulate the size of the array that is * used internally to store the list.  (This class is roughly equivalent to * &lt;tt>Vector&lt;/tt>, except that it is unsynchronized.)&lt;p> * * The &lt;tt>size&lt;/tt>, &lt;tt>isEmpty&lt;/tt>, &lt;tt>get&lt;/tt>, &lt;tt>set&lt;/tt>, * &lt;tt>iterator&lt;/tt>, and &lt;tt>listIterator&lt;/tt> operations run in constant * time.  The &lt;tt>add&lt;/tt> operation runs in &lt;i>amortized constant time&lt;/i>, * that is, adding n elements requires O(n) time.  All of the other operations * run in linear time (roughly speaking).  The constant factor is low compared * to that for the &lt;tt>LinkedList&lt;/tt> implementation.&lt;p> * * Each &lt;tt>ArrayList&lt;/tt> instance has a &lt;i>capacity&lt;/i>.  The capacity is * the size of the array used to store the elements in the list.  It is always * at least as large as the list size.  As elements are added to an ArrayList, * its capacity grows automatically.  The details of the growth policy are not * specified beyond the fact that adding an element has constant amortized * time cost.&lt;p> * * An application can increase the capacity of an &lt;tt>ArrayList&lt;/tt> instance * before adding a large number of elements using the &lt;tt>ensureCapacity&lt;/tt> * operation.  This may reduce the amount of incremental reallocation. * * &lt;p>&lt;strong>Note that this implementation is not synchronized.&lt;/strong> * If multiple threads access an &lt;tt>ArrayList&lt;/tt> instance concurrently, * and at least one of the threads modifies the list structurally, it * &lt;i>must&lt;/i> be synchronized externally.  (A structural modification is * any operation that adds or deletes one or more elements, or explicitly * resizes the backing array; merely setting the value of an element is not * a structural modification.)  This is typically accomplished by * synchronizing on some object that naturally encapsulates the list. * * If no such object exists, the list should be &quot;wrapped&quot; using the * {@link Collections#synchronizedList Collections.synchronizedList} * method.  This is best done at creation time, to prevent accidental * unsynchronized access to the list:&lt;pre> *   List list = Collections.synchronizedList(new ArrayList(...));&lt;/pre> * * &lt;p>The iterators returned by this class's &lt;tt>iterator&lt;/tt> and * &lt;tt>listIterator&lt;/tt> methods are &lt;i>fail-fast&lt;/i>: if the list is * structurally modified at any time after the iterator is created, in any way * except through the iterator's own &lt;tt>remove&lt;/tt> or &lt;tt>add&lt;/tt> methods, * the iterator will throw a {@link ConcurrentModificationException}.  Thus, in * the face of concurrent modification, the iterator fails quickly and cleanly, * rather than risking arbitrary, non-deterministic behavior at an undetermined * time in the future.&lt;p> * * Note that the fail-fast behavior of an iterator cannot be guaranteed * as it is, generally speaking, impossible to make any hard guarantees in the * presence of unsynchronized concurrent modification.  Fail-fast iterators * throw &lt;tt>ConcurrentModificationException&lt;/tt> on a best-effort basis. * Therefore, it would be wrong to write a program that depended on this * exception for its correctness: &lt;i>the fail-fast behavior of iterators * should be used only to detect bugs.&lt;/i>&lt;p> * * This class is a member of the * &lt;a href=&quot;{@docRoot}/../technotes/guides/collections/index.html&quot;> * Java Collections Framework&lt;/a>. * * @author  Josh Bloch * @author  Neal Gafter * @version %I%, %G% * @see     Collection * @see     List * @see     LinkedList * @see     Vector * @since   1.2 */public class ArrayList&lt;E> extends AbstractList&lt;E>        implements List&lt;E>, RandomAccess, Cloneable, java.io.Serializable{    private static final long serialVersionUID = 8683452581122892189L;    /**     * The array buffer into which the elements of the ArrayList are stored.     * The capacity of the ArrayList is the length of this array buffer.     */    private transient Object[] elementData;    /**     * The size of the ArrayList (the number of elements it contains).     *     * @serial     */    private int size;    /**     * Constructs an empty list with the specified initial capacity.     *     * @param   initialCapacity   the initial capacity of the list     * @exception IllegalArgumentException if the specified initial capacity     *            is negative     */    public ArrayList(int initialCapacity) { super();        if (initialCapacity &lt; 0)            throw new IllegalArgumentException(&quot;Illegal Capacity: &quot;+                                               initialCapacity); this.elementData = new Object[initialCapacity];    }    /**     * Constructs an empty list with an initial capacity of ten.     */    public ArrayList() { this(10);    }    /**     * Constructs a list containing the elements of the specified     * collection, in the order they are returned by the collection's     * iterator.     *     * @param c the collection whose elements are to be placed into this list     * @throws NullPointerException if the specified collection is null     */    public ArrayList(Collection&lt;? extends E> c) { elementData = c.toArray(); size = elementData.length; // c.toArray might (incorrectly) not return Object[] (see 6260652) if (elementData.getClass() != Object[].class)     elementData = Arrays.copyOf(elementData, size, Object[].class);    }    /**     * Trims the capacity of this &lt;tt>ArrayList&lt;/tt> instance to be the     * list's current size.  An application can use this operation to minimize     * the storage of an &lt;tt>ArrayList&lt;/tt> instance.     */    public void trimToSize() { modCount++; int oldCapacity = elementData.length; if (size &lt; oldCapacity) {            elementData = Arrays.copyOf(elementData, size); }    }    /**     * Increases the capacity of this &lt;tt>ArrayList&lt;/tt> instance, if     * necessary, to ensure that it can hold at least the number of elements     * specified by the minimum capacity argument.     *     * @param   minCapacity   the desired minimum capacity     */    public void ensureCapacity(int minCapacity) { modCount++; int oldCapacity = elementData.length; if (minCapacity > oldCapacity) {     Object oldData[] = elementData;     int newCapacity = (oldCapacity * 3)/2 + 1;         if (newCapacity &lt; minCapacity)  newCapacity = minCapacity;            // minCapacity is usually close to size, so this is a win:            elementData = Arrays.copyOf(elementData, newCapacity); }    }    /**     * Returns the number of elements in this list.     *     * @return the number of elements in this list     */    public int size() { return size;    }    /**     * Returns &lt;tt>true&lt;/tt> if this list contains no elements.     *     * @return &lt;tt>true&lt;/tt> if this list contains no elements     */    public boolean isEmpty() { return size == 0;    }    /**     * Returns &lt;tt>true&lt;/tt> if this list contains the specified element.     * More formally, returns &lt;tt>true&lt;/tt> if and only if this list contains     * at least one element &lt;tt>e&lt;/tt> such that     * &lt;tt>(o==nullnbsp;?nbsp;e==nullnbsp;:nbsp;o.equals(e))&lt;/tt>.     *     * @param o element whose presence in this list is to be tested     * @return &lt;tt>true&lt;/tt> if this list contains the specified element     */    public boolean contains(Object o) { return indexOf(o) >= 0;    }    /**     * Returns the index of the first occurrence of the specified element     * in this list, or -1 if this list does not contain the element.     * More formally, returns the lowest index &lt;tt>i&lt;/tt> such that     * &lt;tt>(o==nullnbsp;?nbsp;get(i)==nullnbsp;:nbsp;o.equals(get(i)))&lt;/tt>,     * or -1 if there is no such index.     */    public int indexOf(Object o) { if (o == null) {     for (int i = 0; i &lt; size; i++)  if (elementData[i]==null)      return i; } else {     for (int i = 0; i &lt; size; i++)  if (o.equals(elementData[i]))      return i; } return -1;    }    /**     * Returns the index of the last occurrence of the specified element     * in this list, or -1 if this list does not contain the element.     * More formally, returns the highest index &lt;tt>i&lt;/tt> such that     * &lt;tt>(o==nullnbsp;?nbsp;get(i)==nullnbsp;:nbsp;o.equals(get(i)))&lt;/tt>,     * or -1 if there is no such index.     */    public int lastIndexOf(Object o) { if (o == null) {     for (int i = size-1; i >= 0; i--)  if (elementData[i]==null)      return i; } else {     for (int i = size-1; i >= 0; i--)  if (o.equals(elementData[i]))      return i; } return -1;    }    /**     * Returns a shallow copy of this &lt;tt>ArrayList&lt;/tt> instance.  (The     * elements themselves are not copied.)     *     * @return a clone of this &lt;tt>ArrayList&lt;/tt> instance     */    public Object clone() { try {     ArrayList&lt;E> v = (ArrayList&lt;E>) super.clone();     v.elementData = Arrays.copyOf(elementData, size);     v.modCount = 0;     return v; } catch (CloneNotSupportedException e) {     // this shouldn't happen, since we are Cloneable     throw new InternalError(); }    }    /**     * Returns an array containing all of the elements in this list     * in proper sequence (from first to last element).     *     * &lt;p>The returned array will be &quot;safe&quot; in that no references to it are     * maintained by this list.  (In other words, this method must allocate     * a new array).  The caller is thus free to modify the returned array.     *     * &lt;p>This method acts as bridge between array-based and collection-based     * APIs.     *     * @return an array containing all of the elements in this list in     *         proper sequence     */    public Object[] toArray() {        return Arrays.copyOf(elementData, size);    }    /**     * Returns an array containing all of the elements in this list in proper     * sequence (from first to last element); the runtime type of the returned     * array is that of the specified array.  If the list fits in the     * specified array, it is returned therein.  Otherwise, a new array is     * allocated with the runtime type of the specified array and the size of     * this list.     *     * &lt;p>If the list fits in the specified array with room to spare     * (i.e., the array has more elements than the list), the element in     * the array immediately following the end of the collection is set to     * &lt;tt>null&lt;/tt>.  (This is useful in determining the length of the     * list &lt;i>only&lt;/i> if the caller knows that the list does not contain     * any null elements.)     *     * @param a the array into which the elements of the list are to     *          be stored, if it is big enough; otherwise, a new array of the     *          same runtime type is allocated for this purpose.     * @return an array containing the elements of the list     * @throws ArrayStoreException if the runtime type of the specified array     *         is not a supertype of the runtime type of every element in     *         this list     * @throws NullPointerException if the specified array is null     */    public &lt;T> T[] toArray(T[] a) {        if (a.length &lt; size)            // Make a new array of a's runtime type, but my contents:            return (T[]) Arrays.copyOf(elementData, size, a.getClass()); System.arraycopy(elementData, 0, a, 0, size);        if (a.length > size)            a[size] = null;        return a;    }    // Positional Access Operations    /**     * Returns the element at the specified position in this list.     *     * @param  index index of the element to return     * @return the element at the specified position in this list     * @throws IndexOutOfBoundsException {@inheritDoc}     */    public E get(int index) { RangeCheck(index); return (E) elementData[index];    }    /**     * Replaces the element at the specified position in this list with     * the specified element.     *     * @param index index of the element to replace     * @param element element to be stored at the specified position     * @return the element previously at the specified position     * @throws IndexOutOfBoundsException {@inheritDoc}     */    public E set(int index, E element) { RangeCheck(index); E oldValue = (E) elementData[index]; elementData[index] = element; return oldValue;    }    /**     * Appends the specified element to the end of this list.     *     * @param e element to be appended to this list     * @return &lt;tt>true&lt;/tt> (as specified by {@link Collection#add})     */    public boolean add(E e) { ensureCapacity(size + 1);  // Increments modCount!! elementData[size++] = e; return true;    }    /**     * Inserts the specified element at the specified position in this     * list. Shifts the element currently at that position (if any) and     * any subsequent elements to the right (adds one to their indices).     *     * @param index index at which the specified element is to be inserted     * @param element element to be inserted     * @throws IndexOutOfBoundsException {@inheritDoc}     */    public void add(int index, E element) { if (index > size || index &lt; 0)     throw new IndexOutOfBoundsException(  &quot;Index: &quot;+index+&quot;, Size: &quot;+size); ensureCapacity(size+1);  // Increments modCount!! System.arraycopy(elementData, index, elementData, index + 1,    size - index); elementData[index] = element; size++;    }    /**     * Removes the element at the specified position in this list.     * Shifts any subsequent elements to the left (subtracts one from their     * indices).     *     * @param index the index of the element to be removed     * @return the element that was removed from the list     * @throws IndexOutOfBoundsException {@inheritDoc}     */    public E remove(int index) { RangeCheck(index); modCount++; E oldValue = (E) elementData[index]; int numMoved = size - index - 1; if (numMoved > 0)     System.arraycopy(elementData, index+1, elementData, index,        numMoved); elementData[--size] = null; // Let gc do its work return oldValue;    }    /**     * Removes the first occurrence of the specified element from this list,     * if it is present.  If the list does not contain the element, it is     * unchanged.  More formally, removes the element with the lowest index     * &lt;tt>i&lt;/tt> such that     * &lt;tt>(o==nullnbsp;?nbsp;get(i)==nullnbsp;:nbsp;o.equals(get(i)))&lt;/tt>     * (if such an element exists).  Returns &lt;tt>true&lt;/tt> if this list     * contained the specified element (or equivalently, if this list     * changed as a result of the call).     *     * @param o element to be removed from this list, if present     * @return &lt;tt>true&lt;/tt> if this list contained the specified element     */    public boolean remove(Object o) { if (o == null) {            for (int index = 0; index &lt; size; index++)  if (elementData[index] == null) {      fastRemove(index);      return true;  } } else {     for (int index = 0; index &lt; size; index++)  if (o.equals(elementData[index])) {      fastRemove(index);      return true;  }        } return false;    }    /*     * Private remove method that skips bounds checking and does not     * return the value removed.     */    private void fastRemove(int index) {        modCount++;        int numMoved = size - index - 1;        if (numMoved > 0)            System.arraycopy(elementData, index+1, elementData, index,                             numMoved);        elementData[--size] = null; // Let gc do its work    }    /**     * Removes all of the elements from this list.  The list will     * be empty after this call returns.     */    public void clear() { modCount++; // Let gc do its work for (int i = 0; i &lt; size; i++)     elementData[i] = null; size = 0;    }    /**     * Appends all of the elements in the specified collection to the end of     * this list, in the order that they are returned by the     * specified collection's Iterator.  The behavior of this operation is     * undefined if the specified collection is modified while the operation     * is in progress.  (This implies that the behavior of this call is     * undefined if the specified collection is this list, and this     * list is nonempty.)     *     * @param c collection containing elements to be added to this list     * @return &lt;tt>true&lt;/tt> if this list changed as a result of the call     * @throws NullPointerException if the specified collection is null     */    public boolean addAll(Collection&lt;? extends E> c) { Object[] a = c.toArray();        int numNew = a.length; ensureCapacity(size + numNew);  // Increments modCount        System.arraycopy(a, 0, elementData, size, numNew);        size += numNew; return numNew != 0;    }    /**     * Inserts all of the elements in the specified collection into this     * list, starting at the specified position.  Shifts the element     * currently at that position (if any) and any subsequent elements to     * the right (increases their indices).  The new elements will appear     * in the list in the order that they are returned by the     * specified collection's iterator.     *     * @param index index at which to insert the first element from the     *              specified collection     * @param c collection containing elements to be added to this list     * @return &lt;tt>true&lt;/tt> if this list changed as a result of the call     * @throws IndexOutOfBoundsException {@inheritDoc}     * @throws NullPointerException if the specified collection is null     */    public boolean addAll(int index, Collection&lt;? extends E> c) { if (index > size || index &lt; 0)     throw new IndexOutOfBoundsException(  &quot;Index: &quot; + index + &quot;, Size: &quot; + size); Object[] a = c.toArray(); int numNew = a.length; ensureCapacity(size + numNew);  // Increments modCount int numMoved = size - index; if (numMoved > 0)     System.arraycopy(elementData, index, elementData, index + numNew,        numMoved);        System.arraycopy(a, 0, elementData, index, numNew); size += numNew; return numNew != 0;    }    /**     * Removes from this list all of the elements whose index is between     * &lt;tt>fromIndex&lt;/tt>, inclusive, and &lt;tt>toIndex&lt;/tt>, exclusive.     * Shifts any succeeding elements to the left (reduces their index).     * This call shortens the list by &lt;tt>(toIndex - fromIndex)&lt;/tt> elements.     * (If &lt;tt>toIndex==fromIndex&lt;/tt>, this operation has no effect.)     *     * @param fromIndex index of first element to be removed     * @param toIndex index after last element to be removed     * @throws IndexOutOfBoundsException if fromIndex or toIndex out of     *              range (fromIndex lt; 0 || fromIndex gt;= size() || toIndex     *              gt; size() || toIndex lt; fromIndex)     */    protected void removeRange(int fromIndex, int toIndex) { modCount++; int numMoved = size - toIndex;        System.arraycopy(elementData, toIndex, elementData, fromIndex,                         numMoved); // Let gc do its work int newSize = size - (toIndex-fromIndex); while (size != newSize)     elementData[--size] = null;    }    /**     * Checks if the given index is in range.  If not, throws an appropriate     * runtime exception.  This method does *not* check if the index is     * negative: It is always used immediately prior to an array access,     * which throws an ArrayIndexOutOfBoundsException if index is negative.     */    private void RangeCheck(int index) { if (index >= size)     throw new IndexOutOfBoundsException(  &quot;Index: &quot;+index+&quot;, Size: &quot;+size);    }    /**     * Save the state of the &lt;tt>ArrayList&lt;/tt> instance to a stream (that     * is, serialize it).     *     * @serialData The length of the array backing the &lt;tt>ArrayList&lt;/tt>     *             instance is emitted (int), followed by all of its elements     *             (each an &lt;tt>Object&lt;/tt>) in the proper order.     */    private void writeObject(java.io.ObjectOutputStream s)        throws java.io.IOException{ // Write out element count, and any hidden stuff int expectedModCount = modCount; s.defaultWriteObject();        // Write out array length        s.writeInt(elementData.length); // Write out all elements in the proper order. for (int i=0; i&lt;size; i++)            s.writeObject(elementData[i]); if (modCount != expectedModCount) {            throw new ConcurrentModificationException();        }    }    /**     * Reconstitute the &lt;tt>ArrayList&lt;/tt> instance from a stream (that is,     * deserialize it).     */    private void readObject(java.io.ObjectInputStream s)        throws java.io.IOException, ClassNotFoundException { // Read in size, and any hidden stuff s.defaultReadObject();        // Read in array length and allocate array        int arrayLength = s.readInt();        Object[] a = elementData = new Object[arrayLength]; // Read in all elements in the proper order. for (int i=0; i&lt;size; i++)            a[i] = s.readObject();    }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="22" width="553" height="453"/>
+        <rawValue><![CDATA[ * %W% %E%\n\npackage java.util;\n\n/**\n * Resizable-array implementation of the <tt>List</tt> interface.  Implements\n * all optional list operations, and permits all elements, including\n * <tt>null</tt>.  In addition to implementing the <tt>List</tt> interface,\n * this class provides methods to manipulate the size of the array that is\n * used internally to store the list.  (This class is roughly equivalent to\n * <tt>Vector</tt>, except that it is unsynchronized.)<p>\n *\n * The <tt>size</tt>, <tt>isEmpty</tt>, <tt>get</tt>, <tt>set</tt>,\n * <tt>iterator</tt>, and <tt>listIterator</tt> operations run in constant\n * time.  The <tt>add</tt> operation runs in <i>amortized constant time</i>,\n * that is, adding n elements requires O(n) time.  All of the other operations\n * run in linear time (roughly speaking).  The constant factor is low compared\n * to that for the <tt>LinkedList</tt> implementation.<p>\n *\n * Each <tt>ArrayList</tt> instance has a <i>capacity</i>.  The capacity is\n * the size of the array used to store the elements in the list.  It is always\n * at least as large as the list size.  As elements are added to an ArrayList,\n * its capacity grows automatically.  The details of the growth policy are not\n * specified beyond the fact that adding an element has constant amortized\n * time cost.<p>\n *\n * An application can increase the capacity of an <tt>ArrayList</tt> instance\n * before adding a large number of elements using the <tt>ensureCapacity</tt>\n * operation.  This may reduce the amount of incremental reallocation.\n *\n * <p><strong>Note that this implementation is not synchronized.</strong>\n * If multiple threads access an <tt>ArrayList</tt> instance concurrently,\n * and at least one of the threads modifies the list structurally, it\n * <i>must</i> be synchronized externally.  (A structural modification is\n * any operation that adds or deletes one or more elements, or explicitly\n * resizes the backing array; merely setting the value of an element is not\n * a structural modification.)  This is typically accomplished by\n * synchronizing on some object that naturally encapsulates the list.\n *\n * If no such object exists, the list should be "wrapped" using the\n * {@link Collections#synchronizedList Collections.synchronizedList}\n * method.  This is best done at creation time, to prevent accidental\n * unsynchronized access to the list:<pre>\n *   List list = Collections.synchronizedList(new ArrayList(...));</pre>\n *\n * <p>The iterators returned by this class's <tt>iterator</tt> and\n * <tt>listIterator</tt> methods are <i>fail-fast</i>: if the list is\n * structurally modified at any time after the iterator is created, in any way\n * except through the iterator's own <tt>remove</tt> or <tt>add</tt> methods,\n * the iterator will throw a {@link ConcurrentModificationException}.  Thus, in\n * the face of concurrent modification, the iterator fails quickly and cleanly,\n * rather than risking arbitrary, non-deterministic behavior at an undetermined\n * time in the future.<p>\n *\n * Note that the fail-fast behavior of an iterator cannot be guaranteed\n * as it is, generally speaking, impossible to make any hard guarantees in the\n * presence of unsynchronized concurrent modification.  Fail-fast iterators\n * throw <tt>ConcurrentModificationException</tt> on a best-effort basis.\n * Therefore, it would be wrong to write a program that depended on this\n * exception for its correctness: <i>the fail-fast behavior of iterators\n * should be used only to detect bugs.</i><p>\n *\n * This class is a member of the\n * <a href="{@docRoot}/../technotes/guides/collections/index.html">\n * Java Collections Framework</a>.\n *\n * @author  Josh Bloch\n * @author  Neal Gafter\n * @version %I%, %G%\n * @see	    Collection\n * @see	    List\n * @see	    LinkedList\n * @see	    Vector\n * @since   1.2\n */\n\npublic class ArrayList<E> extends AbstractList<E>\n        implements List<E>, RandomAccess, Cloneable, java.io.Serializable\n{\n    private static final long serialVersionUID = 8683452581122892189L;\n\n    /**\n     * The array buffer into which the elements of the ArrayList are stored.\n     * The capacity of the ArrayList is the length of this array buffer.\n     */\n    private transient Object[] elementData;\n\n    /**\n     * The size of the ArrayList (the number of elements it contains).\n     *\n     * @serial\n     */\n    private int size;\n\n    /**\n     * Constructs an empty list with the specified initial capacity.\n     *\n     * @param   initialCapacity   the initial capacity of the list\n     * @exception IllegalArgumentException if the specified initial capacity\n     *            is negative\n     */\n    public ArrayList(int initialCapacity) {\n	super();\n        if (initialCapacity < 0)\n            throw new IllegalArgumentException("Illegal Capacity: "+\n                                               initialCapacity);\n	this.elementData = new Object[initialCapacity];\n    }\n\n    /**\n     * Constructs an empty list with an initial capacity of ten.\n     */\n    public ArrayList() {\n	this(10);\n    }\n\n    /**\n     * Constructs a list containing the elements of the specified\n     * collection, in the order they are returned by the collection's\n     * iterator.\n     *\n     * @param c the collection whose elements are to be placed into this list\n     * @throws NullPointerException if the specified collection is null\n     */\n    public ArrayList(Collection<? extends E> c) {\n	elementData = c.toArray();\n	size = elementData.length;\n	// c.toArray might (incorrectly) not return Object[] (see 6260652)\n	if (elementData.getClass() != Object[].class)\n	    elementData = Arrays.copyOf(elementData, size, Object[].class);\n    }\n\n    /**\n     * Trims the capacity of this <tt>ArrayList</tt> instance to be the\n     * list's current size.  An application can use this operation to minimize\n     * the storage of an <tt>ArrayList</tt> instance.\n     */\n    public void trimToSize() {\n	modCount++;\n	int oldCapacity = elementData.length;\n	if (size < oldCapacity) {\n            elementData = Arrays.copyOf(elementData, size);\n	}\n    }\n\n    /**\n     * Increases the capacity of this <tt>ArrayList</tt> instance, if\n     * necessary, to ensure that it can hold at least the number of elements\n     * specified by the minimum capacity argument.\n     *\n     * @param   minCapacity   the desired minimum capacity\n     */\n    public void ensureCapacity(int minCapacity) {\n	modCount++;\n	int oldCapacity = elementData.length;\n	if (minCapacity > oldCapacity) {\n	    Object oldData[] = elementData;\n	    int newCapacity = (oldCapacity * 3)/2 + 1;\n    	    if (newCapacity < minCapacity)\n		newCapacity = minCapacity;\n            // minCapacity is usually close to size, so this is a win:\n            elementData = Arrays.copyOf(elementData, newCapacity);\n	}\n    }\n\n    /**\n     * Returns the number of elements in this list.\n     *\n     * @return the number of elements in this list\n     */\n    public int size() {\n	return size;\n    }\n\n    /**\n     * Returns <tt>true</tt> if this list contains no elements.\n     *\n     * @return <tt>true</tt> if this list contains no elements\n     */\n    public boolean isEmpty() {\n	return size == 0;\n    }\n\n    /**\n     * Returns <tt>true</tt> if this list contains the specified element.\n     * More formally, returns <tt>true</tt> if and only if this list contains\n     * at least one element <tt>e</tt> such that\n     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.\n     *\n     * @param o element whose presence in this list is to be tested\n     * @return <tt>true</tt> if this list contains the specified element\n     */\n    public boolean contains(Object o) {\n	return indexOf(o) >= 0;\n    }\n\n    /**\n     * Returns the index of the first occurrence of the specified element\n     * in this list, or -1 if this list does not contain the element.\n     * More formally, returns the lowest index <tt>i</tt> such that\n     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,\n     * or -1 if there is no such index.\n     */\n    public int indexOf(Object o) {\n	if (o == null) {\n	    for (int i = 0; i < size; i++)\n		if (elementData[i]==null)\n		    return i;\n	} else {\n	    for (int i = 0; i < size; i++)\n		if (o.equals(elementData[i]))\n		    return i;\n	}\n	return -1;\n    }\n\n    /**\n     * Returns the index of the last occurrence of the specified element\n     * in this list, or -1 if this list does not contain the element.\n     * More formally, returns the highest index <tt>i</tt> such that\n     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,\n     * or -1 if there is no such index.\n     */\n    public int lastIndexOf(Object o) {\n	if (o == null) {\n	    for (int i = size-1; i >= 0; i--)\n		if (elementData[i]==null)\n		    return i;\n	} else {\n	    for (int i = size-1; i >= 0; i--)\n		if (o.equals(elementData[i]))\n		    return i;\n	}\n	return -1;\n    }\n\n    /**\n     * Returns a shallow copy of this <tt>ArrayList</tt> instance.  (The\n     * elements themselves are not copied.)\n     *\n     * @return a clone of this <tt>ArrayList</tt> instance\n     */\n    public Object clone() {\n	try {\n	    ArrayList<E> v = (ArrayList<E>) super.clone();\n	    v.elementData = Arrays.copyOf(elementData, size);\n	    v.modCount = 0;\n	    return v;\n	} catch (CloneNotSupportedException e) {\n	    // this shouldn't happen, since we are Cloneable\n	    throw new InternalError();\n	}\n    }\n\n    /**\n     * Returns an array containing all of the elements in this list\n     * in proper sequence (from first to last element).\n     *\n     * <p>The returned array will be "safe" in that no references to it are\n     * maintained by this list.  (In other words, this method must allocate\n     * a new array).  The caller is thus free to modify the returned array.\n     *\n     * <p>This method acts as bridge between array-based and collection-based\n     * APIs.\n     *\n     * @return an array containing all of the elements in this list in\n     *         proper sequence\n     */\n    public Object[] toArray() {\n        return Arrays.copyOf(elementData, size);\n    }\n\n    /**\n     * Returns an array containing all of the elements in this list in proper\n     * sequence (from first to last element); the runtime type of the returned\n     * array is that of the specified array.  If the list fits in the\n     * specified array, it is returned therein.  Otherwise, a new array is\n     * allocated with the runtime type of the specified array and the size of\n     * this list.\n     *\n     * <p>If the list fits in the specified array with room to spare\n     * (i.e., the array has more elements than the list), the element in\n     * the array immediately following the end of the collection is set to\n     * <tt>null</tt>.  (This is useful in determining the length of the\n     * list <i>only</i> if the caller knows that the list does not contain\n     * any null elements.)\n     *\n     * @param a the array into which the elements of the list are to\n     *          be stored, if it is big enough; otherwise, a new array of the\n     *          same runtime type is allocated for this purpose.\n     * @return an array containing the elements of the list\n     * @throws ArrayStoreException if the runtime type of the specified array\n     *         is not a supertype of the runtime type of every element in\n     *         this list\n     * @throws NullPointerException if the specified array is null\n     */\n    public <T> T[] toArray(T[] a) {\n        if (a.length < size)\n            // Make a new array of a's runtime type, but my contents:\n            return (T[]) Arrays.copyOf(elementData, size, a.getClass());\n	System.arraycopy(elementData, 0, a, 0, size);\n        if (a.length > size)\n            a[size] = null;\n        return a;\n    }\n\n    // Positional Access Operations\n\n    /**\n     * Returns the element at the specified position in this list.\n     *\n     * @param  index index of the element to return\n     * @return the element at the specified position in this list\n     * @throws IndexOutOfBoundsException {@inheritDoc}\n     */\n    public E get(int index) {\n	RangeCheck(index);\n\n	return (E) elementData[index];\n    }\n\n    /**\n     * Replaces the element at the specified position in this list with\n     * the specified element.\n     *\n     * @param index index of the element to replace\n     * @param element element to be stored at the specified position\n     * @return the element previously at the specified position\n     * @throws IndexOutOfBoundsException {@inheritDoc}\n     */\n    public E set(int index, E element) {\n	RangeCheck(index);\n\n	E oldValue = (E) elementData[index];\n	elementData[index] = element;\n	return oldValue;\n    }\n\n    /**\n     * Appends the specified element to the end of this list.\n     *\n     * @param e element to be appended to this list\n     * @return <tt>true</tt> (as specified by {@link Collection#add})\n     */\n    public boolean add(E e) {\n	ensureCapacity(size + 1);  // Increments modCount!!\n	elementData[size++] = e;\n	return true;\n    }\n\n    /**\n     * Inserts the specified element at the specified position in this\n     * list. Shifts the element currently at that position (if any) and\n     * any subsequent elements to the right (adds one to their indices).\n     *\n     * @param index index at which the specified element is to be inserted\n     * @param element element to be inserted\n     * @throws IndexOutOfBoundsException {@inheritDoc}\n     */\n    public void add(int index, E element) {\n	if (index > size || index < 0)\n	    throw new IndexOutOfBoundsException(\n		"Index: "+index+", Size: "+size);\n\n	ensureCapacity(size+1);  // Increments modCount!!\n	System.arraycopy(elementData, index, elementData, index + 1,\n			 size - index);\n	elementData[index] = element;\n	size++;\n    }\n\n    /**\n     * Removes the element at the specified position in this list.\n     * Shifts any subsequent elements to the left (subtracts one from their\n     * indices).\n     *\n     * @param index the index of the element to be removed\n     * @return the element that was removed from the list\n     * @throws IndexOutOfBoundsException {@inheritDoc}\n     */\n    public E remove(int index) {\n	RangeCheck(index);\n\n	modCount++;\n	E oldValue = (E) elementData[index];\n\n	int numMoved = size - index - 1;\n	if (numMoved > 0)\n	    System.arraycopy(elementData, index+1, elementData, index,\n			     numMoved);\n	elementData[--size] = null; // Let gc do its work\n\n	return oldValue;\n    }\n\n    /**\n     * Removes the first occurrence of the specified element from this list,\n     * if it is present.  If the list does not contain the element, it is\n     * unchanged.  More formally, removes the element with the lowest index\n     * <tt>i</tt> such that\n     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>\n     * (if such an element exists).  Returns <tt>true</tt> if this list\n     * contained the specified element (or equivalently, if this list\n     * changed as a result of the call).\n     *\n     * @param o element to be removed from this list, if present\n     * @return <tt>true</tt> if this list contained the specified element\n     */\n    public boolean remove(Object o) {\n	if (o == null) {\n            for (int index = 0; index < size; index++)\n		if (elementData[index] == null) {\n		    fastRemove(index);\n		    return true;\n		}\n	} else {\n	    for (int index = 0; index < size; index++)\n		if (o.equals(elementData[index])) {\n		    fastRemove(index);\n		    return true;\n		}\n        }\n	return false;\n    }\n\n    /*\n     * Private remove method that skips bounds checking and does not\n     * return the value removed.\n     */\n    private void fastRemove(int index) {\n        modCount++;\n        int numMoved = size - index - 1;\n        if (numMoved > 0)\n            System.arraycopy(elementData, index+1, elementData, index,\n                             numMoved);\n        elementData[--size] = null; // Let gc do its work\n    }\n\n    /**\n     * Removes all of the elements from this list.  The list will\n     * be empty after this call returns.\n     */\n    public void clear() {\n	modCount++;\n\n	// Let gc do its work\n	for (int i = 0; i < size; i++)\n	    elementData[i] = null;\n\n	size = 0;\n    }\n\n    /**\n     * Appends all of the elements in the specified collection to the end of\n     * this list, in the order that they are returned by the\n     * specified collection's Iterator.  The behavior of this operation is\n     * undefined if the specified collection is modified while the operation\n     * is in progress.  (This implies that the behavior of this call is\n     * undefined if the specified collection is this list, and this\n     * list is nonempty.)\n     *\n     * @param c collection containing elements to be added to this list\n     * @return <tt>true</tt> if this list changed as a result of the call\n     * @throws NullPointerException if the specified collection is null\n     */\n    public boolean addAll(Collection<? extends E> c) {\n	Object[] a = c.toArray();\n        int numNew = a.length;\n	ensureCapacity(size + numNew);  // Increments modCount\n        System.arraycopy(a, 0, elementData, size, numNew);\n        size += numNew;\n	return numNew != 0;\n    }\n\n    /**\n     * Inserts all of the elements in the specified collection into this\n     * list, starting at the specified position.  Shifts the element\n     * currently at that position (if any) and any subsequent elements to\n     * the right (increases their indices).  The new elements will appear\n     * in the list in the order that they are returned by the\n     * specified collection's iterator.\n     *\n     * @param index index at which to insert the first element from the\n     *              specified collection\n     * @param c collection containing elements to be added to this list\n     * @return <tt>true</tt> if this list changed as a result of the call\n     * @throws IndexOutOfBoundsException {@inheritDoc}\n     * @throws NullPointerException if the specified collection is null\n     */\n    public boolean addAll(int index, Collection<? extends E> c) {\n	if (index > size || index < 0)\n	    throw new IndexOutOfBoundsException(\n		"Index: " + index + ", Size: " + size);\n\n	Object[] a = c.toArray();\n	int numNew = a.length;\n	ensureCapacity(size + numNew);  // Increments modCount\n\n	int numMoved = size - index;\n	if (numMoved > 0)\n	    System.arraycopy(elementData, index, elementData, index + numNew,\n			     numMoved);\n\n        System.arraycopy(a, 0, elementData, index, numNew);\n	size += numNew;\n	return numNew != 0;\n    }\n\n    /**\n     * Removes from this list all of the elements whose index is between\n     * <tt>fromIndex</tt>, inclusive, and <tt>toIndex</tt>, exclusive.\n     * Shifts any succeeding elements to the left (reduces their index).\n     * This call shortens the list by <tt>(toIndex - fromIndex)</tt> elements.\n     * (If <tt>toIndex==fromIndex</tt>, this operation has no effect.)\n     *\n     * @param fromIndex index of first element to be removed\n     * @param toIndex index after last element to be removed\n     * @throws IndexOutOfBoundsException if fromIndex or toIndex out of\n     *              range (fromIndex &lt; 0 || fromIndex &gt;= size() || toIndex\n     *              &gt; size() || toIndex &lt; fromIndex)\n     */\n    protected void removeRange(int fromIndex, int toIndex) {\n	modCount++;\n	int numMoved = size - toIndex;\n        System.arraycopy(elementData, toIndex, elementData, fromIndex,\n                         numMoved);\n\n	// Let gc do its work\n	int newSize = size - (toIndex-fromIndex);\n	while (size != newSize)\n	    elementData[--size] = null;\n    }\n\n    /**\n     * Checks if the given index is in range.  If not, throws an appropriate\n     * runtime exception.  This method does *not* check if the index is\n     * negative: It is always used immediately prior to an array access,\n     * which throws an ArrayIndexOutOfBoundsException if index is negative.\n     */\n    private void RangeCheck(int index) {\n	if (index >= size)\n	    throw new IndexOutOfBoundsException(\n		"Index: "+index+", Size: "+size);\n    }\n\n    /**\n     * Save the state of the <tt>ArrayList</tt> instance to a stream (that\n     * is, serialize it).\n     *\n     * @serialData The length of the array backing the <tt>ArrayList</tt>\n     *             instance is emitted (int), followed by all of its elements\n     *             (each an <tt>Object</tt>) in the proper order.\n     */\n    private void writeObject(java.io.ObjectOutputStream s)\n        throws java.io.IOException{\n	// Write out element count, and any hidden stuff\n	int expectedModCount = modCount;\n	s.defaultWriteObject();\n\n        // Write out array length\n        s.writeInt(elementData.length);\n\n	// Write out all elements in the proper order.\n	for (int i=0; i<size; i++)\n            s.writeObject(elementData[i]);\n\n	if (modCount != expectedModCount) {\n            throw new ConcurrentModificationException();\n        }\n\n    }\n\n    /**\n     * Reconstitute the <tt>ArrayList</tt> instance from a stream (that is,\n     * deserialize it).\n     */\n    private void readObject(java.io.ObjectInputStream s)\n        throws java.io.IOException, ClassNotFoundException {\n	// Read in size, and any hidden stuff\n	s.defaultReadObject();\n\n        // Read in array length and allocate array\n        int arrayLength = s.readInt();\n        Object[] a = elementData = new Object[arrayLength];\n\n	// Read in all elements in the proper order.\n	for (int i=0; i<size; i++)\n            a[i] = s.readObject();\n    }\n}\n]]></rawValue>
+        <styleRanges>0, 11, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>11, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>32, 16, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>49, 28, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>77, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>81, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>85, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>90, 96, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>186, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>190, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>194, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>199, 35, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>234, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>238, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>242, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>247, 166, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>413, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>417, 6, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>423, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>428, 36, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>464, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>467, 11, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>478, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>482, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>486, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>491, 2, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>493, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>497, 7, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>504, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>509, 2, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>511, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>515, 3, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>518, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>523, 2, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>525, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>529, 3, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>532, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>537, 5, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>542, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>546, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>554, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>559, 6, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>565, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>569, 12, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>581, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>586, 42, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>628, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>632, 3, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>635, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>640, 19, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>659, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>662, 23, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>685, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>689, 179, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>868, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>872, 10, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>882, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>887, 16, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>903, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>906, 12, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>918, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>922, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>931, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>936, 16, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>952, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>955, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>963, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>967, 344, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1311, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1314, 54, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1368, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1372, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1381, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1386, 64, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1450, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1454, 14, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1468, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1473, 78, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1551, 11, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1562, 50, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1612, 9, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1621, 34, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1655, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1659, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1668, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1673, 97, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1770, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1773, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>1777, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>1781, 420, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2201, 65, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>2266, 108, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2374, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2379, 67, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2446, 6, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2452, 7, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2459, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2462, 39, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2501, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2505, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2513, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2518, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2526, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2530, 12, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2542, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2547, 13, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2560, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2563, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2567, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2568, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2572, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2576, 133, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2709, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2713, 6, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2719, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2724, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2728, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2732, 3, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2735, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2740, 39, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2779, 39, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>2818, 129, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>2947, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>2948, 64, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3012, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3015, 25, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3040, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3041, 189, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3230, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3231, 24, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3255, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3259, 31, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3290, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3295, 10, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3305, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3306, 121, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3427, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3430, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3438, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3439, 65, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3504, 7, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3511, 134, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3645, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>3649, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3657, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3664, 16, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3680, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3687, 17, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3704, 8, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3712, 13, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3725, 4, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3729, 19, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3748, 4, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3752, 13, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3765, 4, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3769, 19, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3788, 4, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3792, 15, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3807, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>3813, 10, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>3823, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3825, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3831, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3832, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3837, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3851, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3858, 25, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3883, 10, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3893, 62, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3955, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3962, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3963, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3969, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3970, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3975, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3976, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>3980, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>3981, 16, fontStyle=italic, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>3997, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4027, 161, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4188, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4193, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4200, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4201, 9, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4210, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4220, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>4231, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4238, 89, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4327, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>4334, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4342, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4347, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4354, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4355, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4358, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4359, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>4363, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4370, 87, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4457, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>4463, 61, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4524, 10, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>4534, 97, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4631, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4636, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4642, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4653, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4656, 21, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4677, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4682, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4694, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4696, 35, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4731, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4736, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4737, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4740, 26, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4766, 20, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>4786, 68, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4854, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4858, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4859, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>4870, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4873, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>4876, 37, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4913, 76, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>4989, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>4994, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5000, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5016, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5020, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5037, 171, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5208, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>5214, 72, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5286, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>5293, 65, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5358, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5363, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5369, 24, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5393, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5400, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5410, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5421, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5438, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5442, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5445, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5456, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5457, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5463, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5466, 67, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>5533, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5534, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5536, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5538, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5549, 24, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5573, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5578, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5585, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5596, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5606, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5612, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5613, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5624, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5626, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5630, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5641, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5646, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5660, 38, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5698, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>5702, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5711, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>5716, 124, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5840, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>5844, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5853, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>5858, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>5876, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5881, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5887, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5888, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5892, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5909, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5917, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5922, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5925, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5940, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5951, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5952, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5958, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5961, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5963, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5965, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>5969, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>5999, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6010, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6020, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6026, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6027, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6038, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6040, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6044, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6061, 42, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6103, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>6107, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6116, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>6121, 156, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6277, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>6283, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6336, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6341, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6347, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6348, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6352, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6368, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6371, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6388, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6396, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6401, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6404, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6419, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6430, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6431, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6437, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6440, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6442, 55, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6497, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6508, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6515, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6518, 49, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6567, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6569, 70, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6639, 59, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>6698, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6710, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6721, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6731, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6737, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6738, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6749, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6779, 70, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6849, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>6856, 44, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6900, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6905, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6911, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6912, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6915, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6926, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6932, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6933, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>6937, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>6950, 19, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6969, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>6973, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>6977, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>6982, 50, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7032, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>7039, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7040, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7044, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7048, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7053, 42, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7095, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7100, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7106, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7107, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7114, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7115, 7, fontStyle=normal, foreground=Color {0, 0, 0}, background=Color {212, 212, 212}</styleRanges>
+        <styleRanges>7122, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7128, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7134, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7135, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>7139, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7157, 19, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7176, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7180, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7184, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7189, 76, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7265, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7269, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7273, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7278, 63, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7341, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7345, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7346, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7351, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7369, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7373, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7426, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7431, 16, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7447, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>7453, 62, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7515, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>7522, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7523, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7527, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7531, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7536, 52, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7588, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7593, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7599, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7600, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7607, 23, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7630, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>7636, 29, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>7665, 102, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7767, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7768, 92, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7860, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7864, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7865, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7870, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7888, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7892, 63, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7955, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7960, 12, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>7972, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>7973, 36, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8009, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8014, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8020, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8021, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8024, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8046, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8048, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8055, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8059, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8068, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8071, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8073, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8076, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8088, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8092, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8101, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8103, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8105, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8116, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8121, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8125, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8133, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8139, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8146, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8150, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8158, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8161, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8163, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8166, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8178, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8182, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8191, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8193, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8204, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8215, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8227, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8233, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8241, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8247, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8263, 101, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8364, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8365, 93, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8458, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8462, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8463, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8468, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8486, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8490, 63, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8553, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8558, 12, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8570, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8571, 36, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8607, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8612, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8618, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8619, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8622, 26, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8648, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8650, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8657, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8661, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8670, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8673, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8675, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8678, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8683, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8687, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8706, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8708, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8710, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8721, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8726, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8730, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8738, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8744, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8751, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8755, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8763, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8766, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8768, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8771, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8776, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8780, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8799, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8801, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8812, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>8823, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8835, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8841, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8849, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>8855, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>8871, 42, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8913, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8917, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>8926, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>8931, 75, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9006, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>9013, 17, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9030, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9034, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9043, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9048, 17, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9065, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9070, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9076, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9095, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9098, 40, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9138, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9143, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9160, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>9171, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9181, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9187, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9188, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>9199, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9201, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>9205, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9215, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>9223, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9234, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9240, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9247, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9252, 39, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9291, 49, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>9340, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9345, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9350, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9351, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9354, 32, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9386, 142, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9528, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9531, 232, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9763, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9766, 40, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9806, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9807, 20, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9827, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>9828, 33, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9861, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>9868, 95, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>9963, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>9968, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>9974, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10004, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>10010, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10018, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10024, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10025, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>10036, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10038, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>10042, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>10056, 416, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10472, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>10475, 214, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10689, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>10693, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10697, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>10702, 64, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10766, 3, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>10769, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10773, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>10777, 93, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>10870, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>10876, 206, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11082, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11089, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11142, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11149, 170, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11319, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11326, 60, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11386, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11391, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11397, 34, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11431, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11433, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11437, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11443, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11446, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11450, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11464, 58, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>11522, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11534, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11540, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11554, 6, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11560, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11561, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11572, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11574, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11578, 25, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11603, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11612, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11613, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11624, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11635, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11639, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11650, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11652, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11656, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11662, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11665, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11669, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11685, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>11689, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11693, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11697, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11707, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>11713, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11728, 32, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>11760, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>11765, 85, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11850, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11856, 46, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11902, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11909, 59, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>11968, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>11975, 27, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12002, 13, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>12015, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12023, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12028, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12034, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12041, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12044, 32, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12076, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12082, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12087, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12098, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12118, 120, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12238, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12244, 46, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12290, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12296, 63, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12359, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12366, 57, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12423, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12430, 27, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12457, 13, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>12470, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12478, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12483, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12489, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12496, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12499, 60, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12559, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12570, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12580, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12591, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12611, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12617, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12639, 80, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12719, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12725, 46, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12771, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>12778, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12779, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>12783, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12787, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>12792, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12810, 22, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>12832, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>12841, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12846, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12852, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12853, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12860, 28, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12888, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12892, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12900, 25, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>12925, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12926, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12937, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12938, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>12942, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12952, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12958, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12959, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>12963, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>12976, 234, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13210, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>13216, 69, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13285, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>13291, 39, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13330, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>13337, 27, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13364, 13, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>13377, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13385, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13390, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13396, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13397, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13401, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13406, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13409, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13431, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13433, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13443, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13447, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13467, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13472, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13473, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>13476, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13506, 9, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>13515, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13522, 10, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>13532, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13533, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13537, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13557, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13561, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13567, 25, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>13592, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13600, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13609, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13610, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13621, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13630, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13641, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13658, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13662, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13674, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13685, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13705, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>13709, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>13724, 178, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13902, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>13908, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>13961, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>13968, 51, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14019, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>14026, 27, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14053, 13, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>14066, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14074, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14079, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14085, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14095, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14098, 32, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14130, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14138, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14160, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14171, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14182, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14185, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14197, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14201, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14216, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14218, 28, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14246, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14255, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14256, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14267, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14278, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14289, 29, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14318, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14329, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14332, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>14336, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14340, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14344, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14346, 22, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>14368, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14370, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>14376, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>14398, 238, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14636, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14640, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14641, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14646, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14664, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14668, 63, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14731, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14736, 46, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14782, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14786, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14790, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>14795, 139, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14934, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>14940, 59, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>14999, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>15006, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>15007, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>15011, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>15015, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>15020, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>15073, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15078, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15084, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15085, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15092, 21, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15113, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15115, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15122, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15126, 16, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15142, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15145, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15147, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15150, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15170, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15174, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15187, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15189, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15191, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15202, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15213, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15217, 35, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15252, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15258, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15259, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15263, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15272, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15276, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15284, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15287, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15289, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15292, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15312, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15316, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15329, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15331, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15342, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15353, 43, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15396, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15402, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15403, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15407, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15424, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15430, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15431, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15436, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15449, 112, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>15561, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15566, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15573, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15574, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15578, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15590, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15593, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15611, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15619, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15631, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15634, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15646, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15650, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15672, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15674, 35, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15709, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15718, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15719, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15730, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15741, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15752, 57, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15809, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15820, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15823, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>15827, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15831, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15835, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15837, 22, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>15859, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15870, 118, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>15988, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>15993, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>15999, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16000, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16004, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16016, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16024, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16030, 22, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>16052, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16053, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16056, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16058, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16061, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16073, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16077, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16089, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16100, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16106, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16110, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16114, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16118, 17, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16135, 474, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16609, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>16615, 66, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16681, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>16688, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16689, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>16693, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16697, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>16702, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16755, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>16762, 65, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>16827, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16832, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16838, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16839, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16846, 21, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16867, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16874, 44, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16918, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>16921, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16933, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16939, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16957, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>16961, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>16974, 23, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>16997, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17012, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17021, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17028, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>17039, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17041, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>17045, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17064, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>17068, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17081, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17087, 25, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17112, 410, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17522, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>17528, 107, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17635, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>17641, 66, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17707, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>17714, 1, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17715, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>17719, 4, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17723, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>17728, 53, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17781, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>17788, 27, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17815, 13, fontStyle=normal, foreground=Color {63, 63, 191}</styleRanges>
+        <styleRanges>17828, 8, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17836, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>17843, 65, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>17908, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17913, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17919, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17920, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17927, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17935, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17938, 21, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17959, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17966, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17976, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>17978, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17988, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>17992, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18012, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18017, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18018, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18021, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18051, 9, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>18060, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18071, 10, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>18081, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18084, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18088, 32, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18120, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18123, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18135, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18141, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18159, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18163, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18176, 23, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>18199, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18201, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18204, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18216, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18220, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18231, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18233, 28, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18261, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18270, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18271, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18282, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18291, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18302, 53, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18355, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18364, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18371, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18382, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18401, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>18405, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18418, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>18424, 25, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>18449, 84, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18533, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18537, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18546, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18551, 17, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18568, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18572, 7, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18579, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18584, 124, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18708, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18712, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18721, 1, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18722, 11, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18733, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18738, 22, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18760, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18764, 18, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18782, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>18787, 47, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18834, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>18840, 55, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18895, 6, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>18901, 55, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>18956, 7, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>18963, 205, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>19168, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19173, 9, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19182, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19183, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19187, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19200, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19203, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19215, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19218, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19231, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19239, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19244, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19247, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19259, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19263, 27, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19290, 9, fontStyle=italic, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19299, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19300, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19311, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19322, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19333, 51, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19384, 22, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>19406, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19407, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19410, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19421, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19425, 25, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19450, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19455, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19457, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19461, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19479, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19490, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19493, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19497, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19501, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19505, 13, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19518, 309, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>19827, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19832, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19839, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19840, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19844, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19856, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19859, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19870, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19872, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19883, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19887, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19894, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19899, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19900, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>19903, 30, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19933, 9, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>19942, 7, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19949, 10, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>19959, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19960, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>19964, 14, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19978, 33, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20011, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20015, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20024, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20029, 68, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20097, 11, fontStyle=bold, foreground=Color {127, 159, 191}</styleRanges>
+        <styleRanges>20108, 37, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20145, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20149, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20158, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20163, 107, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20270, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20274, 6, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20280, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20285, 30, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20315, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20320, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20327, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20328, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20332, 51, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20383, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20389, 23, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20412, 49, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>20461, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20462, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20465, 20, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20485, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20493, 36, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20529, 26, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>20555, 19, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20574, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20585, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20586, 6, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20592, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20597, 47, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>20644, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20645, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20648, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20650, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20653, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20661, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20665, 33, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20698, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20709, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20717, 2, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20719, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20721, 8, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>20729, 36, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20765, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20770, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20771, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20774, 58, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20832, 28, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20860, 4, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20864, 9, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20873, 5, fontStyle=normal, foreground=Color {127, 127, 159}</styleRanges>
+        <styleRanges>20878, 65, fontStyle=normal, foreground=Color {63, 95, 191}</styleRanges>
+        <styleRanges>20943, 5, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20948, 7, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20955, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>20956, 4, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>20960, 49, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21009, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>21015, 48, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21063, 38, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>21101, 33, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21134, 43, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>21177, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21185, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>21188, 49, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21237, 11, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>21248, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21251, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>21254, 24, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21278, 45, fontStyle=normal, foreground=Color {63, 127, 95}</styleRanges>
+        <styleRanges>21323, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21324, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>21327, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21329, 3, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>21332, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>21340, 4, fontStyle=normal, foreground=Color {0, 0, 192}</styleRanges>
+        <styleRanges>21344, 50, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.21">
+      <elements id="EclipseWindow6" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - java.util.ArrayList - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1076" y="29" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.22">
+      <elements id="TabFolder2" kind="TabFolder"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TabFolder" activePage="ArrayList.class" tabCount="2">
+        <pages>test.fan</pages>
+        <pages>ArrayList.class</pages>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>

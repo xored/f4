@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="displayingDocsAtCompletionFfi" version="3.0" id="__AKz8N60EeCb36lRJMHQOw" description="1. Select element in the code and press F2&#xD;&#xA;2. Make sure that doc is displayed&#xD;&#xA;3. Input element, make sure that completion is displayed, that doc is displayed too" tags="skipExecution" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-54">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="displayingDocsAtCompletionFfi" version="3.0" id="__AKz8N60EeCb36lRJMHQOw" description="1. Select element in the code and press F2&#xD;&#xA;2. Make sure that doc is displayed&#xD;&#xA;3. Input element, make sure that completion is displayed, that doc is displayed too" type="ecl" externalReference="http://jira4.xored.com/browse/IDE-54">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_8-OxEMyPEeCqoItsrYQC5Q</contexts>
@@ -20,89 +20,78 @@ with [get-editor "usingFFI.fan" | get-editbox] {
     key-type CR
     type-text "Void main() {"
     key-type CR
-    type-text "ArrayList al := A"
-    key-type "Ctrl+SPACE"
-    key-type DEL
-    key-type "ARROW_RIGHT"
+    type-text "ArrayList al := ArrayList()"
     key-type CR
     type-text "al."
     show-content-assist
     type-text ad
 }
-
-//with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
-//    with [get-table] {
-//        get-property className | equals "org.eclipse.swt.widgets.Table" | verify-true
-//        get-property itemCount | equals 2 | verify-true
-//        get-item "add\\(Int index, \\[java\\]::E? element\\) : Void - ArrayList" | get-property caption 
-//            | equals "add(Int index, [java]::E? element) : Void - ArrayList" | verify-true
-//        get-item "add\\(Int index, \\[java\\]::E? element\\) : Void - ArrayList" | get-property selected | equals true 
-//            | verify-true
-//    }
-//    with [get-window -from "AbstractInformationControl.<init>()" | get-control Browser] {
-//        get-property className | equals "org.eclipse.swt.browser.Browser" | verify-true
-//        get-property enablement | equals true | verify-true
-//        get-property text | equals "<HTML><HEAD>\\n"
-//            + "<STYLE type=text/css CHARSET=\"ISO-8859-1\">/* Font definitions */\\n "
-///*            + "html         { font-family: \'Segoe UI\',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\\n"
-//            + "body, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\\n"
-//            + "pre\t\t\t\t{ font-family: monospace; }\\n\\n"
-//            + "/* Margins */ /*\\n "
-///*            + "body\t     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\\n"
-//            + "h1           { margin-top: 0.3em; margin-bottom: 0.04em; }\t\\n"
-//            + "h2           { margin-top: 2em; margin-bottom: 0.25em; }\\n"
-//            + "h3           { margin-top: 1.7em; margin-bottom: 0.25em; }\\n"
-//            + "h4           { margin-top: 2em; margin-bottom: 0.3em; }\\n"
-//            + "h5           { margin-top: 0px; margin-bottom: 0px; }\\n"
-//            + "p            { margin-top: 1em; margin-bottom: 1em; }\\n"
-//            + "pre\t         { margin-left: 0.6em; }\\n"
-//            + "ul\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
-//            + "li\t         { margin-top: 0px; margin-bottom: 0px; } \\n"
-//            + "li p\t     { margin-top: 0px; margin-bottom: 0px; } \\n"
-//            + "ol\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
-//            + "dl\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
-//            + "dt\t         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\\n"
-//            + "dd\t         { margin-top: 0px; margin-bottom: 0px; }\\n\\n"
-//            + "/* Styles and colors */ //\\n"
-//            + "a:link\t     { color: #0000FF; }\\n"
-//            + "a:hover\t     { color: #000080; }\\n"
-//            + "a:visited    { text-decoration: underline; }\\n"
-//            + "h4           { font-style: italic; }\\n"
-//            + "strong\t     { font-weight: bold; }\\n"
-//            + "em\t         { font-style: italic; }\\n"
-//            + "var\t         { font-style: italic; }\\n"
-//            + "th\t         { font-weight: bold; }\\n"
-//            + "</STYLE>\\n"
-//            + "</HEAD>\\n"
-//            + "<BODY style=\"OVERFLOW: hidden\" bgColor=#ffffe1 text=#000>\\n"
-//            + "<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\\n"
-//            + "                <A title=\"type parameter in ArrayList\" href=\"../../java/util/ArrayList.html\">E</A>&nbsp;element)</PRE>\\n"
-//            + "<DL>\\n"
-//            + "<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \\n"
-//            + "<P></P>\\n"
-//            + "<DD>\\n"
-//            + "<DL>\\n"
-//            + "<DT><B>Specified by:</B>\\n"
-//            + "<DD><CODE><A href=\"../../java/util/List.html#add(int, E)\">add</A></CODE> in interface <CODE><A title=\"interface in java.util\" href=\"../../java/util/List.html\">List</A>&lt;<A title=\"type parameter in ArrayList\" href=\"../../java/util/ArrayList.html\">E</A>&gt;</CODE>\\n"
-//            + "<DT><B>Overrides:</B>\\n"
-//            + "<DD><CODE><A href=\"../../java/util/AbstractList.html#add(int, E)\">add</A></CODE> in class <CODE><A title=\"class in java.util\" href=\"../../java/util/AbstractList.html\">AbstractList</A>&lt;<A title=\"type parameter in ArrayList\" href=\"../../java/util/ArrayList.html\">E</A>&gt;</CODE></DD></DL>\\n"
-//            + "<DD>\\n"
-//            + "<DL>\\n"
-//            + "<DT><B>Parameters:</B>\\n"
-//            + "<DD><CODE>index</CODE> - index at which the specified element is to be inserted\\n"
-//            + "<DD><CODE>element</CODE> - element to be inserted \\n"
-//            + "<DT><B>Throws:</B> \\n"
-//            + "<DD><CODE><A title=\"class in java.lang\" href=\"../../java/lang/IndexOutOfBoundsException.html\">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\\n"
-//            + "<HR>\\n"
-//            + "</FONT></BODY></HTML>" | verify-true
-//        get-property uri | equals "about:blank" | verify-true
-//    }
-//}
-
+with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
+    with [get-table] {
+        get-item "add\\(\\[java\\]::E? e\\) : Bool - Collection" | get-property caption 
+            | equals "add([java]::E? e) : Bool - Collection" | verify-true
+        get-item "add\\(\\[java\\]::E? e\\) : Bool - Collection" | get-property selected | equals true | verify-true
+    }
+    with [get-window -from "AbstractInformationControl.<init>()" | get-control Browser] {
+        get-property className | equals "org.eclipse.swt.browser.Browser" | verify-true
+        get-property text | equals "<HTML><HEAD>\\n"
+            + "<STYLE type=text/css CHARSET=\"ISO-8859-1\">/* Font definitions */\\n"
+            + "html         { font-family: \'Segoe UI\',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\\n"
+            + "body, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\\n"
+            + "pre\t\t\t\t{ font-family: monospace; }\\n\\n"
+            + "/* Margins */\\n"
+            + "body\t     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\\n"
+            + "h1           { margin-top: 0.3em; margin-bottom: 0.04em; }\t\\n"
+            + "h2           { margin-top: 2em; margin-bottom: 0.25em; }\\n"
+            + "h3           { margin-top: 1.7em; margin-bottom: 0.25em; }\\n"
+            + "h4           { margin-top: 2em; margin-bottom: 0.3em; }\\n"
+            + "h5           { margin-top: 0px; margin-bottom: 0px; }\\n"
+            + "p            { margin-top: 1em; margin-bottom: 1em; }\\n"
+            + "pre\t         { margin-left: 0.6em; }\\n"
+            + "ul\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
+            + "li\t         { margin-top: 0px; margin-bottom: 0px; } \\n"
+            + "li p\t     { margin-top: 0px; margin-bottom: 0px; } \\n"
+            + "ol\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
+            + "dl\t         { margin-top: 0px; margin-bottom: 1em; }\\n"
+            + "dt\t         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\\n"
+            + "dd\t         { margin-top: 0px; margin-bottom: 0px; }\\n\\n"
+            + "/* Styles and colors */\\n"
+            + "a:link\t     { color: #0000FF; }\\n"
+            + "a:hover\t     { color: #000080; }\\n"
+            + "a:visited    { text-decoration: underline; }\\n"
+            + "h4           { font-style: italic; }\\n"
+            + "strong\t     { font-weight: bold; }\\n"
+            + "em\t         { font-style: italic; }\\n"
+            + "var\t         { font-style: italic; }\\n"
+            + "th\t         { font-weight: bold; }\\n"
+            + "</STYLE>\\n"
+            + "</HEAD>\\n"
+            + "<BODY style=\"OVERFLOW: hidden\" bgColor=#ffffe1 text=#000>Ensures that this collection contains the specified element (optional operation). Returns <TT>true</TT> if this collection changed as a result of the call. (Returns <TT>false</TT> if this collection does not permit duplicates and already contains the specified element.)\\n"
+            + "<P>Collections that support this operation may place limitations on what elements may be added to this collection. In particular, some collections will refuse to add <TT>null</TT> elements, and others will impose restrictions on the type of elements that may be added. Collection classes should clearly specify in their documentation any restrictions on what elements may be added.\\n"
+            + "<P>If a collection refuses to add a particular element for any reason other than that it already contains the element, it <I>must</I> throw an exception (rather than returning <TT>false</TT>). This preserves the invariant that a collection always contains the specified element after this call returns.\\n"
+            + "<DL>\\n"
+            + "<DT>Parameters:\\n"
+            + "<DD><B>e</B> element whose presence in this collection is to be ensured\\n"
+            + "<DT>Returns:\\n"
+            + "<DD><TT>true</TT> if this collection changed as a result of the call\\n"
+            + "<DT>Throws:\\n"
+            + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(Collection.class%E2%98%83Collection~add~TE;%E2%98%82UnsupportedOperationException\">UnsupportedOperationException</A> - if the <TT>add</TT> operation is not supported by this collection\\n"
+            + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(Collection.class%E2%98%83Collection~add~TE;%E2%98%82ClassCastException\">ClassCastException</A> - if the class of the specified element prevents it from being added to this collection\\n"
+            + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(Collection.class%E2%98%83Collection~add~TE;%E2%98%82NullPointerException\">NullPointerException</A> - if the specified element is null and this collection does not permit null elements\\n"
+            + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(Collection.class%E2%98%83Collection~add~TE;%E2%98%82IllegalArgumentException\">IllegalArgumentException</A> - if some property of the element prevents it from being added to this collection\\n"
+            + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(Collection.class%E2%98%83Collection~add~TE;%E2%98%82IllegalStateException\">IllegalStateException</A> - if the element cannot be added at this time due to insertion restrictions</DD></DL></FONT></BODY></HTML>" 
+            | verify-true
+        get-property uri | equals "about:blank" | verify-true
+    }
+}
 get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table 
-    | select "add\\(Int index, \\[java\\]::E? element\\) : Void - ArrayList" | click -nowait -default
+    | select "add\\(\\[java\\]::E? e\\) : Bool - Collection" | click -nowait -default
 with [get-editor "usingFFI.fan" | get-editbox] {
-    set-text-offset 23 4
+    key-type BS
+    key-type "ARROW_RIGHT"
+    key-type "ARROW_LEFT"
+    key-type "ARROW_LEFT"
+    key-type "ARROW_LEFT"
     key-type F2
 }
 with [get-window -from "AbstractInformationControl.<init>()" | get-control Browser] {
@@ -140,27 +129,17 @@ with [get-window -from "AbstractInformationControl.<init>()" | get-control Brows
         + "th\t         { font-weight: bold; }\\n"
         + "</STYLE>\\n"
         + "</HEAD>\\n"
-        + "<BODY style=\"OVERFLOW: scroll\" bgColor=#ffffe1 text=#000000>\\n"
-        + "<P>Resizable-array implementation of the <TT>List</TT> interface. Implements all optional list operations, and permits all elements, including <TT>null</TT>. In addition to implementing the <TT>List</TT> interface, this class provides methods to manipulate the size of the array that is used internally to store the list. (This class is roughly equivalent to <TT>Vector</TT>, except that it is unsynchronized.)\\n"
-        + "<P>The <TT>size</TT>, <TT>isEmpty</TT>, <TT>get</TT>, <TT>set</TT>, <TT>iterator</TT>, and <TT>listIterator</TT> operations run in constant time. The <TT>add</TT> operation runs in <I>amortized constant time</I>, that is, adding n elements requires O(n) time. All of the other operations run in linear time (roughly speaking). The constant factor is low compared to that for the <TT>LinkedList</TT> implementation.\\n"
-        + "<P>Each <TT>ArrayList</TT> instance has a <I>capacity</I>. The capacity is the size of the array used to store the elements in the list. It is always at least as large as the list size. As elements are added to an ArrayList, its capacity grows automatically. The details of the growth policy are not specified beyond the fact that adding an element has constant amortized time cost.\\n"
-        + "<P>An application can increase the capacity of an <TT>ArrayList</TT> instance before adding a large number of elements using the <TT>ensureCapacity</TT> operation. This may reduce the amount of incremental reallocation. \\n"
-        + "<P><STRONG>Note that this implementation is not synchronized.</STRONG> If multiple threads access an <TT>ArrayList</TT> instance concurrently, and at least one of the threads modifies the list structurally, it <I>must</I> be synchronized externally. (A structural modification is any operation that adds or deletes one or more elements, or explicitly resizes the backing array; merely setting the value of an element is not a structural modification.) This is typically accomplished by synchronizing on some object that naturally encapsulates the list. If no such object exists, the list should be \"wrapped\" using the <A href=\"../../java/util/Collections.html#synchronizedList(java.util.List)\"><CODE>Collections.synchronizedList</CODE></A> method. This is best done at creation time, to prevent accidental unsynchronized access to the list:<PRE>   List list = Collections.synchronizedList(new ArrayList(...));</PRE>\\n"
-        + "<P>The iterators returned by this class\'s <TT>iterator</TT> and <TT>listIterator</TT> methods are <I>fail-fast</I>: if the list is structurally modified at any time after the iterator is created, in any way except through the iterator\'s own <TT>remove</TT> or <TT>add</TT> methods, the iterator will throw a <A title=\"class in java.util\" href=\"../../java/util/ConcurrentModificationException.html\"><CODE>ConcurrentModificationException</CODE></A>. Thus, in the face of concurrent modification, the iterator fails quickly and cleanly, rather than risking arbitrary, non-deterministic behavior at an undetermined time in the future.\\n"
-        + "<P>Note that the fail-fast behavior of an iterator cannot be guaranteed as it is, generally speaking, impossible to make any hard guarantees in the presence of unsynchronized concurrent modification. Fail-fast iterators throw <TT>ConcurrentModificationException</TT> on a best-effort basis. Therefore, it would be wrong to write a program that depended on this exception for its correctness: <I>the fail-fast behavior of iterators should be used only to detect bugs.</I>\\n"
-        + "<P>This class is a member of the <A href=\"../../../technotes/guides/collections/index.html\">Java Collections Framework</A>. \\n"
-        + "<P>\\n"
-        + "<P>\\n"
+        + "<BODY style=\"OVERFLOW: scroll\" bgColor=#ffffe1 text=#000000>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices).\\n"
+        + "<DIV><B>Specified by:</B> <A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(List.class%E2%98%83List~add~I~TE;\">add(...)</A> in <A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(List.class%E2%98%83List\">List</A>, <B>Overrides:</B> <A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(AbstractList.class%E2%98%83AbstractList~add~I~TE;\">add(...)</A> in <A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(AbstractList.class%E2%98%83AbstractList\">AbstractList</A></DIV>\\n"
         + "<DL>\\n"
-        + "<DT><B>Since:</B> \\n"
-        + "<DD>1.2 \\n"
-        + "<DT><B>See Also:</B>\\n"
-        + "<DD><A title=\"interface in java.util\" href=\"../../java/util/Collection.html\"><CODE>Collection</CODE></A>, <A title=\"interface in java.util\" href=\"../../java/util/List.html\"><CODE>List</CODE></A>, <A title=\"class in java.util\" href=\"../../java/util/LinkedList.html\"><CODE>LinkedList</CODE></A>, <A title=\"class in java.util\" href=\"../../java/util/Vector.html\"><CODE>Vector</CODE></A>, <A href=\"../../serialized-form.html#java.util.ArrayList\">Serialized Form</A></DD></DL>\\n"
-        + "<HR>\\n\\n"
-        + "<P></FONT></P></BODY></HTML>" | verify-true
+        + "<DT>Parameters:\\n"
+        + "<DD><B>index</B> index at which the specified element is to be inserted\\n"
+        + "<DD><B>element</B> element to be inserted\\n"
+        + "<DT>Throws:\\n"
+        + "<DD><A href=\"eclipse-javadoc:%E2%98%82=fantest/C:%5C/Program%20Files%5C/Java%5C/jdk1.6.0_24%5C/jre%5C/lib%5C/rt.jar%3Cjava.util(ArrayList.class%E2%98%83ArrayList~add~I~TE;%E2%98%82IndexOutOfBoundsException\">IndexOutOfBoundsException</A> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></FONT></BODY></HTML>" 
+        | verify-true
     get-property uri | equals "about:blank" | verify-true
-}
-get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
+}]]></content>
   </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
@@ -361,7 +340,7 @@ get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="Window" multiplicity="1">
         <path>parentClass</path>
-        <path><![CDATA[AbstractInformationControl.<init>()]]></path>
+        <path>AbstractInformationControl.&lt;init>()</path>
         <parent id="Window50" kind="Window" description=""/>
       </data>
     </commands>
@@ -433,7 +412,7 @@ get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="Window" multiplicity="1">
         <path>parentClass</path>
-        <path><![CDATA[AbstractInformationControl.<init>()]]></path>
+        <path>AbstractInformationControl.&lt;init>()</path>
         <parent id="EclipseWindow58" kind="EclipseWindow" description="Fantom - fantest/fan/usingFFI.fan - F4 IDE"/>
       </data>
     </commands>
@@ -453,7 +432,7 @@ get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="Window" multiplicity="1">
         <path>parentClass</path>
-        <path><![CDATA[AbstractInformationControl.<init>()]]></path>
+        <path>AbstractInformationControl.&lt;init>()</path>
         <parent id="EclipseWindow59" kind="EclipseWindow" description="Fantom - fantest/fan/usingFFI.fan - F4 IDE"/>
       </data>
     </commands>
@@ -499,6 +478,521 @@ get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
     </commands>
     <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="31" line="4">
       <element id="Text44" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow0_38" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor0_38" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="9" line="5">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=".">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:ShowContentAssist">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="ad">
+      <element id="Text0_38" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow1_39" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window0_38" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.widgets.Table">
+      <element id="Table0_38" kind="Table"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow1_40" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window0_39" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        <parent id="Table0_39" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="add([java]::E? e) : Bool - Collection">
+      <element id="Item0_38" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="selected" value="true">
+      <element id="Item0_38" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow1_41" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="Window0_40" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window1_41" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.browser.Browser">
+      <element id="Browser0_38" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow2_42" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window2_42" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Table1_40" kind="Table"/>
+      <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click" default="true" withWait="false">
+      <element id="Table1_40" kind="Table"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow2_42" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor2_39" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="9" line="5">
+      <element id="Text2_39" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777227" meta="0">
+      <element id="Text2_39" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="EclipseWindow2_42" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window3_43" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Any" index="1" multiplicity="1">
+        <parent id="Browser1_39" kind="Browser"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow5_43" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor4_40" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="9" line="5">
+      <element id="Text4_40" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777227" meta="0">
+      <element id="Text4_40" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="EclipseWindow5_43" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window5_44" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Any" index="1" multiplicity="1">
+        <parent id="Browser3_40" kind="Browser"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="EclipseWindow6_44" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window6_45" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.browser.Browser">
+      <element id="Browser4_41" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="enablement" value="true">
+      <element id="Browser4_41" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="text" value="&lt;HTML>&lt;HEAD>\n&lt;STYLE type=text/css CHARSET=&quot;ISO-8859-1&quot;>/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre&#x9;&#x9;&#x9;&#x9;{ font-family: monospace; }\n\n/* Margins */\nbody&#x9;     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }&#x9;\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre&#x9;         { margin-left: 0.6em; }\nul&#x9;         { margin-top: 0px; margin-bottom: 1em; }\nli&#x9;         { margin-top: 0px; margin-bottom: 0px; } \nli p&#x9;     { margin-top: 0px; margin-bottom: 0px; } \nol&#x9;         { margin-top: 0px; margin-bottom: 1em; }\ndl&#x9;         { margin-top: 0px; margin-bottom: 1em; }\ndt&#x9;         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd&#x9;         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link&#x9;     { color: #0000FF; }\na:hover&#x9;     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong&#x9;     { font-weight: bold; }\nem&#x9;         { font-style: italic; }\nvar&#x9;         { font-style: italic; }\nth&#x9;         { font-weight: bold; }\n&lt;/STYLE>\n&lt;/HEAD>\n&lt;BODY style=&quot;OVERFLOW: scroll&quot; bgColor=#ffffe1 text=#000000>\n&lt;H3>add&lt;/H3>&lt;PRE>public void &lt;B>add&lt;/B>(int&amp;nbsp;index,\n                &lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;nbsp;element)&lt;/PRE>\n&lt;DL>\n&lt;DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n&lt;P>&lt;/P>\n&lt;DD>\n&lt;DL>\n&lt;DT>&lt;B>Specified by:&lt;/B>\n&lt;DD>&lt;CODE>&lt;A href=&quot;../../java/util/List.html#add(int, E)&quot;>add&lt;/A>&lt;/CODE> in interface &lt;CODE>&lt;A title=&quot;interface in java.util&quot; href=&quot;../../java/util/List.html&quot;>List&lt;/A>&amp;lt;&lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;gt;&lt;/CODE>\n&lt;DT>&lt;B>Overrides:&lt;/B>\n&lt;DD>&lt;CODE>&lt;A href=&quot;../../java/util/AbstractList.html#add(int, E)&quot;>add&lt;/A>&lt;/CODE> in class &lt;CODE>&lt;A title=&quot;class in java.util&quot; href=&quot;../../java/util/AbstractList.html&quot;>AbstractList&lt;/A>&amp;lt;&lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;gt;&lt;/CODE>&lt;/DD>&lt;/DL>\n&lt;DD>\n&lt;DL>\n&lt;DT>&lt;B>Parameters:&lt;/B>\n&lt;DD>&lt;CODE>index&lt;/CODE> - index at which the specified element is to be inserted\n&lt;DD>&lt;CODE>element&lt;/CODE> - element to be inserted \n&lt;DT>&lt;B>Throws:&lt;/B> \n&lt;DD>&lt;CODE>&lt;A title=&quot;class in java.lang&quot; href=&quot;../../java/lang/IndexOutOfBoundsException.html&quot;>IndexOutOfBoundsException&lt;/A>&lt;/CODE> - if the index is out of range (&lt;TT>index &amp;lt; 0 || index &amp;gt; size()&lt;/TT>)&lt;/DD>&lt;/DL>&lt;/DD>&lt;/DL>\n&lt;HR>\n&lt;/FONT>&lt;/BODY>&lt;/HTML>">
+      <element id="Browser4_41" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow7_69" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor6_69" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="9" line="5">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=".">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:ShowContentAssist">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="ad">
+      <element id="Text6_69" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow8_70" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window7_69" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.widgets.Table">
+      <element id="Table2_69" kind="Table"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="2">
+      <element id="Table2_69" kind="Table"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow8_71" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window7_70" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        <parent id="Table2_70" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="add([java]::E? e) : Bool - Collection">
+      <element id="Item9_69" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="selected" value="true">
+      <element id="Item9_69" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow8_72" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="Window7_71" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window8_72" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.browser.Browser">
+      <element id="Browser5_69" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="enablement" value="true">
+      <element id="Browser5_69" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="uri" value="about:blank">
+      <element id="Browser5_69" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow9_73" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window9_73" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Table3_71" kind="Table"/>
+      <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click" default="true" withWait="false">
+      <element id="Table3_71" kind="Table"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow9_73" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor8_70" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="8" line="5">
+      <element id="Text8_70" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777227" meta="0">
+      <element id="Text8_70" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="EclipseWindow9_73" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window10_74" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Any" index="1" multiplicity="1">
+        <parent id="Browser6_70" kind="Browser"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>AbstractInformationControl.&lt;init>()</path>
+        <parent id="EclipseWindow10_74" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Browser" multiplicity="1">
+        <parent id="Window11_75" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="className" value="org.eclipse.swt.browser.Browser">
+      <element id="Browser7_71" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="enablement" value="true">
+      <element id="Browser7_71" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="text" value="&lt;HTML>&lt;HEAD>\n&lt;STYLE type=text/css CHARSET=&quot;ISO-8859-1&quot;>/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre&#x9;&#x9;&#x9;&#x9;{ font-family: monospace; }\n\n/* Margins */\nbody&#x9;     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }&#x9;\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre&#x9;         { margin-left: 0.6em; }\nul&#x9;         { margin-top: 0px; margin-bottom: 1em; }\nli&#x9;         { margin-top: 0px; margin-bottom: 0px; } \nli p&#x9;     { margin-top: 0px; margin-bottom: 0px; } \nol&#x9;         { margin-top: 0px; margin-bottom: 1em; }\ndl&#x9;         { margin-top: 0px; margin-bottom: 1em; }\ndt&#x9;         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd&#x9;         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link&#x9;     { color: #0000FF; }\na:hover&#x9;     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong&#x9;     { font-weight: bold; }\nem&#x9;         { font-style: italic; }\nvar&#x9;         { font-style: italic; }\nth&#x9;         { font-weight: bold; }\n&lt;/STYLE>\n&lt;/HEAD>\n&lt;BODY style=&quot;OVERFLOW: scroll&quot; bgColor=#ffffe1 text=#000000>\n&lt;H3>add&lt;/H3>&lt;PRE>public void &lt;B>add&lt;/B>(int&amp;nbsp;index,\n                &lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;nbsp;element)&lt;/PRE>\n&lt;DL>\n&lt;DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n&lt;P>&lt;/P>\n&lt;DD>\n&lt;DL>\n&lt;DT>&lt;B>Specified by:&lt;/B>\n&lt;DD>&lt;CODE>&lt;A href=&quot;../../java/util/List.html#add(int, E)&quot;>add&lt;/A>&lt;/CODE> in interface &lt;CODE>&lt;A title=&quot;interface in java.util&quot; href=&quot;../../java/util/List.html&quot;>List&lt;/A>&amp;lt;&lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;gt;&lt;/CODE>\n&lt;DT>&lt;B>Overrides:&lt;/B>\n&lt;DD>&lt;CODE>&lt;A href=&quot;../../java/util/AbstractList.html#add(int, E)&quot;>add&lt;/A>&lt;/CODE> in class &lt;CODE>&lt;A title=&quot;class in java.util&quot; href=&quot;../../java/util/AbstractList.html&quot;>AbstractList&lt;/A>&amp;lt;&lt;A title=&quot;type parameter in ArrayList&quot; href=&quot;../../java/util/ArrayList.html&quot;>E&lt;/A>&amp;gt;&lt;/CODE>&lt;/DD>&lt;/DL>\n&lt;DD>\n&lt;DL>\n&lt;DT>&lt;B>Parameters:&lt;/B>\n&lt;DD>&lt;CODE>index&lt;/CODE> - index at which the specified element is to be inserted\n&lt;DD>&lt;CODE>element&lt;/CODE> - element to be inserted \n&lt;DT>&lt;B>Throws:&lt;/B> \n&lt;DD>&lt;CODE>&lt;A title=&quot;class in java.lang&quot; href=&quot;../../java/lang/IndexOutOfBoundsException.html&quot;>IndexOutOfBoundsException&lt;/A>&lt;/CODE> - if the index is out of range (&lt;TT>index &amp;lt; 0 || index &amp;gt; size()&lt;/TT>)&lt;/DD>&lt;/DL>&lt;/DD>&lt;/DL>\n&lt;HR>\n&lt;/FONT>&lt;/BODY>&lt;/HTML>">
+      <element id="Browser7_71" kind="Browser"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow11_75" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor10_71" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="13" line="5">
+      <element id="Text10_71" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="usingFFI.fan" multiplicity="1">
+        <parent id="EclipseWindow16_97" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor15_97" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="9" line="5">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=".ad">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=".">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:ShowContentAssist">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="ad">
+      <element id="Text15_97" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" multiplicity="1">
+        <path>parentClass</path>
+        <path>CompletionProposalPopup.createProposalSelector()</path>
+        <parent id="EclipseWindow17_98" kind="EclipseWindow"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window12_97" kind="Window"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        <parent id="Table4_97" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="add([java]::E? e) : Bool - Collection">
+      <element id="Item10_97" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </commands>
     <elementMapping command="//@teslaContent/@commands.0">
       <elements id="EclipseWindow56" kind="EclipseWindow"/>
@@ -881,6 +1375,791 @@ get-editor "usingFFI.fan" | get-editbox | set-text-offset 31 4]]></content>
         <styleRanges>128, 1, fontStyle=normal</styleRanges>
         <styleRanges>129, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
         <styleRanges>130, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.84">
+      <elements id="EclipseWindow0_38" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.85">
+      <elements id="Editor0_38" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.86">
+      <elements id="Text0_38" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := A     al.ad  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := A \n    al.ad\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>87, 6, fontStyle=normal</styleRanges>
+        <styleRanges>93, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>95, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>98, 3, fontStyle=normal</styleRanges>
+        <styleRanges>101, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 1, fontStyle=normal</styleRanges>
+        <styleRanges>103, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>104, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.94">
+      <elements id="EclipseWindow1_39" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.95">
+      <elements id="Window0_38" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.96">
+      <elements id="Table0_38" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.98">
+      <elements id="EclipseWindow1_40" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.99">
+      <elements id="Window0_39" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.100">
+      <elements id="Table0_39" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.101">
+      <elements id="Item0_38" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="add([java]::E? e) : Bool - Collection" selected="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="20" width="189" height="19"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.104">
+      <elements id="EclipseWindow1_41" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.105">
+      <elements id="Window0_40" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.106">
+      <elements id="Window1_41" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1462" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.107">
+      <elements id="Browser0_38" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="353" height="234"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: hidden" bgColor=#ffffe1 text=#000>\n<H3>add</H3><PRE>boolean <B>add</B>(<A title="type parameter in Collection" href="../../java/util/Collection.html">E</A>&nbsp;e)</PRE>\n<DL>\n<DD>Ensures that this collection contains the specified element (optional operation). Returns <TT>true</TT> if this collection changed as a result of the call. (Returns <TT>false</TT> if this collection does not permit duplicates and already contains the specified element.)\n<P>Collections that support this operation may place limitations on what elements may be added to this collection. In particular, some collections will refuse to add <TT>null</TT> elements, and others will impose restrictions on the type of elements that may be added. Collection classes should clearly specify in their documentation any restrictions on what elements may be added.\n<P>If a collection refuses to add a particular element for any reason other than that it already contains the element, it <I>must</I> throw an exception (rather than returning <TT>false</TT>). This preserves the invariant that a collection always contains the specified element after this call returns. \n<P></P>\n<DD>\n<DL></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>e</CODE> - element whose presence in this collection is to be ensured \n<DT><B>Returns:</B>\n<DD><TT>true</TT> if this collection changed as a result of the call \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/UnsupportedOperationException.html">UnsupportedOperationException</A></CODE> - if the <TT>add</TT> operation is not supported by this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/ClassCastException.html">ClassCastException</A></CODE> - if the class of the specified element prevents it from being added to this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/NullPointerException.html">NullPointerException</A></CODE> - if the specified element is null and this collection does not permit null elements \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IllegalArgumentException.html">IllegalArgumentException</A></CODE> - if some property of the element prevents it from being added to this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IllegalStateException.html">IllegalStateException</A></CODE> - if the element cannot be added at this time due to insertion restrictions</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.109">
+      <elements id="EclipseWindow2_42" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.110">
+      <elements id="Window2_42" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.111">
+      <elements id="Table1_40" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.114">
+      <elements id="Editor2_39" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.115">
+      <elements id="Text2_39" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := A     al.add(e)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := A \n    al.add(e)\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>87, 6, fontStyle=normal</styleRanges>
+        <styleRanges>93, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>95, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>96, 3, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>99, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>100, 1, fontStyle=normal, foreground=Color {0, 0, 0}, border=solid, borderColor=Color {50, 70, 120}</styleRanges>
+        <styleRanges>101, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 3, fontStyle=normal</styleRanges>
+        <styleRanges>105, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>106, 1, fontStyle=normal</styleRanges>
+        <styleRanges>107, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>108, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.118">
+      <elements id="Window3_43" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1108" y="360" width="391" height="181"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.119">
+      <elements id="Browser1_39" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="377" height="167"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: scroll" bgColor=#ffffe1 text=#000000>\n<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\n                <A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&nbsp;element)</PRE>\n<DL>\n<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n<P></P>\n<DD>\n<DL>\n<DT><B>Specified by:</B>\n<DD><CODE><A href="../../java/util/List.html#add(int, E)">add</A></CODE> in interface <CODE><A title="interface in java.util" href="../../java/util/List.html">List</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE>\n<DT><B>Overrides:</B>\n<DD><CODE><A href="../../java/util/AbstractList.html#add(int, E)">add</A></CODE> in class <CODE><A title="class in java.util" href="../../java/util/AbstractList.html">AbstractList</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE></DD></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>index</CODE> - index at which the specified element is to be inserted\n<DD><CODE>element</CODE> - element to be inserted \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IndexOutOfBoundsException.html">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.120">
+      <elements id="Any1_38" kind="Any"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.swt.browser.WebSite" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="377" height="167"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.121">
+      <elements id="EclipseWindow5_43" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.122">
+      <elements id="Editor4_40" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.123">
+      <elements id="Text4_40" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := A     al.add(e)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := A \n    al.add(e)\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>87, 6, fontStyle=normal</styleRanges>
+        <styleRanges>93, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>95, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>96, 3, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>99, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>102, 3, fontStyle=normal</styleRanges>
+        <styleRanges>105, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>106, 1, fontStyle=normal</styleRanges>
+        <styleRanges>107, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>108, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.126">
+      <elements id="Window5_44" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1102" y="354" width="631" height="196"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.127">
+      <elements id="Browser3_40" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="617" height="182"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: scroll" bgColor=#ffffe1 text=#000000>\n<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\n                <A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&nbsp;element)</PRE>\n<DL>\n<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n<P></P>\n<DD>\n<DL>\n<DT><B>Specified by:</B>\n<DD><CODE><A href="../../java/util/List.html#add(int, E)">add</A></CODE> in interface <CODE><A title="interface in java.util" href="../../java/util/List.html">List</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE>\n<DT><B>Overrides:</B>\n<DD><CODE><A href="../../java/util/AbstractList.html#add(int, E)">add</A></CODE> in class <CODE><A title="class in java.util" href="../../java/util/AbstractList.html">AbstractList</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE></DD></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>index</CODE> - index at which the specified element is to be inserted\n<DD><CODE>element</CODE> - element to be inserted \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IndexOutOfBoundsException.html">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.128">
+      <elements id="Any4_39" kind="Any"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.swt.browser.WebSite" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="617" height="182"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.129">
+      <elements id="EclipseWindow6_44" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.130">
+      <elements id="Window6_45" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1102" y="354" width="631" height="196"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.131">
+      <elements id="Browser4_41" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="617" height="182"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: scroll" bgColor=#ffffe1 text=#000000>\n<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\n                <A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&nbsp;element)</PRE>\n<DL>\n<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n<P></P>\n<DD>\n<DL>\n<DT><B>Specified by:</B>\n<DD><CODE><A href="../../java/util/List.html#add(int, E)">add</A></CODE> in interface <CODE><A title="interface in java.util" href="../../java/util/List.html">List</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE>\n<DT><B>Overrides:</B>\n<DD><CODE><A href="../../java/util/AbstractList.html#add(int, E)">add</A></CODE> in class <CODE><A title="class in java.util" href="../../java/util/AbstractList.html">AbstractList</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE></DD></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>index</CODE> - index at which the specified element is to be inserted\n<DD><CODE>element</CODE> - element to be inserted \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IndexOutOfBoundsException.html">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.135">
+      <elements id="EclipseWindow7_69" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.136">
+      <elements id="Editor6_69" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.137">
+      <elements id="Text6_69" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := ArrayList()    al.ad  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := ArrayList()\n    al.ad\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>97, 5, fontStyle=normal</styleRanges>
+        <styleRanges>102, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>104, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>107, 3, fontStyle=normal</styleRanges>
+        <styleRanges>110, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>111, 1, fontStyle=normal</styleRanges>
+        <styleRanges>112, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.145">
+      <elements id="EclipseWindow8_70" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.146">
+      <elements id="Window7_69" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.147">
+      <elements id="Table2_69" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.150">
+      <elements id="EclipseWindow8_71" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.151">
+      <elements id="Window7_70" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.152">
+      <elements id="Table2_70" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.153">
+      <elements id="Item9_69" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="add([java]::E? e) : Bool - Collection" selected="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="20" width="189" height="19"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.156">
+      <elements id="EclipseWindow8_72" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.157">
+      <elements id="Window7_71" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.158">
+      <elements id="Window8_72" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1462" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.159">
+      <elements id="Browser5_69" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="353" height="234"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: hidden" bgColor=#ffffe1 text=#000>\n<H3>add</H3><PRE>boolean <B>add</B>(<A title="type parameter in Collection" href="../../java/util/Collection.html">E</A>&nbsp;e)</PRE>\n<DL>\n<DD>Ensures that this collection contains the specified element (optional operation). Returns <TT>true</TT> if this collection changed as a result of the call. (Returns <TT>false</TT> if this collection does not permit duplicates and already contains the specified element.)\n<P>Collections that support this operation may place limitations on what elements may be added to this collection. In particular, some collections will refuse to add <TT>null</TT> elements, and others will impose restrictions on the type of elements that may be added. Collection classes should clearly specify in their documentation any restrictions on what elements may be added.\n<P>If a collection refuses to add a particular element for any reason other than that it already contains the element, it <I>must</I> throw an exception (rather than returning <TT>false</TT>). This preserves the invariant that a collection always contains the specified element after this call returns. \n<P></P>\n<DD>\n<DL></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>e</CODE> - element whose presence in this collection is to be ensured \n<DT><B>Returns:</B>\n<DD><TT>true</TT> if this collection changed as a result of the call \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/UnsupportedOperationException.html">UnsupportedOperationException</A></CODE> - if the <TT>add</TT> operation is not supported by this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/ClassCastException.html">ClassCastException</A></CODE> - if the class of the specified element prevents it from being added to this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/NullPointerException.html">NullPointerException</A></CODE> - if the specified element is null and this collection does not permit null elements \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IllegalArgumentException.html">IllegalArgumentException</A></CODE> - if some property of the element prevents it from being added to this collection \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IllegalStateException.html">IllegalStateException</A></CODE> - if the element cannot be added at this time due to insertion restrictions</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.163">
+      <elements id="EclipseWindow9_73" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.164">
+      <elements id="Window9_73" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.165">
+      <elements id="Table3_71" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.168">
+      <elements id="Editor8_70" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.169">
+      <elements id="Text8_70" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := ArrayList()    al.add(e)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := ArrayList()\n    al.add(e)\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>97, 5, fontStyle=normal</styleRanges>
+        <styleRanges>102, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>104, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>105, 3, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>108, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>109, 1, fontStyle=normal, foreground=Color {0, 0, 0}, border=solid, borderColor=Color {50, 70, 120}</styleRanges>
+        <styleRanges>110, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>111, 3, fontStyle=normal</styleRanges>
+        <styleRanges>114, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>115, 1, fontStyle=normal</styleRanges>
+        <styleRanges>116, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>117, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.172">
+      <elements id="Window10_74" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1108" y="360" width="391" height="181"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.173">
+      <elements id="Browser6_70" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="377" height="167"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: scroll" bgColor=#ffffe1 text=#000000>\n<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\n                <A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&nbsp;element)</PRE>\n<DL>\n<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n<P></P>\n<DD>\n<DL>\n<DT><B>Specified by:</B>\n<DD><CODE><A href="../../java/util/List.html#add(int, E)">add</A></CODE> in interface <CODE><A title="interface in java.util" href="../../java/util/List.html">List</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE>\n<DT><B>Overrides:</B>\n<DD><CODE><A href="../../java/util/AbstractList.html#add(int, E)">add</A></CODE> in class <CODE><A title="class in java.util" href="../../java/util/AbstractList.html">AbstractList</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE></DD></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>index</CODE> - index at which the specified element is to be inserted\n<DD><CODE>element</CODE> - element to be inserted \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IndexOutOfBoundsException.html">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.174">
+      <elements id="Any7_69" kind="Any"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.swt.browser.WebSite" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="377" height="167"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.175">
+      <elements id="EclipseWindow10_74" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.176">
+      <elements id="Window11_75" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true" isTool="true">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds x="1108" y="360" width="391" height="181"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.177">
+      <elements id="Browser7_71" kind="Browser"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Browser" className="org.eclipse.swt.browser.Browser" enablement="true" containMenu="true" uri="about:blank">
+        <backgroundColor red="255" green="255" blue="225"/>
+        <foregroundColor/>
+        <bounds width="377" height="167"/>
+        <text><![CDATA[<HTML><HEAD>\n<STYLE type=text/css CHARSET="ISO-8859-1">/* Font definitions */\nhtml         { font-family: 'Segoe UI',sans-serif; font-size: 9pt; font-style: normal; font-weight: normal; }\nbody, h1, h2, h3, h4, h5, h6, p, table, td, caption, th, ul, ol, dl, li, dd, dt { font-size:1em; }\npre				{ font-family: monospace; }\n\n/* Margins */\nbody	     { overflow: auto; margin-top: 0px; margin-bottom: 0.5em; margin-left: 0.3em; margin-right: 0px; }\nh1           { margin-top: 0.3em; margin-bottom: 0.04em; }	\nh2           { margin-top: 2em; margin-bottom: 0.25em; }\nh3           { margin-top: 1.7em; margin-bottom: 0.25em; }\nh4           { margin-top: 2em; margin-bottom: 0.3em; }\nh5           { margin-top: 0px; margin-bottom: 0px; }\np            { margin-top: 1em; margin-bottom: 1em; }\npre	         { margin-left: 0.6em; }\nul	         { margin-top: 0px; margin-bottom: 1em; }\nli	         { margin-top: 0px; margin-bottom: 0px; } \nli p	     { margin-top: 0px; margin-bottom: 0px; } \nol	         { margin-top: 0px; margin-bottom: 1em; }\ndl	         { margin-top: 0px; margin-bottom: 1em; }\ndt	         { margin-top: 0px; margin-bottom: 0px; font-weight: bold; }\ndd	         { margin-top: 0px; margin-bottom: 0px; }\n\n/* Styles and colors */\na:link	     { color: #0000FF; }\na:hover	     { color: #000080; }\na:visited    { text-decoration: underline; }\nh4           { font-style: italic; }\nstrong	     { font-weight: bold; }\nem	         { font-style: italic; }\nvar	         { font-style: italic; }\nth	         { font-weight: bold; }\n</STYLE>\n</HEAD>\n<BODY style="OVERFLOW: scroll" bgColor=#ffffe1 text=#000000>\n<H3>add</H3><PRE>public void <B>add</B>(int&nbsp;index,\n                <A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&nbsp;element)</PRE>\n<DL>\n<DD>Inserts the specified element at the specified position in this list. Shifts the element currently at that position (if any) and any subsequent elements to the right (adds one to their indices). \n<P></P>\n<DD>\n<DL>\n<DT><B>Specified by:</B>\n<DD><CODE><A href="../../java/util/List.html#add(int, E)">add</A></CODE> in interface <CODE><A title="interface in java.util" href="../../java/util/List.html">List</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE>\n<DT><B>Overrides:</B>\n<DD><CODE><A href="../../java/util/AbstractList.html#add(int, E)">add</A></CODE> in class <CODE><A title="class in java.util" href="../../java/util/AbstractList.html">AbstractList</A>&lt;<A title="type parameter in ArrayList" href="../../java/util/ArrayList.html">E</A>&gt;</CODE></DD></DL>\n<DD>\n<DL>\n<DT><B>Parameters:</B>\n<DD><CODE>index</CODE> - index at which the specified element is to be inserted\n<DD><CODE>element</CODE> - element to be inserted \n<DT><B>Throws:</B> \n<DD><CODE><A title="class in java.lang" href="../../java/lang/IndexOutOfBoundsException.html">IndexOutOfBoundsException</A></CODE> - if the index is out of range (<TT>index &lt; 0 || index &gt; size()</TT>)</DD></DL></DD></DL>\n<HR>\n</FONT></BODY></HTML>]]></text>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.181">
+      <elements id="EclipseWindow11_75" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.182">
+      <elements id="Editor10_71" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.183">
+      <elements id="Text10_71" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := ArrayList()    al.add(e)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := ArrayList()\n    al.add(e)\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>97, 5, fontStyle=normal</styleRanges>
+        <styleRanges>102, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>104, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>105, 3, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>108, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>111, 3, fontStyle=normal</styleRanges>
+        <styleRanges>114, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>115, 1, fontStyle=normal</styleRanges>
+        <styleRanges>116, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>117, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.185">
+      <elements id="EclipseWindow16_97" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.186">
+      <elements id="Editor15_97" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="usingFFI.fan" dirty="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.187">
+      <elements id="Text15_97" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="using [java]java.util::ArrayListclass usingFFI{  Void main() {    ArrayList al := ArrayList()    al.ad  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>using [java]java.util::ArrayList\nclass usingFFI\n{\n  Void main() {\n    ArrayList al := ArrayList()\n    al.ad\n  }\n}\n</rawValue>
+        <styleRanges>0, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>5, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 1, fontStyle=normal</styleRanges>
+        <styleRanges>33, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal</styleRanges>
+        <styleRanges>39, 8, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>49, 3, fontStyle=normal</styleRanges>
+        <styleRanges>52, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>56, 1, fontStyle=normal</styleRanges>
+        <styleRanges>57, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>63, 1, fontStyle=normal</styleRanges>
+        <styleRanges>64, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>65, 5, fontStyle=normal</styleRanges>
+        <styleRanges>70, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>82, 1, fontStyle=normal</styleRanges>
+        <styleRanges>83, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 1, fontStyle=normal</styleRanges>
+        <styleRanges>86, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>97, 5, fontStyle=normal</styleRanges>
+        <styleRanges>102, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>104, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>107, 3, fontStyle=normal</styleRanges>
+        <styleRanges>110, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>111, 1, fontStyle=normal</styleRanges>
+        <styleRanges>112, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.199">
+      <elements id="EclipseWindow17_98" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/fan/usingFFI.fan - F4 - Fantom IDE" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="809" y="156" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.200">
+      <elements id="Window12_97" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" title="" sizeable="true">
+        <backgroundColor red="192" green="192" blue="192"/>
+        <foregroundColor/>
+        <bounds x="1108" y="355" width="355" height="252"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.201">
+      <elements id="Table4_97" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="341" height="224"/>
+        <selection>
+          <path>add\(\[java\]::E? e\) : Bool - Collection</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.202">
+      <elements id="Item10_97" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="add([java]::E? e) : Bool - Collection" selected="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="20" width="189" height="19"/>
       </controls>
     </elementMapping>
   </teslaContent>
