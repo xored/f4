@@ -38,4 +38,5 @@ const class RtNullableType : IFanType
   override const IFanType toNullable := this
   override const Bool isNullable := true
   override Bool isFacet() { type.isFacet }
+  override Str? findImportedType(Str name) {type.findImportedType(name)}
 }

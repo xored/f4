@@ -450,7 +450,7 @@ class Parser : AstFactory
 // Facets
 //////////////////////////////////////////////////////////////////////////
 
-  FacetDef facet()
+  FacetDef facetdef()
   {
     s := startRule
     consume(Token.at)
@@ -480,7 +480,7 @@ class Parser : AstFactory
   FacetDef[] facets()
   {
     s := startRule
-    while (match(Token.at)) s["facets"] = facet
+    while (match(Token.at)) s["facets"] = facetdef
     return endRule(s).makeFacets(s)
   }
   

@@ -189,6 +189,7 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
   override IFanType toNullable() { RtNullableType(this) }
   override Bool isNullable() { false }
   override protected const Str:IFanSlot slotsMap
+  override Str? findImportedType(Str name) {null}
 }
 
 internal abstract const class FfiSlot : IFanSlot, Flag, IFfiForeigh

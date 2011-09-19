@@ -10,7 +10,11 @@ using [java] org.eclipse.dltk.core::IType
 using [java] org.eclipse.dltk.core::IModelElement
 using [java] org.eclipse.dltk.core::IField
 using [java] org.eclipse.dltk.core::IMethod
+using [java] org.eclipse.dltk.core::ISourceModule
+using [java] org.eclipse.dltk.core::IImportContainer
+using [java] org.eclipse.dltk.core::IImportDeclaration
 using f4model
+using f4parser
 
 **
 **
@@ -128,5 +132,54 @@ internal const class DltkType : IFanType, Flags
   
   override IFanType toNullable() {
     RtNullableType(this)
+  }
+  override Str? findImportedType(Str name)
+  {
+    modelElement := me
+    if( modelElement != null)
+    {
+      ISourceModule sourceModule := modelElement.getAncestor(IModelElement.SOURCE_MODULE)
+      IModelElement[]? childs := sourceModule.getChildren
+      return childs?.eachWhile |IModelElement e->Str?| {
+        if( e.getElementType == IModelElement.IMPORT_CONTAINER)
+        {
+          IImportContainer ct := e
+          IImportDeclaration[] imports := ct.getImports
+          return imports.eachWhile |IImportDeclaration import -> Str?| {
+            return findImportName(import.getElementName, name)
+          }
+        }
+        return null
+      }
+    }
+    return null
+  }
+  private Str? findImportName(Str importName, Str name)
+  {
+    Tokenizer t := Tokenizer(importName)
+    TokenVal[] tokens := t.tokenize
+    Str newName := ""
+    Int i := 0
+    while(i < tokens.size)
+    {
+      cur := tokens[i]
+      if( cur.kind == Token.eof)
+        break
+      if( cur.kind == Token.asKeyword)
+      {
+        if( importName[cur.end+1..-1].trim == name)
+        {
+          return newName
+        }
+        break
+      }
+      newName += cur.text
+      i++
+    }
+    if( newName.endsWith(name))
+    {
+      return newName
+    }
+    return null
   }
 }

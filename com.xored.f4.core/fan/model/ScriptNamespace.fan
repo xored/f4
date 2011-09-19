@@ -201,4 +201,5 @@ internal const class ScriptType : IFanType, Flag
   override IFanType toNullable() { RtNullableType(this) }
   override Bool isNullable() { false }
   override protected const Str:IFanSlot slotsMap
+  override Str? findImportedType(Str name) {null}
 }

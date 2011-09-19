@@ -118,6 +118,7 @@ const class FakeFanType : IFanType
   override const Str genericQname
   override const Bool isNullable
   override IFanType toNullable() { RtNullableType(this) }
+  override Str? findImportedType(Str name) {null}
   
   new make(Type t)
   {

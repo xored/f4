@@ -1,3 +1,4 @@
+using [java]org.eclipse.dltk.core
 //
 // Copyright (c) 2010 xored software, Inc.
 // Licensed under Eclipse Public License version 1.0
@@ -132,6 +133,8 @@ const mixin IFanType : DltkModelElement
   ** 
   abstract Str genericQname()
   
+  abstract Str? findImportedType(Str name)
+  
   // TODO: add equals for generics
   
 //////////////////////////////////////////////////////////////////////////
@@ -206,9 +209,12 @@ const mixin IFanType : DltkModelElement
       return dirty
     excluded.add(qname)
     //deep search
+    modelElement := this.me
     dirty = inheritance.eachWhile |base|
     {
-      type := ns.findType(base)
+      // Resolve type name from usings
+      resolvedName := findImportedType(base)
+      type := resolvedName!=null?ns.findType(resolvedName):ns.findType(base)
       return type == null ? null : (excluded.contains(type.qname) ? null : type?.internalFindSlot(name,ns,excluded))
     }
     if (dirty != null || excluded.contains("sys::Obj"))
