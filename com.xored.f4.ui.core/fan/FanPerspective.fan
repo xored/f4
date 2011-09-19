@@ -67,7 +67,7 @@ public class FanPerspective : IPerspectiveFactory
 		layout.addNewWizardShortcut(FanNewEnumWizard.WIZARD_ID)
 		layout.addNewWizardShortcut(FanNewScriptWizard.WIZARD_ID)
 		layout.addNewWizardShortcut(newFolderWizard)
-		layout.addNewWizardShortcut(FanNewPackageWizard.WIZARD_ID)
+//		layout.addNewWizardShortcut(FanNewPackageWizard.WIZARD_ID)
 
 		layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.file")
 		layout.addNewWizardShortcut("org.eclipse.ui.wizards.new.folder")
