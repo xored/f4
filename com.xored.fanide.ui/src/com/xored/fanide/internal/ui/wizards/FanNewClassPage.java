@@ -200,7 +200,8 @@ public class FanNewClassPage extends FanNewTypeWizardPage {
 		fMethodStubsButtons.setSelection(0, createMain);
 		fMethodStubsButtons.setSelection(1, createConstructors);
 		fMethodStubsButtons.setSelection(2, createInherited);
-		
+		fMethodStubsButtons.enableSelectionButton(1, false);
+		fMethodStubsButtons.enableSelectionButton(2, false);
 		fMethodStubsButtons.setEnabled(canBeModified);
 	}
 

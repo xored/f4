@@ -156,6 +156,8 @@ class FanNewClassPageHelper : FanNewTypePageHelper
     methodStubsButtons.setSelection(0, createMain)
     methodStubsButtons.setSelection(1, createConstructors)
     methodStubsButtons.setSelection(2, createInherited)
+    methodStubsButtons.enableSelectionButton(1, false)
+    methodStubsButtons.enableSelectionButton(2, false)
     methodStubsButtons.setEnabled(canBeModified)
   }
 
