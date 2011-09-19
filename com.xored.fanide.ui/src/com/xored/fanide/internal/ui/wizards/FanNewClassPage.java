@@ -224,7 +224,7 @@ public class FanNewClassPage extends FanNewTypeWizardPage {
 
 	private Object getMainMethod(String lineDelimiter) {
 		StringBuffer buf = new StringBuffer();
-		buf.append("\tpublic static Void main(Str[] args)").append(lineDelimiter);
+		buf.append("\tstatic Void main(Str[] args)").append(lineDelimiter);
 		buf.append("\t{").append(lineDelimiter).append(lineDelimiter);
 		buf.append("\t}").append(lineDelimiter);		
 		return buf.toString();
