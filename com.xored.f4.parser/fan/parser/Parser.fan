@@ -1343,7 +1343,7 @@ class Parser : AstFactory
   CallExpr callCall(Expr caller, Expr[] args)
   {
     callSlot := resolveCallSlot(caller.resolvedType)
-    callRef := SlotRef(caller.end, caller.end, "call", ExprId.methodRef, callSlot, callerTypeForCall(caller), resolveObjQue)
+    callRef := SlotRef(caller.end, caller.end, "call", ExprId.methodRef, callSlot, callerTypeForCall(caller), resolveObjQue, true)
     return CallExpr(args.first?.start ?: caller.end, args.last?.end ?: caller.end, callRef, args)
   }
   

@@ -34,10 +34,12 @@ const class SlotRef : Ref
 {  
   const IFanSlot? modelSlot
   const IFanType? thisType
+  const Bool isCall
 
-  new make(Int start, Int end, Str text, ExprId id, IFanSlot? modelSlot, IFanType? resolvedType, IFanType? thisType)
+  new make(Int start, Int end, Str text, ExprId id, IFanSlot? modelSlot, IFanType? resolvedType, IFanType? thisType, Bool isCall := false)
     : super(start, end, text, id, resolvedType) 
   {
+    this.isCall = isCall
     if(modelSlot != null &&
       modelSlot.isCtor && 
       (resolvedType == null || 

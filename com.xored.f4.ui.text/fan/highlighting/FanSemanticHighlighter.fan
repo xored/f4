@@ -81,7 +81,7 @@ class FanSemanticHighlighter : AbstractSemanticHighlighter, AstVisitor
       SlotRef ref := node
       if (ref.id === ExprId.fieldRef)
         addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticField : field))
-      else if(ref.id === ExprId.methodRef)
+      else if(ref.id === ExprId.methodRef && !ref.isCall)
         addPosition(ref.start, ref.end+1, index(ref.modelSlot.isStatic ? staticMethod : method))
     }
     else if (node is MethodVarRef)
