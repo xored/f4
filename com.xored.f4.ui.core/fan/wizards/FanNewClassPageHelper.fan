@@ -175,7 +175,7 @@ class FanNewClassPageHelper : FanNewTypePageHelper
   private Str getMainMethod(Str lineDelimiter)
   {
     buf := StrBuf();
-    buf.add("\tpublic static Void main(Str[] args)").add(lineDelimiter)
+    buf.add("\tstatic Void main(Str[] args)").add(lineDelimiter)
     buf.add("\t{").add(lineDelimiter).add(lineDelimiter)
     buf.add("\t}").add(lineDelimiter)    
     return buf.toStr
