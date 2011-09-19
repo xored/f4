@@ -286,6 +286,9 @@ internal const class FfiMethod : FfiSlot, IFanMethod
   override IFanParam[] params() 
   {
     IMethod method := member.val()
+    if( method.getResource != null && !method.getResource.isAccessible) {
+      return IFanParam[,]
+    }
     if (FfiSlot.isInvisible(method) || method.getElementName == "<clinit>")
       return IFanParam[,]
 

@@ -21,6 +21,8 @@ abstract class IFanNamespace
     }
 
     pods := pod == null ? podNames : [pod]
+    // Try to resolve from all pods
+    result = pods.eachWhile { findPod(it)?.findType(name, false) }    
     
     // Try to resolve from usings
     if(result == null)
@@ -31,8 +33,6 @@ abstract class IFanNamespace
         return result
       }
     }
-    // Try to resolve from all pods
-    result = pods.eachWhile { findPod(it)?.findType(name, false) }    
     
     return result
   } 
