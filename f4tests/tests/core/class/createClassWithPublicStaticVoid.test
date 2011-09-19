@@ -1,8 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="createClassWithPublicStaticVoid" version="3.0" id="_r9UlINzzEeCCLtazA1JmEg" description="1. Open &quot;New Class&quot; window&#xD;&#xA;2. Input class name&#xD;&#xA;3. Set &quot;public static void&quot; check-box&#xD;&#xA;4. Press &quot;Finish&quot; button&#xD;&#xA;5. Make sure that class is created and in the class public static void method is created in the class" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="createClassWithPublicStaticVoid" version="3.0" id="_r9UlINzzEeCCLtazA1JmEg" description="1. Open &quot;New Class&quot; window&#xD;&#xA;2. Input class name&#xD;&#xA;3. Set &quot;public static void&quot; check-box&#xD;&#xA;4. Press &quot;Finish&quot; button&#xD;&#xA;5. Make sure that class is created and in the class public static void method is created in the class" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_yyGwwMyOEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan" | get-menu "New/Fantom Class" | click
+get-window "New Fantom Class" | get-editbox -after [get-label "Name:"] | set-text ClassWithVoid
+get-window "New Fantom Class" | get-button "static Void main(Str[] args)" | get-property selected | equals false 
+    | verify-true
+with [get-window "New Fantom Class"] {
+    get-button "static Void main(Str[] args)" | click
+    get-button Finish | click
+}
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item fantest | get-property childCount | equals 5 | verify-true
+    get-item "fantest/fan" | get-property caption | equals fan | verify-true
+    get-item "fantest/fan" | get-property childCount | equals 1 | verify-true
+    get-item "fantest/fan/ClassWithVoid.fan" | get-property caption | equals "ClassWithVoid.fan" | verify-true
+    get-item "fantest/fan/ClassWithVoid.fan" | get-property childCount | equals 1 | verify-true
+    get-item "fantest/fan/ClassWithVoid.fan/ClassWithVoid" | get-property caption | equals ClassWithVoid | verify-true
+    get-item "fantest/fan/ClassWithVoid.fan/ClassWithVoid" | get-property childCount | equals 1 | verify-true
+    get-item "fantest/fan/ClassWithVoid.fan/ClassWithVoid/main\\(Str\\[\\]\\)" | get-property caption 
+        | equals "main(Str[])" | verify-true
+}
+with [get-view Outline | get-tree] {
+    get-property itemCount | equals 1 | verify-true
+    get-item ClassWithVoid | get-property caption | equals ClassWithVoid | verify-true
+    get-item ClassWithVoid | get-property childCount | equals 1 | verify-true
+    get-item "ClassWithVoid/main\\(Str\\[\\]\\) : Void" | get-property caption | equals "main(Str[]) : Void" 
+        | verify-true
+    get-item "ClassWithVoid/main\\(Str\\[\\]\\) : Void" | get-property childCount | equals 0 | verify-true
+}
+with [get-tab-folder] {
+    get-property pages -index 0 | equals "ClassWithVoid.fan" | verify-true
+    get-property tabCount | equals 1 | verify-true
+}
+get-editor "ClassWithVoid.fan" | get-editbox | get-property value 
+    | equals "class ClassWithVoid{ static Void main(Str[] args) { }}" | verify-true]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
