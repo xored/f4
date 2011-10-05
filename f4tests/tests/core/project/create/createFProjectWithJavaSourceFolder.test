@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="createFProjectWithJavaSourceFolder" version="3.0" id="_tOd1UO75EeCo8LZBmdU2EA" description="1. In the Fantom Explorer view select &quot;New->Fantom Project&quot; from context menu&#xD;&#xA;2. Set &quot;Create java source folder&quot; check-box in &quot;Create Fantom Project&quot; window&#xD;&#xA;3. Press &quot;Finish&quot; button&#xD;&#xA;4. Make sure that fantom project is created with java source folder" tags="core/fantomproject/create" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_bsb1scyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
+with [get-window "Create Fantom project"] {
+    get-editbox -after [get-label "Project name:"] | set-text TestProject
+    get-group "Fantom Java Options" | get-button "Create java source folder" | click
+    get-button Finish | click
+}
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item TestProject | get-property caption | equals TestProject | verify-true
+    get-item TestProject | get-property childCount | equals 6 | verify-true
+    get-item "TestProject/java" | get-property caption | equals java | verify-true
+    get-item "TestProject/fan" | get-property caption | equals fan | verify-true
+    get-item "TestProject/build.fan" | get-property caption | equals "build.fan" | verify-true
+}
+get-view "Fantom Explorer" | get-tree | select "TestProject/build.fan" | double-click -nowait
+get-editor "build.fan" | get-editbox | get-property value 
+    | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"TestProject\"    summary = \"\"    srcDirs = [`fan/`]    javaDirs = [`java/`]    depends = [\"sys 1.0\"]  }}" 
+    | verify-true
+get-view "Fantom Explorer" | get-tree | select TestProject | get-menu Properties | click
+with [get-window "Properties for TestProject"] {
+    get-tree | select "Fantom/Build Path"
+    get-tab-folder | get-tab-item Source | click
+}
+with [get-window "Properties for TestProject" | get-tree -after [get-label "Source folders on build path:"]] {
+    get-property itemCount | equals 1 | verify-true
+    get-item "TestProject\\/fan" | get-property caption | equals "TestProject/fan" | verify-true
+}
+with [get-window "Properties for TestProject"] {
+    get-tree | select "Java Build Path"
+    get-tab-folder | get-tab-item Source | click
+}
+with [get-window "Properties for TestProject" | get-tree -after [get-label "Source folders on build path:"]] {
+    get-property itemCount | equals 1 | verify-true
+    get-item "TestProject\\/java" | get-property caption | equals "TestProject/java" | verify-true
+}
+get-window "Properties for TestProject" | get-button Cancel | click]]></content>
+  </content>
+</com.xored.q7.scenario:Scenario>
