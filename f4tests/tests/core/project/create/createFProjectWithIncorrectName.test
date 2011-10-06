@@ -5,6 +5,7 @@
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
     <content><![CDATA[get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
+/*
 with [get-window "Create Fantom project" | get-editbox -after [get-label "Project name:"]] {
     set-text "project*"
 }
@@ -15,6 +16,7 @@ with [get-window "Create Fantom project"] {
     get-button "Next >" | get-property enablement | equals false | verify-true
     get-button Cancel | get-property enablement | equals true | verify-true
 }
+*/
 get-window "Create Fantom project" | get-editbox -after [get-label "Project name:"] | set-text "project/"
 get-window "Create Fantom project" | get-editbox -after [get-label "Create a Fantom project"] | get-property value 
     | equals "/ is an invalid character in resource name \'project/\'." | verify-true
@@ -23,6 +25,7 @@ with [get-window "Create Fantom project"] {
     get-button "Next >" | get-property enablement | equals false | verify-true
     get-button Cancel | get-property enablement | equals true | verify-true
 }
+/*
 get-window "Create Fantom project" | get-editbox -after [get-label "Project name:"] | set-text "project<"
 get-window "Create Fantom project" | get-editbox -after [get-label "Create a Fantom project"] | get-property value 
     | equals "< is an invalid character in resource name \'project<\'." | verify-true
@@ -87,6 +90,7 @@ with [get-window "Create Fantom project"] {
     get-button "Next >" | get-property enablement | equals false | verify-true
     get-button Cancel | get-property enablement | equals true | verify-true
 }
+*/
 get-window "Create Fantom project" | get-button Cancel | click
 get-view "Fantom Explorer" | get-tree | get-property itemCount | equals 0 | verify-true]]></content>
   </content>
