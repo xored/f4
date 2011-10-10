@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="copyAndRenameSourceFolderToTheSameLocation" version="3.0" id="_4gKK4PL9EeC9XrHaQGXVxw" description="1. Select source folder in the first project&#xD;&#xA;2. Paste this folder in the same project&#xD;&#xA;3. Rename folder in the &quot;Name Conflict&quot; window&#xD;&#xA;4. Make sure that folder is renamed and pasted to the same folder&#xD;&#xA;5. Make sure that this folder is defined in the build.fan" tags="core/sourcefolder/copy" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_7rWIAdnkEeCZ-u3bYoGPTQ</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[with [get-view "Fantom Explorer" | get-tree] {
+    select "fantest/inheritance" | get-menu Copy | click
+    select fantest | get-menu Paste | click
+}
+get-window "Copy Problems" | get-label "Cannot import \'inheritance\'. The source and destination are the same." 
+    | get-property caption | equals "Cannot import \'inheritance\'. The source and destination are the same." 
+    | verify-true]]></content>
+  </content>
+</com.xored.q7.scenario:Scenario>
