@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.ecl.context:EclContext xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:com.xored.q7.ecl.context="http:///com/xored/q7/ecl/context.ecore" name="ContextAddingInterpreter" id="_BDVZwPVXEeCU6sULCU9Auw" description="Context for tests on Enterpreter Library&#xD;&#xA;&#xD;&#xA;Steps:&#xD;&#xA;1. Open &quot;Preferences->Fantom->Interpreters&quot; &#xD;&#xA;2. Press &quot;Add...&quot; button&#xD;&#xA;3. Select Interpreter from workspace&#xD;&#xA;">
+  <script>
+    <content><![CDATA[get-preferences-menu | click
+with [get-window Preferences] {
+    get-tree | select "Fantom/Interpreters"
+    get-button "Add..." | click
+}
+set-dialog-result File "platform:/resource/ProjectWithFLibrary/fantom-1.0.59/bin/fant.exe"
+with [get-window Preferences] {
+    with [get-window "Add interpreter"] {
+        get-button "Browse..." | click
+        get-button OK | click
+    }
+    get-button OK | click
+}]]></content>
+  </script>
+</com.xored.q7.ecl.context:EclContext>
