@@ -19,7 +19,10 @@ get-editor "build.fan" | get-editbox | get-property value
     | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"fantest\"    summary = \"\"    srcDirs = [`testfolder/`, `inheritance/`]    depends = [\"sys 1.0\"]  }}" 
     | verify-true
 get-view "Fantom Explorer" | get-tree | select fantest | get-menu Properties | click
-get-window "Properties for fantest" | get-tree | select "Fantom/Build Path"
+with [get-window "Properties for fantest"] {
+    get-tree | select "Fantom/Build Path"
+    get-tab-folder | get-tab-item Source | click
+}
 with [get-window "Properties for fantest" | get-tree -after [get-label "Source folders on build path:"]] {
     get-property itemCount | equals 2 | verify-true
     get-item "fantest\\/inheritance" | get-property caption | equals "fantest/inheritance" | verify-true
