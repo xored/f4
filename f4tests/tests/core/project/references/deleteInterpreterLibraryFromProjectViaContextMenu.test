@@ -1,0 +1,1050 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="deleteInterpreterLibraryFromProjectViaContextMenu" version="3.0" id="_ARXJMPYmEeCU6sULCU9Auw" description="1. Select project with default Interpreter Library&#xD;&#xA;2. Select this library &#xD;&#xA;3. In the context menu select &quot;Build Path->Remove from Build Path&quot;&#xD;&#xA;4. Make sure that library is removed from project&#xD;&#xA;5. But not deleted from Preferences" tags="core/fantomproject/references" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_-OGa4O8oEeCo8LZBmdU2EA</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_yyGwwMyOEeCqoItsrYQC5Q</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/Interpreter Libraries \\[fantom-.*" 
+    | get-menu "Build Path/Remove from Build Path" | click
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item fantest | get-property childCount | equals 4 | verify-true
+    get-item "fantest/JRE System Library.*" | get-property caption | equals "JRE System Library.*" | verify-true
+    get-item "fantest/Fantom Native Libraries.*" | get-property caption | equals "Fantom Native Libraries.*" | verify-true
+    get-item "fantest/fan" | get-property caption | equals fan | verify-true
+    get-item "fantest/build.fan" | get-property caption | equals "build.fan" | verify-true
+}
+with [get-view Problems | get-tree] {
+    get-property itemCount | equals 1 | verify-true
+    get-item "Errors \\(1 item\\)" | get-property caption | equals "Errors (1 item)" | verify-true
+    get-item "Errors \\(1 item\\)" | get-property childCount | equals 1 | verify-true
+    get-item "Errors \\(1 item\\)/Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | get-property columns -index 0 
+        | equals "Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | verify-true
+    get-item "Errors \\(1 item\\)/Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | get-property columns -index 1 | equals fantest | verify-true
+    get-item "Errors \\(1 item\\)/Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | get-property columns -index 2 | equals "" | verify-true
+    get-item "Errors \\(1 item\\)/Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | get-property columns -index 3 | equals "/fantest" | verify-true
+    get-item "Errors \\(1 item\\)/Compilation of project fantest is not possible, there is no Fantom interpreter specified." 
+        | get-property columns -index 4 | equals "Fantom Problem" | verify-true
+}
+get-view "Fantom Explorer" | get-tree | select fantest | get-menu Properties | click
+with [get-window "Properties for fantest"] {
+    get-tree | select "Fantom/Build Path"
+    get-tab-folder | get-tab-item Libraries | click
+}
+get-window "Properties for fantest" | get-tree -after [get-label "ZIPs and external folders on the build path:"] 
+    | get-property itemCount | equals 0 | verify-true
+get-window "Properties for fantest" | get-button Cancel | click
+get-preferences-menu | click
+get-window Preferences | get-tree | select "Fantom/Interpreters"
+with [get-window Preferences | get-table] {
+    get-property itemCount | equals 1 | verify-true
+    get-item "fantom-.*" | get-property caption | equals "fantom-.*" | verify-true
+}
+get-window Preferences | get-button Cancel | click]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow53" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View23" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree38" kind="Tree"/>
+      <path>fantest</path>
+      <path>Interpreter Libraries \[fantom-1.0.60-embedded\]</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Build Path</path>
+        <path>Remove from Build Path</path>
+        <parent id="Tree38" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu3" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State30" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow54" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View24" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantest</path>
+        <parent id="Tree39" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="childCount" value="4">
+      <element id="Item72" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow54" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View24" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantest</path>
+        <path>JRE System Library \[jre6\]</path>
+        <parent id="Tree39" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="JRE System Library [jre6]">
+      <element id="Item71" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow54" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View24" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantest</path>
+        <path>Fantom Native Libraries \(Java\)</path>
+        <parent id="Tree39" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="Fantom Native Libraries (Java)">
+      <element id="Item70" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow54" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View24" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantest</path>
+        <path>fan</path>
+        <parent id="Tree39" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="fan">
+      <element id="Item69" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow54" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View24" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantest</path>
+        <path>build.fan</path>
+        <parent id="Tree39" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="build.fan">
+      <element id="Item68" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Problems" multiplicity="1">
+        <parent id="EclipseWindow55" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View26" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Problems" multiplicity="1">
+        <parent id="EclipseWindow56" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View27" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="1">
+      <element id="Tree42" kind="Tree"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Problems" multiplicity="1">
+        <parent id="EclipseWindow56" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View27" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>Errors \(1 item\)</path>
+        <parent id="Tree42" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="Errors (1 item)">
+      <element id="Item75" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="childCount" value="1">
+      <element id="Item75" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Problems" multiplicity="1">
+        <parent id="EclipseWindow56" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View27" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>Errors \(1 item\)</path>
+        <path>Compilation of project fantest is not possible, there is no Fantom interpreter specified.</path>
+        <parent id="Tree42" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="Compilation of project fantest is not possible, there is no Fantom interpreter specified." index="0">
+      <element id="Item74" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="fantest" index="1">
+      <element id="Item74" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="" index="2">
+      <element id="Item74" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="/fantest" index="3">
+      <element id="Item74" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="Fantom Problem" index="4">
+      <element id="Item74" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow57" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View28" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree43" kind="Tree"/>
+      <path>fantest</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Properties</path>
+        <parent id="Tree43" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu4" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State31" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Properties for fantest" multiplicity="1">
+        <parent id="EclipseWindow57" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="Window51" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree44" kind="Tree"/>
+      <path>Fantom</path>
+      <path>Build Path</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="TabFolder" multiplicity="1">
+        <parent id="Window51" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="TabItem" pattern="Libraries" multiplicity="1">
+        <parent id="TabFolder14" kind="TabFolder"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="TabItem1" kind="TabItem"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State32" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Properties for fantest" multiplicity="1">
+        <parent id="EclipseWindow58" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="ZIPs and external folders on the build path:" multiplicity="1">
+        <parent id="Window52" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <after id="Label15" kind="Label"/>
+        <parent id="Window52" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="0">
+      <element id="Tree45" kind="Tree"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Properties for fantest" multiplicity="1">
+        <parent id="EclipseWindow59" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Any" index="52" multiplicity="1">
+        <parent id="Window53" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Cancel" multiplicity="1">
+        <parent id="Window53" kind="Window" description="Properties for fantest"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button46" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State33" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:ClickPreferencesMenu"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Preferences" multiplicity="1">
+        <parent id="EclipseWindow59" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="Window54" kind="Window" description="Preferences"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree46" kind="Tree"/>
+      <path>Fantom</path>
+      <path>Interpreters</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Preferences" multiplicity="1">
+        <parent id="EclipseWindow60" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window55" kind="Window" description="Preferences"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="1">
+      <element id="Table24" kind="Table"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Preferences" multiplicity="1">
+        <parent id="EclipseWindow60" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window55" kind="Window" description="Preferences"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>fantom-1.0.60-embedded</path>
+        <parent id="Table24" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="fantom-1.0.60-embedded">
+      <element id="Item76" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow53" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="View23" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="Tree38" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+        <selection>
+          <path>fantest</path>
+          <path>Interpreter Libraries \[fantom-1.0.60-embedded\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.4">
+      <elements id="Menu3" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;Remove from Build Path" enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="State30" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.8">
+      <elements id="EclipseWindow54" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.9">
+      <elements id="View24" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.10">
+      <elements id="Tree39" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.11">
+      <elements id="Item72" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="fantest" childCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" width="40" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.13">
+      <elements id="EclipseWindow54" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.14">
+      <elements id="View24" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.15">
+      <elements id="Tree39" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.16">
+      <elements id="Item71" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="JRE System Library [jre6]">
+        <styleRanges>19, 6, fontStyle=normal, foreground=Color {149, 125, 71}</styleRanges>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="60" y="18" width="131" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.18">
+      <elements id="EclipseWindow54" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.19">
+      <elements id="View24" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.20">
+      <elements id="Tree39" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.21">
+      <elements id="Item70" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="Fantom Native Libraries (Java)" index="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="60" y="36" width="162" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.23">
+      <elements id="EclipseWindow54" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.24">
+      <elements id="View24" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.25">
+      <elements id="Tree39" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.26">
+      <elements id="Item69" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="fan" index="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="60" y="54" width="21" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.28">
+      <elements id="EclipseWindow54" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.29">
+      <elements id="View24" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.30">
+      <elements id="Tree39" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.31">
+      <elements id="Item68" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="build.fan" index="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="60" y="72" width="51" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.33">
+      <elements id="EclipseWindow55" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.34">
+      <elements id="View26" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Problems">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.35">
+      <elements id="Tree41" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="791" height="116"/>
+        <columns caption="Description" resizable="true" movable="true" width="300" tooltip="Description"/>
+        <columns caption="Resource" index="1" resizable="true" movable="true" width="94" tooltip="Resource"/>
+        <columns caption="Path" index="2" resizable="true" movable="true" width="124" tooltip="Path"/>
+        <columns caption="Location" index="3" resizable="true" movable="true" width="64" tooltip="Location"/>
+        <columns caption="Type" index="4" resizable="true" movable="true" width="94" tooltip="Type"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.36">
+      <elements id="EclipseWindow56" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.37">
+      <elements id="View27" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Problems">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.38">
+      <elements id="Tree42" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="791" height="116"/>
+        <columns caption="Description" resizable="true" movable="true" width="300" tooltip="Description"/>
+        <columns caption="Resource" index="1" resizable="true" movable="true" width="94" tooltip="Resource"/>
+        <columns caption="Path" index="2" resizable="true" movable="true" width="124" tooltip="Path"/>
+        <columns caption="Location" index="3" resizable="true" movable="true" width="64" tooltip="Location"/>
+        <columns caption="Type" index="4" resizable="true" movable="true" width="94" tooltip="Type"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.40">
+      <elements id="EclipseWindow56" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.41">
+      <elements id="View27" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Problems">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.42">
+      <elements id="Tree42" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="791" height="116"/>
+        <columns caption="Description" resizable="true" movable="true" width="300" tooltip="Description"/>
+        <columns caption="Resource" index="1" resizable="true" movable="true" width="94" tooltip="Resource"/>
+        <columns caption="Path" index="2" resizable="true" movable="true" width="124" tooltip="Path"/>
+        <columns caption="Location" index="3" resizable="true" movable="true" width="64" tooltip="Location"/>
+        <columns caption="Type" index="4" resizable="true" movable="true" width="94" tooltip="Type"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.43">
+      <elements id="Item75" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="Errors (1 item)" childCount="1">
+        <columns>Errors (1 item)</columns>
+        <columns></columns>
+        <columns></columns>
+        <columns></columns>
+        <columns></columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" width="77" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.46">
+      <elements id="EclipseWindow56" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.47">
+      <elements id="View27" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Problems">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.48">
+      <elements id="Tree42" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="791" height="116"/>
+        <columns caption="Description" resizable="true" movable="true" width="300" tooltip="Description"/>
+        <columns caption="Resource" index="1" resizable="true" movable="true" width="94" tooltip="Resource"/>
+        <columns caption="Path" index="2" resizable="true" movable="true" width="124" tooltip="Path"/>
+        <columns caption="Location" index="3" resizable="true" movable="true" width="64" tooltip="Location"/>
+        <columns caption="Type" index="4" resizable="true" movable="true" width="94" tooltip="Type"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.49">
+      <elements id="Item74" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="Compilation of project fantest is not possible, there is no Fantom interpreter specified.">
+        <columns>Compilation of project fantest is not possible, there is no Fantom interpreter specified.</columns>
+        <columns>fantest</columns>
+        <columns></columns>
+        <columns>/fantest</columns>
+        <columns>Fantom Problem</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="60" y="18" width="239" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.55">
+      <elements id="EclipseWindow57" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.56">
+      <elements id="View28" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.57">
+      <elements id="Tree43" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+        <selection>
+          <path>fantest</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.59">
+      <elements id="Menu4" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="P&amp;roperties" enablement="true" index="26" accelerator="Alt+Enter" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.60">
+      <elements id="State31" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.63">
+      <elements id="Window51" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Properties for fantest" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-972" y="51" width="741" height="554"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.64">
+      <elements id="Tree44" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" itemCount="11">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="166" height="431"/>
+        <selection>
+          <path>Fantom</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.66">
+      <elements id="TabFolder14" kind="TabFolder"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TabFolder" activePage="&amp;Libraries" tabCount="4">
+        <pages>&amp;Source</pages>
+        <pages>&amp;Projects</pages>
+        <pages>&amp;Libraries</pages>
+        <pages>&amp;Order and Export</pages>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.67">
+      <elements id="TabItem1" kind="TabItem"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.68">
+      <elements id="State32" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.71">
+      <elements id="EclipseWindow58" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.72">
+      <elements id="Window52" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Properties for fantest" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-972" y="51" width="741" height="554"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.73">
+      <elements id="Label15" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="ZIPs &amp;and external folders on the build path:">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="5" y="5" width="505" height="15"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.74">
+      <elements id="Tree45" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" borderWith="2" multiSelection="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="5" y="25" width="338" height="359"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.76">
+      <elements id="EclipseWindow59" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.77">
+      <elements id="Window53" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Properties for fantest" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-972" y="51" width="741" height="554"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.78">
+      <elements id="Any27" kind="Any"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.swt.widgets.Composite" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="348" y="25" width="162" height="359"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.79">
+      <elements id="Button46" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="109" y="13" width="92" height="25"/>
+        <caption>Cancel</caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.80">
+      <elements id="State33" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.84">
+      <elements id="Window54" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Preferences" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-919" y="50" width="635" height="710"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.85">
+      <elements id="Tree46" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" itemCount="12">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="166" height="587"/>
+        <selection>
+          <path>Fantom</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.87">
+      <elements id="EclipseWindow60" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.88">
+      <elements id="Window55" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Preferences" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-919" y="50" width="635" height="710"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.89">
+      <elements id="Table24" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" borderWith="2" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="320" height="495"/>
+        <columns caption="Name" resizable="true" width="189"/>
+        <columns caption="Type" index="1" resizable="true" width="73"/>
+        <columns caption="Location" index="2" resizable="true" width="501"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.91">
+      <elements id="EclipseWindow60" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.92">
+      <elements id="Window55" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Preferences" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-919" y="50" width="635" height="710"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.93">
+      <elements id="Table24" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" borderWith="2" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="320" height="495"/>
+        <columns caption="Name" resizable="true" width="189"/>
+        <columns caption="Type" index="1" resizable="true" width="73"/>
+        <columns caption="Location" index="2" resizable="true" width="501"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.94">
+      <elements id="Item76" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="fantom-1.0.60-embedded" checked="true">
+        <columns>fantom-1.0.60-embedded</columns>
+        <columns>Fantom 1.0</columns>
+        <columns>D:\Q7 application\F4_on_Eclipse\eclipse\plugins\com.xored.f4.fantom_1.0.60.201110060946\fantom\bin\fant</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="26" y="24" width="163" height="19"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>
