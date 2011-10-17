@@ -1,8 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="cancelRenameSourceFolder" version="3.0" id="_hnn6cPLdEeC9XrHaQGXVxw" description="1. Open properties for fantom project&#xD;&#xA;2. Select folder in &quot;Fantom Explorer&quot;&#xD;&#xA;3. Press rename button&#xD;&#xA;4. Rename folder name&#xD;&#xA;5. Press &quot;Cancel&quot; button&#xD;&#xA;5. Make sure that this folder is not renamed in Fantom Explorer and in build.fan file" tags="core/sourcefolder/rename" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="cancelRenameSourceFolder" version="3.0" id="_hnn6cPLdEeC9XrHaQGXVxw" description="1. Open properties for fantom project&#xD;&#xA;2. Select folder in &quot;Fantom Explorer&quot;&#xD;&#xA;3. Press rename button&#xD;&#xA;4. Rename folder name&#xD;&#xA;5. Press &quot;Cancel&quot; button&#xD;&#xA;5. Make sure that this folder is not renamed in Fantom Explorer and in build.fan file" tags="core/sourcefolder/rename" type="ecl">
   <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_7rWIAdnkEeCZ-u3bYoGPTQ</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/fan"
+get-menu "Refactor/Rename..." | click
+with [get-window "Rename Source Folder"] {
+    get-editbox -after [get-label "New name:"] | set-text testfolder
+    get-button Cancel | click
+}
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item fantest | get-property childCount | equals 6 | verify-true
+    get-item "fantest/fan" | get-property caption | equals fan | verify-true
+    get-item "fantest/inheritance" | get-property caption | equals inheritance | verify-true
+}
+get-view "Fantom Explorer" | get-tree | select "fantest/inheritance"
+get-menu "Refactor/Rename..." | click
+with [get-window "Rename Source Folder" | get-editbox -after [get-label "New name:"]] {
+    set-text test
+    key-type "TRAVERSE_ESCAPE"
+}
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item fantest | get-property caption | equals fantest | verify-true
+    get-item fantest | get-property childCount | equals 6 | verify-true
+    get-item "fantest/fan" | get-property caption | equals fan | verify-true
+    get-item "fantest/inheritance" | get-property caption | equals inheritance | verify-true
+}
+get-view "Fantom Explorer" | get-tree | select "fantest/inheritance"
+get-menu "Refactor/Rename..." | click
+with [get-window "Rename Source Folder"] {
+    get-editbox -after [get-label "New name:"] | set-text test
+    close
+}
+with [get-view "Fantom Explorer" | get-tree] {
+    get-item fantest | get-property caption | equals fantest | verify-true
+    get-item fantest | get-property childCount | equals 6 | verify-true
+    get-item "fantest/fan" | get-property caption | equals fan | verify-true
+    get-item "fantest/inheritance" | get-property caption | equals inheritance | verify-true
+}
+get-view "Fantom Explorer" | get-tree | select "fantest/build.fan" | double-click -nowait
+get-editor "build.fan" | get-editbox | get-property value 
+    | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"fantest\"    summary = \"\"    srcDirs = [`inheritance/`, `fan/`]    depends = [\"sys 1.0\"]  }}" 
+    | verify-true
+get-view "Fantom Explorer" | get-tree | select fantest | get-menu Properties | click
+with [get-window "Properties for fantest"] {
+    get-tree | select "Fantom/Build Path"
+    get-tab-folder | get-tab-item Source | click
+}
+with [get-window "Properties for fantest" | get-tree -after [get-label "Source folders on build path:"]] {
+    get-property itemCount | equals 2 | verify-true
+    get-item "fantest\\/fan" | get-property caption | equals "fantest/fan" | verify-true
+    get-item "fantest\\/inheritance" | get-property caption | equals "fantest/inheritance" | verify-true
+}
+get-window "Properties for fantest" | get-button Cancel | click]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
