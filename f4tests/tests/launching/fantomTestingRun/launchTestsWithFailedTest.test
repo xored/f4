@@ -1,0 +1,1332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="launchTestsWithFailedTest" version="3.0" id="_Yn8gMPlgEeCyeuCctc0xfQ" description="Verification that failed test is displayed correctly in Script Unit Test&#xD;&#xA;Verification run tests view button on toolbar&#xD;&#xA;&#xD;&#xA;1. Change test method in class &#xD;&#xA;2. Select this class and press &quot;Run&quot;&#xD;&#xA;3. In &quot;Run As&quot; dialog select &quot;Fantom Testing&quot; &#xD;&#xA;4. Make sure that tests are run, one test is failed&#xD;&#xA;5. Select another class with tests &#xD;&#xA;6. Press &quot;Run As->Fantom Testing Run&quot; on the toolbar&#xD;&#xA;7. Make sure that tests are run" tags="functionality/launching/tests" type="ecl">
+  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/tests/VerificationSeparation.fan" | double-click -nowait
+with [get-editor "VerificationSeparation.fan" | get-editbox] {
+    set-text-offset 14 12
+    type-text "-"
+    key-type "M1+s"
+}
+get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/tests/VerificationSeparation.fan"
+get-button "Run As..." | click
+with [get-window "Run As"] {
+    get-table | select "Fantom Testing"
+    get-button OK | click
+}
+with [get-view "Script Unit Test"] {
+    get-editbox -after [get-label "Runs:"] | get-property rawValue | equals "3/3" | verify-true
+    get-editbox -after [get-label "Failures:"] | get-property value | equals 1 | verify-true
+}
+get-view "Script Unit Test" | get-tree 
+    | select "LaunchAndDebug::VerificationSeparation.testAllNegative2 \\[Runner: FanTestingEngine\\]"
+with [get-view "Script Unit Test"] {
+    with [get-tree] {
+        get-property itemCount | equals 3 | verify-true
+        get-item "LaunchAndDebug::VerificationSeparation.testAllNegative2 \\[Runner: FanTestingEngine\\]" 
+            | get-property caption 
+            | equals "LaunchAndDebug::VerificationSeparation.testAllNegative2 [Runner: FanTestingEngine]" | verify-true
+        get-item "LaunchAndDebug::VerificationSeparation.testAllPozitive2 \\[Runner: FanTestingEngine\\]" 
+            | get-property caption 
+            | equals "LaunchAndDebug::VerificationSeparation.testAllPozitive2 [Runner: FanTestingEngine]" | verify-true
+        get-item "LaunchAndDebug::VerificationSeparation.testZero2 \\[Runner: FanTestingEngine\\]" 
+            | get-property caption 
+            | equals "LaunchAndDebug::VerificationSeparation.testZero2 [Runner: FanTestingEngine]" | verify-true
+    }
+    with [get-table -after [get-label "Failure Trace"]] {
+        get-item "sys::TestErr: Test failed" | get-property caption | equals "sys::TestErr: Test failed" | verify-true
+        get-item "  LaunchAndDebug::VerificationSeparation.testAllNegative2 \\(VerificationSeparation.fan:13\\)" 
+            | get-property caption 
+            | equals "  LaunchAndDebug::VerificationSeparation.testAllNegative2 (VerificationSeparation.fan:13)" 
+            | verify-true
+    }
+}
+get-view Console | click -nowait
+get-view Console | get-editbox | get-property value | contains "1 FAILURES [1 tests, 2 methods, 2 verifies]" | verify-true
+get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/tests/VerificationAddition.fan"
+get-button "Run As..." | click -arrow
+get-menu "Run As/.* Fantom Testing Run" | click
+with [get-view "Script Unit Test"] {
+    get-editbox -after [get-label "Runs:"] | get-property value | equals "3/3" | verify-true
+    get-editbox -after [get-label "Failures:"] | get-property value | equals 0 | verify-true
+    with [get-tree] {
+        get-property itemCount | equals 3 | verify-true
+        get-item "LaunchAndDebug::VerificationAddition.testAllNegative \\[Runner: FanTestingEngine\\]" 
+            | get-property caption 
+            | equals "LaunchAndDebug::VerificationAddition.testAllNegative [Runner: FanTestingEngine]" | verify-true
+        get-item "LaunchAndDebug::VerificationAddition.testAllPozitive \\[Runner: FanTestingEngine\\]" 
+            | get-property caption 
+            | equals "LaunchAndDebug::VerificationAddition.testAllPozitive [Runner: FanTestingEngine]" | verify-true
+        get-item "LaunchAndDebug::VerificationAddition.testZero \\[Runner: FanTestingEngine\\]" | get-property caption 
+            | equals "LaunchAndDebug::VerificationAddition.testZero [Runner: FanTestingEngine]" | verify-true
+    }
+    get-table -after [get-label "Failure Trace"] | get-property itemCount | equals 0 | verify-true
+}
+get-view Console | click -nowait
+get-view Console | get-editbox | get-property value | contains "All tests passed! [1 tests, 3 methods, 3 verifies]" | verify-true]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow8" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View14" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree12" kind="Tree"/>
+      <path>LaunchAndDebug</path>
+      <path>tests</path>
+      <path>VerificationSeparation.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:DoubleClick">
+      <element id="Tree12" kind="Tree"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="VerificationSeparation.fan" multiplicity="1">
+        <parent id="EclipseWindow8" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor3" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="14" line="12">
+      <element id="Text12" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="-">
+      <element id="Text12" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
+      <element id="Text12" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree12" kind="Tree"/>
+      <path>LaunchAndDebug</path>
+      <path>tests</path>
+      <path>VerificationSeparation.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Run" multiplicity="1">
+        <parent id="EclipseWindow8" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button4" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State5" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Run As" multiplicity="1">
+        <parent id="EclipseWindow8" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <parent id="Window1" kind="Window" description="Run As"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Table4" kind="Table"/>
+      <path>Fantom Testing</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="OK" multiplicity="1">
+        <parent id="Window1" kind="Window" description="Run As"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button5" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State6" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow9" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Runs:" multiplicity="1">
+        <parent id="View16" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <after id="Label22" kind="Label"/>
+        <parent id="View16" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="rawValue" value="3/3">
+      <element id="Text14" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow9" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Failures:" multiplicity="1">
+        <parent id="View16" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <after id="Label23" kind="Label"/>
+        <parent id="View16" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="value" value="1">
+      <element id="Text15" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow10" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View17" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree15" kind="Tree"/>
+      <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="3">
+      <element id="Tree16" kind="Tree"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree16" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationSeparation.testAllNegative2 [Runner: FanTestingEngine]">
+      <element id="Item20" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationSeparation.testAllPozitive2 \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree16" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationSeparation.testAllPozitive2 [Runner: FanTestingEngine]">
+      <element id="Item21" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationSeparation.testZero2 \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree16" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationSeparation.testZero2 [Runner: FanTestingEngine]">
+      <element id="Item22" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Failure Trace" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <after id="Label25" kind="Label"/>
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>sys::TestErr: Test failed</path>
+        <parent id="Table6" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="sys::TestErr: Test failed">
+      <element id="Item24" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow11" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Failure Trace" multiplicity="1">
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <after id="Label25" kind="Label"/>
+        <parent id="View18" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>  LaunchAndDebug::VerificationSeparation.testAllNegative2 \(VerificationSeparation.fan:13\)</path>
+        <parent id="Table6" kind="Table"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="  LaunchAndDebug::VerificationSeparation.testAllNegative2 (VerificationSeparation.fan:13)">
+      <element id="Item23" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow12" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View20" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree18" kind="Tree"/>
+      <path>LaunchAndDebug</path>
+      <path>tests</path>
+      <path>VerificationAddition.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Run" multiplicity="1">
+        <parent id="EclipseWindow12" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click" arrow="true">
+      <element id="Button6" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State7" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Run As</path>
+        <path>2 Fantom Testing Run</path>
+        <parent id="EclipseWindow12" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu4" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State8" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Runs:" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <after id="Label27" kind="Label"/>
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="value" value="3/3">
+      <element id="Text17" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Failures:" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <after id="Label28" kind="Label"/>
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="value" value="0">
+      <element id="Text18" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="3">
+      <element id="Tree20" kind="Tree"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationAddition.testAllNegative \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree20" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationAddition.testAllNegative [Runner: FanTestingEngine]">
+      <element id="Item26" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationAddition.testAllPozitive \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree20" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationAddition.testAllPozitive [Runner: FanTestingEngine]">
+      <element id="Item27" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>LaunchAndDebug::VerificationAddition.testZero \[Runner: FanTestingEngine\]</path>
+        <parent id="Tree20" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="LaunchAndDebug::VerificationAddition.testZero [Runner: FanTestingEngine]">
+      <element id="Item28" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Script Unit Test" multiplicity="1">
+        <parent id="EclipseWindow13" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Label" pattern="Failure Trace" multiplicity="1">
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Table" multiplicity="1">
+        <after id="Label29" kind="Label"/>
+        <parent id="View22" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="0">
+      <element id="Table7" kind="Table"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow8" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="View14" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="Tree12" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+        <selection>
+          <path>LaunchAndDebug</path>
+          <path>tests</path>
+          <path>VerificationSeparation.fan</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="Editor3" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="VerificationSeparation.fan">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.6">
+      <elements id="Text12" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class VerificationSeparation : Test{  Void testAllPozitive2()  {  Int c := Separation.methodSeparation(10, 2)  verify(c == 5)      }    Void testAllNegative2()  {  Int c := Separation.methodSeparation(-10, -2)  verify(c == 5)      }    Void testZero2()  {  Int c := Separation.methodSeparation(2, 0)  verify(c == 0)      }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue>\nclass VerificationSeparation : Test\n{\n  Void testAllPozitive2()\n  {\n  Int c := Separation.methodSeparation(10, 2)\n  verify(c == 5)    \n  }\n  \n  Void testAllNegative2()\n  {\n  Int c := Separation.methodSeparation(-10, -2)\n  verify(c == 5)    \n  }\n  \n  Void testZero2()\n  {\n  Int c := Separation.methodSeparation(2, 0)\n  verify(c == 0)    \n  }\n}\n</rawValue>
+        <styleRanges>0, 1, fontStyle=normal</styleRanges>
+        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6, 1, fontStyle=normal</styleRanges>
+        <styleRanges>7, 22, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>29, 1, fontStyle=normal</styleRanges>
+        <styleRanges>30, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>31, 1, fontStyle=normal</styleRanges>
+        <styleRanges>32, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>36, 1, fontStyle=normal</styleRanges>
+        <styleRanges>37, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>38, 3, fontStyle=normal</styleRanges>
+        <styleRanges>41, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>45, 1, fontStyle=normal</styleRanges>
+        <styleRanges>46, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>64, 3, fontStyle=normal</styleRanges>
+        <styleRanges>67, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>68, 3, fontStyle=normal</styleRanges>
+        <styleRanges>71, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>74, 1, fontStyle=normal</styleRanges>
+        <styleRanges>75, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>76, 1, fontStyle=normal</styleRanges>
+        <styleRanges>77, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>79, 1, fontStyle=normal</styleRanges>
+        <styleRanges>80, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>91, 16, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>107, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>108, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>110, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>111, 1, fontStyle=normal</styleRanges>
+        <styleRanges>112, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>113, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>114, 3, fontStyle=normal</styleRanges>
+        <styleRanges>117, 6, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>123, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>124, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>125, 1, fontStyle=normal</styleRanges>
+        <styleRanges>126, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>128, 1, fontStyle=normal</styleRanges>
+        <styleRanges>129, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>130, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>131, 7, fontStyle=normal</styleRanges>
+        <styleRanges>138, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>139, 6, fontStyle=normal</styleRanges>
+        <styleRanges>145, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>149, 1, fontStyle=normal</styleRanges>
+        <styleRanges>150, 18, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>168, 3, fontStyle=normal</styleRanges>
+        <styleRanges>171, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>172, 3, fontStyle=normal</styleRanges>
+        <styleRanges>175, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>178, 1, fontStyle=normal</styleRanges>
+        <styleRanges>179, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>180, 1, fontStyle=normal</styleRanges>
+        <styleRanges>181, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>183, 1, fontStyle=normal</styleRanges>
+        <styleRanges>184, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>195, 16, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>211, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>213, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>215, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>216, 1, fontStyle=normal</styleRanges>
+        <styleRanges>217, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>218, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>219, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>220, 3, fontStyle=normal</styleRanges>
+        <styleRanges>223, 6, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>229, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>230, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>231, 1, fontStyle=normal</styleRanges>
+        <styleRanges>232, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>234, 1, fontStyle=normal</styleRanges>
+        <styleRanges>235, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>236, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>237, 7, fontStyle=normal</styleRanges>
+        <styleRanges>244, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>245, 6, fontStyle=normal</styleRanges>
+        <styleRanges>251, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>255, 1, fontStyle=normal</styleRanges>
+        <styleRanges>256, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>267, 3, fontStyle=normal</styleRanges>
+        <styleRanges>270, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>271, 3, fontStyle=normal</styleRanges>
+        <styleRanges>274, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>277, 1, fontStyle=normal</styleRanges>
+        <styleRanges>278, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>279, 1, fontStyle=normal</styleRanges>
+        <styleRanges>280, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>282, 1, fontStyle=normal</styleRanges>
+        <styleRanges>283, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>294, 16, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>310, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>311, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>312, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>313, 1, fontStyle=normal</styleRanges>
+        <styleRanges>314, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>315, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>316, 3, fontStyle=normal</styleRanges>
+        <styleRanges>319, 6, fontStyle=normal, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>325, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>326, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>327, 1, fontStyle=normal</styleRanges>
+        <styleRanges>328, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>330, 1, fontStyle=normal</styleRanges>
+        <styleRanges>331, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>332, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>333, 7, fontStyle=normal</styleRanges>
+        <styleRanges>340, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>341, 1, fontStyle=normal</styleRanges>
+        <styleRanges>342, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>343, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.11">
+      <elements id="Button4" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:ToolItem" enablement="true" tooltip="Run" kind="Tool" index="1">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <caption></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.12">
+      <elements id="State5" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.15">
+      <elements id="Window1" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Run As" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-746" y="130" width="288" height="435"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.16">
+      <elements id="Table4" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" borderWith="2" itemCount="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="11" y="36" width="250" height="171"/>
+        <selection>
+          <path>Fantom Testing</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.18">
+      <elements id="Button5" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="11" y="13" width="92" height="25"/>
+        <caption>OK</caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.19">
+      <elements id="State6" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.22">
+      <elements id="EclipseWindow9" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.23">
+      <elements id="View16" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.24">
+      <elements id="Label22" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="Runs: ">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="5" y="5" width="32" height="15"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.25">
+      <elements id="Text14" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.widgets.Text" enablement="true" value="3/3" readOnly="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="42" y="5" width="95" height="15"/>
+        <rawValue>3/3</rawValue>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.27">
+      <elements id="EclipseWindow9" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.28">
+      <elements id="View16" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.29">
+      <elements id="Label23" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="Failures: ">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="293" y="5" width="46" height="15"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.30">
+      <elements id="Text15" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.widgets.Text" enablement="true" value="1" readOnly="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="344" y="5" width="82" height="15"/>
+        <rawValue>1</rawValue>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.32">
+      <elements id="EclipseWindow10" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.33">
+      <elements id="View17" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.34">
+      <elements id="Tree15" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+        <selection>
+          <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.36">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.37">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.38">
+      <elements id="Tree16" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+        <selection>
+          <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.40">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.41">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.42">
+      <elements id="Tree16" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+        <selection>
+          <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.43">
+      <elements id="Item20" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationSeparation.testAllNegative2 [Runner: FanTestingEngine]" selected="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" width="460" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.45">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.46">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.47">
+      <elements id="Tree16" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+        <selection>
+          <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.48">
+      <elements id="Item21" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationSeparation.testAllPozitive2 [Runner: FanTestingEngine]" index="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="18" width="454" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.50">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.51">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.52">
+      <elements id="Tree16" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+        <selection>
+          <path>LaunchAndDebug::VerificationSeparation.testAllNegative2 \[Runner: FanTestingEngine\]</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.53">
+      <elements id="Item22" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationSeparation.testZero2 [Runner: FanTestingEngine]" index="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="36" width="423" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.55">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.56">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.57">
+      <elements id="Label25" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.custom.CLabel" enablement="true" caption="Failure Trace">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="347" height="22"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.58">
+      <elements id="Table6" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds y="24" width="394" height="52"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.59">
+      <elements id="Item24" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="sys::TestErr: Test failed">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="20" width="126" height="19"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.61">
+      <elements id="EclipseWindow11" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.62">
+      <elements id="View18" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.63">
+      <elements id="Label25" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.custom.CLabel" enablement="true" caption="Failure Trace">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="347" height="22"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.64">
+      <elements id="Table6" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds y="24" width="394" height="52"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.65">
+      <elements id="Item23" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TableItem" caption="  LaunchAndDebug::VerificationSeparation.testAllNegative2 (VerificationSeparation.fan:13)" index="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="20" y="19" width="483" height="19"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.67">
+      <elements id="EclipseWindow12" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.68">
+      <elements id="View20" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.69">
+      <elements id="Tree18" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+        <selection>
+          <path>LaunchAndDebug</path>
+          <path>tests</path>
+          <path>VerificationAddition.fan</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.71">
+      <elements id="Button6" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:ToolItem" enablement="true" tooltip="Run" kind="Tool" index="1">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <caption></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.72">
+      <elements id="State7" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.75">
+      <elements id="Menu4" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;2 Fantom Testing Run" enablement="true" index="1" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.76">
+      <elements id="State8" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.79">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.80">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.81">
+      <elements id="Label27" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="Runs: ">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="5" y="5" width="32" height="15"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.82">
+      <elements id="Text17" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.widgets.Text" enablement="true" value="3/3" readOnly="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="42" y="5" width="95" height="15"/>
+        <rawValue>3/3</rawValue>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.84">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.85">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.86">
+      <elements id="Label28" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="Failures: ">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="293" y="5" width="46" height="15"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.87">
+      <elements id="Text18" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.widgets.Text" enablement="true" value="0" readOnly="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="344" y="5" width="82" height="15"/>
+        <rawValue>0</rawValue>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.89">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.90">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.91">
+      <elements id="Tree20" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.93">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.94">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.95">
+      <elements id="Tree20" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.96">
+      <elements id="Item26" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationAddition.testAllNegative [Runner: FanTestingEngine]">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" width="444" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.98">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.99">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.100">
+      <elements id="Tree20" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.101">
+      <elements id="Item27" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationAddition.testAllPozitive [Runner: FanTestingEngine]" index="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="18" width="438" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.103">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.104">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.105">
+      <elements id="Tree20" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" itemCount="3">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="394" height="73"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.106">
+      <elements id="Item28" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="LaunchAndDebug::VerificationAddition.testZero [Runner: FanTestingEngine]" index="2">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="36" width="407" height="18"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.108">
+      <elements id="EclipseWindow13" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - LaunchAndDebug/tests/VerificationSeparation.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.109">
+      <elements id="View22" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Script Unit Test">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="206" y="528" width="791" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.110">
+      <elements id="Label29" kind="Label"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.custom.CLabel" enablement="true" caption="Failure Trace">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="347" height="22"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.111">
+      <elements id="Table7" kind="Table"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Table" className="org.eclipse.swt.widgets.Table" enablement="true" containMenu="true">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds y="24" width="394" height="52"/>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>
