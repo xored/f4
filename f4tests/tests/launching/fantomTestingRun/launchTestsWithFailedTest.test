@@ -11,7 +11,7 @@ with [get-editor "VerificationSeparation.fan" | get-editbox] {
     key-type "M1+s"
 }
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/tests/VerificationSeparation.fan"
-get-button "Run As..." | click
+get-button "Run.*" | click
 with [get-window "Run As"] {
     get-table | select "Fantom Testing"
     get-button OK | click
@@ -46,7 +46,7 @@ with [get-view "Script Unit Test"] {
 get-view Console | click -nowait
 get-view Console | get-editbox | get-property value | contains "1 FAILURES [1 tests, 2 methods, 2 verifies]" | verify-true
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/tests/VerificationAddition.fan"
-get-button "Run As..." | click -arrow
+get-button "Run.*" | click -arrow
 get-menu "Run As/.* Fantom Testing Run" | click
 with [get-view "Script Unit Test"] {
     get-editbox -after [get-label "Runs:"] | get-property value | equals "3/3" | verify-true

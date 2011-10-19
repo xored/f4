@@ -5,7 +5,7 @@
   <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
     <content><![CDATA[get-view "Fantom Explorer" | get-tree | select LaunchAndDebug
-get-button "Run As..." | click
+get-button "Run.*" | click
 with [get-window "Run As"] {
     get-table | select "Fantom Class"
     get-button OK | click
@@ -16,7 +16,7 @@ with [get-window "Select a script to launch"] {
 }
 get-view Console | get-editbox | get-property value | contains "123 and 5" | verify-true
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan"
-get-button "Run As..." | click -arrow
+get-button "Run.*" | click -arrow
 get-menu "Run As/1 Fantom Class" | click
 with [get-window "Select a script to launch"] {
     get-table | select "Calculator.fan"
@@ -24,7 +24,7 @@ with [get-window "Select a script to launch"] {
 }
 get-view Console | get-editbox | get-property value | contains "123 and 5" | verify-true
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan"
-get-button "Run As..." | click
+get-button "Run.*" | click
 with [get-window "Run As"] {
     get-table | select "Fantom Class"
     get-button OK | click
