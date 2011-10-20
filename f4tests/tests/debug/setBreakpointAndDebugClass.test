@@ -1,0 +1,1006 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.diagram="http:///com/xored/tesla/core/diagram.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="setBreakpointAndDebugClass" version="3.0" id="_AouaAfo8EeCCQPvyyXR3Tw" description="1. Set breakpoint in the code&#xD;&#xA;2. Debug this class &#xD;&#xA;3. Make sure that class is run in debug&#xD;&#xA;4. Make sure that variables are displayed in Veriables view" tags="functionality/debugging/fantomclass" type="ecl">
+  <contexts>_mh78QPrIEeCCQPvyyXR3Tw</contexts>
+  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | double-click -nowait
+with [get-editor "Calculator.fan"] {
+    with [get-editbox] {
+        set-text-offset 21 8
+        key-type CR
+        type-text "Int v := Addition.methodAddition(c, d)"
+        key-type CR
+        type-text "echo(\"$v"
+        key-type "M1+s"
+    }
+    with [get-canvas -index 3] {
+        mouse-press 8 160 button1
+        mouse-release 8 160 button1 524288
+        mouse-move 10 160
+        mouse-press 10 160 button3
+        mouse-move 9 160 -mask 2097152
+        mouse-release 9 160 button3 2097152
+    }
+    get-canvas -index 1 | get-menu "Toggle Breakpoint" | click
+    with [get-canvas -index 3] {
+        mouse-move 7 180
+        mouse-press 7 180 button3
+        mouse-release 7 180 button3 2097152
+    }
+    get-canvas -index 1 | get-menu "Toggle Breakpoint" | click
+    get-canvas -index 3 | mouse-move 0 194
+}
+get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | get-menu "Debug As/.* Fantom Class" 
+    | click
+with [get-window "Confirm Perspective Switch"] {
+    get-button Yes | click
+}
+with [get-view Variables | get-tree] {
+    get-item c | get-property columns -index 0 | equals c | verify-true
+    get-item c | get-property columns -index 1 | equals 123 | verify-true
+    get-item d | get-property columns -index 0 | equals d | verify-true
+    get-item d | get-property columns -index 1 | equals 5 | verify-true
+    get-item v | get-property columns -index 0 | equals v | verify-true
+    get-item v | get-property columns -index 1 | equals 0 | verify-true
+}
+get-view Debug | get-button "Step Over (F6)" | click
+with [get-view Variables | get-tree] {
+    get-item c | get-property columns -index 0 | equals c | verify-true
+    get-item c | get-property columns -index 1 | equals 123 | verify-true
+    get-item d | get-property columns -index 0 | equals d | verify-true
+    get-item d | get-property columns -index 1 | equals 5 | verify-true
+    get-item v | get-property columns -index 0 | equals v | verify-true
+    get-item v | get-property columns -index 1 | equals 128 | verify-true
+}
+get-view Debug | get-button "Resume (F8)" | click
+get-view Console | get-editbox | get-property value | contains "123 and 5" | verify-true
+get-view Console | get-editbox | get-property value | contains "128" | verify-true]]></content>
+  </content>
+  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
+        <parent id="EclipseWindow0" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View0" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree0" kind="Tree"/>
+      <path>LaunchAndDebug</path>
+      <path>fan</path>
+      <path>Calculator.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:DoubleClick">
+      <element id="Tree0" kind="Tree"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Editor" pattern="Calculator.fan" multiplicity="1">
+        <parent id="EclipseWindow0" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="Editor0" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="21" line="8">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="Int v := Ad">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="32" character="32" meta="1">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=".">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:ShowContentAssist">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="m">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777218" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="c">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777220" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777220" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="127" character="127" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="d">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777220" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="echo ">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="8" character="8" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="()">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777219" meta="0">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="&quot;$v">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
+      <element id="Text0" kind="Text"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Canvas" index="3" multiplicity="1">
+        <parent id="Editor0" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="8" y="160" button="1" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="8" y="160" button="1" kind="Up" boundsWidth="12" boundsHeight="436" stateMask="524288">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="10" y="160" kind="Move" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="10" y="160" button="3" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="9" y="160" kind="Move" boundsWidth="12" boundsHeight="436" stateMask="2097152">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="9" y="160" button="3" kind="Up" boundsWidth="12" boundsHeight="436" stateMask="2097152">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Canvas" index="1" multiplicity="1">
+        <parent id="Editor0" kind="Editor"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Toggle Breakpoint</path>
+        <parent id="Canvas1" kind="Canvas"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu0" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State0" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="7" y="180" kind="Move" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="7" y="180" button="3" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" x="7" y="180" button="3" kind="Up" boundsWidth="12" boundsHeight="436" stateMask="2097152">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Toggle Breakpoint</path>
+        <parent id="Canvas1" kind="Canvas"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu1" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State1" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol.diagram:MouseCommand" y="194" kind="Move" boundsWidth="12" boundsHeight="436">
+      <element id="Canvas0" kind="Canvas"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
+      <element id="Tree0" kind="Tree"/>
+      <path>LaunchAndDebug</path>
+      <path>fan</path>
+      <path>Calculator.fan</path>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Menu" multiplicity="1">
+        <path>Debug As</path>
+        <path>1 Fantom Class</path>
+        <parent id="Tree0" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Menu2" kind="Menu"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State2" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Window" pattern="Confirm Perspective Switch" multiplicity="1">
+        <parent id="EclipseWindow0" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Remember my decision" multiplicity="1">
+        <parent id="Window0" kind="Window" description="Confirm Perspective Switch"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button0" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State3" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Yes" multiplicity="1">
+        <parent id="Window0" kind="Window" description="Confirm Perspective Switch"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button1" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State4" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow1" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View1" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>c</path>
+        <parent id="Tree1" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="c" index="0">
+      <element id="Item2" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="123" index="1">
+      <element id="Item2" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow1" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View1" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>d</path>
+        <parent id="Tree1" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="d" index="0">
+      <element id="Item1" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="5" index="1">
+      <element id="Item1" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow1" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View1" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>v</path>
+        <parent id="Tree1" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="v" index="0">
+      <element id="Item0" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="0" index="1">
+      <element id="Item0" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Debug" multiplicity="1">
+        <parent id="EclipseWindow2" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Step Over (F6)" multiplicity="1">
+        <parent id="View3" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button2" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State5" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View3" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow3" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View5" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>c</path>
+        <parent id="Tree5" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="c" index="0">
+      <element id="Item4" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="123" index="1">
+      <element id="Item4" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow3" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View5" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>d</path>
+        <parent id="Tree5" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="d" index="0">
+      <element id="Item5" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="5" index="1">
+      <element id="Item5" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Variables" multiplicity="1">
+        <parent id="EclipseWindow3" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Tree" multiplicity="1">
+        <parent id="View5" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Item" multiplicity="1">
+        <path>v</path>
+        <parent id="Tree5" kind="Tree"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="v" index="0">
+      <element id="Item6" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="columns" value="128" index="1">
+      <element id="Item6" kind="Item"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Debug" multiplicity="1">
+        <parent id="EclipseWindow4" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Button" pattern="Resume (F8)" multiplicity="1">
+        <parent id="View8" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
+    <commands xsi:type="com.xored.tesla.core.protocol:Click">
+      <element id="Button4" kind="Button"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
+      <state id="State6" kind="State"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="EclipseWindow" multiplicity="1"/>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="View" pattern="Console" multiplicity="1">
+        <parent id="EclipseWindow5" kind="EclipseWindow" description=".*- Eclipse SDK"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
+      <data kind="Text" multiplicity="1">
+        <parent id="View10" kind="View"/>
+      </data>
+    </commands>
+    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="value" value="123 and 5128Picked up _JAVA_OPTIONS: -Xmx1g" kind="contains">
+      <element id="Text5" kind="Text"/>
+      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </commands>
+    <elementMapping command="//@teslaContent/@commands.0">
+      <elements id="EclipseWindow0" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.1">
+      <elements id="View0" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="50" width="194" height="594"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.2">
+      <elements id="Tree0" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="194" height="594"/>
+        <selection>
+          <path>LaunchAndDebug</path>
+          <path>fan</path>
+          <path>Calculator.fan</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.5">
+      <elements id="Editor0" kind="Editor"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Calculator.fan">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="588" height="453"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.6">
+      <elements id="Text0" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class Calculator{   Void main()  {    Int c := Addition.methodAddition(100, 23)    Int d := Separation.methodSeparation(-10, -2)    echo(&quot;$c and $d&quot;)  }}">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="30" width="545" height="453"/>
+        <rawValue><![CDATA[\nclass Calculator\n{\n \n  Void main()\n  {\n    Int c := Addition.methodAddition(100, 23)\n    Int d := Separation.methodSeparation(-10, -2)\n    echo("$c and $d")\n  }\n}\n]]></rawValue>
+        <styleRanges>0, 1, fontStyle=normal</styleRanges>
+        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
+        <styleRanges>6, 1, fontStyle=normal</styleRanges>
+        <styleRanges>7, 10, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>17, 1, fontStyle=normal</styleRanges>
+        <styleRanges>18, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>19, 5, fontStyle=normal</styleRanges>
+        <styleRanges>24, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>28, 1, fontStyle=normal</styleRanges>
+        <styleRanges>29, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>35, 3, fontStyle=normal</styleRanges>
+        <styleRanges>38, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>39, 5, fontStyle=normal</styleRanges>
+        <styleRanges>44, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>47, 1, fontStyle=normal</styleRanges>
+        <styleRanges>48, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>49, 1, fontStyle=normal</styleRanges>
+        <styleRanges>50, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>52, 1, fontStyle=normal</styleRanges>
+        <styleRanges>53, 9, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>62, 14, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>76, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>77, 3, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>80, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>81, 1, fontStyle=normal</styleRanges>
+        <styleRanges>82, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>84, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>85, 5, fontStyle=normal</styleRanges>
+        <styleRanges>90, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>93, 1, fontStyle=normal</styleRanges>
+        <styleRanges>94, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>95, 1, fontStyle=normal</styleRanges>
+        <styleRanges>96, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>98, 1, fontStyle=normal</styleRanges>
+        <styleRanges>99, 11, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>110, 16, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>126, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>128, 2, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>130, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>131, 1, fontStyle=normal</styleRanges>
+        <styleRanges>132, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>133, 1, fontStyle=normal, foreground=Color {128, 0, 0}</styleRanges>
+        <styleRanges>134, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>135, 5, fontStyle=normal</styleRanges>
+        <styleRanges>140, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
+        <styleRanges>144, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>145, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>146, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>148, 1, fontStyle=normal</styleRanges>
+        <styleRanges>149, 3, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>152, 1, fontStyle=normal</styleRanges>
+        <styleRanges>153, 2, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
+        <styleRanges>155, 1, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
+        <styleRanges>156, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>157, 3, fontStyle=normal</styleRanges>
+        <styleRanges>160, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>161, 1, fontStyle=normal</styleRanges>
+        <styleRanges>162, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
+        <styleRanges>163, 1, fontStyle=normal</styleRanges>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.29">
+      <elements id="Canvas0" kind="Canvas"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.jface.text.source.AnnotationRulerColumn$5" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="12" height="436"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.36">
+      <elements id="Canvas1" kind="Canvas"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Control" className="org.eclipse.jface.text.source.CompositeRuler$CompositeRulerCanvas" enablement="true" containMenu="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="29" height="436"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.37">
+      <elements id="Menu0" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="Toggle &amp;Breakpoint" enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.38">
+      <elements id="State0" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.44">
+      <elements id="Menu1" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="Toggle Brea&amp;kpoint" enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.45">
+      <elements id="State1" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.50">
+      <elements id="Menu2" kind="Menu"/>
+      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;1 Fantom Class" enablement="true" cascade="true"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.51">
+      <elements id="State2" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.54">
+      <elements id="Window0" kind="Window"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Confirm Perspective Switch" hasBorder="true" hasCloseButton="true" isApplicationModal="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-863" y="263" width="522" height="236"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.55">
+      <elements id="Button0" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true" selected="true" kind="Check">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds y="20" width="146" height="16"/>
+        <caption><![CDATA[&Remember my decision]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.56">
+      <elements id="State3" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.59">
+      <elements id="Button1" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds width="92" height="25"/>
+        <caption><![CDATA[&Yes]]></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.60">
+      <elements id="State4" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.63">
+      <elements id="EclipseWindow1" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.64">
+      <elements id="View1" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.65">
+      <elements id="Tree1" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.66">
+      <elements id="Item2" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="c" index="1">
+        <columns>c</columns>
+        <columns>123</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="18" width="9" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.69">
+      <elements id="EclipseWindow1" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.70">
+      <elements id="View1" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.71">
+      <elements id="Tree1" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.72">
+      <elements id="Item1" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="d" index="2">
+        <columns>d</columns>
+        <columns>5</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="36" width="10" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.75">
+      <elements id="EclipseWindow1" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.76">
+      <elements id="View1" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.77">
+      <elements id="Tree1" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.78">
+      <elements id="Item0" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="v" index="3">
+        <columns>v</columns>
+        <columns>0</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="54" width="9" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.81">
+      <elements id="EclipseWindow2" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.82">
+      <elements id="View3" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Debug">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="493" height="189"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.83">
+      <elements id="Button2" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:ToolItem" enablement="true" tooltip="Step Over (F6)" kind="Tool" index="7">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <caption></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.84">
+      <elements id="State5" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.87">
+      <elements id="Tree3" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="493" height="189"/>
+        <selection>
+          <path>Calculator.fan \[Fantom Script\]</path>
+          <path>fanx.tools.Fan at localhost:54690</path>
+          <path>Thread \[main\] \(Suspended \(breakpoint at line 11 in Calculator\)\)</path>
+          <path>Calculator.main\(\) line: 11</path>
+        </selection>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.88">
+      <elements id="EclipseWindow3" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.89">
+      <elements id="View5" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.90">
+      <elements id="Tree5" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.91">
+      <elements id="Item4" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="c" index="1">
+        <columns>c</columns>
+        <columns>123</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="18" width="9" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.94">
+      <elements id="EclipseWindow3" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.95">
+      <elements id="View5" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.96">
+      <elements id="Tree5" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.97">
+      <elements id="Item5" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="d" index="2">
+        <columns>d</columns>
+        <columns>5</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="36" width="10" height="17"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsBackgroundColor red="255" green="255" blue="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.100">
+      <elements id="EclipseWindow3" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.101">
+      <elements id="View5" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Variables">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="505" y="50" width="492" height="165"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.102">
+      <elements id="Tree5" kind="Tree"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" linesVisible="true" multiSelection="true" headerVisible="true" itemCount="4">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="492" height="110"/>
+        <columns caption="Name" resizable="true" movable="true" width="246"/>
+        <columns caption="Value" index="1" resizable="true" movable="true" width="246"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.103">
+      <elements id="Item6" kind="Item"/>
+      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="v" index="3">
+        <columns>v</columns>
+        <columns>128</columns>
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds x="41" y="54" width="9" height="17"/>
+        <columnsBackgroundColor red="255" green="255"/>
+        <columnsBackgroundColor red="255" green="255"/>
+        <columnsForegroundColor/>
+        <columnsForegroundColor/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.106">
+      <elements id="EclipseWindow4" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.107">
+      <elements id="View8" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Debug">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="26" width="493" height="189"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.108">
+      <elements id="Button4" kind="Button"/>
+      <controls xsi:type="com.xored.tesla.core.ui:ToolItem" enablement="true" tooltip="Resume (F8)" kind="Tool" index="1">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <caption></caption>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.109">
+      <elements id="State6" kind="State"/>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.112">
+      <elements id="EclipseWindow5" kind="EclipseWindow"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Debug - LaunchAndDebug/fan/Calculator.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="-1114" y="36" width="1024" height="768"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.113">
+      <elements id="View10" kind="View"/>
+      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Console">
+        <backgroundColor red="240" green="240" blue="240"/>
+        <foregroundColor/>
+        <bounds x="3" y="528" width="994" height="116"/>
+      </controls>
+    </elementMapping>
+    <elementMapping command="//@teslaContent/@commands.114">
+      <elements id="Text5" kind="Text"/>
+      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="123 and 5128Picked up _JAVA_OPTIONS: -Xmx1g">
+        <backgroundColor red="255" green="255" blue="255"/>
+        <foregroundColor/>
+        <bounds width="994" height="116"/>
+        <rawValue>123 and 5\n128\nPicked up _JAVA_OPTIONS: -Xmx1g\n</rawValue>
+      </controls>
+    </elementMapping>
+  </teslaContent>
+</com.xored.q7.scenario:Scenario>
