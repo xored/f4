@@ -2,6 +2,7 @@
 <com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.diagram="http:///com/xored/tesla/core/diagram.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="removeAllBreakpoints" version="3.0" id="_WahngPo-EeCCQPvyyXR3Tw" description="1. Open class, set several breakpoints&#xD;&#xA;2. Select &quot;Run->Remove All Breakpoints&quot; in the main menu&#xD;&#xA;3. Make sure that all breakpoints are deleted from classes&#xD;&#xA;4. Make sure that &quot;Remove All Breakpoints&quot; is disabled in main menu" tags="functionality/debugging/fantomclass" type="ecl">
   <contexts>_mh78QPrIEeCCQPvyyXR3Tw</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_Y7JY0Pr8EeCCQPvyyXR3Tw</contexts>
   <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
     <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | double-click -nowait
@@ -15,19 +16,6 @@ with [get-editor "Calculator.fan"] {
         key-type "M1+s"
     }
 }
-
-with [get-editor "Calculator.fan"] {
-    with [get-canvas -index 2] {
-        mouse-press 2 160 button1
-        mouse-release 2 160 button1 524288
-        mouse-move 0 160
-    }
-    with [get-canvas -index 4] {
-        mouse-press 7 160 button3
-        mouse-release 7 160 button3 2097152
-    }
-    get-editbox | set-text-offset 35 9
-}
 get-menu "Run/Toggle Line Breakpoint" | click
 get-editor "Calculator.fan" | get-editbox | set-text-offset 20 7
 get-menu "Run/Toggle Line Breakpoint" | click
@@ -35,15 +23,9 @@ get-editor "Calculator.fan" | get-canvas -index 4 | mouse-move 3 208
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Addition.fan" | double-click -nowait
 get-editor "Addition.fan" | get-editbox | set-text-offset 10 6
 get-menu "Run/Toggle Line Breakpoint" | click
-with [get-editor "Calculator.fan"] {
-    click -nowait
-    get-canvas -index 4 | mouse-move 0 205
-    with [get-canvas -index 3] {
-        mouse-press 8 126 button3
-        mouse-release 8 126 button3 2097152
-    }
-    get-canvas -index 1 | get-menu "Toggle Enablement" | click
-    get-canvas -index 2 | mouse-move 6 153
+with [get-view Breakpoints | get-tree] {
+    select "Calculator.fan \\[line: 8\\]"
+    get-item "Calculator.fan \\[line: 8\\]" | uncheck
 }
 get-menu "Run/Remove All Breakpoints" | click
 get-window "Remove All Breakpoints" | get-button No | click
@@ -65,12 +47,12 @@ with [get-tab-folder] {
 }
 get-view Debug | get-button "Resume (F8)" | click
 with [get-view Variables | get-tree] {
+    get-item a | get-property columns -index 0 | equals a | verify-true
+    get-item a | get-property columns -index 1 | equals 123 | verify-true
+    get-item b | get-property columns -index 0 | equals b | verify-true
+    get-item b | get-property columns -index 1 | equals 5 | verify-true
     get-item c | get-property columns -index 0 | equals c | verify-true
-    get-item c | get-property columns -index 1 | equals 123 | verify-true
-    get-item d | get-property columns -index 0 | equals d | verify-true
-    get-item d | get-property columns -index 1 | equals 5 | verify-true
-    get-item v | get-property columns -index 0 | equals v | verify-true
-    get-item v | get-property columns -index 1 | equals 0 | verify-true
+    get-item c | get-property columns -index 1 | equals 128 | verify-true
 }
 with [get-view Debug | get-button "Resume (F8)"] {
     click

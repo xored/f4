@@ -14,22 +14,12 @@ with [get-editor "Calculator.fan"] {
         type-text "echo(\"$v"
         key-type "M1+s"
     }
-    with [get-canvas -index 3] {
-        mouse-press 8 160 button1
-        mouse-release 8 160 button1 524288
-        mouse-move 10 160
-        mouse-press 10 160 button3
-        mouse-move 9 160 -mask 2097152
-        mouse-release 9 160 button3 2097152
-    }
-    get-canvas -index 1 | get-menu "Toggle Breakpoint" | click
-    with [get-canvas -index 3] {
-        mouse-move 7 180
-        mouse-press 7 180 button3
-        mouse-release 7 180 button3 2097152
-    }
-    get-canvas -index 1 | get-menu "Toggle Breakpoint" | click
-    get-canvas -index 3 | mouse-move 0 194
+}
+with [get-editor "Calculator.fan" | get-editbox] {
+    set-text-offset 6 9
+    key-type "M1+M2+b"
+    set-text-offset 6 10
+    key-type "M1+M2+b"
 }
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | get-menu "Debug As/.* Fantom Class" 
     | click

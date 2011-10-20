@@ -2,6 +2,7 @@
 <com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="skipAllBreakpointsAtDebugging" version="3.0" id="_BsQosPo-EeCCQPvyyXR3Tw" description="1. Open class. set breakpoints&#xD;&#xA;2. Disable breakpoint&#xD;&#xA;3. Select &quot;Run->Skip All Breakpoints&quot; in the main menu&#xD;&#xA;4. Make sure that this item is selected&#xD;&#xA;5. Launch this class in debug&#xD;&#xA;6. Make sure that debug is executed without breakpoint" tags="functionality/debugging/fantomclass" type="ecl">
   <contexts>_mh78QPrIEeCCQPvyyXR3Tw</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
+  <contexts>_Y7JY0Pr8EeCCQPvyyXR3Tw</contexts>
   <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
   <content xsi:type="org.eclipse.ecl.core:Script">
     <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | double-click -nowait
@@ -15,19 +16,6 @@ with [get-editor "Calculator.fan"] {
         key-type "M1+s"
     }
 }
-
-with [get-editor "Calculator.fan"] {
-    with [get-canvas -index 2] {
-        mouse-press 2 160 button1
-        mouse-release 2 160 button1 524288
-        mouse-move 0 160
-    }
-    with [get-canvas -index 4] {
-        mouse-press 7 160 button3
-        mouse-release 7 160 button3 2097152
-    }
-    get-editbox | set-text-offset 35 9
-}
 get-menu "Run/Toggle Line Breakpoint" | click
 get-editor "Calculator.fan" | get-editbox | set-text-offset 20 7
 get-menu "Run/Toggle Line Breakpoint" | click
@@ -35,16 +23,8 @@ get-editor "Calculator.fan" | get-canvas -index 4 | mouse-move 3 208
 get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Addition.fan" | double-click -nowait
 get-editor "Addition.fan" | get-editbox | set-text-offset 10 6
 get-menu "Run/Toggle Line Breakpoint" | click
-with [get-editor "Calculator.fan"] {
-    click -nowait
-    get-canvas -index 4 | mouse-move 0 205
-    with [get-canvas -index 3] {
-        mouse-press 8 126 button3
-        mouse-release 8 126 button3 2097152
-    }
-    get-canvas -index 1 | get-menu "Toggle Enablement" | click
-    get-canvas -index 2 | mouse-move 6 153
-}
+get-view Breakpoints | click -nowait
+get-view Breakpoints | get-tree | get-item "Calculator.fan \\[line: 8\\]" | uncheck
 get-menu "Run/Skip All Breakpoints" | get-property selection | equals false | verify-true
 get-menu "Run/Skip All Breakpoints" | get-property enablement | equals true | verify-true
 get-menu "Run/Skip All Breakpoints" | click
@@ -58,15 +38,26 @@ get-button "Debug.*" | click -arrow
 get-menu "Debug As/.* Fantom Class" | click
 get-view Console | get-editbox | get-property value | contains "123 and 5" | verify-true
 get-view Console | get-editbox | get-property value | contains "128" | verify-true
-get-menu "Run/Skip All Breakpoints" | click
+with [get-editor "Calculator.fan" | get-editbox] {
+    set-text-offset 5 9
+    key-type "M1+M2+b"
+}
+get-view Breakpoints | click -nowait
+with [get-view Breakpoints | get-tree] {
+    get-property itemCount | equals 4 | verify-true
+    get-item "Calculator.fan \\[line: 10\\]" | get-property caption | equals "Calculator.fan [line: 10]" | verify-true
+}
+get-view Breakpoints | get-button "Skip All Breakpoints" | click
 get-editor "Calculator.fan" | get-editbox | set-text-offset 0 13
 with [get-button Debug] {
+    click -arrow
     click -arrow
     click -arrow
 }
 get-menu "Debug As/.* Fantom Class" | click
 get-window "Confirm Perspective Switch" | get-button Yes | click
 with [get-view Debug | get-button "Resume (F8)"] {
+    click
     click
     click
     click
