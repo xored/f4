@@ -1,9 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="windowBreakpointProperties" version="3.0" id="_DEzeAPsEEeCCQPvyyXR3Tw" tags="functionality/debugging, skipExecution" type="ecl">
+<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="windowBreakpointProperties" version="3.0" id="_DEzeAPsEEeCCQPvyyXR3Tw" description="1. Set breakpoint in the code&#xD;&#xA;2. In the Breakpoint view select this breakpoint and select &quot;Breakpoint Properties&quot; in the context menu&#xD;&#xA;3. Change properties and press &quot;Cancel&quot;&#xD;&#xA;4. Make sure that properties in not changed&#xD;&#xA;5. Open Properies window again&#xD;&#xA;6. Change settings and save this changes&#xD;&#xA;7. Make sure that changes is changed" tags="functionality/debugging" type="ecl">
   <contexts>_mh78QPrIEeCCQPvyyXR3Tw</contexts>
   <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
   <contexts>_Y7JY0Pr8EeCCQPvyyXR3Tw</contexts>
   <contexts>_Wd3ZoPkxEeCyeuCctc0xfQ</contexts>
+  <content xsi:type="org.eclipse.ecl.core:Script">
+    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "LaunchAndDebug/fan/Calculator.fan" | double-click -nowait
+with [get-editor "Calculator.fan" | get-editbox] {
+    set-text-offset 8 8
+    key-type "M1+M2+b"
+}
+with [get-view Breakpoints | get-tree] {
+    get-property itemCount | equals 1 | verify-true
+    get-item "Calculator.fan \\[line: 9\\]" | get-property caption | equals "Calculator.fan [line: 9]" | verify-true
+    get-item "Calculator.fan \\[line: 9\\]" | get-property checked | equals true | verify-true
+}
+get-view Breakpoints | get-tree | select "Calculator.fan \\[line: 9\\]" | get-menu "Breakpoint Properties..." | click
+with [get-window "Properties for null [line:9]"] {
+    get-editbox -after [get-label "Line Number:"] | get-property value | equals 9 | verify-true
+    get-button Enabled | get-property selected | equals true | verify-true
+    get-button "Hit count:" | get-property selected | equals false | verify-true
+}
+with [get-window "Properties for null [line:9]"] {
+    get-button Enabled | click
+//    get-button "Hit count:" | click
+//    get-editbox -index 1 | set-text 4
+    get-button Cancel | click
+}
+with [get-view Breakpoints] {
+    with [get-tree] {
+        get-item "Calculator.fan \\[line: 9\\]" | get-property caption | equals "Calculator.fan [line: 9]" | verify-true
+        get-item "Calculator.fan \\[line: 9\\]" | get-property checked | equals true | verify-true
+    }
+    get-button "Hit count:" | get-property selected | equals false | verify-true
+}
+get-view Breakpoints | get-tree | select "Calculator.fan \\[line: 9\\]" | get-menu "Breakpoint Properties..." | click
+with [get-window "Properties for null [line:9]"] {
+    get-button Enabled | click
+//    get-button "Hit count:" | click
+//    get-editbox -index 1 | set-text 4
+    get-button OK | click
+}
+with [get-view Breakpoints] {
+    with [get-tree] {
+//        get-item "Calculator.fan \\[line: 9\\] \\[hit count: 4\\]" | get-property caption 
+//            | equals "Calculator.fan [line: 9] [hit count: 4]" | verify-true
+        get-item "Calculator.fan \\[line: 9\\].*" | get-property checked | equals false | verify-true
+    }
+//    get-button "Hit count:" | get-property selected | equals true | verify-true
+//    get-editbox | get-property value | equals 4 | verify-true
+}]]></content>
+  </content>
   <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
     <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
       <data kind="EclipseWindow" multiplicity="1"/>
