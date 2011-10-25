@@ -19,7 +19,86 @@
 		  <version>1.0.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies-->
-	<build>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.xored.q7</groupId>
+        <artifactId>q7-server-maven-plugin</artifactId>
+        <version>${q7-maven-version}</version>
+        <extensions>true</extensions>
+        <configuration>
+          <aut>
+            <uri>http://maven.xored.com/nexus/content/repositories/thirdparty/eclipse/sdk/3.7.0/sdk-3.7.0-[classifier].[ext]</uri>
+            <injections>
+
+              <injection>
+                <site>http://download.xored.com/mirrors/indigo</site>
+                <features>
+                  <feature>org.eclipse.draw2d</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://build.xored.com/browse/Q7-Q7/latest/artifact/shared/repository</site>
+                <features>
+                  <feature>com.google.libs.feature.group</feature>
+                  <feature>com.xored.l9client.core.feature.group</feature>
+                  <feature>com.xored.mustache.feature.group</feature>
+                  <feature>com.xored.q7.platform.feature.group</feature>
+                  <feature>com.xored.q7.updates.feature.group</feature>
+                  <feature>com.xored.q7.x5.server.feature.group</feature>
+                  <feature>com.xored.q7.x5.feature.group</feature>
+                  <feature>com.xored.sherlock.model.feature.group</feature>
+                  <feature>com.xored.sherlock.feature.group</feature>
+                  <feature>com.xored.tesla.ecl.feature.group</feature>
+                  <feature>com.xored.tesla.feature.group</feature>
+                  <feature>com.xored.watson.ui.feature.group</feature>
+                  <feature>com.xored.watson.feature.group</feature>
+                  <feature>com.xored.x5.server.feature.group</feature>
+                  <feature>com.xored.x5.feature.group</feature>
+                  <feature>com.google.libs.feature.group</feature>
+                  <feature>org.eclipse.ecl.core.feature.group</feature>
+                  <feature>org.eclipse.ecl.server.feature.group</feature>
+                  <feature>org.fantom.feature.group</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://download.xored.com/mirrors/guava/</site>
+                <features>
+                  <feature>com.google.guava.runtime.feature.feature.group</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://build.xored.com/browse/F4-EXT-7/artifact/shared/repository</site>
+              </injection>
+
+            </injections>
+          </aut>
+          <q7server>
+            <host>deb64c2q74.xored.local</host>
+            <port>7504</port>
+          </q7server>
+          <q7client>
+            <version>${q7-maven-version}</version>
+          </q7client>
+          <q7>
+            <version>${q7-maven-version}</version>
+          </q7>
+          <testOptions>
+            <execTimeout>3000</execTimeout>
+            <autStartupTimeout>300</autStartupTimeout>
+            <launchingKillAutOnConnectError>true</launchingKillAutOnConnectError>
+          </testOptions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+	<!--build>
 		<plugins>
 			<plugin>
 				<groupId>com.xored.q7</groupId>
@@ -48,7 +127,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build-->
 	
 	<pluginRepositories>
 		<pluginRepository>
