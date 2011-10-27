@@ -1,0 +1,169 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>f4tests</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>q7test</packaging>
+
+	<parent>
+		<groupId>com.xored.f4</groupId>
+		<artifactId>f4</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	
+	<!--dependencies>
+		<dependency>
+		  <groupId>com.xored.q7</groupId>
+		  <artifactId>com.xored.q7.pro</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies-->
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.xored.q7</groupId>
+        <artifactId>q7-server-maven-plugin</artifactId>
+        <version>${q7-maven-version}</version>
+        <extensions>true</extensions>
+        <configuration>
+          <aut>
+            <uri>http://maven.xored.com/nexus/content/repositories/thirdparty/eclipse/sdk/3.7.0/sdk-3.7.0-[classifier].[ext]</uri>
+            <injections>
+
+              <injection>
+                <site>http://download.xored.com/mirrors/indigo</site>
+                <features>
+                  <feature>org.eclipse.draw2d</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://build.xored.com/browse/Q7-Q7/latest/artifact/shared/repository</site>
+                <features>
+                  <feature>com.google.libs.feature.group</feature>
+                  <feature>com.xored.l9client.core.feature.group</feature>
+                  <feature>com.xored.mustache.feature.group</feature>
+                  <feature>com.xored.q7.platform.feature.group</feature>
+                  <feature>com.xored.q7.updates.feature.group</feature>
+                  <feature>com.xored.q7.x5.server.feature.group</feature>
+                  <feature>com.xored.q7.x5.feature.group</feature>
+                  <feature>com.xored.sherlock.model.feature.group</feature>
+                  <feature>com.xored.sherlock.feature.group</feature>
+                  <feature>com.xored.tesla.ecl.feature.group</feature>
+                  <feature>com.xored.tesla.feature.group</feature>
+                  <feature>com.xored.watson.ui.feature.group</feature>
+                  <feature>com.xored.watson.feature.group</feature>
+                  <feature>com.xored.x5.server.feature.group</feature>
+                  <feature>com.xored.x5.feature.group</feature>
+                  <feature>com.google.libs.feature.group</feature>
+                  <feature>org.eclipse.ecl.core.feature.group</feature>
+                  <feature>org.eclipse.ecl.server.feature.group</feature>
+                  <feature>org.fantom.feature.group</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://download.xored.com/mirrors/guava/</site>
+                <features>
+                  <feature>com.google.guava.runtime.feature.feature.group</feature>
+                </features>
+              </injection>
+
+              <injection>
+                <site>http://build.xored.com/browse/F4-EXT-7/artifact/shared/repository</site>
+              </injection>
+
+            </injections>
+          </aut>
+          <q7server>
+            <host>deb64c2q74.xored.local</host>
+            <port>7504</port>
+          </q7server>
+          <q7client>
+            <version>${q7-maven-version}</version>
+          </q7client>
+          <q7>
+            <version>${q7-maven-version}</version>
+          </q7>
+          <testOptions>
+            <execTimeout>3000</execTimeout>
+            <autStartupTimeout>300</autStartupTimeout>
+            <launchingKillAutOnConnectError>true</launchingKillAutOnConnectError>
+          </testOptions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+	<!--build>
+		<plugins>
+			<plugin>
+				<groupId>com.xored.q7</groupId>
+				<artifactId>q7-maven-plugin</artifactId>
+				<version>${q7-maven-version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<aut>
+						<groupId>eclipse</groupId>
+						<artifactId>sdk</artifactId>
+						<version>3.7.0</version>
+						
+						<injections>
+							<injection>
+								<site>${project.baseUri}../repository/target/repository</site>
+							</injection>
+						</injections>
+
+					</aut>
+					<testOptions>
+						<execTimeout>3000</execTimeout>
+					</testOptions>
+					<q7>
+						<version>${q7-runner-version}</version>
+					</q7>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build-->
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>q7-releases</id>
+			<name>Xored Maven repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/q7-releases/</url>
+		</pluginRepository>
+		<pluginRepository>
+          <snapshots>
+            <updatePolicy>always</updatePolicy>
+          </snapshots>
+
+          <id>q7-snapshots</id>
+          <name>Xored Maven repository</name>
+          <url>http://maven.xored.com/nexus/content/repositories/q7-snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>	
+	
+	<repositories>
+		<repository>
+			<id>xored</id>
+			<name>Xored Maven repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/releases/</url>
+		</repository>
+		
+		<repository>
+			<id>thirdparty</id>
+			<name>Xored thridparty repository</name>
+			<url>http://maven.xored.com/nexus/content/repositories/thirdparty/</url>
+		</repository>
+
+	</repositories>
+	
+	<properties>
+		<q7-runner-version>1.1.0-SNAPSHOT</q7-runner-version>
+		<q7-maven-version>1.1.0-SNAPSHOT</q7-maven-version>
+	</properties>
+	
+</project>
