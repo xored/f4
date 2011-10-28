@@ -1,10 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="openDeclarationOfFieldFromRelatedPod" version="3.0" id="_JaF20PhsEeCcK6ApSJRZuQ" description="1. Open file&#xD;&#xA;2. Select field which is declared in another file from related pod&#xD;&#xA;3. Press F3 (select &quot;Open Declaration&quot; in context menu, select &quot;Navigate->Open Declaration&quot; in main menu)&#xD;&#xA;4. Verify that file with this field is opened and is selected" tags="navigation/declaration" type="ecl">
-  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_7rWIAdnkEeCZ-u3bYoGPTQ</contexts>
-  <content xsi:type="org.eclipse.ecl.core:Script">
-    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassB.fan" | double-click -nowait
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: openDeclarationOfFieldFromRelatedPod
+Tags: functionality/navigation/declaration
+External-Reference: 
+Element-Version: 3.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_7rWIAdnkEeCZ-u3bYoGPTQ
+Save-Time: 10/28/11 12:27 PM
+Id: _JaF20PhsEeCcK6ApSJRZuQ
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Entry-Name: .description
+Content-Type: text/plain
+
+1. Open file
+2. Select field which is declared in another file from related pod
+3. Press F3 (select "Open Declaration" in context menu, select "Navigate->Open Declaration" in main menu)
+4. Verify that file with this field is opened and is selected
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassB.fan" | double-click -nowait
 with [get-editor "ClassB.fan" | get-editbox] {
     set-text-offset 2 2
     key-type CR
@@ -80,781 +98,78 @@ with [get-view Outline | get-tree] {
     get-item "ClassB/line : Str" | get-property selected | equals true | verify-true
     get-item "ClassB/testMethod\\(\\) : Str" | get-property caption | equals "testMethod() : Str" | verify-true
         get-item "ClassB/testMethod\\(\\) : Str" | get-property selected | equals false | verify-true
-}]]></content>
-  </content>
-  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="ClassB.fan" multiplicity="1">
-        <parent id="EclipseWindow23" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Close">
-      <element id="Editor39" kind="Editor"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
-        <parent id="EclipseWindow23" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click" withWait="false">
-      <element id="View13" kind="View"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View13" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
-      <element id="Tree13" kind="Tree"/>
-      <path>TestProject</path>
-      <path>fan</path>
-      <path>A.fan</path>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:DoubleClick">
-      <element id="Tree13" kind="Tree"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="A.fan" multiplicity="1">
-        <parent id="EclipseWindow23" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <parent id="Editor40" kind="Editor"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="4" line="5">
-      <element id="Text33" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
-      <element id="Text33" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777217" meta="0">
-      <element id="Text33" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="Str a := line">
-      <element id="Text33" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
-      <element id="Text33" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="A.fan" multiplicity="1">
-        <parent id="EclipseWindow24_7" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <parent id="Editor41_7" kind="Editor"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="8" line="1">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text=": fantest::ClassB">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="5" line="5">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777219" meta="0">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="13" character="13" meta="0">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777217" meta="0">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:TypeText" state="0" text="Str a := line">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="262144" code="115" character="19" meta="1">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="15" line="5">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Type" state="0" code="16777228" meta="0">
-      <element id="Text34_7" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="ClassB.fan" multiplicity="1">
-        <parent id="EclipseWindow24_7" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <parent id="Editor42_8" kind="Editor"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="TabFolder" multiplicity="1">
-        <parent id="EclipseWindow25_8" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="activePage" value="ClassB.fan">
-      <element id="TabFolder15_7" kind="TabFolder"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="tabCount" value="2">
-      <element id="TabFolder15_7" kind="TabFolder"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Outline" multiplicity="1">
-        <parent id="EclipseWindow25_9" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View14_7" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="itemCount" value="1">
-      <element id="Tree14_7" kind="Tree"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Outline" multiplicity="1">
-        <parent id="EclipseWindow25_10" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View14_8" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Item" multiplicity="1">
-        <path>ClassB</path>
-        <parent id="Tree14_8" kind="Tree"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="ClassB">
-      <element id="Item20_7" kind="Item"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="childCount" value="2">
-      <element id="Item20_7" kind="Item"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Outline" multiplicity="1">
-        <parent id="EclipseWindow25_11" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View14_9" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Item" multiplicity="1">
-        <path>ClassB</path>
-        <path>line : Str</path>
-        <parent id="Tree14_9" kind="Tree"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="line : Str">
-      <element id="Item19_8" kind="Item"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="selected" value="true">
-      <element id="Item19_8" kind="Item"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Outline" multiplicity="1">
-        <parent id="EclipseWindow25_12" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View14_10" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Item" multiplicity="1">
-        <path>ClassB</path>
-        <path>testMethod\(\) : Str</path>
-        <parent id="Tree14_10" kind="Tree"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Assert" attribute="caption" value="testMethod() : Str">
-      <element id="Item21_9" kind="Item"/>
-      <valueType xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="ClassB.fan" multiplicity="1">
-        <parent id="EclipseWindow26_13" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <parent id="Editor44_9" kind="Editor"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Close">
-      <element id="Editor44_9" kind="Editor"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="A.fan" multiplicity="1">
-        <parent id="EclipseWindow26_13" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click" withWait="false">
-      <element id="Editor45_10" kind="Editor"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <parent id="Editor45_10" kind="Editor"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="16" line="5">
-      <element id="Text38_10" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Menu" multiplicity="1">
-        <path>Open Declaration</path>
-        <parent id="Text38_10" kind="Text"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click">
-      <element id="Menu6_7" kind="Menu"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
-      <state id="State6_7" kind="State"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Editor" pattern="ClassB.fan" multiplicity="1">
-        <parent id="EclipseWindow26_13" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Close">
-      <element id="Editor46_11" kind="Editor"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click" withWait="false">
-      <element id="Editor45_10" kind="Editor"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetTextOffset" offset="15" line="5">
-      <element id="Text38_10" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Menu" multiplicity="1">
-        <path>Navigate</path>
-        <path>Open Declaration</path>
-        <parent id="EclipseWindow26_13" kind="EclipseWindow"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click">
-      <element id="Menu7_8" kind="Menu"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
-      <state id="State7_8" kind="State"/>
-    </commands>
-    <elementMapping command="//@teslaContent/@commands.0">
-      <elements id="EclipseWindow23" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.1">
-      <elements id="Editor39" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ClassB.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.3">
-      <elements id="View13" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="50" width="194" height="594"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.5">
-      <elements id="Tree13" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="2">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="594"/>
-        <selection>
-          <path>TestProject</path>
-          <path>fan</path>
-          <path>A.fan</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.8">
-      <elements id="Editor40" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.9">
-      <elements id="Text33" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A {    Void main()  {     echo(&quot;Hello world&quot;)  } }">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="30" width="545" height="453"/>
-        <rawValue><![CDATA[\nclass A \n{\n    Void main()\n  { \n    echo("Hello world")\n  } \n}\n]]></rawValue>
-        <styleRanges>0, 1, fontStyle=normal</styleRanges>
-        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>6, 1, fontStyle=normal</styleRanges>
-        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>8, 2, fontStyle=normal</styleRanges>
-        <styleRanges>10, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>11, 5, fontStyle=normal</styleRanges>
-        <styleRanges>16, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>20, 1, fontStyle=normal</styleRanges>
-        <styleRanges>21, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>27, 3, fontStyle=normal</styleRanges>
-        <styleRanges>30, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>31, 6, fontStyle=normal</styleRanges>
-        <styleRanges>37, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
-        <styleRanges>41, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>42, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>48, 1, fontStyle=normal</styleRanges>
-        <styleRanges>49, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>55, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>56, 3, fontStyle=normal</styleRanges>
-        <styleRanges>59, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>60, 2, fontStyle=normal</styleRanges>
-        <styleRanges>62, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>63, 1, fontStyle=normal</styleRanges>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.15">
-      <elements id="EclipseWindow24_7" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - TestProject/fan/A.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.16">
-      <elements id="Editor41_7" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.17">
-      <elements id="Text34_7" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A {    Void main()  {     echo(&quot;Hello world&quot;)  } }">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="30" width="545" height="453"/>
-        <rawValue><![CDATA[\nclass A \n{\n    Void main()\n  { \n    echo("Hello world")\n  } \n}\n]]></rawValue>
-        <styleRanges>0, 1, fontStyle=normal</styleRanges>
-        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>6, 1, fontStyle=normal</styleRanges>
-        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>8, 2, fontStyle=normal</styleRanges>
-        <styleRanges>10, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>11, 5, fontStyle=normal</styleRanges>
-        <styleRanges>16, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>20, 1, fontStyle=normal</styleRanges>
-        <styleRanges>21, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>27, 3, fontStyle=normal</styleRanges>
-        <styleRanges>30, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>31, 6, fontStyle=normal</styleRanges>
-        <styleRanges>37, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
-        <styleRanges>41, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>42, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>48, 1, fontStyle=normal</styleRanges>
-        <styleRanges>49, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>55, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>56, 3, fontStyle=normal</styleRanges>
-        <styleRanges>59, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>60, 2, fontStyle=normal</styleRanges>
-        <styleRanges>62, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>63, 1, fontStyle=normal</styleRanges>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.28">
-      <elements id="Editor42_8" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ClassB.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.29">
-      <elements id="Text35_8" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class ClassB{   public Str line := &quot;test line&quot;  Str testMethod() {    Str a := &quot;bye&quot;    return a  }}">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="30" width="545" height="453"/>
-        <rawValue><![CDATA[\nclass ClassB\n{ \n  public Str line := "test line"\n  Str testMethod() {\n    Str a := "bye"\n    return a\n  }\n}\n]]></rawValue>
-        <styleRanges>0, 1, fontStyle=normal</styleRanges>
-        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>6, 1, fontStyle=normal</styleRanges>
-        <styleRanges>7, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>13, 1, fontStyle=normal</styleRanges>
-        <styleRanges>14, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>15, 4, fontStyle=normal</styleRanges>
-        <styleRanges>19, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>25, 1, fontStyle=normal</styleRanges>
-        <styleRanges>26, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>29, 1, fontStyle=normal</styleRanges>
-        <styleRanges>30, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
-        <styleRanges>34, 1, fontStyle=normal</styleRanges>
-        <styleRanges>35, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>37, 1, fontStyle=normal</styleRanges>
-        <styleRanges>38, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>43, 1, fontStyle=normal</styleRanges>
-        <styleRanges>44, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>49, 3, fontStyle=normal</styleRanges>
-        <styleRanges>52, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>55, 1, fontStyle=normal</styleRanges>
-        <styleRanges>56, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>68, 1, fontStyle=normal</styleRanges>
-        <styleRanges>69, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>70, 5, fontStyle=normal</styleRanges>
-        <styleRanges>75, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>78, 1, fontStyle=normal</styleRanges>
-        <styleRanges>79, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
-        <styleRanges>80, 1, fontStyle=normal</styleRanges>
-        <styleRanges>81, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>83, 1, fontStyle=normal</styleRanges>
-        <styleRanges>84, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>89, 5, fontStyle=normal</styleRanges>
-        <styleRanges>94, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>100, 1, fontStyle=normal</styleRanges>
-        <styleRanges>101, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
-        <styleRanges>102, 3, fontStyle=normal</styleRanges>
-        <styleRanges>105, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>106, 1, fontStyle=normal</styleRanges>
-        <styleRanges>107, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>108, 1, fontStyle=normal</styleRanges>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.30">
-      <elements id="EclipseWindow25_8" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.31">
-      <elements id="TabFolder15_7" kind="TabFolder"/>
-      <controls xsi:type="com.xored.tesla.core.ui:TabFolder" activePage="ClassB.fan" tabCount="2">
-        <pages>A.fan</pages>
-        <pages>ClassB.fan</pages>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.34">
-      <elements id="EclipseWindow25_9" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.35">
-      <elements id="View14_7" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Outline">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="803" y="50" width="194" height="429"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.36">
-      <elements id="Tree14_7" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="429"/>
-        <selection>
-          <path>ClassB</path>
-          <path>line : Str</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.38">
-      <elements id="EclipseWindow25_10" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.39">
-      <elements id="View14_8" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Outline">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="803" y="50" width="194" height="429"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.40">
-      <elements id="Tree14_8" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="429"/>
-        <selection>
-          <path>ClassB</path>
-          <path>line : Str</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.41">
-      <elements id="Item20_7" kind="Item"/>
-      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="ClassB" childCount="2">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="53" width="38" height="18"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.44">
-      <elements id="EclipseWindow25_11" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.45">
-      <elements id="View14_9" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Outline">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="803" y="50" width="194" height="429"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.46">
-      <elements id="Tree14_9" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="429"/>
-        <selection>
-          <path>ClassB</path>
-          <path>line : Str</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.47">
-      <elements id="Item19_8" kind="Item"/>
-      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="line : Str" selected="true">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="78" y="18" width="46" height="18"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.50">
-      <elements id="EclipseWindow25_12" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.51">
-      <elements id="View14_10" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Outline">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="803" y="50" width="194" height="429"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.52">
-      <elements id="Tree14_10" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="1">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="429"/>
-        <selection>
-          <path>ClassB</path>
-          <path>line : Str</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.53">
-      <elements id="Item21_9" kind="Item"/>
-      <controls xsi:type="com.xored.tesla.core.ui:TreeItem" caption="testMethod() : Str" index="1">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="78" y="36" width="96" height="18"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.55">
-      <elements id="EclipseWindow26_13" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - fantest/inheritance/ClassB.fan - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.56">
-      <elements id="Editor44_9" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ClassB.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.57">
-      <elements id="Text37_9" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class ClassB{   public Str line := &quot;test line&quot;  Str testMethod() {    Str a := &quot;bye&quot;    return a  }}">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="30" width="545" height="453"/>
-        <rawValue><![CDATA[\nclass ClassB\n{ \n  public Str line := "test line"\n  Str testMethod() {\n    Str a := "bye"\n    return a\n  }\n}\n]]></rawValue>
-        <styleRanges>0, 1, fontStyle=normal</styleRanges>
-        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>6, 1, fontStyle=normal</styleRanges>
-        <styleRanges>7, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>13, 1, fontStyle=normal</styleRanges>
-        <styleRanges>14, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>15, 4, fontStyle=normal</styleRanges>
-        <styleRanges>19, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>25, 1, fontStyle=normal</styleRanges>
-        <styleRanges>26, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>29, 1, fontStyle=normal</styleRanges>
-        <styleRanges>30, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
-        <styleRanges>34, 1, fontStyle=normal</styleRanges>
-        <styleRanges>35, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>37, 1, fontStyle=normal</styleRanges>
-        <styleRanges>38, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>43, 1, fontStyle=normal</styleRanges>
-        <styleRanges>44, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>49, 3, fontStyle=normal</styleRanges>
-        <styleRanges>52, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>55, 1, fontStyle=normal</styleRanges>
-        <styleRanges>56, 12, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>68, 1, fontStyle=normal</styleRanges>
-        <styleRanges>69, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>70, 5, fontStyle=normal</styleRanges>
-        <styleRanges>75, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>78, 1, fontStyle=normal</styleRanges>
-        <styleRanges>79, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
-        <styleRanges>80, 1, fontStyle=normal</styleRanges>
-        <styleRanges>81, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>83, 1, fontStyle=normal</styleRanges>
-        <styleRanges>84, 5, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>89, 5, fontStyle=normal</styleRanges>
-        <styleRanges>94, 6, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>100, 1, fontStyle=normal</styleRanges>
-        <styleRanges>101, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
-        <styleRanges>102, 3, fontStyle=normal</styleRanges>
-        <styleRanges>105, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>106, 1, fontStyle=normal</styleRanges>
-        <styleRanges>107, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>108, 1, fontStyle=normal</styleRanges>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.59">
-      <elements id="Editor45_10" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="A.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.61">
-      <elements id="Text38_10" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.custom.StyledText" enablement="true" containMenu="true" value="class A : fantest::ClassB{    Void main()  {     Str a := line    echo(&quot;Hello world&quot;)  } }">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="30" width="545" height="453"/>
-        <rawValue><![CDATA[\nclass A : fantest::ClassB\n{\n    Void main()\n  { \n    Str a := line\n    echo("Hello world")\n  } \n}\n]]></rawValue>
-        <styleRanges>0, 1, fontStyle=normal</styleRanges>
-        <styleRanges>1, 5, fontStyle=bold, foreground=Color {127, 0, 85}</styleRanges>
-        <styleRanges>6, 1, fontStyle=normal</styleRanges>
-        <styleRanges>7, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>8, 1, fontStyle=normal</styleRanges>
-        <styleRanges>9, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>10, 1, fontStyle=normal</styleRanges>
-        <styleRanges>11, 15, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>26, 1, fontStyle=normal</styleRanges>
-        <styleRanges>27, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>28, 5, fontStyle=normal</styleRanges>
-        <styleRanges>33, 4, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>37, 1, fontStyle=normal</styleRanges>
-        <styleRanges>38, 6, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>44, 3, fontStyle=normal</styleRanges>
-        <styleRanges>47, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>48, 6, fontStyle=normal</styleRanges>
-        <styleRanges>54, 3, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>57, 1, fontStyle=normal</styleRanges>
-        <styleRanges>58, 1, fontStyle=normal, foreground=Color {200, 0, 0}</styleRanges>
-        <styleRanges>59, 1, fontStyle=normal</styleRanges>
-        <styleRanges>60, 2, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>62, 1, fontStyle=normal</styleRanges>
-        <styleRanges>63, 4, fontStyle=normal, foreground=Color {0, 0, 200}</styleRanges>
-        <styleRanges>67, 5, fontStyle=normal</styleRanges>
-        <styleRanges>72, 4, fontStyle=italic, foreground=Color {0, 128, 128}</styleRanges>
-        <styleRanges>76, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>77, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>83, 1, fontStyle=normal</styleRanges>
-        <styleRanges>84, 6, fontStyle=normal, foreground=Color {42, 0, 255}</styleRanges>
-        <styleRanges>90, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>91, 3, fontStyle=normal</styleRanges>
-        <styleRanges>94, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>95, 2, fontStyle=normal</styleRanges>
-        <styleRanges>97, 1, fontStyle=normal, foreground=Color {0, 0, 0}</styleRanges>
-        <styleRanges>98, 1, fontStyle=normal</styleRanges>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.63">
-      <elements id="Menu6_7" kind="Menu"/>
-      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;Open Declaration" enablement="true" index="4" accelerator="F3" cascade="true"/>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.64">
-      <elements id="State6_7" kind="State"/>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.67">
-      <elements id="Editor46_11" kind="Editor"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Editor" className="org.eclipse.swt.widgets.Composite" enablement="true" title="ClassB.fan">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="26" width="588" height="453"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.71">
-      <elements id="Menu7_8" kind="Menu"/>
-      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="&amp;Open Declaration" enablement="true" index="3" accelerator="F3" cascade="true"/>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.72">
-      <elements id="State7_8" kind="State"/>
-    </elementMapping>
-  </teslaContent>
-</com.xored.q7.scenario:Scenario>
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
+------=_.q7.content-3d2e0690-ce48-3609-83e0-c704d49f1eaf
+Content-Type: q7/binary
+Entry-Name: .q7.content
+
+UEsDBBQACAAIAAAAIQAAAAAAAAAAAAAAAAAIAAAALmNvbnRlbnSVkVtPwjAUgN9N/A9N32m5qJCFSQiC
+GYZw0yi8kNoeRuPWjraD8e/tiEA0xsS39pyv37m03SnSBO3AWKlViGukihEoroVUcYhzt660cOf++qrN
+dUoKbUCQbZNYDooZqYP51wEVqQzOlnpp8V5lAx8P8ca5LKB0v98TncZEm5i+jaIT8qv5/Mhn6TFLt016
+yhLgPoSRYimEWGegHoAnzDDn64/XAwmJGBidziBhDsREC3yZsVF2J0WIV0M2qFcnG9uHHn+662bz4WyZ
+TzFyLLYhXueKlz6WSHegiu1kfPRTcanl2UPmW/AR7LeEkN+TclA4e7+Kb176dnQYe/tWR86axbR3O23T
+M/GDh6JVi/7BN81r1BXqw/PLSt54X+jHyfN3vrz89W0e+QRQSwcIuDb5kykBAAABAgAAUEsBAhQAFAAI
+AAgAAAAhALg2+ZMpAQAAAQIAAAgAAAAAAAAAAAAAAAAAAAAAAC5jb250ZW50UEsFBgAAAAABAAEANgAA
+AF8BAAAAAA==
+------=_.q7.content-3d2e0690-ce48-3609-83e0-c704d49f1eaf--
+------=_.content.raw-c2dfba28-ebef-3afe-bd39-76376d333cc9
+Content-Type: q7/binary
+Entry-Name: .content.raw
+
+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
+AAAAZQwAAAAA
+------=_.content.raw-c2dfba28-ebef-3afe-bd39-76376d333cc9--
