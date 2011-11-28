@@ -30,6 +30,8 @@ class InternalBuilder : Builder
 {
   new make(FantomProject fp) : super(fp) {}
   
+  static const Str pluginId := "com.xored.f4.builder"
+  
   override CompilerErr[] buildPod(|Str|? consumer)
   {
     // Prepare temporaty output directory for pod building
@@ -37,7 +39,7 @@ class InternalBuilder : Builder
     IPath projectPath := statePath.append("compiler").append(fp.podName)
     JFile root := projectPath.toFile
     root.mkdirs
-    root.listFiles().exclude {it == null}.each |JFile? f|{ f.delete}
+    root.listFiles.each |JFile? f|{ f?.delete}
     
     buf := StrBuf()
     input := CompilerInput.make
@@ -55,90 +57,106 @@ class InternalBuilder : Builder
       input.srcFiles    = fp.srcDirs
       input.resFiles    = fp.resDirs
       input.index       = fp.index
-//      input.outDir      = fp.outDir
       input.outDir      = File.os(projectPath.toOSString)
       input.output      = CompilerOutputMode.podFile
       input.jsFiles     = fp.jsDirs
       errs := compile(input)
       if (!errs[0].isEmpty) return errs.flatten
+      
       if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
       
-      
       // Compare pod file in output directory to podFile in project and overwrite it if they are different
-      npodFile := input.outDir.listFiles.find { it.name == fp.podName + ".pod" }
-      if( npodFile != null)
+      podFileName := `${fp.podName}.pod`
+      newPodFile := input.outDir + podFileName
+      podFile := fp.outDir + podFileName
+
+      if(newPodFile.exists && isPodChanged(newPodFile, podFile)) 
       {
-        podFile := fp.outDir.listFiles.find { it.name == fp.podName + ".pod"  }
-        if( podFile == null)
-        {
-          // No pod exist, just copy
-          npodFile.copyInto(fp.outDir, ["overwrite": true])
-          podChanged = true
-        }
-        else
-        {
-          npodZip := Zip.open(npodFile)
-          Zip? podZip := null
-          try {
-            podZip = Zip.open(podFile)
-          }
-          catch(Err e)  {
-             // Content different override
-            npodFile.copyInto(fp.outDir, ["overwrite": true])
-            podChanged = true
-            npodZip.close
-            return errs.flatten
-          }
-          npodContents := npodZip.contents
-          podContents := podZip.contents
-          if( podContents == null || npodContents != podContents )
-          {
-            // Content different override
-            npodFile.copyInto(fp.outDir, ["overwrite": true])
-            podChanged = true
-          }
-          else
-          {
-            different := npodContents.keys.find |Uri u -> Bool| {
-              f1 := npodContents[u]
-              f2 := podContents[u]
-              b1 := f1.readAllBuf
-              b2 := f2.readAllBuf
-              if( b1.size != b2.size) return true
-              for( i:=0;i<b1.size;i++)
-              {
-                if( b1[i] != b2[i])
-                {
-                  return true;
-                }
-              }
-              return false
-            }
-            if( different != null && different.toStr != "/meta.props")
-            {
-              // Content are changed, replacing file
-              npodFile.copyInto(fp.outDir, ["overwrite": true])
-              podChanged = true
-            }
-          } 
-          npodZip.close
-          podZip.close
-        }
+        newPodFile.copyTo(podFile, ["overwrite" : true])
+        jp := JavaCore.create(fp.project)
+        jp.getJavaModel.refreshExternalArchives([jp], null)
       }
       
       return errs.flatten
     } finally {
-      if (input.ns is F4Namespace)
-        ((F4Namespace)input.ns).close
-      if(podChanged)
-      {
-        // We need to clear java zip archive cache and trigger java interpreter container update
-        jp := JavaCore.create(fp.project)
-        jp.getJavaModel.refreshExternalArchives([jp], null)
-      }
+      (input.ns as F4Namespace)?.close
     }
   }
   
+  private Zip? safeZipOpen(File file) 
+  {
+    try 
+      return Zip.open(file)
+    catch return null
+  }
+  
+  private Bool isPodChanged(File newPod, File oldPod) 
+  {
+    if(!oldPod.exists) 
+      return true
+    
+    newPodZip := safeZipOpen(newPod)
+    oldPodZip := safeZipOpen(oldPod)
+    
+    try {
+      if(newPodZip == null)  
+      {
+        LogUtil.logErr(pluginId, "$newPod is not valid zip archive", null)
+        return false
+      }
+
+      if(oldPodZip == null) return true
+      
+      newContent := newPodZip.contents
+      oldContent := oldPodZip.contents
+      
+      if(newPodZip.contents != oldPodZip.contents) return true
+      
+      return podContentChanged(newPodZip, oldPodZip)
+      
+    } finally {
+      newPodZip?.close
+      oldPodZip?.close
+    }
+      
+    return true
+  }
+  
+  private Bool podContentChanged(Zip newPod, Zip oldPod) 
+  {
+    newContents := newPod.contents
+    oldContents := oldPod.contents
+    
+    comparators := [
+        `/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
+      ]
+    
+    def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
+    
+    return newPod.contents.any |newFile, uri| 
+    { 
+      (comparators[uri] ?: def)(newFile, oldContents[uri])  
+    }
+  }
+  
+  private Bool metaChanged(File newFile, File oldFile) 
+  {
+    Str:Str newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
+    Str:Str oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
+    return newProps != oldProps
+  }
+  
+  private Bool binaryChanged(File newFile, File oldFile) 
+  {
+    Buf b1 := newFile.readAllBuf
+    Buf b2 := newFile.readAllBuf
+    
+    if(b1.size != b2.size) return true
+    for(i:=0; i < b1.size; i++)
+      if( b1[i] != b2[i]) return true
+            
+    return false
+  }
   private CompilerErr[][] compile(CompilerInput input)
   {
     caughtErrs := CompilerErr[,]
