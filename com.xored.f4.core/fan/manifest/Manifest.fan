@@ -118,8 +118,9 @@ class Manifest
     if (expr is CallExpr)
     {
       call := expr as CallExpr
-      // Possibly, more generic solution is needed 
-      if ((call.callee as UnresolvedRef)?.text == "Version")
+      // Possibly, more generic solution is needed
+      
+      if (((call.callee as InvokeExpr)?.callee as UnresolvedRef)?.text == "Version")
       {
         s := (call.args.getSafe(0) as Literal)?.val as Str
         if (s != null) return Version(s)
