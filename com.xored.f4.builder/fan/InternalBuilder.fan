@@ -149,7 +149,7 @@ class InternalBuilder : Builder
   private Bool binaryChanged(File newFile, File oldFile) 
   {
     Buf b1 := newFile.readAllBuf
-    Buf b2 := newFile.readAllBuf
+    Buf b2 := oldFile.readAllBuf
     
     if(b1.size != b2.size) return true
     for(i:=0; i < b1.size; i++)
