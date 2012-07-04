@@ -57,7 +57,7 @@ class InternalBuilder : Builder
       input.srcFiles    = fp.srcDirs
       input.resFiles    = fp.resDirs
       input.index       = fp.index
-      input.outDir      = File.os(projectPath.toOSString)
+      input.outDir      = File.os(projectPath.toOSString) 
       input.output      = CompilerOutputMode.podFile
       input.jsFiles     = fp.jsDirs
       errs := compile(input)
@@ -66,7 +66,7 @@ class InternalBuilder : Builder
       if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
       
       // Compare pod file in output directory to podFile in project and overwrite it if they are different
-      podFileName := `${fp.podName}.pod`
+      podFileName := `${fp.podName}.pod` 
       newPodFile := input.outDir + podFileName
       podFile := fp.outDir + podFileName
 

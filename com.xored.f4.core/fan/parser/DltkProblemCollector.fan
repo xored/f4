@@ -2,6 +2,8 @@ using [java]org.eclipse.dltk.compiler.problem::IProblemReporter
 using [java]org.eclipse.dltk.compiler.problem::IProblem as IDltkProblem
 using [java]org.eclipse.dltk.compiler.problem::IProblemIdentifier
 
+using [java]org.eclipse.dltk.compiler.problem::ProblemSeverity
+
 using f4parser
 class DltkProblemCollector : IProblemCollector
 {
@@ -30,6 +32,11 @@ const class DltkProblem : Problem, IProblem, IDltkProblem
   override Void setSourceEnd(Int sourceEnd) {}
   override Void setSourceLineNumber(Int lineNumber) {}
   override Void setSourceStart(Int sourceStart) {}
+  
+  override ProblemSeverity? getSeverity() {return null}
+  override Void setSeverity(ProblemSeverity? severity) {}
+  
+  
   
   new make(IProblem p)
   : super(p.severity, p.kind, p.msg, 
