@@ -84,7 +84,7 @@ class Manifest
   
   Uri? outDir() 
   { 
-    vals["outDir"] 
+    vals["outPodDir"] 
   }
   
   Str[] depends() { vals["depends"] ?: Str[,] }
