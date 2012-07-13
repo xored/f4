@@ -1,0 +1,97 @@
+diff --git a/.gitignore b/.gitignore
+index 7131fe7..08ca00d 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,5 +1,6 @@
+ bin/
+ target/
+ workspace/
++patches/
+ .DS_Store
+ *~
+diff --git a/com.xored.f4.platform/META-INF/MANIFEST.MF b/com.xored.f4.platform/META-INF/MANIFEST.MF
+index 7b06306..179ca90 100644
+--- a/com.xored.f4.platform/META-INF/MANIFEST.MF
++++ b/com.xored.f4.platform/META-INF/MANIFEST.MF
+@@ -4,7 +4,7 @@ Bundle-Localization: plugin
+ Bundle-Name: %pluginName
+ Eclipse-BundleShape: dir
+ Bundle-SymbolicName: com.xored.f4.platform;singleton:=true
+-Bundle-Version: 1.0.0.qualifier
++Bundle-Version: 1.0.1.qualifier
+ Bundle-Vendor: %providerName
+ Require-Bundle: org.eclipse.ui,
+  org.eclipse.core.runtime
+diff --git a/com.xored.f4.platform/plugin.properties b/com.xored.f4.platform/plugin.properties
+index 7ddc5f7..8804b05 100644
+--- a/com.xored.f4.platform/plugin.properties
++++ b/com.xored.f4.platform/plugin.properties
+@@ -5,7 +5,7 @@ productName=F4 - Fantom IDE
+ 
+ productBlurb=F4 - Fantom IDE\n\
+ \n\
+-Version: 1.0\n\
++Version: 1.0.1\n\
+ \n\
+ Copyright (c) 2009 - 2011 Xored Software, Inc. All rights reserved.\n\
+ Visit http://www.xored.com/f4/\n\
+diff --git a/com.xored.f4.platform/pom.xml b/com.xored.f4.platform/pom.xml
+index 1d49937..b72f43c 100644
+--- a/com.xored.f4.platform/pom.xml
++++ b/com.xored.f4.platform/pom.xml
+@@ -9,6 +9,6 @@
+   </parent>
+   <groupId>com.xored.f4</groupId>
+   <artifactId>com.xored.f4.platform</artifactId>
+-  <version>1.0.0-SNAPSHOT</version>
++  <version>1.0.1-SNAPSHOT</version>
+   <packaging>eclipse-plugin</packaging>
+ </project>
+diff --git a/product/com.xored.f4.ide.p2.inf b/product/com.xored.f4.ide.p2.inf
+index 96da9eb..0e9ea98 100644
+--- a/product/com.xored.f4.ide.p2.inf
++++ b/product/com.xored.f4.ide.p2.inf
+@@ -3,6 +3,6 @@ instructions.configure=\
+   addRepository(type:1,location:http${#58}//download.eclipse.org/releases/indigo,name:Indigo);\
+   addRepository(type:0,location:http${#58}//download.eclipse.org/eclipse/updates/3.7,name:The Eclipse Project Updates);\
+   addRepository(type:1,location:http${#58}//download.eclipse.org/eclipse/updates/3.7,name:The Eclipse Project Updates);\
+-  addRepository(type:0,location:http${#58}//download.xored.com/f4/updates/stable,name:F4 Update Site);\
+-  addRepository(type:1,location:http${#58}//download.xored.com/f4/updates/stable,name:F4 Update Site);\
++  addRepository(type:0,location:http${#58}//dl.xored.com/f4/1.0.1/repository,name:F4 Update Site);\
++  addRepository(type:1,location:http${#58}//dl.xored.com/f4/1.0.1/repository,name:F4 Update Site);\
+   setProgramProperty(propName:osgi.instance.area.default,propValue:@user.home/f4workspace);
+diff --git a/product/com.xored.f4.ide.product b/product/com.xored.f4.ide.product
+index 191010b..388e4a7 100644
+--- a/product/com.xored.f4.ide.product
++++ b/product/com.xored.f4.ide.product
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <?pde version="3.5"?>
+ 
+-<product name="F4 - Fantom IDE" uid="com.xored.f4.ide" id="com.xored.f4.platform.ide" application="org.eclipse.ui.ide.workbench" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
++<product name="F4 - Fantom IDE" uid="com.xored.f4.ide" id="com.xored.f4.platform.ide" application="org.eclipse.ui.ide.workbench" version="1.0.1.qualifier" useFeatures="true" includeLaunchers="true">
+ 
+    <configIni use="default">
+    </configIni>
+@@ -53,7 +53,7 @@ com.xored.f4.platform</programArgs>
+ 
+    <configurations>
+       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
++      <plugin id="org.eclipse.equinox.common" autoStart="true"n startLevel="2" />
+       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+    </configurations>
+ 
+diff --git a/product/pom.xml b/product/pom.xml
+index 550cec1..ecc588b 100644
+--- a/product/pom.xml
++++ b/product/pom.xml
+@@ -10,7 +10,7 @@
+ 	
+ 	<groupId>com.xored.f4</groupId>
+ 	<artifactId>product</artifactId>
+-	<version>1.0.0-SNAPSHOT</version>
++	<version>1.0.1-SNAPSHOT</version>
+ 	<packaging>eclipse-repository</packaging>
+ 	
+ 	<build>
