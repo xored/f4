@@ -42,7 +42,7 @@ public class JStubGenerator {
 			store = FStore.makeZip(podFile);
 			FPod fpod = new FPod(podName, store);
 			fpod.read();
-			Pod pod = new Pod(fpod);
+			Pod pod = new Pod(fpod, new Pod[] {});
 			for (Object key : allPods.keySet()) {
 				Object value = allPods.get(key);
 				if (key instanceof String && value instanceof LocalFile) {

@@ -66,9 +66,6 @@ const class FantomProject
     index = manifest.index 
     rawOutDir = manifest.outDir
     outDir = resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir 
-    echo(manifest.outDir)
-    echo(baseDir)
-    echo(outDir)
     resDirs = manifest.resDirs             
     jsDirs = manifest.jsDirs
     javaDirs = manifest.javaDirs
