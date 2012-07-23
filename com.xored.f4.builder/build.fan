@@ -9,6 +9,6 @@ class Build : build::BuildPod
       "compilerJava 1.0", "f4core 1.0", 
       "f4launching 1.0", "concurrent 1.0"]
     srcDirs = [`fan/`]
-    outDir = `./`
+    outPodDir = `./`
   }
 }

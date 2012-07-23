@@ -125,6 +125,8 @@ const class FuncTypeParam : Node
   {
     t := resolvedType?.name
     n := name?.text
-    return """${t?:""} ${n?:""}""".trim
+    tstr := t?:"";
+    nstr := n?:"";
+    return """$tstr $nstr""".trim
   }
 }

@@ -12,7 +12,8 @@ using [java] org.eclipse.dltk.ui
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.ui.text.completion
 using [java] org.eclipse.dltk.ui.text.completion::ScriptMethodCompletionProposal
-using [java] org.eclipse.dltk.ui.text.completion::ReplacementBuffer as IReplacementBuffer
+//using [java] org.eclipse.dltk.ui.text.completion::ReplacementBuffer as IReplacementBuffer
+using [java] org.eclipse.dltk.ui.text.completion::ScriptMethodCompletionProposal$IReplacementBuffer as IReplacementBuffer
 using [java] org.eclipse.jface.preference
 using [java] org.eclipse.swt.graphics
 using [java] org.eclipse.jface.text

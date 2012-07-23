@@ -15,9 +15,9 @@ import fan.sys.Func;
 import fan.sys.LocalFile;
 import fan.sys.Pod;
 import fanx.emit.FPodEmit;
+import fanx.fcode.FStore;
 import fanx.emit.FTypeEmit;
 import fanx.fcode.FPod;
-import fanx.fcode.FStore;
 import fanx.util.Box;
 
 public class JStubGenerator {
