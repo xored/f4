@@ -33,8 +33,8 @@ const class DltkProblem : Problem, IProblem, IDltkProblem
   override Void setSourceLineNumber(Int lineNumber) {}
   override Void setSourceStart(Int sourceStart) {}
   
-  /*override*/ ProblemSeverity? getSeverity() {return null}
-  /*override*/ Void setSeverity(ProblemSeverity? severity) {}
+  override ProblemSeverity? getSeverity() {return null}
+  override Void setSeverity(ProblemSeverity? severity) {}
   
   
   
