@@ -80,8 +80,8 @@ class Tokenizer : CompilerSupport
     while (true)
     {
       // save current line
-      line := this.line
-      col  := this.col
+      curLine = this.line
+      col := this.col
 
       // find next token
       TokenVal? tok := find
@@ -89,7 +89,7 @@ class Tokenizer : CompilerSupport
 
       // fill in token's location
       tok.file = filename
-      tok.line = line
+      tok.line = curLine
       tok.col  = col
       tok.newline = lastLine < line
       tok.whitespace = whitespace
@@ -112,7 +112,7 @@ class Tokenizer : CompilerSupport
     if (cur.isSpace) { consume; whitespace = true; return null }
 
     // alpha means keyword or identifier
-    if (cur.isAlpha || cur == '_') return word
+    if (isIdentifierStart(cur)) return word
 
     // number or .number (note that + and - are handled as unary operator)
     if (cur.isDigit) return number
@@ -163,6 +163,8 @@ class Tokenizer : CompilerSupport
     // otherwise this is a normal identifier
     return TokenVal(Token.identifier, word)
   }
+
+  private static Bool isIdentifierStart(Int c) { c.isAlpha || c == '_' }
 
 //////////////////////////////////////////////////////////////////////////
 // Number
@@ -244,9 +246,14 @@ class Tokenizer : CompilerSupport
       {
         num := Decimal.fromStr(str)
         if (dur != null)
+        {
           return TokenVal(Token.durationLiteral, Duration((num*dur.toDecimal).toInt))
+        }
         else
+        {
+          if (!decimalSuffix) err("Float/Decimal literal must have f/d suffix")
           return TokenVal(Token.decimalLiteral, num)
+        }
       }
 
       // int literal
@@ -470,7 +477,9 @@ class Tokenizer : CompilerSupport
       {
         if (endOfQuoted(q) || cur == 0) throw err("Unexpected end of $q, missing }")
         tok := next
-        if (tok.kind == Token.rbrace) break
+        if (tok.kind === Token.strLiteral) throw err("Cannot nest Str literal within interpolation", tok)
+        if (tok.kind === Token.uriLiteral) throw err("Cannot nest Uri literal within interpolation", tok)
+        if (tok.kind === Token.rbrace) break
         tokens.add(tok)
       }
       line = this.line; col = this.col
@@ -518,9 +527,9 @@ class Tokenizer : CompilerSupport
       while (true)
       {
         if (cur != '.') break
+        if (!isIdentifierStart(peek)) throw err("Expected identifier after dot")
         tokens.add(next) // dot
         tok = next
-        if (tok.kind !== Token.identifier) throw err("Expected identifier")
         tokens.add(tok)
       }
     }
@@ -741,9 +750,12 @@ class Tokenizer : CompilerSupport
         continue
       }
 
-      // add line and reset buffer (but don't add leading empty lines)
+      // add line and reset buffer
+      // if leading empty lines then skip them and update this.curLine to
+      // ensure location starts at first non-empty line
       line := s.toStr
       if (!lines.isEmpty || !line.trim.isEmpty) lines.add(line)
+      else this.curLine++
       s.clear
 
       // we at a newline, check for leading whitespace(0+)/star(2+)/whitespace(1)
@@ -850,13 +862,7 @@ class Tokenizer : CompilerSupport
       case '?':
         if (cur == ':') { consume; return TokenVal(Token.elvis) }
         if (cur == '.') { consume; return TokenVal(Token.safeDot) }
-        if (cur == '-')
-        {
-          consume
-          if (cur != '>') throw err("Expected '?->' symbol")
-          consume
-          return TokenVal(Token.safeArrow)
-        }
+        if (cur == '-' && peek == '>') { consume; consume; return TokenVal(Token.safeArrow) }
         return TokenVal(Token.question)
       case '@':
         return TokenVal(Token.at)
@@ -972,6 +978,7 @@ class Tokenizer : CompilerSupport
   private Str filename      // source file name
   private Int line := 1     // pos line number
   private Int col := 1      // pos column number
+  private Int curLine       // line number of current token
   private Int cur           // current char
   private Int peek          // next char
   private Int lastLine      // line number of last token returned from next()
@@ -991,8 +998,8 @@ internal enum class Quoted
   triple("Str literal", true),
   uri("Uri literal", false)
 
-  Bool isUri() { return this === uri }
-  Bool isTriple() { return this === triple }
+  Bool isUri() { this === uri }
+  Bool isTriple() { this === triple }
 
   private new make(Str s, Bool ml) { toStr = s; multiLine = ml }
 

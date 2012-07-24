@@ -599,4 +599,103 @@ class RegressionTest : CompilerTest
     verifyEq(obj->testI, [22, 20, 141])
   }
 
+//////////////////////////////////////////////////////////////////////////
+// #1639 Confusing error report when variable error in a string.
+//////////////////////////////////////////////////////////////////////////
+
+  Void test1639()
+  {
+    verifyErrors(
+     Str<|class Foo { Str foo(Obj v) {
+          line := "foo $v."
+          return line } }|>,
+       [
+         2, 16, "Expected identifier after dot",
+       ])
+
+    verifyErrors(
+     Str<|class Foo { Str foo(Obj v) {
+          line := "foo $v. "
+          return line } }|>,
+       [
+         2, 16, "Expected identifier after dot",
+       ])
+
+    verifyErrors(
+     Str<|class Foo { Str foo(Obj v) {
+          line := "foo $v.123"
+          return line } }|>,
+       [
+         2, 16, "Expected identifier after dot",
+       ])
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #1705 small ternary operator issue
+//////////////////////////////////////////////////////////////////////////
+
+  Void test1705()
+  {
+    compile("""class Foo { Obj x(Obj? a) { a==null?-7:a } }""")
+    obj := pod.types.first.make
+    verifyEq(obj->x(null), -7)
+    verifyEq(obj->x(8), 8)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #1718 Require func param types in slot signatures
+//////////////////////////////////////////////////////////////////////////
+
+  Void test1718()
+  {
+    verifyErrors(
+     """class Foo {
+          |x|? f
+          |y| m0(|z| a) { throw Err() }
+          Void m1(|Str, Bar, Bar[] x| a) { throw Err() }
+        }""",
+       [
+         2,  4, "Unknown type 'x'",
+         3,  4, "Unknown type 'y'",
+         3, 11, "Unknown type 'z'",
+         4, 17, "Unknown type 'Bar'",
+         4, 22, "Unknown type 'Bar'",
+       ])
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Don't insert checkFields in static ctor
+//////////////////////////////////////////////////////////////////////////
+
+  Void testStaticCheckFields()
+  {
+    compile(
+      """class Foo {
+           new make(|This| f) { f(this) }
+           const Date date
+           static new fromStr(Str s) { Foo { date = Date(s) } }}""")
+
+    t := pod.types.first
+    verifyEq(t.method("fromStr").call("2012-02-29")->date, Date("2012-02-29"))
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #1479 Disallow string literals inside interpolation
+//////////////////////////////////////////////////////////////////////////
+
+  Void test1479()
+  {
+    verifyErrors(
+     Str<|class Foo { Str x(Str v) { "${v + "!"}" } }|>,
+       [
+         1,  35, "Cannot nest Str literal within interpolation",
+       ])
+    verifyErrors(
+     Str<|class Foo { Str x(Str v) { "${v + `f`}" } }|>,
+       [
+         1,  35, "Cannot nest Uri literal within interpolation",
+       ])
+  }
+
+
 }

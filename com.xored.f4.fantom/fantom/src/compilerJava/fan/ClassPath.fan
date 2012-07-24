@@ -19,10 +19,9 @@ class ClassPath
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Attempt to derive the current classpath by looking at
-  ** system properties.
+  ** Find all jars in system classpath
   **
-  static ClassPath makeForCurrent()
+  static File[] findSysClassPathFiles()
   {
     entries := File[,]
 
@@ -32,11 +31,9 @@ class ClassPath
     Env.cur.vars.get("sun.boot.class.path", "").split(File.pathSep[0]).each |Str path|
     {
       f := File.os(path)
-      // skip big jar files we can probably safely ignore
+      if (!f.exists) return
       if (!f.isDir && f.ext != "jar") return
-      if (f.name == "deploy.jar") return
-      if (f.name == "charsets.jar") return
-      if (f.name == "javaws.jar") return
+      if (javaIgnore[f.name] != null) return
       entries.add(f)
     }
 
@@ -49,9 +46,15 @@ class ClassPath
     }
 
     // {java}lib/ext
+    lib.plus(`ext/`).list.each |f|
+    {
+      if (f.ext != "jar") return
+      if (javaIgnore[f.name] != null) return
+      entries.add(f)
+    }
+
     // {fan}lib/java/ext
     // {fan}lib/java/ext/{plat}
-    addJars(entries, lib + `ext/`)
     addJars(entries, Env.cur.homeDir + `lib/java/ext/`)
     addJars(entries, Env.cur.homeDir + `lib/java/ext/${Env.cur.platform}/`)
 
@@ -62,7 +65,7 @@ class ClassPath
       if (f.exists) entries.add(f)
     }
 
-    return make(entries)
+    return entries
   }
 
   private static Void addJars(File[] entries, File dir)
@@ -70,59 +73,81 @@ class ClassPath
     dir.list.each |f| { if (f.ext == "jar") entries.add(f) }
   }
 
+  // ignore the common big jars that ship with
+  // HotSpot which don't contain public java packages
+  private static const Str:Str javaIgnore := [:].addList(
+  [
+    "deploy.jar",
+    "charsets.jar",
+    "javaws.jar",
+    "jsse.jar",
+    "resources.jar",
+    "dnsns.jar",
+    "localedata.jar",
+    "sunec.jar",
+    "sunec_provider.jar",
+    "sunjce_provider.jar",
+    "sunmscapi.jar",
+    "sunpkcs11.jar",
+    "zipfs.jar",
+  ])
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor
+//////////////////////////////////////////////////////////////////////////
+
   **
-  ** Make for current set of jars.
+  ** Construct for given list of jar files or directoris.
   **
-  new make(File[] entries)
+  new make(File[] files)
   {
-    this.entries = entries
-    this.classes = loadClasses
+    start := Duration.now
+    this.files = files
+    this.packages = loadPackages
+    this.dur = Duration.now - start
   }
 
 //////////////////////////////////////////////////////////////////////////
-// State
+// Access
 //////////////////////////////////////////////////////////////////////////
 
-  **
-  ** Class path entries to search
-  **
-  const File[] entries
+  ** Class path files (jar or dirs) to search
+  const File[] files
 
-  **
-  ** List of classes keyed by package name in class path
-  **
-  const Str:Str[] classes
+  ** Open zip files
+  private Zip[] zips := [,]
 
-  **
-  ** Return list of jar files.
-  **
-  override Str toStr()
+  ** Packages keyed by package name in "." format
+  Str:ClassPathPackage packages { private set }
+
+  ** Return list of files.
+  override Str toStr() { files.toStr }
+
+  ** Close all open zip files
+  Void close()
   {
-    return entries.toStr
+    zips.each |zip| { zip.close }
   }
+
+  ** Load time duration
+  private Duration dur
 
 //////////////////////////////////////////////////////////////////////////
 // Loading
 //////////////////////////////////////////////////////////////////////////
 
-  **
-  ** Load the map of package:class[] by walking every entry
-  **
-  protected virtual Str:Str[] loadClasses()
+  private Str:ClassPathPackage loadPackages()
   {
-    acc := Str:Str[][:]
-    entries.each |File f|  { loadEntry(acc, f) }
+    acc := Str:ClassPathPackage[:]
+    files.each |File f|  { loadFile(acc, f) }
     return acc
   }
 
-  **
-  ** Load the map of package:class[] by walking class path entry
-  **
-  private Void loadEntry(Str:Str[] acc, File f)
+  private Void loadFile(Str:ClassPathPackage acc, File f)
   {
-    if(f.isDir)
+    if (f.isDir)
     {
-      f.walk |File x| { accept(acc, x.uri.relTo(f.uri)) }
+      f.walk |File x| { accept(acc, x.uri.relTo(f.uri), f, false) }
     }
     else
     {
@@ -130,37 +155,86 @@ class ClassPath
       try
       {
         zip = Zip.open(f)
-        zip.contents.each |File x, Uri uri| { accept(acc, uri) }
+        isBoot := f.name == "rt.jar"
+        zips.add(zip)
+        zip.contents.each |File x, Uri uri| { accept(acc, uri, x, isBoot) }
       }
-      catch {}
-      finally { if (zip != null) zip.close }
+      catch (Err e)
+      {
+        echo("ERROR: $typeof: $f")
+        e.trace
+      }
     }
   }
 
-  private Void accept(Str:Str[] acc, Uri uri)
+  private Void accept(Str:ClassPathPackage acc, Uri uri, File file, Bool isBoot)
   {
+    // don't care about anything but .class files
     if (uri.ext != "class") return
-    package := uri.path[0..-2].join(".")
-    if (package.startsWith("com.sun") || package.startsWith("sun")) return
+
+    // convert URI to package name, skip non-public 'com.sun' if rt.jar
+    packageName := uri.path[0..-2].join(".")
+    if (isBoot)
+    {
+      if (packageName.startsWith("com.sun") || packageName.startsWith("sun"))
+        return
+    }
+
+    // get simple name of class
     name := uri.basename
     if (name == "Void") return
-    classes := acc[package]
-    if (classes == null) acc[package] = classes = Str[,]
-    if (!classes.contains(name)) classes.add(name)
+
+    // get or add package
+    package := acc[packageName]
+    if (package == null) acc[packageName] = package = ClassPathPackage(packageName)
+
+    // add class to package if not already defined
+    if (package.classes[name] == null) package.classes[name] = file
+  }
+
+  Void dump(OutStream out := Env.cur.out)
+  {
+    out.printLine("--- ClassPath ---")
+    out.printLine("Packages Found:")
+    classes := 0
+    packages.vals.sort.each |p|
+    {
+      classes += p.classes.size
+      out.printLine("  $p [" + p.classes.size + "]")
+    }
+    out.printLine("ClassPath Files:")
+    files.each |File f| { echo("  $f") }
+    out.printLine("${dur.toLocale}, $files.size files, $packages.size packages, $classes classes")
+    out.printLine("-----------------")
   }
 
   static Void main()
   {
-    t1 := Duration.now
-    cp := makeForCurrent
-    t2:= Duration.now
-    echo("ClassPath.makeForCurrent: ${(t2-t1).toMillis}ms")
-
-    echo("Entries Found:")
-    cp.entries.each |File f| { echo("  $f") }
-
-    echo("Packages Found:")
-    cp.classes.keys.sort.each |Str p| { echo("  $p [" + cp.classes[p].size + "]") }
+    cp := ClassPath(findSysClassPathFiles)
+    cp.close
+    cp.dump
   }
-
 }
+
+**************************************************************************
+** ClassPathPackage
+**************************************************************************
+
+**
+** ClassPathPackage models a single package found in the class
+** path with a map of classnames to classfiles.
+**
+class ClassPathPackage
+{
+  new make(Str name) { this.name = name }
+
+  ** Package name in "." format
+  const Str name
+
+  ** Classfiles keyed by simple name (not qualified name)
+  Str:File classes := [:] { private set }
+
+  ** Return name
+  override Str toStr() { name }
+}
+

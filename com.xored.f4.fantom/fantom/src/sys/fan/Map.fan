@@ -70,6 +70,12 @@ final class Map
   @Operator V? get(K key, V? def := this.def)
 
   **
+  ** Get the value for the specified key or if key is not mapped
+  ** then raise UnknownKeyErr.  This method is readonly safe.
+  **
+  V getOrThrow(K key)
+
+  **
   ** Return if the specified key is mapped.
   ** This method is readonly safe.
   **
@@ -267,16 +273,18 @@ final class Map
   **
   ** Return a new map containing the key/value pairs for which c
   ** returns true.  If c returns false for every item, then return
-  ** an empty map.  The inverse of this method is `exclude`. This
-  ** method is readonly safe.
+  ** an empty map.  The inverse of this method is `exclude`.  If
+  ** this map is `ordered` or `caseInsensitive`, then the resulting
+  ** map is too.  This method is readonly safe.
   **
   M findAll(|V val, K key->Bool| c)
 
   **
   ** Return a new map containing the key/value pairs for which c
   ** returns false.  If c returns true for every item, then return
-  ** an empty list.  The inverse of this method is `findAll`.  This
-  ** method is readonly safe.
+  ** an empty list.  The inverse of this method is `findAll`.  If
+  ** this map is `ordered` or `caseInsensitive`, then the resulting
+  ** map is too.  This method is readonly safe.
   **
   ** Example:
   **   map := ["off":0, "slow":50, "fast":100]

@@ -42,8 +42,8 @@ class Compiler
     this.input      = input
     this.log        = input.log
     this.errs       = CompilerErr[,]
-    this.warns      =  CompilerErr[,]
-    this.depends    = Depend[,]
+    this.warns      = CompilerErr[,]
+    this.depends    = CDepend[,]
     this.wrappers   = Str:CField[:]
     this.localeDefs = LocaleLiteralExpr[,]
   }
@@ -61,8 +61,17 @@ class Compiler
     log.info("Compile [${input.podName}]")
     log.indent
 
-    frontend
-    backend
+    try
+    {
+      frontend
+      backend
+    }
+    catch (CompilerErr e)
+    {
+      if (errs.isEmpty) CompilerSupport(this).errReport(e)
+      throw e
+    }
+    finally cleanup
 
     log.unindent
     return output
@@ -106,6 +115,18 @@ class Compiler
     GenerateOutput(this).run
   }
 
+  **
+  ** Guaranteed cleanup of resources
+  **
+  private Void cleanup()
+  {
+    try
+    {
+      ns.cleanup
+    }
+    catch (Err e) e.trace
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////
@@ -114,7 +135,7 @@ class Compiler
   CompilerLog log           // ctor
   CompilerErr[] errs        // accumulated errors
   CompilerErr[] warns       // accumulated warnings
-  Depend[] depends          // InitInput
+  CDepend[] depends         // InitInput
   CNamespace? ns            // InitInput
   PodDef? pod               // InitInput
   Bool isSys := false       // InitInput; are we compiling sys itself

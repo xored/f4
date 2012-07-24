@@ -29,8 +29,8 @@ public class FieldDef : SlotDef, CField
 // Access
 //////////////////////////////////////////////////////////////////////////
 
-  Bool hasGet() { return get != null && !get.isSynthetic }
-  Bool hasSet() { return set != null && !set.isSynthetic }
+  Bool hasGet() { get != null && !get.isSynthetic }
+  Bool hasSet() { set != null && !set.isSynthetic }
 
   FieldExpr makeAccessorExpr(Loc loc, Bool useAccessor)
   {
@@ -47,9 +47,9 @@ public class FieldDef : SlotDef, CField
 // CField
 //////////////////////////////////////////////////////////////////////////
 
-  override Str signature() { return qname }
-  override CMethod? getter() { return get }
-  override CMethod? setter() { return set }
+  override Str signature() { qname }
+  override CMethod? getter() { get }
+  override CMethod? setter() { set }
 
   override CType inheritedReturnType()
   {
@@ -71,18 +71,6 @@ public class FieldDef : SlotDef, CField
       init = init.walk(v)
     v.visitFieldDef(this)
     v.exitFieldDef(this)
-  }
-
-//////////////////////////////////////////////////////////////////////////
-// Documentation
-//////////////////////////////////////////////////////////////////////////
-
-  override [Str:Str]? docMeta()
-  {
-    if (init == null) return null
-    initDoc := init.toDocStr
-    if (initDoc == null) return null
-    return ["def": initDoc]
   }
 
 //////////////////////////////////////////////////////////////////////////

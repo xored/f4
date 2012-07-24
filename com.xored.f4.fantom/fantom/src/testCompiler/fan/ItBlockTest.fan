@@ -431,10 +431,10 @@ class ItBlockTest : CompilerTest
         Int test8()  { Foo.factory5 { x += 200 }.x }  // line 10
         Int test9()  { Foo.factoryX(true) { x = 9 }.x }
         Int test10() { Foo.factoryX(false) { x = 10 }.x }
-        Int test11() { Foo().factoryI1(true, 11).x }
-        Int test12() { Foo().factoryI1(false, 12).x }
+        Int test11() { Foo.make.factoryI1(true, 11).x }
+        Int test12() { Foo.make.factoryI1(false, 12).x }
 
-        Int bad1()   { f := Foo(); f { x = 6 }; return f.x }
+        Int bad1()   { f := Foo.make; f { x = 6 }; return f.x }
         Foo bad2()   { Foo.factory5bad { x = 2 } }
         Foo bad3()   { Foo.factoryXbad(true) { x = 3 } }
         Foo bad4()   { Foo.factoryXbad(false) { x = 4 } }
@@ -662,6 +662,28 @@ class ItBlockTest : CompilerTest
        18, 33, "Ambiguous slot 'u' on both 'this' ($podName::Foo) and 'it' ($podName::Bar)",
        19, 26, "Ambiguous slot 'u' on both 'this' ($podName::Foo) and 'it' ($podName::Bar)",
       ])
+  }
+
+  Void testNotAmbiguous()
+  {
+    compile(
+     """class A {
+          new make(|This| f) { f(this) }
+          Int p
+          private Int x
+        }
+
+        class B
+        {
+          Int x := 99
+          Obj t0() { A { p = x } }
+          Obj t1(Int x) { A { p = x } }
+        }""")
+
+
+    obj := pod.types.find(|t| { t.name =="B"}).make
+    verifyEq(obj->t0->p, 99)
+    verifyEq(obj->t1(88)->p, 88)
   }
 
   Void testAddReturnsVoid()

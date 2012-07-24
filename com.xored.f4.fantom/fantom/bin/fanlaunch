@@ -61,17 +61,29 @@ if [ -z "$FAN_JAVA" ] ; then
     exit 1
   fi
 fi
-# read a single line property from $FAN_HOME/etc/sys/config.props
+
+FAN_CONFIG_PROPS="$FAN_HOME/etc/sys/config.props"
+FAN_CLASSPATH="$FAN_CP":"$CLASSPATH"
+
+# On Cygwin, convert paths to Windows-style (as expected by a JVM running on Windows)
+if $cygwin; then
+  FAN_HOME=`cygpath --windows $FAN_HOME`
+  FAN_CLASSPATH=`cygpath --windows --path $FAN_CLASSPATH`
+  if [ ! -z "$JAVA_HOME" ] ; then
+    JAVA_HOME=`cygpath --windows $JAVA_HOME`
+  fi
+fi
+
+# read a single line property from props file
 read_prop()
 {
-  eval "$1='`sed '/^\#/d' "$FAN_HOME/etc/sys/config.props" | sed '/^\/\//d' | grep \"$2=\"  | tail -n 1 | sed 's/^[^=]*=//;s/^[[:space:]]*//;s/[[:space:]]*$//'`'"
+  eval "$1='`sed '/^\#/d' "$2" | sed '/^\/\//d' | grep \"$3=\"  | tail -n 1 | sed 's/^[^=]*=//;s/^[[:space:]]*//;s/[[:space:]]*$//'`'"
 }
 # Launcher function
 fanlaunch()
 {
-  export FAN_HOME
   FAN_MAIN="fanx.tools.$1"
   shift
-  read_prop JAVA_OPTIONS java.options
-  "$FAN_JAVA" $osFlags $JAVA_OPTIONS $libPath -cp "$FAN_CP":"$CLASSPATH" -Dfan.home="$FAN_HOME" "$FAN_MAIN" "$@"
+  read_prop JAVA_OPTIONS "$FAN_CONFIG_PROPS" java.options
+  "$FAN_JAVA" $osFlags $JAVA_OPTIONS $libPath -cp "$FAN_CLASSPATH" -Dfan.home="$FAN_HOME" "$FAN_MAIN" "$@"
 }

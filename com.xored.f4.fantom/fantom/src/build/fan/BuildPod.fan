@@ -32,7 +32,8 @@ abstract class BuildPod : BuildScript
   Str? summary := null
 
   **
-  ** Version of the pod - default is set to `config` prop 'buildVersion'.
+  ** Version of the pod - default is set to `BuildScript.config`
+  ** prop 'buildVersion'.
   **
   Version version := Version(config("buildVersion", "0"))
 
@@ -60,7 +61,7 @@ abstract class BuildPod : BuildScript
   Bool docApi := true
 
   **
-  ** Indicates if if source code should be included in the documentation.
+  ** Indicates if if source code should be included in the pod/documentation.
   ** By default source code it *not* included.
   **
   Bool docSrc := false
@@ -72,8 +73,9 @@ abstract class BuildPod : BuildScript
   Uri[]? srcDirs
 
   **
-  ** List of Uris relative to build script of directories of resources
-  ** files to package into pod zip file.  Optional.
+  ** List of optional Uris relative to build script of directories of
+  ** resources files to package into pod zip file.  If a file has a "jar"
+  ** extension then its contents are unzipped into the target pod.
   **
   Uri[]? resDirs
 
@@ -175,6 +177,18 @@ abstract class BuildPod : BuildScript
     meta["pod.native.dotnet"] = (dotnetDirs != null && !dotnetDirs.isEmpty).toStr
     meta["pod.native.js"]     = (jsDirs     != null && !jsDirs.isEmpty).toStr
 
+    // TODO: add additinal meta props defined by config file/env var
+    // this behavior is not guaranteed in future versions, rather we
+    // need to potentially overhaul how build data is defined
+    // See topic http://fantom.org/sidewalk/topic/1584
+    config("meta", "").split(',').each |pair|
+    {
+      if (pair.isEmpty) return
+      tuples := pair.split('=')
+      if (tuples.size != 2) throw Err("Invalid config meta: $pair")
+      meta[tuples[0]] = tuples[1]
+    }
+
     // map my config to CompilerInput structure
     ci := CompilerInput()
     ci.inputLoc    = Loc.makeFile(scriptFile)
@@ -190,6 +204,7 @@ abstract class BuildPod : BuildScript
     ci.jsFiles     = jsDirs
     ci.log         = log
     ci.includeDoc  = docApi
+    ci.includeSrc  = docSrc
     ci.mode        = CompilerInputMode.file
     ci.outDir      = outPodDir.toFile
     ci.output      = CompilerOutputMode.podFile
@@ -361,25 +376,6 @@ abstract class BuildPod : BuildScript
     Delete(this, scriptDir+`temp-java/`).run
     Delete(this, scriptDir+`temp-dotnet/`).run
     log.unindent
-  }
-
-//////////////////////////////////////////////////////////////////////////
-// Doc
-//////////////////////////////////////////////////////////////////////////
-
-  **
-  ** Build the HTML documentation
-  **
-  @Target { help = "Build the HTML documentation" }
-  virtual Void doc()
-  {
-    // use docCompiler reflectively
-    docCompiler := Type.find("docCompiler::Main").make
-    docCompiler->d    = outDocDir.toFile
-    docCompiler->src  = scriptDir
-    docCompiler->pods = [podName]
-    Int r := docCompiler->run
-    if (r != 0) fatal("Cannot doc compiler '$podName'")
   }
 
 //////////////////////////////////////////////////////////////////////////

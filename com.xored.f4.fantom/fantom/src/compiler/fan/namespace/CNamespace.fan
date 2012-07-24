@@ -73,6 +73,7 @@ abstract class CNamespace
     fieldType    = sysType("Field")
     methodType   = sysType("Method")
     rangeType    = sysType("Range")
+    testType     = sysType("Test")
     uriType      = sysType("Uri")
     voidType     = sysType("Void")
     fieldNotSetErrType = sysType("FieldNotSetErr")
@@ -139,6 +140,21 @@ abstract class CNamespace
     m := t.method(name)
     if (m == null) throw Err("Cannot resolve '${t.qname}.$name' method in namespace")
     return m
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Cleanup
+//////////////////////////////////////////////////////////////////////////
+
+  Void cleanup()
+  {
+    bridgeCache.each |bridge|
+    {
+      try
+        bridge.cleanup
+      catch (Err e)
+        e.trace
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -279,7 +295,7 @@ abstract class CNamespace
   **
   ** Map of dependencies keyed by pod name set in ResolveDepends.
   **
-  [Str:Depend]? depends
+  [Str:CDepend]? depends
 
 //////////////////////////////////////////////////////////////////////////
 // Predefined
@@ -319,6 +335,7 @@ abstract class CNamespace
   CType? fieldType            { private set }
   CType? methodType           { private set }
   CType? rangeType            { private set }
+  CType? testType             { private set }
   CType? uriType              { private set }
   CType? voidType             { private set }
   CType? fieldNotSetErrType   { private set }

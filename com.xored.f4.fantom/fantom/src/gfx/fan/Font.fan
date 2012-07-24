@@ -31,7 +31,7 @@ const class Font
   ** bold/italic style.  This is internal for now, because eventually
   ** we should be able to collapse this and it-block into single ctor.
   **
-  @NoDoc new makeFields(Str name, Int size := 12, Bool bold := false, Bool italic := false)
+  @NoDoc new makeFields(Str name, Int size, Bool bold := false, Bool italic := false)
   {
     this.name = name
     this.size   = size
@@ -49,7 +49,7 @@ const class Font
   **   Font.fromStr("bold 10pt Courier")
   **   Font.fromStr("bold italic 8pt Times Roman")
   **
-  static Font? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
   {
     try
     {
@@ -103,6 +103,14 @@ const class Font
 //////////////////////////////////////////////////////////////////////////
 // Identity
 //////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Free any operating system resources used by this font.
+  ** Dispose is required if this color has been used in an operation
+  ** such as FWT onPaint which allocated a system resource to
+  ** represent this instance.
+  **
+  Void dispose() { GfxEnv.cur(false)?.fontDispose(this) }
 
   **
   ** Return hash of name, size, and style.

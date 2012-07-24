@@ -447,7 +447,7 @@ class ListTest : Test
 
     x.size = 2
     verifyEq(x.size, 2)
-    verifyEq(x.capacity, 2)
+    verifyEq(x.capacity, 4)
     verifyEq(x, Str?["a", "b"])
 
     x.size = 5
@@ -462,7 +462,7 @@ class ListTest : Test
 
     x.size = 0
     verifyEq(x.size, 0)
-    verifyEq(x.capacity, 0)
+    verifyEq(x.capacity, 10)
     verifyEq(x, Str?[,])
 
     x.add("x")
@@ -470,10 +470,17 @@ class ListTest : Test
     verifyEq(x.capacity, 10)
     verifyEq(x, Str?["x"])
 
-    x.size = 1
-    verifyEq(x.size, 1)
-    verifyEq(x.capacity, 1)
-    verifyEq(x, Str?["x"])
+    x.size = 2
+    verifyEq(x.size, 2)
+    verifyEq(x.capacity, 10)
+    verifyEq(x, Str?["x", null])
+
+    x[1] = "foo"
+    x.size = 0
+    x.size = 3
+    verifyEq(x.size, 3)
+    verifyEq(x.capacity, 10)
+    verifyEq(x, Str?[null, null, null])
 
     y := ["a", "b", "c"]
     y.size = 2
@@ -562,15 +569,16 @@ class ListTest : Test
 
   Void testRemove()
   {
+    js  := Env.cur.runtime == "js"
     foo := "foobar"[0..2]
     list := Str?["a", "b", foo, null, "a"]
-    verifyEq(list.indexSame("foo"), null)
+    if (!js) verifyEq(list.indexSame("foo"), null)
     verifyEq(list.remove("b"), "b");     verifyEq(list, Str?["a", "foo", null, "a"])
     verifyEq(list.remove("a"), "a");     verifyEq(list, Str?["foo", null, "a"])
     verifyEq(list.remove("x"), null);    verifyEq(list, Str?["foo", null, "a"])
     verifyEq(list.remove("a"), "a");     verifyEq(list, Str?["foo", null])
     verifyEq(list.remove(null), null);   verifyEq(list, Str?["foo"])
-    verifyEq(list.removeSame("foo"), null);  verifyEq(list, Str?["foo"])
+    if (!js) verifyEq(list.removeSame("foo"), null);  verifyEq(list, Str?["foo"])
     verifyEq(list.remove("foo"), "foo"); verifyEq(list, Str?[,])
     verifyEq(list.remove("a"), null);    verifyEq(list, Str?[,])
   }
@@ -623,7 +631,9 @@ class ListTest : Test
   {
     list := Int[,]
     verifyEq(list.fill(0, 3), [0, 0, 0])
+    verifyEq(list.size, 3)
     verifyEq(list.fill(0xff, 2), [0, 0, 0, 0xff, 0xff])
+    verifyEq(list.size, 5)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -632,8 +642,10 @@ class ListTest : Test
 
   Void testContainsIndex()
   {
+    js  := Env.cur.runtime == "js"
     foo := "foobar"[0..2]
-    verify(foo !== "foo")
+    // TODO: this is not true under js:
+    if (!js) verify(foo !== "foo")
     list := Str?["a", "b", null, "c", null, "b", foo]
 
     //verifyEq([,].contains(null), false)
@@ -646,8 +658,8 @@ class ListTest : Test
     verifyEq(list.index("foo"), 6)
 
     verifyEq(list.indexSame("a"), 0)
-    verifyEq(list.indexSame("abc"[0..0]), null)
-    verifyEq(list.indexSame("foo"), null)
+    if (!js) verifyEq(list.indexSame("abc"[0..0]), null)
+    if (!js) verifyEq(list.indexSame("foo"), null)
 
     verify(list.contains("b"))
     verifyEq(list.index("b"), 1)
@@ -685,7 +697,7 @@ class ListTest : Test
     verifyEq(list.index("b", -2), 5)
     verifyEq(list.index("b", -6), 1)
     verifyEq(list.index("foo", -1), 6)
-    verifyEq(list.indexSame("foo", -1), null)
+    if (!js) verifyEq(list.indexSame("foo", -1), null)
 
     verifyEq(list.index(null, 0), 2)
     verifyEq(list.index(null, 2), 2)
@@ -1265,6 +1277,7 @@ class ListTest : Test
   Void testMoveTo()
   {
     x := [0, 1, 2, 3, 4]
+    Int? nil := null
     verifyEq(x.moveTo(4, 0),  [4, 0, 1, 2, 3])
     verifyEq(x.moveTo(4, 1),  [0, 4, 1, 2, 3])
     verifyEq(x.moveTo(4, -1), [0, 1, 2, 3, 4])
@@ -1275,6 +1288,7 @@ class ListTest : Test
     verifyEq(x.moveTo(4, -3), [0, 1, 4, 2, 3])
     verifyEq(x.moveTo(4, 3),  [0, 1, 2, 4, 3])
     verifyEq(x.moveTo(4, 4),  [0, 1, 2, 3, 4])
+    verifyEq(x.moveTo(nil, 2), [0, 1, 2, 3, 4])
   }
 
 //////////////////////////////////////////////////////////////////////////

@@ -60,8 +60,8 @@ internal const class WispActor : Actor
   Bool process(TcpSocket socket)
   {
     // allocate request, response
-    req := WispReq(service, socket)
     res := WispRes(service, socket)
+    req := WispReq(service, socket, res)
 
     // parse request line and headers, on error return false to
     // close socket and terminate processing on this thread and socket
@@ -173,11 +173,14 @@ internal const class WispActor : Actor
     // if using HTTP 1.1 and client specified using keep-alives,
     // then setup response to be persistent for pipelining
     if (req.version === ver11 &&
-        req.headers.get("Connection", "").equalsIgnoreCase("keep-alive"))
+        req.headers.get("Connection", "").split(',').any |tok| { tok.equalsIgnoreCase("keep-alive")})
     {
       res.isPersistent = true
       res.headers["Connection"] = "keep-alive"
     }
+
+    // configure Locale.cur for best match based on request
+    Locale.setCur(req.locales.first)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -225,7 +228,8 @@ internal const class WispActor : Actor
       }
 
       // log internal error
-      WispService.log.err("Internal error processing: $req.uri", err)
+      if (!err.msg.contains("Broken pipe"))
+        WispService.log.err("Internal error processing: $req.uri", err)
 
       // if not committed yet, then return 400 if bad
       // client request or 500 if server error

@@ -94,10 +94,16 @@ class JsSuperExpr : JsExpr
 {
   new make(JsCompilerSupport s, SuperExpr se) : super(s)
   {
+    type = JsTypeRef(s, se.ctype, se.loc)
     if (se.explicitType != null)
-      explicitType = JsTypeRef(s, se.explicitType)
+      explicitType = JsTypeRef(s, se.explicitType, se.loc)
   }
-  override Void write(JsWriter out) {} // handled in JsCallExpr
+  override Void write(JsWriter out)
+  {
+    t := explicitType ?: type
+    out.w("${t.qname}.prototype")
+  }
+  JsTypeRef type
   JsTypeRef? explicitType
 }
 
@@ -136,7 +142,7 @@ class JsStaticTargetExpr : JsExpr
 {
   new make(JsCompilerSupport s, StaticTargetExpr le) : super(s)
   {
-    target = JsTypeRef(s, le.ctype)
+    target = JsTypeRef(s, le.ctype, le.loc)
   }
   override Void write(JsWriter out)
   {
@@ -288,7 +294,7 @@ class JsTypeLiteralExpr : JsExpr
 {
   new make(JsCompilerSupport s, LiteralExpr x) : super(s)
   {
-    this.val = JsTypeRef(s, x.val)
+    this.val = JsTypeRef(s, x.val, x.loc)
   }
   override Void write(JsWriter out)
   {
@@ -317,7 +323,7 @@ class JsSlotLiteralExpr : JsExpr
 {
   new make(JsCompilerSupport s, SlotLiteralExpr x) : super(s)
   {
-    this.parent = JsTypeRef(s, x.parent)
+    this.parent = JsTypeRef(s, x.parent, x.loc)
     this.name   = x.name
   }
   override Void write(JsWriter out)
@@ -363,9 +369,9 @@ class JsListLiteralExpr : JsExpr
 {
   new make(JsCompilerSupport s, ListLiteralExpr x) : super(s)
   {
-    this.inferredType = JsTypeRef(s, x.ctype)
+    this.inferredType = JsTypeRef(s, x.ctype, x.loc)
     if (x.explicitType != null)
-      this.explicitType = JsTypeRef(s, x.explicitType)
+      this.explicitType = JsTypeRef(s, x.explicitType, x.loc)
 
     this.vals = x.vals.map |v->JsExpr| { JsExpr.makeFor(s, v) }
   }
@@ -399,9 +405,9 @@ class JsMapLiteralExpr : JsExpr
 {
   new make(JsCompilerSupport s, MapLiteralExpr me) : super(s)
   {
-    this.inferredType = JsTypeRef(s, me.ctype)
+    this.inferredType = JsTypeRef(s, me.ctype, me.loc)
     if (me.explicitType != null)
-      this.explicitType = JsTypeRef(s, me.explicitType)
+      this.explicitType = JsTypeRef(s, me.explicitType, me.loc)
 
     this.keys = me.keys.map |k->JsExpr| { JsExpr.makeFor(s, k) }
     this.vals = me.vals.map |v->JsExpr| { JsExpr.makeFor(s, v) }
@@ -458,19 +464,30 @@ class JsBinaryExpr : JsExpr
 {
   new make(JsCompilerSupport s, BinaryExpr x) : super(s)
   {
-    this.symbol = x.opToken.symbol
-    this.lhs    = JsExpr.makeFor(s, x.lhs)
-    this.rhs    = JsExpr.makeFor(s, x.rhs)
+    this.symbol   = x.opToken.symbol
+    this.lhs      = JsExpr.makeFor(s, x.lhs)
+    this.rhs      = JsExpr.makeFor(s, x.rhs)
+    this.leave    = x.leave
+    this.isAssign = x.assignTarget != null
   }
   override Void write(JsWriter out)
   {
-    if (lhs is JsFieldExpr && lhs->useAccessor == true)
+    if (isAssign && lhs is JsFieldExpr)
     {
-      lhs->isSet = true
-      lhs.write(out)
-      out.w("\$(")
-      rhs.write(out)
-      out.w(")")
+      fe := (JsFieldExpr)lhs
+      if (leave)
+      {
+        var := support.unique
+        old := support.thisName
+        support.thisName = "\$this"
+        out.w("(function(\$this) {")
+        out.w(" var $var = "); rhs.write(out); out.w("; ")
+        fe.writeSetter(out, JsVarExpr(support, var)); out.w(";")
+        out.w(" return $var;")
+        out.w(" })($old)")
+        support.thisName = old
+      }
+      else { fe.writeSetter(out, rhs) }
     }
     else
     {
@@ -482,6 +499,16 @@ class JsBinaryExpr : JsExpr
   Str symbol
   JsExpr lhs
   JsExpr rhs
+  Bool leave
+  Bool isAssign
+}
+
+// for JsBinaryExpr support
+internal class JsVarExpr : JsExpr
+{
+  new make(JsCompilerSupport s, Str name) : super(s) { this.name = name }
+  override Void write(JsWriter out) { out.w(name) }
+  Str name
 }
 
 **************************************************************************
@@ -578,7 +605,7 @@ class JsTypeCheckExpr : JsExpr
   {
     this.op     = te.id == ExprId.coerce ? "coerce" : te.opStr
     this.target = JsExpr.makeFor(s, te.target)
-    this.check  = JsTypeRef(s, te.check)
+    this.check  = JsTypeRef(s, te.check, te.loc)
   }
   override Void write(JsWriter out)
   {
@@ -618,7 +645,7 @@ class JsCallExpr : JsExpr
 
     if (ce.method != null)
     {
-      this.parent = JsTypeRef(s, ce.method.parent)
+      this.parent = JsTypeRef(s, ce.method.parent, ce.loc)
       this.isCtor = ce.method.isCtor
       this.isObj  = ce.method.parent.qname == "sys::Obj"
       this.isPrim = isPrimitive(ce.method.parent)
@@ -628,7 +655,7 @@ class JsCallExpr : JsExpr
     if (ce.target != null)
     {
       this.target = JsExpr.makeFor(s, ce.target)
-      this.targetType = ce.target.ctype == null ? parent : JsTypeRef(s, ce.target.ctype)
+      this.targetType = ce.target.ctype == null ? parent : JsTypeRef(s, ce.target.ctype, ce.loc)
     }
 
     // force these methods to route thru ObjUtil if not a super.xxx expr
@@ -712,8 +739,8 @@ class JsCallExpr : JsExpr
 
   Void writeSuper(JsWriter out)
   {
-    JsTypeRef t := target->explicitType ?: targetType
-    out.w("${t.qname}.prototype.${name}.call($support.thisName")
+    target.write(out)
+    out.w(".${name}.call($support.thisName")
     writeArgs(out, true)
     out.w(")")
   }
@@ -761,7 +788,6 @@ class JsCallExpr : JsExpr
   Bool isStatic          // is this a static method
   Bool isDynamic         // is this a -> call
   Str? dynamicName       // name of -> call
-
 }
 
 **************************************************************************
@@ -776,6 +802,7 @@ class JsShortcutExpr : JsCallExpr
     this.isAssign  = se.isAssign
     this.isIndexedAssign = se is IndexedAssignExpr
     this.isPostfixLeave  = se.isPostfixLeave
+    this.leave     = se.leave
 
     switch (symbol)
     {
@@ -808,6 +835,11 @@ class JsShortcutExpr : JsCallExpr
 
   override Void write(JsWriter out)
   {
+    if (fieldSet)
+    {
+      super.write(out)
+      return
+    }
     if (isIndexedAssign)
     {
       doWriteIndexedAssign(out)
@@ -832,8 +864,19 @@ class JsShortcutExpr : JsCallExpr
   {
     if (isAssign)
     {
-      assignTarget.write(out)
-      out.w(" = ")
+      if (assignTarget is JsFieldExpr)
+      {
+        fieldSet = true
+        fe := (JsFieldExpr)assignTarget
+        fe.writeSetter(out, this)
+        fieldSet = false
+        return
+      }
+      else
+      {
+        assignTarget.write(out)
+        out.w(" = ")
+      }
     }
     super.write(out)
   }
@@ -863,6 +906,8 @@ class JsShortcutExpr : JsCallExpr
   Bool isPostfixLeave   // is postfix expr
   JsExpr? assignTarget  // target of assignment
   JsExpr? assignIndex   // indexed assign: index
+  Bool leave            // leave result of expr on "stack"
+  Bool fieldSet := false  // transietly used for field sets
 }
 
 **************************************************************************
@@ -874,12 +919,40 @@ class JsFieldExpr : JsExpr
   new make(JsCompilerSupport s, FieldExpr fe) : super(s)
   {
     if (fe.target != null) this.target = JsExpr.makeFor(s, fe.target)
-    this.parent = JsTypeRef(s, fe.field.parent)
+    this.parent = JsTypeRef(s, fe.field.parent, fe.loc)
     this.field  = JsFieldRef(s, fe.field)
     this.isSafe = fe.isSafe
     this.useAccessor = fe.useAccessor
   }
+
+  Void writeSetter(JsWriter out, JsExpr arg)
+  {
+    this.setArg = arg
+    this.write(out)
+    this.setArg = null
+  }
+
   override Void write(JsWriter out)
+  {
+    if (target is JsSuperExpr) writeSuper(out)
+    else writeNorm(out)
+  }
+
+  private Void writeSuper(JsWriter out)
+  {
+    name := field.name
+    if (setArg != null) name += "\$"
+    target.write(out)
+    out.w(".${name}.call($support.thisName")
+    if (setArg != null)
+    {
+      out.w(",")
+      writeSetArg(out)
+    }
+    out.w(")")
+  }
+
+  private Void writeNorm(JsWriter out)
   {
     old := support.thisName
     if (isSafe)
@@ -900,22 +973,46 @@ class JsFieldExpr : JsExpr
     if (useAccessor)
     {
       out.w("$field.name")
-      if (!isSet) out.w("()")
+      if (setArg == null) out.w("()")
+      else
+      {
+        out.w("\$(")
+        writeSetArg(out)
+        out.w(")")
+      }
     }
-    else out.w("m_$field.name")
-    if (isSafe) out.w("}($old))")
+    else
+    {
+      out.w("m_$field.name")
+      if (setArg != null)
+      {
+        out.w(" = ")
+        writeSetArg(out)
+      }
+    }
+    if (isSafe) out.w(" }($old))")
   }
+
   private Void writeTarget(JsWriter out)
   {
     if (target == null) parent.write(out)
     else target.write(out)
   }
+
+  private Void writeSetArg(JsWriter out)
+  {
+    arg := setArg
+    this.setArg = null
+    arg.write(out)
+    this.setArg = arg
+  }
+
   JsExpr? target       // field target
   JsTypeRef parent     // field parent type
   JsFieldRef field     // field
-  Bool useAccessor     // false if access using '*' storage operator
+  Bool useAccessor     // false if access using '&' storage operator
   Bool isSafe          // is safe nav
-  Bool isSet := false  // transiently use for setters
+  JsExpr? setArg       // transiently use for setters
 }
 
 **************************************************************************

@@ -22,8 +22,11 @@ class FileTest : Test
   {
     // verify clean empty directory
     verify(tempDir.exists)
+    verify(tempDir->exists)
     verify(tempDir.isDir)
+    verify(tempDir.isEmpty)
     verify(tempDir.list.isEmpty)
+    verify(tempDir->list->isEmpty)
     verify(tempDir.list.size == 0)
     verify(tempDir.listDirs.size == 0)
     verify(tempDir.listFiles.size == 0)
@@ -58,7 +61,7 @@ class FileTest : Test
     verifyEq(f.uri.scheme, "file")
     verifyEq(f.uri.pathStr, "/ok/path")
 
-    verifyErr(ArgErr#) { File(`c:/bad/windows/path`) }
+    verifyErr(ArgErr#) { x := File(`c:/bad/windows/path`) }
   }
 
   Void testPlus()
@@ -67,6 +70,7 @@ class FileTest : Test
     verifyEq(f + `d`,   File.make(`a/b/c/d`))
     verifyEq(f + `d/e`,  File.make(`a/b/c/d/e`))
     verifyEq(f + `../d`, File.make(`a/b/d`))
+    verifyEq(f->plus(`../d`), File.make(`a/b/d`))
 
     f = File.make(`a/b/c`);
     verifyEq(f + `d`,   File.make(`a/b/d`))
@@ -83,14 +87,14 @@ class FileTest : Test
     slash := dir.uri
     noSlash := slash.toStr[0..-2].toUri
 
-    verifyErr(IOErr#) { File.make(noSlash) }
+    verifyErr(IOErr#) { x := File.make(noSlash) }
     verifyErr(IOErr#) { x := this.tempDir + `dir`; echo("$x $x.exists") }
 
     x := File.make(noSlash, false)
     verifyEq(x.uri, slash)
     verifyEq(x.exists, true)
 
-    x = tempDir.plus(`dir`, false)
+    x = tempDir->plus(`dir`, false)
     verifyEq(x.uri, slash)
     verifyEq(x.exists, true)
   }
@@ -131,6 +135,7 @@ class FileTest : Test
     // create file - no extension
     f := tempDir.createFile("file")
     verify(!f.isDir)
+    verify(f.isEmpty)
     verify(f.list.isEmpty)
     verify(f.listFiles.isEmpty)
     verify(f.listDirs.isEmpty)
@@ -149,6 +154,7 @@ class FileTest : Test
     e := (tempDir + `file.txt`).create
     verify(!e.isDir)
     verify(e.list.isEmpty)
+    verify(e.isEmpty)
     verifyEq(e.size, 0)
     verifyEq(e.name, "file.txt")
     verifyEq(e.basename, "file")
@@ -157,6 +163,7 @@ class FileTest : Test
     verifyEq(e.uri.path.last, "file.txt")
     verifyEq(e.path.last, "file.txt")
     verifyEq(e.uri.relToAuth.toStr, e.pathStr)
+    verifyEq(tempDir.isEmpty, false)
     verifyEq(tempDir.list.sort, [f, e])
     verifyEq(tempDir.listDirs, File[,])
     verifyEq(tempDir.listFiles.sort, [f, e])
@@ -164,6 +171,7 @@ class FileTest : Test
     // create dir
     d := tempDir.createDir("dir")
     verify(d.isDir)
+    verify(d.isEmpty)
     verify(d.list.isEmpty)
     verifyEq(d.name, "dir")
     verifyEq(d.basename, "dir")
@@ -190,8 +198,8 @@ class FileTest : Test
     verify(f.exists); f.create
 
     // check errors
-    verifyErr(IOErr#) { File.make((f.pathStr+"/").toUri) }
-    verifyErr(IOErr#) { File.make(d.toStr[0..-2].toUri) }
+    verifyErr(IOErr#) { x := File.make((f.pathStr+"/").toUri) }
+    verifyErr(IOErr#) { x := File.make(d.toStr[0..-2].toUri) }
 
     // delete
     d.delete; verifyFalse(d.exists)
@@ -300,9 +308,12 @@ class FileTest : Test
 
     // moveTo file
     a1 = a1.moveTo(dirA+`a1`)
+    verifyEq(dirA.isEmpty, false)
     verifyEq(dirA.list.size, 1)
     verifyEq(a1.parent, dirA)
+    verifyEq(a1->parent, dirA)
     verifyEq(a1.readAllStr, "hi")
+    verifyEq(a1->readAllStr, "hi")
 
     // moveInto dir
     dirA = dirA.moveInto(dirB)
@@ -324,6 +335,7 @@ class FileTest : Test
 
     out := f.out.writeChars("alpha\nbeta\rgamma").close
     verifyEq(f.in.readAllStr, "alpha\nbeta\ngamma")
+    verifyEq(f->in->readAllStr, "alpha\nbeta\ngamma")
 
     out = f.out(false, 0).writeChars("alpha\nbeta\rgamma").close
     verifyEq(f.in(null).readAllStr, "alpha\nbeta\ngamma")

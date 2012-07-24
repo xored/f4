@@ -123,6 +123,7 @@ public class Parser : CompilerSupport
   {
     // [<doc>]
     doc := doc()
+    if (curt === Token.usingKeyword) throw err("Cannot use ** doc comments before using statement")
     if (curt === Token.eof) return
 
     // <facets>
@@ -176,7 +177,7 @@ public class Parser : CompilerSupport
     // name
     name := consumeId
     // lookup TypeDef
-    def := unit.types.find |TypeDef def->Bool| { return def.name == name }
+    def := unit.types.find |TypeDef def->Bool| { def.name == name }
     if (def == null) throw err("Invalid class definition", cur)
 
     // populate it's doc, facets, and flags
@@ -342,7 +343,7 @@ public class Parser : CompilerSupport
     {
       consume
       enumDef := enumDef(ordinal++)
-      if (def.enumDefs.any |EnumDef e->Bool| { return e.name == enumDef.name })
+      if (def.enumDefs.any |EnumDef e->Bool| { e.name == enumDef.name })
         err("Duplicate enum name '$enumDef.name'", enumDef.loc)
       def.enumDefs.add(enumDef)
     }
@@ -389,7 +390,7 @@ public class Parser : CompilerSupport
   ** Slot definition:
   **   <slotDef> :=  <fieldDef> | <methodDef> | <ctorDef>
   **
-  private SlotDef slotDef(TypeDef parent, Str[]? doc)
+  private SlotDef slotDef(TypeDef parent, DocDef? doc)
   {
     // check for static {} class initialization
     if (curt === Token.staticKeyword && peekt === Token.lbrace)
@@ -427,7 +428,10 @@ public class Parser : CompilerSupport
     if (flags.and(FConst.Ctor) != 0)
     {
       name := consumeId
-      return methodDef(loc, parent, doc, facets, flags, TypeRef(loc, ns.voidType), name)
+      returns := flags.and(FConst.Static) == 0 ?
+                 TypeRef(loc, ns.voidType) :
+                 TypeRef(loc, parent.toNullable)
+      return methodDef(loc, parent, doc, facets, flags, returns, name)
     }
 
     // otherwise must be field or method
@@ -455,7 +459,7 @@ public class Parser : CompilerSupport
   **   <fieldGetter>  :=  "get" (<eos> | <block>)
   **   <fieldSetter>  :=  <protection> "set" (<eos> | <block>)
   **
-  private FieldDef fieldDef(Loc loc, TypeDef parent, Str[]? doc, FacetDef[]? facets, Int flags, TypeRef? type, Str name)
+  private FieldDef fieldDef(Loc loc, TypeDef parent, DocDef? doc, FacetDef[]? facets, Int flags, TypeRef? type, Str name)
   {
     // define field itself
     field := FieldDef(loc, parent)
@@ -641,7 +645,7 @@ public class Parser : CompilerSupport
   **   <param>          :=  <type> <id> [":=" <expr>]
   **   <methodBody>     :=  <eos> | ( "{" <stmts> "}" )
   **
-  private MethodDef methodDef(Loc loc, TypeDef parent, Str[]? doc, FacetDef[]? facets, Int flags, TypeRef ret, Str name)
+  private MethodDef methodDef(Loc loc, TypeDef parent, DocDef? doc, FacetDef[]? facets, Int flags, TypeRef ret, Str name)
   {
     method := MethodDef(loc, parent)
     method.doc    = doc
@@ -664,7 +668,7 @@ public class Parser : CompilerSupport
       while (true)
       {
         newParam := paramDef
-        if (method.params.any |ParamDef p->Bool| { return p.name == newParam.name })
+        if (method.params.any |ParamDef p->Bool| { p.name == newParam.name })
           err("Duplicate parameter name '$newParam.name'", newParam.loc)
         method.params.add(newParam)
         if (curt === Token.rparen) break
@@ -1411,6 +1415,7 @@ public class Parser : CompilerSupport
     if (curt === Token.rparen)
     {
       consume
+      if (castType == null) throw err("Expecting cast '(type)'")
       return TypeCheckExpr(loc, ExprId.coerce, parenExpr, castType)
     }
     reset(mark)
@@ -1685,7 +1690,7 @@ public class Parser : CompilerSupport
     if (curt == Token.amp)
     {
       consume
-      return UnknownVarExpr.makeStorage(loc, target, consumeId)
+      return UnknownVarExpr(loc, target, consumeId, ExprId.storage)
     }
 
     if (peek.isCallOpenParen)
@@ -1723,6 +1728,11 @@ public class Parser : CompilerSupport
       call.noParens  = true
       return call
     }
+
+    // at this point we are parsing a single identifier, but
+    // if it looks like it was expected to be a type we can
+    // provide a more meaningful error
+    if (curt === Token.pound) throw err("Unknown type '$name' for type literal", loc)
 
     return UnknownVarExpr(loc, target, name) { isSafe = safeCall }
   }
@@ -2045,7 +2055,7 @@ public class Parser : CompilerSupport
   private TypeRef typeRef()
   {
     Loc loc := cur
-    return TypeRef(loc, ctype)
+    return TypeRef(loc, ctype(true))
   }
 
   **
@@ -2081,7 +2091,7 @@ public class Parser : CompilerSupport
   **   <listType>  :=  <type> "[]"
   **   <mapType>   :=  ["["] <type> ":" <type> ["]"]
   **
-  private CType ctype()
+  private CType ctype(Bool isTypeRef := false)
   {
     CType? t := null
 
@@ -2102,7 +2112,7 @@ public class Parser : CompilerSupport
     }
     else if (curt === Token.pipe)
     {
-      t = funcType
+      t = funcType(isTypeRef)
     }
     else
     {
@@ -2207,7 +2217,10 @@ public class Parser : CompilerSupport
   **   <formalInferred> :=  <id>
   **   <formalTypeOnly> :=  <type>
   **
-  private CType funcType()
+  ** If isTypeRef is true (slot signatures), then we requrie explicit
+  ** parameter types.
+  **
+  private CType funcType(Bool isTypeRef)
   {
     params := CType[,]
     names  := Str[,]
@@ -2219,11 +2232,11 @@ public class Parser : CompilerSupport
     // params, must be one if no ->
     inferred := false
     unnamed := [false]
-    if (curt !== Token.arrow) inferred = funcTypeFormal(params, names, unnamed)
+    if (curt !== Token.arrow) inferred = funcTypeFormal(isTypeRef, params, names, unnamed)
     while (curt === Token.comma)
     {
       consume
-      inferred = inferred.or(funcTypeFormal(params, names, unnamed))
+      inferred = inferred.or(funcTypeFormal(isTypeRef, params, names, unnamed))
     }
 
     // if we see ?-> in a function type, that means |X?->ret|
@@ -2253,9 +2266,9 @@ public class Parser : CompilerSupport
     return ft
   }
 
-  private Bool funcTypeFormal(CType[] params, Str[] names, Bool[] unnamed)
+  private Bool funcTypeFormal(Bool isTypeRef, CType[] params, Str[] names, Bool[] unnamed)
   {
-    t := tryType
+    t := isTypeRef ? ctype(true) : tryType
     if (t != null)
     {
       params.add(t)
@@ -2283,13 +2296,17 @@ public class Parser : CompilerSupport
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Parse fandoc or retur null
+  ** Parse fandoc or return null
   **
-  private Str[]? doc()
+  private DocDef? doc()
   {
-    Str[]? doc := null
+    DocDef? doc := null
     while (curt === Token.docComment)
-      doc = (Str[])consume(Token.docComment).val
+    {
+      loc := cur
+      lines := (Str[])consume(Token.docComment).val
+      doc = DocDef(loc, lines)
+    }
     return doc
   }
 

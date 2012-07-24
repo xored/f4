@@ -27,6 +27,11 @@ const class WispService : Service
   internal static const Log log := Log.get("web")
 
   **
+  ** Which IpAddr to bind to or null for the default.
+  **
+  const IpAddr? addr := null
+
+  **
   ** Well known TCP port for HTTP traffic.
   **
   const Int port := 80
@@ -42,7 +47,22 @@ const class WispService : Service
   **
   const WispSessionStore sessionStore := MemWispSessionStore()
 
-  new make(|This|? f := null) { if (f != null) f(this) }
+  **
+  ** Max number of threads which are used for concurrent
+  ** web request processing.
+  **
+  const Int maxThreads := 500
+
+  **
+  ** Constructor with it-block
+  **
+  new make(|This|? f := null)
+  {
+    if (f != null) f(this)
+    listenerPool   = ActorPool()
+    tcpListenerRef = AtomicRef()
+    processorPool  = ActorPool { it.maxThreads = this.maxThreads }
+  }
 
   override Void onStart()
   {
@@ -77,7 +97,7 @@ const class WispService : Service
     {
       try
       {
-        listener.bind(null, port)
+        listener.bind(addr, port)
         break
       }
       catch (Err e)
@@ -108,9 +128,9 @@ const class WispService : Service
     log.info("WispService stopped on port ${port}")
   }
 
-  internal const ActorPool listenerPool    := ActorPool()
-  internal const AtomicRef tcpListenerRef  := AtomicRef()
-  internal const ActorPool processorPool   := ActorPool()
+  internal const ActorPool listenerPool
+  internal const AtomicRef tcpListenerRef
+  internal const ActorPool processorPool
 
   @NoDoc static Void main()
   {

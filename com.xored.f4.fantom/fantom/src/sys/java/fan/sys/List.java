@@ -125,16 +125,22 @@ public final class List
     if (newSize > size)
     {
       if (!of.isNullable()) throw ArgErr.make("Cannot grow non-nullable list of " + of);
-      Object[] temp = newArray(newSize);
-      System.arraycopy(values, 0, temp, 0, size);
-      values = temp;
+      if (newSize > values.length)
+      {
+        Object[] temp = newArray(newSize);
+        System.arraycopy(values, 0, temp, 0, size);
+        values = temp;
+      }
+      else
+      {
+        for (int i=size; i<newSize; ++i) values[i] = null;
+      }
       size = newSize;
     }
     else
     {
-      Object[] temp = newArray(newSize);
-      System.arraycopy(values, 0, temp, 0, newSize);
-      values = temp;
+      // null out removed items for GC
+      for (int i=newSize; i<size; ++i) values[i] = null;
       size = newSize;
     }
   }
@@ -181,8 +187,8 @@ public final class List
   {
     try
     {
-      int s = r.start(size);
-      int e = r.end(size);
+      int s = r.startIndex(size);
+      int e = r.endIndex(size);
       int n = e - s + 1;
       if (n < 0) throw IndexErr.make(r);
 
@@ -435,8 +441,8 @@ public final class List
   public final List removeRange(Range r)
   {
     modify();
-    int s = r.start(size);
-    int e = r.end(size);
+    int s = r.startIndex(size);
+    int e = r.endIndex(size);
     int n = e - s + 1;
     if (n < 0) throw IndexErr.make(r);
 
@@ -488,7 +494,8 @@ public final class List
     modify();
     int t = (int)times;
     if (values.length < size+t) grow(size+t);
-    for (int i=0; i<t; ++i) add(val);
+    for (int i=0; i<t; ++i) values[size+i] = val;
+    size += t;
     return this;
   }
 
@@ -549,8 +556,8 @@ public final class List
 
   public final void eachRange(Range r, Func f)
   {
-    int s = r.start(size);
-    int e = r.end(size);
+    int s = r.startIndex(size);
+    int e = r.endIndex(size);
     int n = e - s + 1;
     if (n < 0) throw IndexErr.make(r);
 

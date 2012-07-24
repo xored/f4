@@ -9,6 +9,7 @@
 **
 ** Command line main for 'fanr'
 **
+@NoDoc
 class Main
 {
   ** Map of command names to command types
@@ -16,7 +17,11 @@ class Main
   [
     HelpCmd(),
     ConfigCmd(),
+    PingCmd(),
+    EnvCmd(),
     QueryCmd(),
+    InstallCmd(),
+    UninstallCmd(),
     PublishCmd(),
   ]
 
@@ -47,15 +52,16 @@ class Main
       cmd.run
       return 0
     }
-    catch (CommandErr e)
-    {
-      // command errors should already be logged
-      return 1
-    }
     catch (Err e)
     {
-      cmd.out.printLine("ERROR: Internal error")
-      e.trace(cmd.out)
+      cmd.out.printLine("ERROR: $cmd.name command failed")
+      if (cmd.errTrace) e.trace(cmd.out)
+      else
+      {
+        dis := e is CommandErr ? e.msg : e.toStr
+        cmd.out.printLine("  $dis")
+        cmd.out.printLine("  use -errTrace for full stack trace")
+      }
       return 1
     }
   }

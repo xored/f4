@@ -8,6 +8,7 @@
 
 **
 ** PodSpec models a specific pod version
+** See [docFanr]`docFanr::Concepts#podSpec`.
 **
 const class PodSpec
 {
@@ -16,15 +17,20 @@ const class PodSpec
 // Construction
 //////////////////////////////////////////////////////////////////////////
 
-  internal static PodSpec load(File file)
+  ** Construct from a pod zip file
+  static PodSpec load(File file)
   {
-    // open as zip file
-    zip := Zip.open(file)
+    // open as zip file (use read so that we can use any
+    // file with input stream)
+    zip := Zip.read(file.in)
 
     try
     {
       // find meta.props
-      meta := zip.contents[`/meta.props`] ?: throw Err("Missing meta.props")
+      File? meta := null
+      for (File? f; (f = zip.readNext) != null; )
+        if (f.uri == `/meta.props`) { meta = f; break }
+      if (meta == null) throw Err("Missing meta.props")
 
       // parse meta into PodSpec
       return make(meta.readProps, file)
@@ -32,7 +38,7 @@ const class PodSpec
     finally zip.close
   }
 
-  internal new make(Str:Str m, File? file)
+  @NoDoc new make(Str:Str m, File? file)
   {
     this.name    = getReq(m, "pod.name")
     this.version = Version.fromStr(getReq(m, "pod.version"))
@@ -80,7 +86,7 @@ const class PodSpec
   DateTime? ts() { DateTime.fromStr((meta["build.ts"] ?: meta["build.time"]) ?: "", false) }
 
   ** If loaded from a local file
-  internal const File? file
+  @NoDoc const File? file
 
   ** String format is "{name}-{version}"
   override const Str toStr

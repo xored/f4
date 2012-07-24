@@ -336,7 +336,7 @@ class CheckErrors : CompilerStep
     checkMethodReturn(m)
 
     // check ctors call super (or another this) ctor
-    if (m.isCtor) checkCtor(m)
+    if (m.isInstanceCtor) checkInstanceCtor(m)
 
     // if method has operator facet, check it
     if (m.hasFacet("sys::Operator")) checkOperatorMethod(m)
@@ -382,7 +382,6 @@ class CheckErrors : CompilerStep
       else if (flags.and(FConst.Virtual) != 0) err("Invalid combination of 'new' and 'virtual' modifiers", loc)
       if (flags.and(Parser.Once) != 0)     err("Invalid combination of 'new' and 'once' modifiers", loc)
       if (flags.and(FConst.Native) != 0)   err("Invalid combination of 'new' and 'native' modifiers", loc)
-      if (flags.and(FConst.Static) != 0)   err("Invalid combination of 'new' and 'static' modifiers", loc)
     }
 
     // check invalid static flags
@@ -472,11 +471,11 @@ class CheckErrors : CompilerStep
       checkValidType(m.loc, m.ret)
   }
 
-  private Void checkCtor(MethodDef m)
+  private Void checkInstanceCtor(MethodDef m)
   {
     // mixins cannot have constructors
     if (curType.isMixin)
-      err("Mixins cannot have constructors", m.loc)
+      err("Mixins cannot have instance constructors", m.loc)
 
     // ensure super/this constructor is called
     if (m.ctorChain == null && !compiler.isSys && !curType.base.isObj && !curType.isSynthetic)
@@ -514,10 +513,27 @@ class CheckErrors : CompilerStep
     {
       definite := m != null && m.code.isDefiniteAssign |Expr lhs->Bool|
       {
+        // can't be assignment if if lhs is not a field
         if (lhs.id !== ExprId.field) return false
+
+        // check that field assignment to the correct slot
         fe := (FieldExpr)lhs
-        if (!isStaticInit && fe.target?.id !== ExprId.thisExpr) return false
-        return fe.field.qname == f.qname
+        if (fe.field.qname != f.qname) return false
+
+        // if no target assume static init
+        ft := fe.target
+        if (isStaticInit || ft == null) return true
+
+        // check if we are assigning the field inside an
+        // closure, in which case move check to runtime
+        if (ft.id === ExprId.field && ((FieldExpr)ft).field.name == "\$this")
+        {
+          f.requiresNullCheck = true;
+          return true
+        }
+
+        // otherwise must be assignment to this instance
+        return ft.id === ExprId.thisExpr
       }
       if (definite) return
 
@@ -587,6 +603,9 @@ class CheckErrors : CompilerStep
         err("Unknown facet field '${f.type}.$name'", val.loc)
         return
       }
+
+      // check if facet field is deprecated
+      checkDeprecated(field, val.loc)
 
       // check field type
       if (!val.ctype.fits(field.fieldType.inferredAs))
@@ -668,6 +687,14 @@ class CheckErrors : CompilerStep
     }
   }
 
+  private Void checkThrowExpr(ThrowExpr expr)
+  {
+    expr.exception = coerce(expr.exception, ns.errType) |->|
+    {
+      err("Must throw Err, not '$expr.exception.ctype'", expr.exception.loc)
+    }
+  }
+
   private Void checkFor(ForStmt stmt)
   {
     if (stmt.condition != null)
@@ -742,7 +769,7 @@ class CheckErrors : CompilerStep
     // already declared by a previous return
     if (stmt.expr != null && protectedRegionDepth > 0)
     {
-      v := curMethod.vars.find |MethodVar v->Bool| { return v.name == "\$return" }
+      v := curMethod.vars.find |MethodVar v->Bool| { v.name == "\$return" }
       if (v == null) v = curMethod.addLocalVar(stmt.expr.ctype, "\$return", null)
       stmt.leaveVar = v
     }
@@ -827,6 +854,7 @@ class CheckErrors : CompilerStep
       case ExprId.asExpr:
       case ExprId.coerce:         checkTypeCheck(expr)
       case ExprId.ternary:        checkTernary(expr)
+      case ExprId.throwExpr:      checkThrowExpr(expr)
     }
     return expr
   }
@@ -1049,7 +1077,7 @@ class CheckErrors : CompilerStep
 
     // check protection scope (which might be more narrow than the scope
     // of the entire field as checked in checkProtection by checkField)
-    if (field.setter != null && slotProtectionErr(field) == null)
+    if (field.setter != null && slotProtectionErr(curType, field) == null)
       checkSlotProtection(field.setter, lhs.loc, true)
 
     // if not-const we are done
@@ -1080,7 +1108,7 @@ class CheckErrors : CompilerStep
       // check attempt to set field outside of owning class or subclass
       if (inType != field.parent)
       {
-        if (!inType.fits(field.parent) || !inMethod.isCtor)
+        if (!inType.fits(field.parent) || !inMethod.isInstanceCtor)
         {
           err("Cannot set const field '$field.qname'", lhs.loc)
           return rhs
@@ -1088,7 +1116,7 @@ class CheckErrors : CompilerStep
       }
 
       // check attempt to set instance field outside of ctor
-      if (!field.isStatic && !(inMethod.isInstanceInit || inMethod.isCtor))
+      if (!field.isStatic && !(inMethod.isInstanceInit || inMethod.isInstanceCtor))
       {
         err("Cannot set const field '$field.name' outside of constructor", lhs.loc)
         return rhs
@@ -1121,6 +1149,9 @@ class CheckErrors : CompilerStep
   {
     if (!call.method.isCtor)
     {
+      // TODO
+      warn("Using static method '$call.method.qname' as constructor", call.loc)
+
       // check that ctor method is the expected type
       if (call.ctype.toNonNullable != call.method.returnType.toNonNullable)
         err("Construction method '$call.method.qname' must return '$call.ctype.name'", call.loc)
@@ -1162,7 +1193,7 @@ class CheckErrors : CompilerStep
         err("Method '$name' uses unsupported type '$m.returnType'", call.loc)
         return
       }
-      unsupported := m.params.find |CParam p->Bool| { return !p.paramType.isSupported }
+      unsupported := m.params.find |CParam p->Bool| { !p.paramType.isSupported }
       if (unsupported != null)
       {
         err("Method '$name' uses unsupported type '$unsupported.paramType'", call.loc)
@@ -1190,7 +1221,7 @@ class CheckErrors : CompilerStep
         err("Cannot call constructor '$name' on instance", call.loc)
 
       // ensure we aren't calling a constructor on an abstract class
-      if (m.parent.isAbstract)
+      if (m.parent.isAbstract && !m.isStatic)
         err("Calling constructor on abstract class", call.loc)
     }
 
@@ -1216,13 +1247,21 @@ class CheckErrors : CompilerStep
         err("Cannot use super to call abstract method '$m.qname'", call.target.loc)
 
       // check that calling super with exact param match otherwise stack overflow
-      if (call.args.size != m.params.size && m.name == curMethod.name && !m.isCtor)
+      if (call.args.size != m.params.size && m.name == curMethod.name && !m.isInstanceCtor)
         err("Must call super method '$m.qname' with exactly $m.params.size arguments", call.target.loc)
     }
 
     // don't allow safe calls on non-nullable type
     if (call.isSafe && call.target != null && !call.target.ctype.isNullable)
       err("Cannot use null-safe call on non-nullable type '$call.target.ctype'", call.target.loc)
+
+    // if this call is not null safe, then verify that it's target isn't
+    // a null safe call such as foo?.bar.baz
+    if (!call.isSafe && call.target is CallExpr && ((CallExpr)call.target).isSafe)
+    {
+      err("Non-null safe call chained after null safe call", call.loc)
+      return
+    }
 
     // if calling a method on a value-type, ensure target is
     // coerced to non-null; we don't do this for comparisons
@@ -1375,6 +1414,9 @@ class CheckErrors : CompilerStep
 
     if (expr.explicitType != null)
     {
+      if (expr.explicitType.isClass)
+        err("Cannot use named super on class type '$expr.explicitType'", expr.loc)
+
       if (!curType.fits(expr.explicitType))
         err("Named super '$expr.explicitType' not a super class of '$curType.name'", expr.loc)
     }
@@ -1385,6 +1427,9 @@ class CheckErrors : CompilerStep
     // don't bother checking a synthetic coercion that the
     // compiler generated itself (which is most coercions)
     if (expr.synthetic) return
+
+    // check type is visible
+    checkTypeProtection(expr.check, expr.loc)
 
     // verify types are convertible
     check := expr.check
@@ -1498,7 +1543,7 @@ class CheckErrors : CompilerStep
       msg += "|" + sig.params.join(", ") + "|"
     else
       msg += "$name(" + params.join(", ", |p| { paramTypeStr(base, p) }) + ")"
-    msg += ", not (" + args.join(", ", |Expr e->Str| { return "$e.toTypeStr" }) + ")"
+    msg += ", not (" + args.join(", ", |Expr e->Str| { "$e.toTypeStr" }) + ")"
     err(msg, call.loc)
   }
 
@@ -1582,13 +1627,15 @@ class CheckErrors : CompilerStep
 
   private Void checkSlotProtection(CSlot slot, Loc loc, Bool setter := false)
   {
-    errMsg := slotProtectionErr(slot, setter)
+    errMsg := slotProtectionErr(curType, slot, setter)
     if (errMsg != null) err(errMsg, loc)
 
     checkDeprecated(slot, loc)
   }
 
-  private Str? slotProtectionErr(CSlot slot, Bool setter := false)
+  static Bool isSlotVisible(TypeDef curType, CSlot slot) { slotProtectionErr(curType, slot) == null }
+
+  private static Str? slotProtectionErr(TypeDef curType, CSlot slot, Bool setter := false)
   {
     msg := setter ? "setter of field" : (slot is CMethod ? "method" : "field")
 
@@ -1597,22 +1644,18 @@ class CheckErrors : CompilerStep
       return null
 
     // allow closures same scope priviledges as enclosing class
-    myType := curType
-    if (myType != null)
-    {
-      if (myType.isClosure) myType = curType.closure.enclosingType
-    }
+    if (curType.isClosure) curType = curType.closure.enclosingType
 
     // consider the slot internal if its parent is internal
     isInternal := slot.isInternal || (slot.parent.isInternal && !slot.parent.isParameterized)
 
-    if (slot.isPrivate && myType != slot.parent)
+    if (slot.isPrivate && curType != slot.parent)
       return "Private $msg '$slot.qname' not accessible"
 
-    else if (slot.isProtected && !myType.fits(slot.parent))
+    else if (slot.isProtected && !curType.fits(slot.parent) && curType.pod != slot.parent.pod)
       return "Protected $msg '$slot.qname' not accessible"
 
-    else if (isInternal && myType.pod != slot.parent.pod)
+    else if (isInternal && curType.pod != slot.parent.pod)
       return "Internal $msg '$slot.qname' not accessible"
 
     else
@@ -1629,7 +1672,7 @@ class CheckErrors : CompilerStep
   private Void checkDeprecated(Obj target, Loc loc)
   {
     // don't check inside of synthetic getter/setter
-    if (curMethod != null && curMethod.isSynthetic) return
+    if (curMethod != null && curMethod.isSynthetic && curMethod.isFieldAccessor) return
 
     // check both slot and its parent type
     slot := target as CSlot
@@ -1669,6 +1712,16 @@ class CheckErrors : CompilerStep
   private Expr coerceBoxed(Expr expr, CType expected, |->| onErr)
   {
     return box(coerce(expr, expected, onErr))
+  }
+
+  **
+  ** Return if `coerce` would not report a compiler error.
+  **
+  static Bool canCoerce(Expr expr, CType expected)
+  {
+    ok := true
+    coerce(expr, expected) |->| { ok = false }
+    return ok
   }
 
   **

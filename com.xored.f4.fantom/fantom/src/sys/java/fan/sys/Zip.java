@@ -12,6 +12,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Zip
@@ -123,6 +125,16 @@ public final class Zip
     if (zipOut == null) throw UnsupportedErr.make("Zip not opened for writing");
     if (path.frag() != null) throw ArgErr.make("Path must not contain fragment: " + path);
     if (path.queryStr() != null) throw ArgErr.make("Path must not contain query: " + path);
+
+    // Java 1.7+ supports ZIP64 which supports over 65,535 files, but
+    // previous versions silently fail which is really bad; so add
+    // Fantom specific sanity check here
+    if (Sys.javaVersion < Sys.JAVA_1_7)
+    {
+      if (zipOutCount >= 65535) throw UnsupportedErr.make("Zip cannot handle more than 65535 files");
+      zipOutCount++;
+    }
+
     try
     {
       String zipPath = path.toString();
@@ -141,6 +153,7 @@ public final class Zip
           }
           catch (java.io.IOException e)
           {
+            e.printStackTrace();
             return false;
           }
         }
@@ -162,6 +175,7 @@ public final class Zip
     }
     catch (java.io.IOException e)
     {
+      e.printStackTrace();
       return false;
     }
   }
@@ -177,7 +191,36 @@ public final class Zip
     }
     catch (java.io.IOException e)
     {
+      e.printStackTrace();
       return false;
+    }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// GZIP
+//////////////////////////////////////////////////////////////////////////
+
+  public static OutStream gzipOutStream(OutStream out)
+  {
+    try
+    {
+      return new SysOutStream(new GZIPOutputStream(SysOutStream.java(out)));
+    }
+    catch (java.io.IOException e)
+    {
+      throw IOErr.make(e);
+    }
+  }
+
+  public static InStream gzipInStream(InStream in)
+  {
+    try
+    {
+      return new SysInStream(new GZIPInputStream(SysInStream.java(in)));
+    }
+    catch (java.io.IOException e)
+    {
+      throw IOErr.make(e);
     }
   }
 
@@ -190,5 +233,6 @@ public final class Zip
   Map contents;             // open only
   ZipInputStream zipIn;     // read only
   ZipOutputStream zipOut;   // write only
+  int zipOutCount;          // write only
 
 }

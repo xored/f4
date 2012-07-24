@@ -9,7 +9,7 @@
 
 **
 ** Env defines a pluggable class used to boot and manage a Fantom
-** runtime environment.
+** runtime environment.  Use `cur` to access the current Env instance.
 **
 abstract const class Env
 {
@@ -154,6 +154,13 @@ abstract const class Env
   virtual OutStream err()
 
   **
+  ** Prompt the user to enter a password from standard input with echo
+  ** disabled.  Return null if end of stream has been reached.
+  ** Default implementation delegates to `parent`.
+  **
+  virtual Str? promptPassword(Str msg := "")
+
+  **
   ** Get the home directory of Fantom installation.
   ** Default implementation delegates to `parent`.
   **
@@ -203,7 +210,7 @@ abstract const class Env
   ** Resolve the pod file for the given pod name.  If the
   ** name cannot be resovled to a pod, return null.  The
   ** default implementation routes to `findFile` to look
-  ** in "lib/etc" directory.
+  ** in "lib/fan" directory.
   **
   virtual File? findPodFile(Str podName)
 
@@ -212,7 +219,7 @@ abstract const class Env
   ** in this environemnt.  This method is used by `Pod.list` and for
   ** constructing the type database.  Each of these names must be
   ** resolvable by `findPodFile`.  The default implementation routes
-  ** to `findFile` to look in the "lib/etc" directory and assumes a
+  ** to `findFile` to look in the "lib/fan" directory and assumes a
   ** naming convention of "{name}.pod".
   **
   virtual Str[] findAllPodNames()
@@ -246,6 +253,13 @@ abstract const class Env
   ** for details.
   **
   virtual Str[] index(Str key)
+
+  **
+  ** Get listing of all keys mapped by indexed props.  The
+  ** values of each key may be resolved by the `index` method.
+  ** See [docLang]`docLang::Env#index` for details.
+  **
+  virtual Str[] indexKeys()
 
   **
   ** Return a merged key/value map of all the prop files found

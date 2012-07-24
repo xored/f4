@@ -79,25 +79,6 @@ class Build : BuildGroup
   }
 
 //////////////////////////////////////////////////////////////////////////
-// Doc
-//////////////////////////////////////////////////////////////////////////
-
-  @Target { help = "Build fandoc HTML docs" }
-  Void doc()
-  {
-    fanExe := Exec.exePath(devHomeDir + `bin/fan`)
-    allBuildPodScripts.each |BuildPod script|
-    {
-      name := script.podName
-      if (name.startsWith("test")) return
-      src := script.scriptDir
-      Exec.make(this, [fanExe, "docCompiler", "-src", src.osPath, name]).run
-    }
-
-    Exec.make(this, [fanExe, "docCompiler", "-topindex"]).run
-  }
-
-//////////////////////////////////////////////////////////////////////////
 // Full
 //////////////////////////////////////////////////////////////////////////
 
@@ -127,11 +108,16 @@ class Build : BuildGroup
   @Target { help = "Delete every intermediate we can think of" }
   Void superclean()
   {
-    // fanLib nuke it all
+    // lib dirs nuke it all
     Delete.make(this, devHomeDir + `lib/fan/`).run
+    Delete.make(this, devHomeDir + `lib/patches/`).run
+    Delete.make(this, devHomeDir + `lib/install/`).run
 
     // doc nuke it all
     Delete.make(this, devHomeDir + `doc/`).run
+
+    // nuke flux session data
+    Delete.make(this, devHomeDir + `etc/flux/session/`).run
 
     // javaLib (keep ext/)
     (devHomeDir + `lib/java/`).list.each |File f|
@@ -170,6 +156,21 @@ class Build : BuildGroup
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Readme
+//////////////////////////////////////////////////////////////////////////
+
+  @Target { help = "Generate readme.html file" }
+  Void readme()
+  {
+    src := scriptDir + `doc/docIntro/doc/Readme.fandoc`
+    doc := Type.find("fandoc::FandocParser").make->parse(src.name, src.in)
+    out := (scriptDir + `../readme.html`).out
+    writer := Type.find("fandoc::HtmlDocWriter").make([out])
+    doc->write(writer)
+    out.close
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Dist
 //////////////////////////////////////////////////////////////////////////
 
@@ -178,24 +179,25 @@ class Build : BuildGroup
   {
     superclean
     compile
-    doc
     test
     examples
     deleteNonDist
+    readme
     zip
   }
 
   @Target { help = "Delete non-distribution files" }
   Void deleteNonDist()
   {
+    Delete(this, devHomeDir+`readme.html`).run
     Delete(this, devHomeDir+`tmp/`).run
     Delete(this, devHomeDir+`temp/`).run
     Delete(this, devHomeDir+`lib/tmp/`).run
     Delete(this, devHomeDir+`lib/temp/`).run
     Delete(this, devHomeDir+`src/sys/java/temp/`).run
-    Delete(this, devHomeDir+`etc/sys/types.db`).run
     Delete(this, devHomeDir+`etc/flux/session/`).run
     Delete(this, devHomeDir+`examples/web/demo/logs/`).run
+    Delete(this, devHomeDir+`lib/dotnet/sys.pdb`).run
 
     (devHomeDir + `lib/java/`).list.each |File f|
     {

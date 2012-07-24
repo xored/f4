@@ -36,7 +36,7 @@ fan.sys.Int.fromStr = function(s, radix, checked)
     throw new Error("Unsupported radix " + radix);
   }
   catch (err) {}
-  if (checked) throw fan.sys.ParseErr.make("Int", s);
+  if (checked) throw fan.sys.ParseErr.makeStr("Int", s);
   return null;
 }
 
@@ -79,6 +79,8 @@ fan.sys.Int.equals = function(self, obj)
 {
   return self === obj;
 }
+
+fan.sys.Int.hash = function(self) { return self; }
 
 fan.sys.Int.abs = function(self)      { return self < 0 ? -self : self; }
 fan.sys.Int.min = function(self, val) { return self < val ? self : val; }
@@ -187,7 +189,7 @@ fan.sys.Int.div = function(a, b)
   if (r < 0) return Math.ceil(r);
   return Math.floor(r);
 }
-fan.sys.Int.divFloat   = function(a, b) { return fan.sys.Float.make(fan.sys.Int.div(a, b)); }
+fan.sys.Int.divFloat   = function(a, b) { return fan.sys.Float.make(a / b); }
 fan.sys.Int.divDecimal = function(a, b) { return fan.sys.Decimal.make(fan.sys.Int.div(a, b)); }
 
 fan.sys.Int.mod        = function(a, b) { return a % b; }
@@ -353,4 +355,8 @@ fan.sys.Int.m_KB = 1024;
 fan.sys.Int.m_MB = 1024*1024;
 fan.sys.Int.m_GB = 1024*1024*1024;
 
-
+// TODO FIXIT
+fan.sys.Int.localeIsUpper = function(self) { return fan.sys.Int.isUpper(self); }
+fan.sys.Int.localeIsLower = function(self) { return fan.sys.Int.isLower(self); }
+fan.sys.Int.localeUpper   = function(self) { return fan.sys.Int.upper(self); }
+fan.sys.Int.localeLower   = function(self) { return fan.sys.Int.lower(self); }

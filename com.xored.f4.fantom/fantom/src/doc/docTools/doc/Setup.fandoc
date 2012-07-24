@@ -66,16 +66,19 @@ can test which runtime is being used via "fan -version":
 
   C:\dev\fan>fan -version
   Fantom Launcher
-  Copyright (c) 2006-2011, Brian Frank and Andy Frank
+  Copyright (c) 2006-2012, Brian Frank and Andy Frank
   Licensed under the Academic Free License version 3.0
 
   Java Runtime:
-    java.version:    1.6.0_13
+    java.version:    1.7.0_02
     java.vm.name:    Java HotSpot(TM) Client VM
-    java.vm.vendor:  Sun Microsystems Inc.
-    java.vm.version: 11.3-b02
-    java.home:       C:\Program Files\Java\jre6
-    fan.version:     1.0.45
+    java.vm.vendor:  Oracle Corporation
+    java.vm.version: 22.0-b10
+    java.home:       C:\Program Files (x86)\Java\jre7
+    fan.platform:    win32-x86
+    fan.version:     1.0.62
+    fan.env:         sys::BootEnv
+    fan.home:        E:\fan
 
 Use "etc/sys/config.props" to configure which runtime is used by default.
 The value must be "java" or "dotnet":
@@ -169,7 +172,10 @@ The platform directory is used for JARs which vary by platform.  For
 example the SWT JARs are distributed in platform specific directories.
 You can verify your platform running "fan -version".
 
-Also see [JavaFFI]`docLang::JavaFFI#deployment`.
+The preferred mechanism to add Java JARs into your Fantom environment
+is to convert them into a pod.
+
+Also see [JavaFFI]`docLang::JavaFFI#classpathRuntime`.
 
 SWT Support [#swt]
 ******************
@@ -179,7 +185,7 @@ to get SWT working:
   1. Verify your platform identifier using "fan -version" (see
      `sys::Env.platform`)
   2. Download your platform's "swt.jar" from
-     [eclipse.org]`http://download.eclipse.org/eclipse/downloads/`
+     [eclipse.org]`http://www.eclipse.org/swt/`
   3. Put "swt.jar" into '{home}/lib/java/ext/{platform}/swt.jar'
 
 You can easily test SWT support by attempting to run `Flux`.

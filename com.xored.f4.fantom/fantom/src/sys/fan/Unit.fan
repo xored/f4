@@ -32,9 +32,9 @@
 **
 ** A unit identifier is limited to the following characters:
 **  - any Unicode char over 128
-**  - ASCII letters 'a'-'z' and 'A'-'Z'
+**  - ASCII letters 'a' - 'z' and 'A' - 'Z'
 **  - underbar '_'
-**  - division sign'/'
+**  - division sign '/'
 **  - percent sign '%'
 **  - dollar sign '$'
 **
@@ -90,7 +90,7 @@ const class Unit
   ** null, otherwise throw Err.  Any units declared in "etc/sys/units.txt"
   ** are implicitly defined.
   **
-  static Unit? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
 
   **
   ** List all the units currently defined in the VM.  Any units

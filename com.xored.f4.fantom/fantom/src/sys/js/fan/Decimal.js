@@ -25,6 +25,24 @@ fan.sys.Decimal.make = function(val)
   return x;
 }
 
+fan.sys.Decimal.fromStr = function(s, checked)
+{
+  if (checked === undefined) checked = true;
+  try
+  {
+    // TODO FIXIT
+    for (var i=0; i<s.length; i++)
+      if (!fan.sys.Int.isDigit(s.charCodeAt(i)) && s[i] !== '.')
+        throw new Error();
+    return fan.sys.Decimal.make(parseFloat(s));
+  }
+  catch (e)
+  {
+    if (!checked) return null;
+    throw fan.sys.ParseErr.make("Decimal",  s);
+  }
+}
+
 fan.sys.Decimal.toFloat = function(self)
 {
   return fan.sys.Float.make(self.valueOf());
@@ -45,3 +63,34 @@ fan.sys.Decimal.equals = function(self, that)
   return false;
 }
 
+fan.sys.Decimal.encode = function(self, out)
+{
+  out.w(""+self).w("d");
+}
+
+fan.sys.Decimal.toCode = function(self)
+{
+  return "" + self + "d";
+}
+
+fan.sys.Decimal.toLocale = function(self, pattern)
+{
+  if (pattern === undefined) pattern = null;
+
+  // get current locale
+  // var locale = fans.sys.Locale.cur();
+  // java.text.DecimalFormatSymbols df = locale.decimal();
+  //
+  // // get default pattern if necessary
+  // if (pattern == null)
+  //   pattern = Env.cur().locale(Sys.sysPod, "decimal", "#,###.0##");
+  //
+  // // parse pattern and get digits
+  // NumPattern p = NumPattern.parse(pattern);
+  // NumDigits d = new NumDigits(self);
+  //
+  // // route to common FanNum method
+  // return FanNum.toLocale(p, d, df);
+
+  return "" + self;
+}

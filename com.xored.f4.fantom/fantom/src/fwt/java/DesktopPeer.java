@@ -61,6 +61,13 @@ public class DesktopPeer
     return WidgetPeer.rect(Fwt.get().display.getBounds());
   }
 
+  public static Clipboard clipboard()
+  {
+    if (clipboard == null) clipboard = new Clipboard();
+    return clipboard;
+  }
+  private static Clipboard clipboard;
+
   public static fan.fwt.Widget focus()
   {
     return WidgetPeer.toFanWidget(Fwt.get().display.getFocusControl());
@@ -99,25 +106,6 @@ public class DesktopPeer
       fwt.display.timerExec((int)delay.millis(), runnable);
     else
       fwt.display.asyncExec(runnable);
-  }
-
-//////////////////////////////////////////////////////////////////////////
-// Dispose
-//////////////////////////////////////////////////////////////////////////
-
-  public static void disposeColor(fan.gfx.Color f)
-  {
-    Fwt.get().dispose(f);
-  }
-
-  public static void disposeFont(fan.gfx.Font f)
-  {
-    Fwt.get().dispose(f);
-  }
-
-  public static void disposeImage(fan.gfx.Image f)
-  {
-    Fwt.get().dispose(f);
   }
 
 //////////////////////////////////////////////////////////////////////////

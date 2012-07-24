@@ -167,6 +167,7 @@ class CheckErrorsTest : CompilerTest
 
       internal mixin InternalMixin
       {
+        static Void x() { Public.msPublic; Public.msProtected; Public.msInternal }
       }
       ")
 
@@ -243,6 +244,10 @@ class CheckErrorsTest : CompilerTest
       class C30 { Void f(Public p) { p.fPublicProtected = 7; p.fPublicProtected++ } }
       class C31 { Void f(Public p) { p.fPublicReadonly = 7; p.fPublicReadonly++ } }
       class C32 : Public { Void f(Public p) { p.fProtectedInternal = 7; p.fProtectedInternal++ } }
+      class C33 { Bool f(Obj o) { o is MemBuf } }
+      class C34 { Bool f(Obj o) { o isnot MemBuf } }
+      class C35 { Obj? f(Obj o) { o as MemBuf } }
+      class C36 { Obj? f(Obj o) { return (MemBuf)o } }
       ",
     [
       5, 34, "Protected method '${p}.mProtected' not accessible",
@@ -266,6 +271,10 @@ class CheckErrorsTest : CompilerTest
      30, 57, "Private setter of field '${p}.fPublicReadonly' not accessible",
      31, 43, "Internal setter of field '${p}.fProtectedInternal' not accessible",
      31, 69, "Internal setter of field '${p}.fProtectedInternal' not accessible",
+     32, 29, "Internal type 'sys::MemBuf' not accessible",
+     33, 29, "Internal type 'sys::MemBuf' not accessible",
+     34, 29, "Internal type 'sys::MemBuf' not accessible",
+     35, 36, "Internal type 'sys::MemBuf' not accessible",
     ])
   }
 
@@ -871,7 +880,7 @@ class CheckErrorsTest : CompilerTest
          4,  1, "Must call super class constructor in 'make'",
          5, 15, "Must call super class constructor in 'makeIt'",
          6, 15, "Must call super class constructor in 'makeIt'",
-         7, 11, "Mixins cannot have constructors",
+         7, 11, "Mixins cannot have instance constructors",
          8, 30, "Parameter 'b' must have default",
        ])
   }
@@ -933,6 +942,8 @@ class CheckErrorsTest : CompilerTest
         Void m30() { return 6 }
         Obj m31() { return }
         Obj m32(Bool b) { if (b) return; else return }
+
+        Obj m34(Obj? x) { x ?: throw \"x\" }
       }",
        [3, 26, "If condition must be Bool, not 'sys::Int'",
         4, 28, "Must throw Err, not 'sys::Int'",
@@ -968,6 +979,8 @@ class CheckErrorsTest : CompilerTest
         31, 15, "Must return a value from non-Void method",
         32, 28, "Must return a value from non-Void method",
         32, 41, "Must return a value from non-Void method",
+
+        34, 32, "Must throw Err, not 'sys::Str'",
        ])
   }
 
@@ -1281,7 +1294,6 @@ class CheckErrorsTest : CompilerTest
 
   Void testSafeNav()
   {
-    // CheckErrors level errors
     verifyErrors(
      "class Foo
       {
@@ -1321,6 +1333,33 @@ class CheckErrorsTest : CompilerTest
         11, 13, "Cannot use null-safe access on non-nullable type '$podName::Foo'",
         13, 13, "Cannot use '?:' operator on non-nullable type '$podName::Foo'",
         14, 24, "Cannot use '?:' operator on non-nullable type 'sys::Int'",
+       ])
+  }
+
+  Void testSafeNavChaining()
+  {
+    verifyErrors(
+     "class Foo
+      {
+        Void func(Str? x)
+        {
+          x?.size.toHex
+          x?.size->toHex
+          x?->size.toStr
+          x?->size->toStr
+          x?.size?.toHex   // ok
+          x?.size?.toHex.hash
+          x?.size?.toHex?.hash.toStr.size
+        }
+      }",
+
+       [
+          5, 13, "Non-null safe call chained after null safe call",
+          6, 14, "Non-null safe call chained after null safe call",
+          7, 14, "Non-null safe call chained after null safe call",
+          8, 15, "Non-null safe call chained after null safe call",
+         10, 20, "Non-null safe call chained after null safe call",
+         11, 26, "Non-null safe call chained after null safe call",
        ])
   }
 
@@ -1509,6 +1548,8 @@ class CheckErrorsTest : CompilerTest
          Obj m11(Int f) { Foo { it.f = it.f } }
          Obj m12(Int f) { Foo { this.f = this.f } }
 
+         const static Str bar := Foo.bar
+
          Void ok01(Foo foo) { this.foo = foo }
          Void ok03(Foo x) { f = x.f }
          Void ok04(Foo x) { foo.f = x.foo.f }
@@ -1519,6 +1560,7 @@ class CheckErrorsTest : CompilerTest
          Obj ok09(Int f) { Foo { this.f = f } }
          Obj ok10(Int f) { Foo { f = it.f } }
          Obj ok11(Int f) { Foo { f = this.f } }
+
 
          Int f
          Foo? foo
@@ -1531,6 +1573,7 @@ class CheckErrorsTest : CompilerTest
          7, 21, "Self assignment",
          8, 20, "Self assignment",
          9, 20, "Self assignment",
+        14, 3,  "Self assignment",
         10, 26, "Self assignment",
         11, 29, "Self assignment",
         12, 31, "Self assignment",
@@ -1662,7 +1705,7 @@ class CheckErrorsTest : CompilerTest
   Void testDefiniteAssignStmts()
   {
     verifyErrors(
-      "abstract class Foo
+    """abstract class Foo
        {
          new m01() // ok
          {
@@ -1714,6 +1757,12 @@ class CheckErrorsTest : CompilerTest
            try { x = s } catch (IOErr e) { throw e }
          }
 
+         new m14(Int v) // ok
+         {
+           if (v == 0) x = ""
+           else throw Err()
+         }
+
          static Bool foo(Str y := s) { false }
          const static Str s := \"x\"
          Str x
@@ -1722,7 +1771,7 @@ class CheckErrorsTest : CompilerTest
        class Bar
        {
          virtual Str ok04 := \"ok\"
-       }",
+       }""",
        [
          8, 3, "Non-nullable field 'x' must be assigned in constructor 'm02'",
          13, 3, "Non-nullable field 'x' must be assigned in constructor 'm03'",
@@ -1732,6 +1781,20 @@ class CheckErrorsTest : CompilerTest
          38, 3, "Non-nullable field 'x' must be assigned in constructor 'm11'",
          43, 3, "Non-nullable field 'x' must be assigned in constructor 'm12'",
        ])
+  }
+
+  Void testDefiniteAssignInClosures()
+  {
+    compile(
+     """class Foo
+        {
+          new make(Bool c) { f := |->| { x = "ok" }; if (c) f(); echo("x=\$x") }
+          Str x
+        }""")
+
+     t := pod.types.first
+     verifyEq(t.make([true])->x, "ok")
+     verifyErr(FieldNotSetErr#) { t.make([false]) }
   }
 
 //////////////////////////////////////////////////////////////////////////

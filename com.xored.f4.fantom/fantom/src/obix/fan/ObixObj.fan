@@ -153,6 +153,12 @@ class ObixObj
   }
 
   **
+  ** Return this element type's Fantom value type or null if this
+  ** is a non-value type such as 'obj'.
+  **
+  Type? valType() {  ObixUtil.elemNameToValType[elemName] }
+
+  **
   ** Get the value encoded as a string.  The string is *not*
   ** XML escaped.  If value is null return "null".
   **
@@ -440,7 +446,6 @@ class ObixObj
     if (precision != null) out.print(" precision='").print(precision).print("'")
     if (range != null) out.print(" range='").print(range.encode).print("'")
     if (status !== Status.ok) out.print(" status='").print(status).print("'")
-    if (status !== Status.ok) out.print(" status='").print(status).print("'")
     if (tz != null) out.print(" tz='").print(tz.fullName).print("'")
     if (unit != null) out.print(" unit='obix:units/").print(unit.name).print("'")
     if (writable) out.print(" writable='true'")
@@ -454,6 +459,14 @@ class ObixObj
       out.print(Str.spaces(indent)).print("</").print(elemName).print(">\n")
     }
     if (parent == null) out.flush
+  }
+
+  @NoDoc This dump()
+  {
+    out := Env.cur.out
+    writeXml(out)
+    out.flush
+    return this
   }
 
 //////////////////////////////////////////////////////////////////////////

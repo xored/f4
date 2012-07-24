@@ -16,8 +16,18 @@ fan.fwt.DesktopPeer.platform  = function() { return "browser"; }
 fan.fwt.DesktopPeer.isWindows = function() { return !fan.fwt.DesktopPeer.$isMac; }
 fan.fwt.DesktopPeer.isMac     = function() { return fan.fwt.DesktopPeer.$isMac; }
 
-fan.fwt.DesktopPeer.$isMac     = navigator.userAgent.indexOf("Mac OS X") != -1;
-fan.fwt.DesktopPeer.$isFirefox = navigator.userAgent.indexOf("Firefox/") != -1;
+(function() {
+  var ua = navigator.userAgent;
+  fan.fwt.DesktopPeer.$isMac     = ua.indexOf("Mac OS X") != -1;
+  fan.fwt.DesktopPeer.$isWebkit  = ua.indexOf("AppleWebKit/") != -1;
+  fan.fwt.DesktopPeer.$isChrome  = ua.indexOf("Chrome/") != -1;
+  fan.fwt.DesktopPeer.$isSafari  = ua.indexOf("Safari/") != -1 && ua.indexOf("Version/") != -1;
+  fan.fwt.DesktopPeer.$isFirefox = ua.indexOf("Firefox/") != -1;
+  fan.fwt.DesktopPeer.$isIE      = ua.indexOf("MSIE") != -1;
+}());
+
+fan.fwt.DesktopPeer.clipboard  = function() { return fan.fwt.DesktopPeer.$clipboard; }
+fan.fwt.DesktopPeer.$clipboard = new fan.fwt.Clipboard();
 
 // TODO
 //fan.fwt.DesktopPeer.bounds()
@@ -32,18 +42,6 @@ fan.fwt.DesktopPeer.callLater = function(delay, f)
 {
   var func = function() { f.call() }
   setTimeout(func, delay.toMillis());
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Dispose
-//////////////////////////////////////////////////////////////////////////
-
-fan.fwt.DesktopPeer.disposeColor = function(fanColor) {}
-fan.fwt.DesktopPeer.disposeFont = function(fanFont) {}
-fan.fwt.DesktopPeer.disposeImage = function(fanImg)
-{
-  // remove image from cache to allow GC free it
-  fan.fwt.FwtEnvPeer.imgCache[fanImg.m_uri.toStr()] = null
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -89,7 +87,7 @@ fan.fwt.DesktopPeer.$sysBorder       = fan.gfx.Color.fromStr("#333333");
 fan.fwt.DesktopPeer.$sysListFg       = fan.gfx.Color.fromStr("#000000");
 fan.fwt.DesktopPeer.$sysListBg       = fan.gfx.Color.fromStr("#ffffff");
 fan.fwt.DesktopPeer.$sysListSelFg    = fan.gfx.Color.fromStr("#ffffff");
-fan.fwt.DesktopPeer.$sysListSelBg    = fan.gfx.Color.fromStr("#316ac5");
+fan.fwt.DesktopPeer.$sysListSelBg    = fan.gfx.Color.fromStr("#3d80df");
 
 fan.fwt.DesktopPeer.sysDarkShadow  = function() { return fan.fwt.DesktopPeer.$sysDarkShadow; }
 fan.fwt.DesktopPeer.sysNormShadow  = function() { return fan.fwt.DesktopPeer.$sysNormShadow; }

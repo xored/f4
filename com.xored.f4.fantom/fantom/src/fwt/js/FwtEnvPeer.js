@@ -43,16 +43,15 @@ fan.fwt.FwtEnvPeer.loadImage = function(fanImg, widget)
           fan.fwt.FwtEnvPeer.$win = win;
           fan.fwt.FwtEnvPeer.$needRelayout = true;
         }
-        else if (fan.frescoKit)
+        else
         {
-          // TODO FIXIT: some base class for Window/Dialog/Popup???
           var p = widget;
           while (p != null)
           {
-            if (p instanceof fan.frescoKit.Popup) break;
+            if (p.peer.notifyImgLoad) break;
             p = p.parent();
           }
-          if (p instanceof fan.frescoKit.Popup)
+          if (p != null && p.peer.notifyImgLoad)
           {
             fan.fwt.FwtEnvPeer.$win = p;
             fan.fwt.FwtEnvPeer.$needRelayout = true;
@@ -116,7 +115,7 @@ fan.fwt.FwtEnvPeer.prototype.imageResize = function(self, fanImg, size)
   fan.fwt.FwtEnvPeer.imgCache[uri] = jsNew;
 
   // create new Fan wrapper which references jsNew via uri
-  return fan.gfx.Image.makeUri(uri);
+  return fan.gfx.Image.makeFields(uri, null);
 }
 
 // Image imagePaint(Size size, |Graphics| f)
@@ -143,7 +142,14 @@ fan.fwt.FwtEnvPeer.prototype.imagePaint = function(self, size, f)
   fan.fwt.FwtEnvPeer.imgCache[uri] = jsNew;
 
   // create new Fan wrapper which references jsNew via uri
-  return fan.gfx.Image.makeUri(uri);
+  return fan.gfx.Image.makeFields(uri, null);
+}
+
+// Void imageDispose(Image i)
+fan.fwt.FwtEnvPeer.prototype.imageDispose = function(self, img)
+{
+  // remove image from cache to allow GC free it
+  fan.fwt.FwtEnvPeer.imgCache[img.m_uri.toStr()] = null
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -195,4 +201,12 @@ fan.fwt.FwtEnvPeer.prototype.fontWidth = function(self, font, str)
     return str.length * 7;
   }
 }
+
+fan.fwt.FwtEnvPeer.prototype.fontDispose = function(self, font) {}
+
+//////////////////////////////////////////////////////////////////////////
+// Color
+//////////////////////////////////////////////////////////////////////////
+
+fan.fwt.FwtEnvPeer.prototype.colorDispose = function(self, font) {}
 

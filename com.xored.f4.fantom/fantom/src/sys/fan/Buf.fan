@@ -37,7 +37,7 @@ class Buf
   **
   ** Allocate a byte buffer in RAM with the initial given capacity.
   **
-  static Buf make(Int capacity := 1024)
+  static new make(Int capacity := 1024)
 
   **
   ** Generate a random series of bytes.
@@ -608,7 +608,18 @@ internal class FileBuf : Buf
 ** MmapBuf
 **************************************************************************
 
+// C# only right now (and not even implemented)
 internal class MmapBuf : Buf
+{
+  private new init()
+}
+
+**************************************************************************
+** NioBuf
+**************************************************************************
+
+// Java only
+internal class NioBuf : Buf
 {
   private new init()
 }

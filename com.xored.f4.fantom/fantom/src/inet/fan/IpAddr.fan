@@ -32,7 +32,8 @@ final const class IpAddr
   **   IpAddr("somehost")
   **   IpAddr("www.acme.com")
   **
-  native static IpAddr make(Str s)
+  static new make(Str s) { makeNative(s) }
+  private native static IpAddr makeNative(Str s)
 
   **
   ** Resolve a hostname to all of its configured IP addresses. If a
@@ -115,5 +116,12 @@ final const class IpAddr
   ** in its numeric format.
   **
   native Str hostname()
+
+  **
+  ** To the native platform representation:
+  **   - Java: returns 'java.net.InetAddress'
+  **   - .NET: returns 'System.Net.IPAddress'
+  **
+  native Obj toNative()
 
 }

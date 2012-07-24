@@ -20,7 +20,7 @@ fan.sys.List = fan.sys.Obj.$extend(fan.sys.Obj);
 fan.sys.List.make = function(of, values)
 {
   if (of == null) throw fan.sys.NullErr();
-  if (values === undefined) values = [];
+  if (values === undefined || typeof(values) == "number") values = [];
 
   var self = new fan.sys.List();
   self.m_of = of;
@@ -29,6 +29,11 @@ fan.sys.List.make = function(of, values)
   self.m_readonly = false;
   self.m_immutable = false;
   return self;
+}
+
+fan.sys.List.makeObj = function(capacity)
+{
+  return fan.sys.List.make(fan.sys.Obj.$type);
 }
 
 fan.sys.List.prototype.$ctor = function()
@@ -58,6 +63,7 @@ fan.sys.List.prototype.size$ = function(val)
 fan.sys.List.prototype.capacity = function() { return this.m_values.length; }
 fan.sys.List.prototype.capacity$ = function(val)
 {
+  this.modify();
   if (val < this.m_size) throw fan.sys.ArgErr.make("capacity < size");
   // noop
 }
@@ -177,7 +183,7 @@ fan.sys.List.prototype.hash = function()
   for (var i=0; i<size; ++i)
   {
     var obj = vals[i];
-    if (obj != null) hash ^= fan.sys.ObjUtil.hash(obj);
+    hash = (31*hash) + (obj == null ? 0 : fan.sys.ObjUtil.hash(obj));
   }
   return hash;
 }

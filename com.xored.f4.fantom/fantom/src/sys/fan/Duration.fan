@@ -35,7 +35,7 @@ const final class Duration
   **
   ** Create a Duration which represents the specified number of nanosecond ticks.
   **
-  static Duration make(Int ticks)
+  static new make(Int ticks)
 
   **
   ** Parse a Str into a Duration according to the Fantom
@@ -55,7 +55,7 @@ const final class Duration
   **   Duration.fromStr("100ms")
   **   Duration.fromStr("-0.5hr")
   **
-  static Duration? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
 
   **
   ** Get the system timer at boot time of the Fantom VM.
@@ -130,12 +130,22 @@ const final class Duration
   **
   ** Multiply this with b.  Shortcut is a*b.
   **
-  @Operator Duration mult(Float b)
+  @Operator Duration mult(Int b)
+
+  **
+  ** Multiply this with b.  Shortcut is a*b.
+  **
+  @Operator Duration multFloat(Float b)
 
   **
   ** Divide this by b.  Shortcut is a/b.
   **
-  @Operator Duration div(Float b)
+  @Operator Duration div(Int b)
+
+  **
+  ** Divide this by b.  Shortcut is a/b.
+  **
+  @Operator Duration divFloat(Float b)
 
   **
   ** Add this with b.  Shortcut is a+b.
@@ -152,6 +162,16 @@ const final class Duration
   ** then return its positive value.
   **
   Duration abs()
+
+  **
+  ** Return the minimum duration between this and that.
+  **
+  Duration min(Duration that)
+
+  **
+  ** Return the maximum duration between this and that.
+  **
+  Duration max(Duration that)
 
 //////////////////////////////////////////////////////////////////////////
 // Conversion

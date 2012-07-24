@@ -140,8 +140,10 @@ class DurationTest : Test
     verifyEq(-x, -2hr)
     verifyEq(x + 1min, 121min)
     verifyEq(x - 1day, -22hr)
+    verifyEq(x * 8, 16hr)
     verifyEq(x * 3f, 6hr)
     verifyEq(x * 0.25f, 30min)
+    verifyEq(x / 4, 30min)
     verifyEq(x / 12f, 10min)
     verifyEq(x / 0.5f, 4hr)
   }
@@ -157,6 +159,22 @@ class DurationTest : Test
     verifyEq(123sec.toMin, 2)
     verifyEq(123_456_789sec.toHour, 34293)
     verifyEq(123_456_789sec.toDay, 1428)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// MinMax
+//////////////////////////////////////////////////////////////////////////
+
+  Void testMinMax()
+  {
+    a := 10ms
+    b := -10ms
+    c := 1min
+    verifySame(a.min(b), b)
+    verifySame(b.min(a), b)
+    verifySame(a.max(b), a)
+    verifySame(b.max(a), a)
+    verifySame(a.max(c), c)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,12 +229,12 @@ class DurationTest : Test
     verifyEq(Duration.fromStr("-1.5day"), -36hr)
 
     // invalid
-    verifyErr(ParseErr#) { Duration.fromStr("4") }
-    verifyErr(ParseErr#) { Duration.fromStr("4x") }
-    verifyErr(ParseErr#) { Duration.fromStr("4seconds") }
-    verifyErr(ParseErr#) { Duration.fromStr("xms") }
-    verifyErr(ParseErr#) { Duration.fromStr("x4ms") }
-    verifyErr(ParseErr#) { Duration.fromStr("4days") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("4") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("4x") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("4seconds") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("xms") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("x4ms") }
+    verifyErr(ParseErr#) { x := Duration.fromStr("4days") }
   }
 
   Void verifyStr(Duration dur, Str format)

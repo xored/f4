@@ -10,10 +10,26 @@
  * DialogPeer.
  */
 fan.fwt.DialogPeer = fan.sys.Obj.$extend(fan.fwt.WindowPeer);
-fan.fwt.DialogPeer.prototype.$ctor = function(self) {}
+fan.fwt.DialogPeer.prototype.$ctor = function(self)
+{
+  this.hasKeyBinding = false;
+}
 
 fan.fwt.DialogPeer.prototype.open = function(self)
 {
+  // attach event handlers
+  if (!this.hasKeyBinding)
+  {
+    this.hasKeyBinding = true;
+    self.onKeyDown().add(fan.sys.Func.make(
+      fan.sys.List.make(fan.sys.Param.$type, [new fan.sys.Param("it","fwt::Event",false)]),
+      fan.sys.Void.$type,
+      function(it)
+      {
+        if (it.m_key == fan.fwt.Key.m_esc) { self.close(null); it.consume(); }
+      }));
+  }
+
   // mount mask that functions as input blocker for modality
   var mask = document.createElement("div")
   with (mask.style)
@@ -25,6 +41,7 @@ fan.fwt.DialogPeer.prototype.open = function(self)
     height     = "100%";
     background = "#000";
     opacity    = "0.0";
+    zIndex     = "100";
     filter     = "progid:DXImageTransform.Microsoft.Alpha(opacity=25);"
     MozTransition    = "100ms";
     webkitTransition = "100ms";
@@ -39,6 +56,7 @@ fan.fwt.DialogPeer.prototype.open = function(self)
     left       = "0";
     width      = "100%";
     height     = "100%";
+    zIndex     = "101";
   }
 
   // mount window
@@ -93,20 +111,24 @@ fan.fwt.DialogPeer.prototype.open = function(self)
   // cache elements so we can remove when we close
   this.$mask = mask;
   this.$shell = shell;
+  this.$focus = document.activeElement;
 
-  // animate open
+  // animate open and dialog resizes
   mask.style.opacity = "0.25";
-  dlg.style.MozTransition    = "-moz-transform 100ms, opacity 100ms";
-  dlg.style.MozTransform     = "scale(1.0)";
-  dlg.style.webkitTransition = "-webkit-transform 100ms, opacity 100ms";
+  var tx   = "-transform 100ms, ";
+//  var anim = "opacity 100ms, top 250ms, left 250ms, width 250ms, height 250ms";
+// 27 May 2012: Safari 5.1.7 is showing layout problems
+// with height transitons during relayout
+var anim = "opacity 100ms, left 250ms, width 250ms";
+if (!fan.fwt.DesktopPeer.$isSafari) anim += ", top 250ms, height 250ms";
+  dlg.style.webkitTransition = "-webkit" + tx + anim;
+  dlg.style.MozTransition    = "-moz" + tx + anim;
   dlg.style.webkitTransform  = "scale(1.0)";
+  dlg.style.MozTransform     = "scale(1.0)";
   dlg.style.opacity = "1.0";
 
-  // attach transition for dialog resizes
-  dlg.style.MozTransition    = "top 250ms, left 250ms, width 250ms, height 250ms";
-  dlg.style.webkitTransition = "top 250ms, left 250ms, width 250ms, height 250ms";
-
   // try to focus first form element
+  self.focus();
   var elem = fan.fwt.DialogPeer.findFormControl(content);
   if (elem != null)
   {
@@ -116,6 +138,19 @@ fan.fwt.DialogPeer.prototype.open = function(self)
     var func = function() { elem.focus(); }
     setTimeout(func, 50);
   }
+
+  // 16 May 2012: Chrome 19 appears to have resolved this issue
+  //
+  // // 26 Jan 2012: Chrome contains a bug where scrolling is broken
+  // // for elements that have webkit-transform applied - so allow
+  // // animation to comlete, then remove:
+  // if (fan.fwt.DesktopPeer.$isChrome)
+  // {
+  //   setTimeout(function() {
+  //     dlg.style.webkitTransform = "none";
+  //     dlg.style.webkitTransition = anim;
+  //   }, 300);
+  // }
 }
 
 fan.fwt.DialogPeer.findFormControl = function(node)
@@ -172,11 +207,14 @@ fan.fwt.DialogPeer.prototype.close = function(self, result)
     if ($this.$shell) $this.$shell.parentNode.removeChild($this.$shell);
     if ($this.$mask) $this.$mask.parentNode.removeChild($this.$mask);
     fan.fwt.WindowPeer.prototype.close.call($this, self, result);
+    // try to refocus last widget; don't make a fuss if we can't
+    try { $this.$focus.focus(); } catch (err) {}
   }, 100);
 }
 
 fan.fwt.DialogPeer.$isCommit = function(result)
 {
+  if (result == null) return false;
   var id = result.m_id;
   if (id == fan.fwt.DialogCommandId.m_ok)  return true;
   if (id == fan.fwt.DialogCommandId.m_yes) return true;

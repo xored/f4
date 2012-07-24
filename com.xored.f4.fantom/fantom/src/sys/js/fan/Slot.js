@@ -72,6 +72,15 @@ fan.sys.Slot.find = function(qname, checked)
   return type.slot(slotName, checked);
 }
 
+fan.sys.Slot.findFunc = function(qname, checked)
+{
+  if (checked === undefined) checked = true;
+
+  var m = fan.sys.Slot.find(qname, checked);
+  if (m == null) return null;
+  return m.m_func;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
@@ -123,8 +132,10 @@ fan.sys.Slot.prototype.$$name = function(n)
     case "char":   return "$char";
     case "delete": return "$delete";
     case "fan":    return "$fan";
+    case "float":  return "$float";
     case "import": return "$import";
     case "in":     return "$in";
+    case "int":    return "$int";
     case "name":   return "$name";
     case "typeof": return "$typeof";
     case "var":    return "$var";

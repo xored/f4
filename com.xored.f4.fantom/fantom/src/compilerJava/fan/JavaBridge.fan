@@ -22,11 +22,42 @@ class JavaBridge : CBridge
   **
   ** Construct a JavaBridge for current environment
   **
-  new make(Compiler c, ClassPath cp := ClassPath.makeForCurrent)
+  new make(Compiler c)
     : super(c)
   {
-    this.cp = cp
+    this.cp = initClassPath
   }
+
+//////////////////////////////////////////////////////////////////////////
+// ClassPath
+//////////////////////////////////////////////////////////////////////////
+
+  private ClassPath initClassPath()
+  {
+    // always include system classpath
+    cpFiles := ClassPath.findSysClassPathFiles
+
+    // add all pods in flattened dependency chain to classpath
+    acc := Str:File[:] { ordered = true }
+    ns.depends?.each |d| { flattenDepends(acc, d) }
+    cpFiles.addAll(acc.vals)
+
+    return ClassPath(cpFiles)
+  }
+
+  private Void flattenDepends(Str:File acc, CDepend d)
+  {
+    if (acc.containsKey(d.name)) return
+    pod  := ns.resolvePod(d.name, compiler.input.inputLoc)
+    acc[d.name] = pod.file
+    pod.depends.each |x| { flattenDepends(acc, x) }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Cleanup
+//////////////////////////////////////////////////////////////////////////
+
+  override Void cleanup() { cp.close }
 
 //////////////////////////////////////////////////////////////////////////
 // Namespace
@@ -41,21 +72,12 @@ class JavaBridge : CBridge
     if (name == "") return primitives
 
     // look for package name in classpatch
-    classes := cp.classes[name]
-    if (classes == null)
+    package := cp.packages[name]
+    if (package == null)
       throw CompilerErr("Java package '$name' not found", loc)
 
     // map package to JavaPod
-    return JavaPod(this, name, classes)
-  }
-
-  **
-  ** Map class meta-data and Java members to Fantom slots
-  ** for the specified JavaType.
-  **
-  virtual Void loadType(JavaType type, Str:CSlot slots)
-  {
-    JavaReflect.loadType(type, slots)
+    return JavaPod(this, package)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -794,6 +816,7 @@ class JavaBridge : CBridge
   ClassPath cp
 
   private Str:CMethod funcWrappers := Str:CMethod[:]  // funcType+method:ctor
+
 
 }
 

@@ -19,6 +19,11 @@ using [java] fanx.util
 ** JavaReflect provides Java reflection utilities.
 ** It encapsulates the FFI calls out to Java.
 **
+** TODO: this code is obsolete, it has been replaced by JavaDasmLoader
+** as of Feb 2012; keep around until we are sure new stuff is correct
+** in case we need to compare reflection and disassembler results
+** side-by-side
+**
 internal class JavaReflect
 {
   **
@@ -61,6 +66,13 @@ internal class JavaReflect
 
     // map Java constructors to CSlots
     cls.getDeclaredConstructors.each |JCtor j| { mapCtor(self, slots, j) }
+
+    // merge in sys::Obj slots
+    self.ns.objType.slots.each |CSlot s|
+    {
+      if (s.isCtor) return
+      if (slots[s.name] == null) slots[s.name] = s
+    }
   }
 
   **
@@ -148,7 +160,6 @@ internal class JavaReflect
         java.getName,
         toMemberFlags(mods),
         toFanType(self.bridge, java.getType))
-      if (java.isEnumConstant()) fan.flags = fan.flags.or(FConst.Enum)
       slots.set(fan.name, fan)
     }
     catch (UnknownTypeErr e) errUnknownType(e)
@@ -262,7 +273,7 @@ internal class JavaReflect
   **
   static Class toJavaClass(JavaType t)
   {
-    return Class.forName(t.toJavaClassName)
+    Class.forName(t.toJavaClassName)
   }
 
   **
@@ -270,7 +281,7 @@ internal class JavaReflect
   **
   static CType[] toFanTypes(JavaBridge bridge, Class[] cls)
   {
-    return cls.map |Class c->CType| { toFanType(bridge, c) }
+    cls.map |Class c->CType| { toFanType(bridge, c) }
   }
 
   **
@@ -366,7 +377,7 @@ internal class JavaReflect
   **
   static Int toClassFlags(Int modifiers)
   {
-    return FanUtil.classModifiersToFanFlags(modifiers)
+    FanUtil.classModifiersToFanFlags(modifiers)
   }
 
   **
@@ -374,7 +385,7 @@ internal class JavaReflect
   **
   static Int toMemberFlags(Int modifiers)
   {
-    return FanUtil.memberModifiersToFanFlags(modifiers)
+    FanUtil.memberModifiersToFanFlags(modifiers)
   }
 
   **

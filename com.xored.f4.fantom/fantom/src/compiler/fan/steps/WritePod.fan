@@ -65,10 +65,14 @@ class WritePod : CompilerStep
         writeStr(zip, `locale/en.props`, compiler.localeProps)
 
       // write resource files
-      compiler.resFiles.each |File f| { writeRes(zip, f) }
+      compiler.resFiles.each |file| { writeRes(zip, file) }
 
       // if including fandoc write it out too
       if (compiler.input.includeDoc) writeDocs(zip)
+
+      // if including source write it out too
+      if (compiler.input.includeSrc)
+        compiler.srcFiles.each |file| { writeSrc(zip, file) }
     }
     catch (CompilerErr e)
     {
@@ -115,6 +119,9 @@ class WritePod : CompilerStep
     if (path == `locale/en.props` && compiler.localeProps != null)
       return
 
+    // if resource is jar file, then unzip it
+    if (file.ext == "jar") { writeResZip(zip, file); return }
+
     try
     {
       out := zip.writeNext(path, file.modified)
@@ -123,8 +130,34 @@ class WritePod : CompilerStep
     }
     catch (Err e)
     {
-      throw errReport(CompilerErr("Cannot write resource file '$path'", loc, e))
+      throw errReport(CompilerErr("Cannot write resource file '$path': $e", loc, e))
     }
+  }
+
+  private Void writeResZip(Zip zip, File resFile)
+  {
+    // open resource file as a zip file
+    Zip? resZip := null
+    try
+      resZip = Zip.open(resFile)
+    catch (Err e)
+      errReport(CompilerErr("Cannot open resource file as zip: 'f'", loc, e))
+
+    // process each entry in zip as resource
+    try
+    {
+      resZip.contents.each |c| { writeRes(zip, c, c.uri) }
+    }
+    finally resZip.close
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Source Code
+//////////////////////////////////////////////////////////////////////////
+
+  private Void writeSrc(Zip zip, File file)
+  {
+    writeRes(zip, file, `src/$file.name`)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -134,9 +167,9 @@ class WritePod : CompilerStep
   private Void writeDocs(Zip zip)
   {
     writePodDoc(zip)
-    compiler.types.each |TypeDef t|
+    compiler.types.each |type|
     {
-      if (!t.isSynthetic) writeTypeDoc(zip, t)
+      if (type.isDocumented) writeApiDoc(zip, type)
     }
   }
 
@@ -152,48 +185,19 @@ class WritePod : CompilerStep
   }
 
   **
-  ** FDoc is used to read/write a fandoc text file.  The fandoc file
-  ** format is an extremely simple plan text format with left justified
-  ** type/slot qnames, followed by the fandoc content indented two spaces.
-  ** Addiontal type/slot meta-data is prefixed as "@name=value" lines.
+  ** Write the API doc text file used by compilerDoc
   **
-  private Void writeTypeDoc(Zip zip, TypeDef t)
+  private Void writeApiDoc(Zip zip, TypeDef t)
   {
     try
     {
       out := zip.writeNext("doc/${t.name}.apidoc".toUri)
-      writeDoc(out, t.qname, t)
-      t.slotDefs.each |SlotDef s|
-      {
-        writeDoc(out, s.qname, s)
-      }
-      out.close
+      ApiDocWriter(out).writeType(t).close
     }
     catch (Err e)
     {
       throw errReport(CompilerErr("Cannot write fandoc '$t.name'", t.loc, e))
     }
-  }
-
-  private static Void writeDoc(OutStream out, Str key, DefNode node)
-  {
-    doc := node.doc
-    meta := node.docMeta
-    if (doc == null && (meta == null || meta.isEmpty)) return
-    out.printLine(key)
-    if (meta != null)
-    {
-      meta.each|Str val, Str name|
-      {
-        val = val.replace("\n", " ").replace("\r", " ")
-        out.printLine("  @$name=$val")
-      }
-    }
-    if (doc != null)
-    {
-      doc.each |Str line| { out.print("  ").printLine(line) }
-    }
-    out.printLine
   }
 
 //////////////////////////////////////////////////////////////////////////

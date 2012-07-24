@@ -77,6 +77,9 @@ public abstract class Env
 
   public OutStream err() { return parent.err(); }
 
+  public String promptPassword() { return this.promptPassword(""); }
+  public String promptPassword(String msg) { return parent.promptPassword(msg); }
+
   public File homeDir() { return parent.homeDir(); }
 
   public File workDir() { return parent.workDir(); }
@@ -94,15 +97,12 @@ public abstract class Env
 // Resolution
 //////////////////////////////////////////////////////////////////////////
 
-  public final File findFile(String uri) { return findFile(Uri.fromStr(uri), true); }
-  public final File findFile(String uri, boolean checked) { return findFile(Uri.fromStr(uri), checked); }
   public File findFile(Uri uri) { return findFile(uri, true); }
   public File findFile(Uri uri, boolean checked)
   {
     return parent.findFile(uri, checked);
   }
 
-  public final List findAllFiles(String uri) { return findAllFiles(Uri.fromStr(uri)); }
   public List findAllFiles(Uri uri)
   {
     return parent.findAllFiles(uri);
@@ -139,6 +139,11 @@ public abstract class Env
   public List index(String key)
   {
     return index.get(key);
+  }
+
+  public List indexKeys()
+  {
+    return index.keys();
   }
 
   public Map props(Pod pod, Uri uri, Duration maxAge)
@@ -230,7 +235,7 @@ public abstract class Env
       if (t != null) return t;
 
       // create a new one
-      t = new JavaType(this, cls);
+      t = new JavaType(cls);
       javaTypeCache.put(clsName, t);
       return t;
     }
@@ -244,7 +249,7 @@ public abstract class Env
    * The JavaType will delegate to `loadJavaClass` when it is time
    * to load the Java class mapped by the FFI type.
    */
-  public final JavaType loadJavaType(String podName, String typeName)
+  public final JavaType loadJavaType(Pod loadingPod, String podName, String typeName)
   {
     // we shouldn't be using this method for pure Fantom types
     if (!podName.startsWith("[java]"))
@@ -263,11 +268,84 @@ public abstract class Env
       JavaType t = (JavaType)javaTypeCache.get(clsName);
       if (t != null) return t;
 
-      // create a new one
-      t = new JavaType(this, podName, typeName);
-      javaTypeCache.put(clsName, t);
-      return t;
+      // resolve class to create new JavaType for this class name
+      try
+      {
+        Class cls = nameToClass(loadingPod, clsName);
+        t = new JavaType(cls);
+        javaTypeCache.put(clsName, t);
+        return t;
+      }
+      catch (ClassNotFoundException e)
+      {
+        throw UnknownTypeErr.make("Load from [" + loadingPod + "] " + clsName, e);
+      }
     }
+  }
+
+  private Class nameToClass(Pod loadingPod, String name)
+    throws ClassNotFoundException
+  {
+    // first try primitives because Class.forName doesn't work for them
+    Class cls = (Class)primitiveClasses.get(name);
+    if (cls != null) return cls;
+
+    // array class like "[I" or "[Lfoo.Bar;"
+    if (name.charAt(0) == '[')
+    {
+      // if not a array of class, then use Class.forName
+      if (!name.endsWith(";")) return Class.forName(name);
+
+      // resolve component class "[Lfoo.Bar;"
+      String compName = name.substring(2, name.length()-1);
+      Class comp = nameToClass(loadingPod, compName);
+      return java.lang.reflect.Array.newInstance(comp, 0).getClass();
+    }
+
+    // if we have a pod class loader use it
+    if (loadingPod != null) return loadingPod.classLoader.loadClass(name);
+
+    // fallback to Class.forName
+    return Class.forName(name);
+  }
+
+  // String -> Class
+  private static final HashMap primitiveClasses = new HashMap();
+  static
+  {
+    try
+    {
+      primitiveClasses.put("boolean", boolean.class);
+      primitiveClasses.put("char",    char.class);
+      primitiveClasses.put("byte",    byte.class);
+      primitiveClasses.put("short",   short.class);
+      primitiveClasses.put("int",     int.class);
+      primitiveClasses.put("long",    long.class);
+      primitiveClasses.put("float",   float.class);
+      primitiveClasses.put("double",  double.class);
+    }
+    catch (Throwable e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+  // TODO: temp hack to get PathEnv.path
+  public String[] toDebugPath()
+  {
+    Field f = typeof().field("path", false);
+    if (f == null) return null;
+
+    List list = (List)f.get(this);
+    String[] result = new String[list.sz()];
+    for (int i=0; i<list.sz(); ++i)
+    {
+      String s = ((File)list.get(i)).osPath();
+      if (i == 0) s += " (work)";
+      if (i == list.sz()-1) s += " (home)";
+      result[i] = s;
+    }
+    return result;
   }
 
 //////////////////////////////////////////////////////////////////////////

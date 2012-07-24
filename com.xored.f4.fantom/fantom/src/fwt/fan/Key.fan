@@ -63,6 +63,16 @@ const class Key
   static const Key esc             := predefine(0x1B, "Esc")
   static const Key tab             := predefine('\t', "Tab")
 
+  static const Key comma           := predefine(',',  "Comma")
+  static const Key period          := predefine('.',  "Period")
+  static const Key slash           := predefine('/',  "Slash")
+  static const Key semicolon       := predefine(';',  "Semicolon")
+  static const Key quote           := predefine('\'', "Quote")
+  static const Key openBracket     := predefine('[',  "OpenBracket")
+  static const Key closeBracket    := predefine(']',  "CloseBracket")
+  static const Key backSlash       := predefine('\\', "BackSlash")
+  static const Key backtick        := predefine('`',  "Backtick")
+
   static const Key up              := predefine(0x0100_0000 + 1,  "Up")
   static const Key down            := predefine(0x0100_0000 + 2,  "Down")
   static const Key left            := predefine(0x0100_0000 + 3,  "Left")
@@ -152,7 +162,7 @@ const class Key
   ** and checked is true then throw ParseErr otherwise
   ** return null.
   **
-  static Key? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
   {
     try
     {
@@ -327,6 +337,18 @@ const class Key
     if (mask == 0) return x
     if (x.mask == 0) return this
     return makeNew(mask.or(x.mask), null)
+  }
+
+  **
+  ** Remove the key from this combination.
+  ** Throws ArgErr if x is not defined in this combination
+  ** or x is not a modifier.
+  **
+  @Operator Key minus(Key x)
+  {
+    if (mask.and(x.mask) == 0 || !x.isModifier)
+      throw ArgErr("Not modifier: $this - $x")
+    return makeNew(mask.and(x.mask.not), null)
   }
 
   **

@@ -22,6 +22,8 @@
 ** "America/New_York".  The simple name is the city name only
 ** such as "New_York".
 **
+** Use `cur` to get current default timezone for VM.
+**
 ** Also see [docLang]`docLang::DateTime`.
 **
 @Serializable { simple = true }
@@ -58,7 +60,7 @@ const class TimeZone
   **   - [TimeZone database]`docLang::DateTime#timeZone`
   **   - [TimeZone aliases]`docLang::DateTime#timeZoneAliases`
   **
-  static TimeZone? fromStr(Str name, Bool checked := true)
+  static new fromStr(Str name, Bool checked := true)
 
   **
   ** UTC time zone instance is "Etc/Utc".

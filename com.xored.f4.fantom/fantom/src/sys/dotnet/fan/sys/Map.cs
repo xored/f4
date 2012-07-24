@@ -75,23 +75,30 @@ namespace Fan.Sys
 
     public object get(object key)
     {
-      if (key == null) return m_def;
       object val = m_map[key];
       if (val != null) return val;
-      return m_def;
+      if (m_def == null) return null;
+      return containsKey(key) ? null : m_def;
     }
 
     public object get(object key, object def)
     {
-      if (key == null) return def;
       object val = m_map[key];
       if (val != null) return val;
-      return def;
+      if (def == null) return null;
+      return containsKey(key) ? null : def;
+    }
+
+    public object getOrThrow(object key)
+    {
+      object val = m_map[key];
+      if (val != null) return val;
+      if (containsKey(key)) return null;
+      throw UnknownKeyErr.make(key.ToString()).val;
     }
 
     public bool containsKey(object key)
     {
-      if (key == null) return false;
       return m_map.Contains(key);
     }
 
@@ -123,7 +130,7 @@ namespace Fan.Sys
         throw NullErr.make("key is null").val;
       if (!isImmutable(key))
         throw NotImmutableErr.make("key is not immutable: " + @typeof(key)).val;
-      if (m_map[key] != null)
+      if (containsKey(key))
         throw ArgErr.make("Key already mapped: " + key).val;
       m_map[key] = val;
       return this;
@@ -131,9 +138,8 @@ namespace Fan.Sys
 
     public object getOrAdd(object key, Func valFunc)
     {
-      object val = m_map[key];
-      if (val != null) return val;
-      val = valFunc.call(key);
+      if (containsKey(key)) return get(key);
+      object val = valFunc.call(key);
       add(key, val);
       return val;
     }
@@ -402,6 +408,8 @@ namespace Fan.Sys
     public Map findAll(Func f)
     {
       Map acc = new Map(m_type);
+      if (this.ordered()) acc.ordered(true);
+      if (this.caseInsensitive()) acc.caseInsensitive(true);
       IDictionaryEnumerator en = m_map.GetEnumerator();
       while (en.MoveNext())
       {
@@ -416,6 +424,8 @@ namespace Fan.Sys
     public Map exclude(Func f)
     {
       Map acc = new Map(m_type);
+      if (this.ordered()) acc.ordered(true);
+      if (this.caseInsensitive()) acc.caseInsensitive(true);
       IDictionaryEnumerator en = m_map.GetEnumerator();
       while (en.MoveNext())
       {

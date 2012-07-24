@@ -120,7 +120,7 @@ class Normalize : CompilerStep
     if (!code.isExit) addImplicitReturn(m)
 
     // insert super constructor call
-    if (m.isCtor) insertSuperCtor(m)
+    if (m.isInstanceCtor) insertSuperCtor(m)
 
     // once
     if (m.isOnce) normalizeOnce(m, iInit)
@@ -156,7 +156,7 @@ class Normalize : CompilerStep
 
     // check if the base class has exactly one available
     // constructor with no parameters
-    superCtors := base.ctors
+    superCtors := base.instanceCtors
     if (superCtors.size != 1) return
     superCtor := superCtors.first
     if (superCtor.isPrivate) return
@@ -195,7 +195,7 @@ class Normalize : CompilerStep
     x := MethodDef(loc, curType)
     x.flags        = FConst.Private + FConst.Synthetic
     x.name         = m.name + "\$Once"
-    x.ret          = ns.objType.toNullable
+    x.ret          = m.returnType
     x.inheritedRet = null
     x.paramDefs    = m.paramDefs
     x.vars         = m.vars
@@ -244,7 +244,7 @@ class Normalize : CompilerStep
     // unless the constructor chains to "this"
     t.methodDefs.each |MethodDef m|
     {
-      if (!m.isCtor) return
+      if (!m.isInstanceCtor) return
       if (t.isNative) return
       if (m.ctorChain != null && m.ctorChain.target.id === ExprId.thisExpr) return
       call := CallExpr.makeWithMethod(m.loc, ThisExpr(m.loc), ii)

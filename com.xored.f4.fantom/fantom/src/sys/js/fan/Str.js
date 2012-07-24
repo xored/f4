@@ -36,10 +36,22 @@ fan.sys.Str.compareIgnoreCase = function(self, that)
   return 1;
 }
 
-fan.sys.Str.hash = function(self) { return self; }
 fan.sys.Str.toStr = function(self) { return self; }
 fan.sys.Str.toLocale = function(self) { return self; }
 fan.sys.Str.$typeof = function(self) { return fan.sys.Str.$type; }
+
+fan.sys.Str.hash = function(self)
+{
+  var hash = 0;
+  if (self.length == 0) return hash;
+  for (var i=0; i<self.length; i++)
+  {
+    var ch = self.charCodeAt(i);
+    hash = ((hash << 5) - hash) + ch;
+    hash = hash & hash;
+  }
+  return hash;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -554,6 +566,7 @@ fan.sys.Str.localeCompare = function(self, that)
 fan.sys.Str.toBool = function(self, checked) { return fan.sys.Bool.fromStr(self, checked); }
 fan.sys.Str.toFloat = function(self, checked) { return fan.sys.Float.fromStr(self, checked); }
 fan.sys.Str.toInt = function(self, radix, checked) { return fan.sys.Int.fromStr(self, radix, checked); }
+fan.sys.Str.toDecimal = function(self, checked) { return fan.sys.Decimal.fromStr(self, checked); }
 
 fan.sys.Str.$in = function(self) { return fan.sys.InStream.makeForStr(self); }
 fan.sys.Str.toUri = function(self) { return fan.sys.Uri.fromStr(self); }
@@ -615,7 +628,7 @@ fan.sys.Str.toCode = function(self, quote, escu)
       default:
         var hex  = function(x) { return "0123456789abcdef".charAt(x); }
         var code = c.charCodeAt(0);
-        if (escu && code > 127)
+        if (code < 32 || (escu && code > 127))
         {
           s += '\\' + 'u'
             + hex((code>>12)&0xf)

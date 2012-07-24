@@ -10,6 +10,7 @@
 ** InlineParser parses a block of formatted text into
 ** a series of inline elements.
 **
+@Js
 internal class InlineParser
 {
 
@@ -162,6 +163,7 @@ internal class InlineParser
   private DocNode link()
   {
     link := Link(uri)
+    link.line = this.line
     link.children.add(DocText(link.uri))
     return link
   }

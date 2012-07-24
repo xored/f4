@@ -116,7 +116,7 @@ fan.sys.Err.make = function(err, cause)
     var m = err.message;
     if (m.indexOf(" from null") != -1) return fan.sys.NullErr.make(m, cause);
     if (m.indexOf(" of null")   != -1) return fan.sys.NullErr.make(m, cause);
-    
+
     // TODO
     //  EvalError
     //  RangeError
@@ -212,7 +212,8 @@ fan.sys.ParseErr.prototype.$ctor = function(type, val, more, cause)
   fan.sys.Err.prototype.$ctor.call(this, msg, cause)
 }
 fan.sys.ParseErr.prototype.$typeof = function() { return fan.sys.ParseErr.$type; }
-fan.sys.ParseErr.make = function(type, val, more, cause) { return new fan.sys.ParseErr(type,val,more,cause); }
+fan.sys.ParseErr.make = function(msg, cause) { return new fan.sys.ParseErr(msg, null, null, cause); }
+fan.sys.ParseErr.makeStr = function(type, val, more, cause) { return new fan.sys.ParseErr(type, val, more, cause); }
 
 // ReadonlyErr
 fan.sys.ReadonlyErr = fan.sys.Obj.$extend(fan.sys.Err);
@@ -231,6 +232,12 @@ fan.sys.TimeoutErr = fan.sys.Obj.$extend(fan.sys.Err);
 fan.sys.TimeoutErr.prototype.$ctor = function(msg, cause) { fan.sys.Err.prototype.$ctor.call(this, msg, cause); }
 fan.sys.TimeoutErr.prototype.$typeof = function() { return fan.sys.TimeoutErr.$type; }
 fan.sys.TimeoutErr.make = function(msg, cause) { return new fan.sys.TimeoutErr(msg, cause); }
+
+// UnknownKeyErr
+fan.sys.UnknownKeyErr = fan.sys.Obj.$extend(fan.sys.Err);
+fan.sys.UnknownKeyErr .prototype.$ctor = function(msg, cause) { fan.sys.Err.prototype.$ctor.call(this, msg, cause); }
+fan.sys.UnknownKeyErr.prototype.$typeof = function() { return fan.sys.UnknownKeyErr.$type; }
+fan.sys.UnknownKeyErr.make = function(msg, cause) { return new fan.sys.UnknownKeyErr(msg, cause); }
 
 // UnknownPodErr
 fan.sys.UnknownPodErr = fan.sys.Obj.$extend(fan.sys.Err);

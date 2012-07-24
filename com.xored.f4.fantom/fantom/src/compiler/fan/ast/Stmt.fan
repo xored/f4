@@ -150,9 +150,13 @@ class LocalDefStmt : Stmt
     this.name = name
   }
 
-  override Bool isExit() { return false }
+  override Bool isExit() { false }
 
-  override Bool isDefiniteAssign(|Expr lhs->Bool| f) { false }
+  override Bool isDefiniteAssign(|Expr lhs->Bool| f)
+  {
+    if (init != null) return init.isDefiniteAssign(f)
+    return false
+  }
 
   override Void walkChildren(Visitor v, VisitDepth depth)
   {
@@ -254,13 +258,14 @@ class ReturnStmt : Stmt
     this.expr = expr
   }
 
-  new makeSynthetic(Loc loc, Expr? expr := null)
-    : this.make(loc, expr)
+  static ReturnStmt makeSynthetic(Loc loc, Expr? expr := null)
   {
-    this.isSynthetic = true
+    stmt := make(loc, expr)
+    stmt.isSynthetic = true
+    return stmt
   }
 
-  override Bool isExit() { return true }
+  override Bool isExit() { true }
 
   override Bool isDefiniteAssign(|Expr lhs->Bool| f)
   {
@@ -305,7 +310,7 @@ class ThrowStmt : Stmt
 
   override Bool isExit() { true }
 
-  override Bool isDefiniteAssign(|Expr lhs->Bool| f) { false }
+  override Bool isDefiniteAssign(|Expr lhs->Bool| f) { true }
 
   override Void walkChildren(Visitor v, VisitDepth depth)
   {
@@ -471,7 +476,7 @@ class TryStmt : Stmt
   override Bool isExit()
   {
     if (!block.isExit) return false
-    return catches.all |Catch c->Bool| { return c.block.isExit }
+    return catches.all |Catch c->Bool| { c.block.isExit }
   }
 
   override Bool isDefiniteAssign(|Expr lhs->Bool| f)
@@ -562,14 +567,14 @@ class SwitchStmt : Stmt
   {
     if (defaultBlock == null) return false
     if (!defaultBlock.isDefiniteAssign(f)) return false
-    return cases.all |Case c->Bool| { return c.block.isDefiniteAssign(f) }
+    return cases.all |Case c->Bool| { c.block.isDefiniteAssign(f) }
   }
 
   override Bool isExit()
   {
     if (defaultBlock == null) return false
     if (!defaultBlock.isExit) return false
-    return cases.all |Case c->Bool| { return c.block.isExit }
+    return cases.all |Case c->Bool| { c.block.isExit }
   }
 
   override Void walkChildren(Visitor v, VisitDepth depth)

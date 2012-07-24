@@ -41,6 +41,7 @@ class InitInput : CompilerStep
   override Void run()
   {
     validateInput
+    validatePodName
     initNamespace
     initPod
     initDepends
@@ -60,6 +61,25 @@ class InitInput : CompilerStep
       input.validate
     catch (CompilerErr err)
       throw errReport(err)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Validate pod name
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Verify that pod name is valid
+  **
+  private Void validatePodName()
+  {
+    n := input.podName
+    loc := input.inputLoc
+    if (n.isEmpty) throw err("Pod name is empty", loc)
+    if (!n[0].isAlpha) throw err("Pod name must begin with alpha char", loc)
+    n.each |ch|
+    {
+      if (!ch.isAlphaNum && ch != '_') throw err("Pod name contains invalid char '$ch.toChar'", loc)
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,8 +113,6 @@ class InitInput : CompilerStep
     meta["fcode.version"]  = FConst.FCodeVersion
     meta["build.host"]     = Env.cur.host
     meta["build.user"]     = Env.cur.user
-// TODO: remove for build 1.0.60
-meta["build.time"] = DateTime.now.toStr
     meta["build.ts"]       = DateTime.now.toStr
     meta["build.compiler"] = typeof.pod.version.toStr
     meta["build.platform"] = Env.cur.platform
@@ -117,7 +135,7 @@ meta["build.time"] = DateTime.now.toStr
   **
   private Void initDepends()
   {
-    compiler.depends = input.depends
+    compiler.depends = input.depends.map |d->CDepend| { CDepend(d, null) }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,7 +155,7 @@ meta["build.time"] = DateTime.now.toStr
     compiler.jsFiles  = findFiles(input.jsFiles,  "js")
 
     if (compiler.srcFiles.isEmpty && compiler.resFiles.isEmpty)
-      throw err("No fan source files found", null)
+      throw err("No fan source files found", input.inputLoc)
 
     // map sure no duplicate names in srcFiles
     map := Str:File[:]

@@ -28,9 +28,20 @@ mixin CPod
   abstract Version version()
 
   **
+  ** Get the pod dependencies
+  **
+  abstract CDepend[] depends()
+
+  **
   ** List of the all defined types.
   **
   abstract CType[] types()
+
+  **
+  ** Pod zip file.  Not all implementations have a backing
+  ** file in which case they will throw UnsupportedErr
+  **
+  abstract File file()
 
   **
   ** Lookup a type by its simple name.  If the type doesn't
@@ -42,12 +53,12 @@ mixin CPod
   **
   ** If this a foreign function interface pod.
   **
-  virtual Bool isForeign() { return false }
+  virtual Bool isForeign() { false }
 
   **
   ** If this a foreign function interface return the bridge.
   **
-  virtual CBridge? bridge() { return null }
+  virtual CBridge? bridge() { null }
 
   **
   ** Hash on name.

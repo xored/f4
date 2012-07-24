@@ -63,8 +63,24 @@ fan.fwt.WidgetPeer.prototype.posOnWindow = function(self)
 
 fan.fwt.WidgetPeer.prototype.posOnDisplay = function(self)
 {
-  //equals to posOnWindow for now
-  return this.posOnWindow(self);
+  // find pos relative to window
+  var pos = this.posOnWindow(self);
+  var win = self.window();
+  if (win != null && win.peer.root != null)
+  {
+    // find position of window relative to display
+    var elem = win.peer.root;
+    var x = 0, y = 0;
+    do
+    {
+      x += elem.offsetLeft - elem.scrollLeft;
+      y += elem.offsetTop - elem.scrollTop;
+    }
+    while(elem = elem.offsetParent);
+    if (x != 0 || y != 0)
+      return fan.gfx.Point.make(pos.m_x + x, pos.m_y + y);
+  }
+  return pos;
 }
 
 fan.fwt.WidgetPeer.prototype.prefSize = function(self, hints)
@@ -98,7 +114,15 @@ fan.fwt.WidgetPeer.prototype.m_enabled = true;
 fan.fwt.WidgetPeer.prototype.enabled = function(self) { return this.m_enabled; }
 fan.fwt.WidgetPeer.prototype.enabled$ = function(self, val)
 {
+  if (this.m_enabled == val) return;
+
   this.m_enabled = val;
+
+  // propagate down widget tree
+  var kids = self.m_kids;
+  for (var i=0; i<kids.size(); i++)
+    kids.get(i).enabled$(val);
+
   if (this.elem != null) this.sync(self);
 }
 
@@ -184,6 +208,7 @@ fan.fwt.WidgetPeer.prototype.attachTo = function(self, elem)
 }
 
 fan.fwt.WidgetPeer.prototype.checkKeyListeners = function(self) {}
+fan.fwt.WidgetPeer.prototype.checkFocusListeners = function(self) {}
 
 fan.fwt.WidgetPeer.prototype.create = function(parentElem, self)
 {
@@ -230,13 +255,17 @@ fan.fwt.WidgetPeer.prototype.detach = function(self)
 fan.fwt.WidgetPeer.prototype.sync = function(self, w, h)  // w,h override
 {
   // sync event handlers
-  this.checkEventListener(self, 0x01, "mouseover",  fan.fwt.EventId.m_mouseEnter, self.m_onMouseEnter);
-  this.checkEventListener(self, 0x02, "mouseout",   fan.fwt.EventId.m_mouseExit,  self.m_onMouseExit);
-  this.checkEventListener(self, 0x04, "mousedown",  fan.fwt.EventId.m_mouseDown,  self.m_onMouseDown);
-  this.checkEventListener(self, 0x08, "mousemove",  fan.fwt.EventId.m_mouseMove,  self.m_onMouseMove);
-  this.checkEventListener(self, 0x10, "mouseup",    fan.fwt.EventId.m_mouseUp,    self.m_onMouseUp);
-//this.checkEventListener(self, 0x20, "mousehover", fan.fwt.EventId.m_mouseHover, self.m_onMouseHover);
-  this.checkEventListener(self, 0x40, "mousewheel", fan.fwt.EventId.m_mouseWheel, self.m_onMouseWheel);
+  this.checkEventListener(self, 0x001, "mouseover",  fan.fwt.EventId.m_mouseEnter, self.onMouseEnter());
+  this.checkEventListener(self, 0x002, "mouseout",   fan.fwt.EventId.m_mouseExit,  self.onMouseExit());
+  this.checkEventListener(self, 0x004, "mousedown",  fan.fwt.EventId.m_mouseDown,  self.onMouseDown());
+  this.checkEventListener(self, 0x008, "mousemove",  fan.fwt.EventId.m_mouseMove,  self.onMouseMove());
+  this.checkEventListener(self, 0x010, "mouseup",    fan.fwt.EventId.m_mouseUp,    self.onMouseUp());
+//this.checkEventListener(self, 0x020, "mousehover", fan.fwt.EventId.m_mouseHover, self.onMouseHover());
+  this.checkEventListener(self, 0x040, "mousewheel", fan.fwt.EventId.m_mouseWheel, self.onMouseWheel());
+  this.checkEventListener(self, 0x080, "keydown",    fan.fwt.EventId.m_keyDown,    self.onKeyDown());
+  this.checkEventListener(self, 0x100, "keyup",      fan.fwt.EventId.m_keyUp,      self.onKeyUp());
+  this.checkEventListener(self, 0x200, "blur",       fan.fwt.EventId.m_blur,       self.onBlur());
+  this.checkEventListener(self, 0x400, "focus",      fan.fwt.EventId.m_focus,      self.onFocus());
 
   // sync bounds
   with (this.elem.style)
@@ -276,23 +305,16 @@ fan.fwt.WidgetPeer.prototype.attachEventListener = function(self, type, evtId, l
   var peer = this;
   var func = function(e)
   {
-    // find pos relative to widget
-    var dis  = peer.posOnWindow(self);
+    // find pos relative to display
+    var dis  = peer.posOnDisplay(self);
     var mx   = e.clientX - dis.m_x;
     var my   = e.clientY - dis.m_y;
-
-    // make sure to rel against window root
-    var win = self.window();
-    if (win != null && win.peer.root != null)
-    {
-      mx -= win.peer.root.offsetLeft;
-      my -= win.peer.root.offsetTop;
-    }
 
     // cache event type
     var isClickEvent = evtId == fan.fwt.EventId.m_mouseDown ||
                        evtId == fan.fwt.EventId.m_mouseUp;
     var isWheelEvent = evtId == fan.fwt.EventId.m_mouseWheel;
+    var isMouseEvent = type.indexOf("mouse") != -1;
 
     // create fwt::Event and invoke handler
     var evt = fan.fwt.Event.make();
@@ -320,12 +342,16 @@ fan.fwt.WidgetPeer.prototype.attachEventListener = function(self, type, evtId, l
     }
 
     // prevent bubbling
-    e.stopPropagation();
+    if (evt.m_consumed || isMouseEvent) e.stopPropagation();
+    if (evt.m_consumed) e.preventDefault();
     return false;
   }
 
   // special handler for firefox
   if (type == "mousewheel" && fan.fwt.DesktopPeer.$isFirefox) type = "DOMMouseScroll";
+
+  // add tabindex for key events
+  if (type == "keydown" || type == "keyup") this.elem.tabIndex = 0;
 
   // attach event handler
   this.elem.addEventListener(type, func, false);
@@ -407,7 +433,12 @@ fan.fwt.WidgetPeer.toKey = function(event)
   // find primary key
   var key = null;
   if (event.keyCode != null && event.keyCode > 0)
-    key = fan.fwt.WidgetPeer.keyCodeToKey(event.keyCode);
+  {
+    // force alpha keys to lowercase so we map correctly
+    var code = event.keyCode;
+    if (code >= 65 && code <= 90) code += 32;
+    key = fan.fwt.WidgetPeer.keyCodeToKey(code);
+  }
 
   if (event.shiftKey)   key = key==null ? fan.fwt.Key.m_shift : key.plus(fan.fwt.Key.m_shift);
   if (event.altKey)     key = key==null ? fan.fwt.Key.m_alt   : key.plus(fan.fwt.Key.m_alt);
@@ -422,10 +453,25 @@ fan.fwt.WidgetPeer.keyCodeToKey = function(keyCode)
   // TODO FIXIT: map rest of non-alpha keys
   switch (keyCode)
   {
-    case 38: return fan.fwt.Key.m_up;
-    case 40: return fan.fwt.Key.m_down;
-    case 37: return fan.fwt.Key.m_left;
-    case 39: return fan.fwt.Key.m_right;
+    case 8:   return fan.fwt.Key.m_backspace;
+    case 13:  return fan.fwt.Key.m_enter;
+    case 32:  return fan.fwt.Key.m_space;
+    case 37:  return fan.fwt.Key.m_left;
+    case 38:  return fan.fwt.Key.m_up;
+    case 39:  return fan.fwt.Key.m_right;
+    case 40:  return fan.fwt.Key.m_down;
+    case 46:  return fan.fwt.Key.m_$delete;
+    case 91:  return fan.fwt.Key.m_command;  // left cmd
+    case 93:  return fan.fwt.Key.m_command;  // right cmd
+    case 186: return fan.fwt.Key.m_semicolon;
+    case 188: return fan.fwt.Key.m_comma;
+    case 190: return fan.fwt.Key.m_period;
+    case 191: return fan.fwt.Key.m_slash;
+    case 192: return fan.fwt.Key.m_backtick;
+    case 219: return fan.fwt.Key.m_openBracket;
+    case 220: return fan.fwt.Key.m_backSlash;
+    case 221: return fan.fwt.Key.m_closeBracket;
+    case 222: return fan.fwt.Key.m_quote;
     default: return fan.fwt.Key.fromMask(keyCode);
   }
 }
@@ -475,6 +521,38 @@ fan.fwt.WidgetPeer.addCss = function(css)
   document.getElementsByTagName("head")[0].appendChild(style);
 }
 
+// disable focus outlines on div.tabIndex elements
+fan.fwt.WidgetPeer.addCss("div:focus { outline:0; }");
+
+fan.fwt.WidgetPeer.hasClassName = function(elem, className)
+{
+  var arr = elem.className.split(" ");
+  for (var i=0; i<arr.length; i++)
+    if (arr[i] == className)
+      return true;
+  return false;
+}
+
+fan.fwt.WidgetPeer.addClassName = function(elem, className)
+{
+  if (!fan.fwt.WidgetPeer.hasClassName(elem, className))
+    elem.className += " " + className;
+  return elem;
+}
+
+fan.fwt.WidgetPeer.removeClassName = function(elem, className)
+{
+  var arr = elem.className.split(" ");
+  for (var i=0; i<arr.length; i++)
+    if (arr[i] == className)
+    {
+      arr.splice(i, 1);
+      break;
+    }
+  elem.className = arr.join(" ");
+  return elem;
+}
+
 fan.fwt.WidgetPeer.setBg = function(elem, brush)
 {
   var style = elem.style;
@@ -507,25 +585,17 @@ fan.fwt.WidgetPeer.setBg = function(elem, brush)
       var color = stop.m_color.toCss();
 
       // set background to first stop for fallback if gradeints not supported
-      if (i == 0) background = color;
+      if (i == 0) style.background = color;
 
       std    += "," + color + " " + (stop.m_pos * 100) + "%";
       webkit += ",color-stop(" + stop.m_pos + ", " + color + ")";
     }
 
     // apply styles
-    // IE throws here, so trap and use filter in catch
-    try
-    {
-      style.background = "linear-gradient(" + std + ")";
-      style.background = "-moz-linear-gradient(" + std + ")";
-      style.background = "-webkit-gradient(linear, " + webkit + ")";
-    }
-    catch (err)
-    {
-      //filter = "progid:DXImageTransform.Microsoft.Gradient(" +
-      //  "StartColorStr=" + c1 + ", EndColorStr=" + c2 + ")";
-    }
+    style.background = "-ms-linear-gradient(" + std + ")";
+    style.background = "-moz-linear-gradient(" + std + ")";
+    style.background = "-webkit-gradient(linear, " + webkit + ")";
+    style.background = "linear-gradient(" + std + ")";
 
     return;
   }
@@ -551,5 +621,69 @@ fan.fwt.WidgetPeer.setBg = function(elem, brush)
     style.background = str;
     return;
   }
+}
+
+fan.fwt.WidgetPeer.setBorder = function(elem, border)
+{
+  var s = elem.style;
+  var b = border;
+  if (b == null) { s.border = "none"; return; }
+  s.borderStyle = "solid";
+
+  s.borderTopWidth    = b.m_widthTop    + "px";
+  s.borderRightWidth  = b.m_widthRight  + "px";
+  s.borderBottomWidth = b.m_widthBottom + "px";
+  s.borderLeftWidth   = b.m_widthLeft   + "px";
+
+  s.borderTopColor    = b.m_colorTop.toCss();
+  s.borderRightColor  = b.m_colorRight.toCss();
+  s.borderBottomColor = b.m_colorBottom.toCss();
+  s.borderLeftColor   = b.m_colorLeft.toCss();
+
+  if (s.borderRadius != undefined)
+  {
+    s.borderTopLeftRadius     = b.m_radiusTopLeft + "px";
+    s.borderTopRightRadius    = b.m_radiusTopRight + "px";
+    s.borderBottomRightRadius = b.m_radiusBottomRight + "px";
+    s.borderBottomLeftRadius  = b.m_radiusBottomLeft + "px";
+  }
+  else if (s.style.MozBorderRadius != undefined)
+  {
+    s.MozBorderRadiusTopleft     = b.m_radiusTopLeft + "px";
+    s.MozBorderRadiusTopright    = b.m_radiusTopRight + "px";
+    s.MozBorderRadiusBottomright = b.m_radiusBottomRight + "px";
+    s.MozBorderRadiusBottomleft  = b.m_radiusBottomLeft + "px";
+  }
+  else if (s.webkitBorderRadius != undefined)
+  {
+    s.webkitBorderTopLeftRadius     = b.m_radiusTopLeft + "px";
+    s.webkitBorderTopRightRadius    = b.m_radiusTopRight + "px";
+    s.webkitBorderBottomRightRadius = b.m_radiusBottomRight + "px";
+    s.webkitBorderBottomLeftRadius  = b.m_radiusBottomLeft + "px";
+  }
+}
+
+fan.fwt.WidgetPeer.applyStyle = function(elem, map)
+{
+  if (map == null) return;
+  map.$each(function(b) { elem.style.setProperty(b.key, b.val, ""); });
+}
+
+// set the transition CSS for elem
+fan.fwt.WidgetPeer.setTransition = function(elem, css)
+{
+  elem.style.webkitTransition = css;
+  elem.style.MozTransition    = css;
+  elem.style.msTransition     = css;
+  elem.style.transition       = css;
+}
+
+// set the transform CSS for elem
+fan.fwt.WidgetPeer.setTransform = function(elem, css)
+{
+  elem.style.webkitTransform = css;
+  elem.style.MozTransform    = css;
+  elem.style.msTransform     = css;
+  elem.style.transform       = css;
 }
 

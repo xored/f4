@@ -104,12 +104,44 @@ abstract class WebReq
 
   **
   ** Map of HTTP request headers.  The headers map is readonly
-  ** and case sensitive (see `sys::Map.caseInsensitive`).
+  ** and case insensitive (see `sys::Map.caseInsensitive`).
   **
   ** Examples:
   **   req.headers["Accept-Language"]
   **
   abstract Str:Str headers()
+
+  **
+  ** Get the accepted locales for this request based on the
+  ** "Accept-Language" HTTP header.  List is sorted by preference, where
+  ** 'locales.first' is best, and 'locales.last' is worst.  This list is
+  ** guarenteed to contain Locale("en").
+  **
+  virtual once Locale[] locales()
+  {
+    list := Locale[,]
+    hval := headers["Accept-Language"]
+    if (hval != null)
+    {
+      WebUtil.parseList(hval).each |val|
+      {
+        try
+        {
+          colon := val.index(";q=")
+          qual  := colon==null ? 1f : val[colon+3..-1].toFloat
+          lang  := colon==null ? val : val[0..<colon]
+          loc   := Locale.fromStr(lang, false)
+          if (qual > 0f && loc != null && !list.contains(loc)) list.add(loc)
+        }
+        catch (Err err) { err.trace }
+      }
+    }
+
+    // make sure we always have 'en'
+    en := Locale("en")
+    if (!list.contains(en)) list.add(en)
+    return list
+  }
 
   **
   ** Map of cookie values keyed by cookie name.  The
@@ -152,7 +184,13 @@ abstract class WebReq
   }
 
   **
-  ** The InStream for this request.
+  ** Get the stream to read request body.  See `WebUtil.makeContentInStream`
+  ** to check under which conditions request content is available.
+  ** If request content is not available, then throw an exception.
+  **
+  ** If the client specified the "Expect: 100-continue" header, then the first
+  ** access of the request input stream will automatically send the client
+  ** a [100 Continue]`pod-doc#expectContinue` response.
   **
   abstract InStream in()
 

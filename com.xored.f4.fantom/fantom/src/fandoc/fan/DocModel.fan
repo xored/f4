@@ -10,6 +10,7 @@
 ** DocNodeId
 **************************************************************************
 
+@Js
 enum class DocNodeId
 {
   text,
@@ -38,9 +39,9 @@ enum class DocNodeId
 **
 ** See [pod doc]`pod-doc#api` for usage.
 **
+@Js
 abstract class DocNode
 {
-
   **
   ** Get node id for node type.
   **
@@ -71,6 +72,7 @@ abstract class DocNode
 **
 ** See [pod doc]`pod-doc#api` for usage.
 **
+@Js
 class DocText : DocNode
 {
   new make(Str str) { this.str = str }
@@ -96,6 +98,7 @@ class DocText : DocNode
 **
 ** See [pod doc]`pod-doc#api` for usage.
 **
+@Js
 abstract class DocElem : DocNode
 {
   **
@@ -172,6 +175,7 @@ abstract class DocElem : DocNode
 **
 ** Doc models the top level node of a fandoc document.
 **
+@Js
 class Doc : DocElem
 {
   override DocNodeId id() { return DocNodeId.doc }
@@ -213,12 +217,14 @@ class Doc : DocElem
 **
 ** Heading
 **
+@Js
 class Heading : DocElem
 {
   new make(Int level) { this.level = level }
   override DocNodeId id() { return DocNodeId.heading }
   override Str htmlName() { return "h$level" }
   override Bool isInline() { return false }
+  Str title() { children.first.toStr }
   const Int level
 }
 
@@ -229,6 +235,7 @@ class Heading : DocElem
 **
 ** Para models a paragraph of text.
 **
+@Js
 class Para : DocElem
 {
   override DocNodeId id() { return DocNodeId.para }
@@ -244,6 +251,7 @@ class Para : DocElem
 **
 ** Pre models a pre-formated code block.
 **
+@Js
 class Pre : DocElem
 {
   override DocNodeId id() { return DocNodeId.pre }
@@ -258,6 +266,7 @@ class Pre : DocElem
 **
 ** BlockQuote models a block of quoted text.
 **
+@Js
 class BlockQuote : DocElem
 {
   override DocNodeId id() { return DocNodeId.blockQuote }
@@ -272,6 +281,7 @@ class BlockQuote : DocElem
 **
 ** OrderedList models a numbered list
 **
+@Js
 class OrderedList : DocElem
 {
   new make(OrderedListStyle style) { this.style = style }
@@ -284,6 +294,7 @@ class OrderedList : DocElem
 **
 ** OrderedListStyle
 **
+@Js
 enum class OrderedListStyle
 {
   number,       // 1, 2, 3, 4
@@ -322,6 +333,7 @@ enum class OrderedListStyle
 **
 ** UnorderedList models a bullet list
 **
+@Js
 class UnorderedList : DocElem
 {
   override DocNodeId id() { return DocNodeId.unorderedList }
@@ -336,6 +348,7 @@ class UnorderedList : DocElem
 **
 ** ListItem is an item in an OrderedList and UnorderedList.
 **
+@Js
 class ListItem : DocElem
 {
   override DocNodeId id() { return DocNodeId.listItem }
@@ -350,6 +363,7 @@ class ListItem : DocElem
 **
 ** Emphasis is italic text
 **
+@Js
 class Emphasis : DocElem
 {
   override DocNodeId id() { return DocNodeId.emphasis }
@@ -364,6 +378,7 @@ class Emphasis : DocElem
 **
 ** Strong is bold text
 **
+@Js
 class Strong : DocElem
 {
   override DocNodeId id() { return DocNodeId.strong }
@@ -378,6 +393,7 @@ class Strong : DocElem
 **
 ** Code is inline code
 **
+@Js
 class Code : DocElem
 {
   override DocNodeId id() { return DocNodeId.code }
@@ -392,6 +408,7 @@ class Code : DocElem
 **
 ** Link is a hyperlink.
 **
+@Js
 class Link : DocElem
 {
   new make(Str uri) { this.uri = uri }
@@ -400,6 +417,7 @@ class Link : DocElem
   override Bool isInline() { return true }
   Bool isCode := false  // when uri resolves to a type or slot
   Str uri
+  Int line
 }
 
 **************************************************************************
@@ -409,6 +427,7 @@ class Link : DocElem
 **
 ** Image is a reference to an image file
 **
+@Js
 class Image : DocElem
 {
   new make(Str uri, Str alt) { this.uri = uri; this.alt = alt  }

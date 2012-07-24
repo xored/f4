@@ -137,7 +137,7 @@ const class Color : Brush
   **   Color.fromStr("#88AA00")
   **   Color.fromStr("#d088aa00")
   **
-  static Color? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
   {
     try
     {
@@ -252,12 +252,20 @@ const class Color : Brush
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Return `argb` as the hash code.
+  ** Free any operating system resources used by this color.
+  ** Dispose is required if this color has been used in an operation
+  ** such as FWT onPaint which allocated a system resource to
+  ** represent this instance.
   **
-  override Int hash() { return rgb }
+  Void dispose() { GfxEnv.cur(false)?.colorDispose(this) }
 
   **
   ** Return `argb` as the hash code.
+  **
+  override Int hash() { return argb }
+
+  **
+  ** Equality is based on `argb`.
   **
   override Bool equals(Obj? that)
   {

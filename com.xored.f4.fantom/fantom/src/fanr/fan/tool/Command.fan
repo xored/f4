@@ -38,27 +38,62 @@ abstract class Command
   ** Stdout for printing command output
   OutStream out := Env.cur.out
 
-  ** Print a message to `out`
-  Void info(Str msg)
-  {
-    out.printLine(msg)
-  }
-
   ** Log a warning to `out`
   Void warn(Str msg)
   {
     out.printLine("WARN: $msg")
   }
 
-  ** Log an error message to `out` and return an exception which
-  ** may be used to unwind the stack back to main which returns
-  ** non-zero
+  ** Throw an exception which may be used to unwind the stack
+  ** back to main to indicate command failed and return non-zero
   Err err(Str msg, Err? cause := null)
   {
+    return CommandErr(msg, cause)
+  }
+
+  ** Ask for y/n confirmation or skip if '-y' option specified.
+  Bool confirm(Str msg)
+  {
+    if (skipConfirm) return true
     out.printLine
-    out.printLine("ERROR: $msg")
-    if (cause != null) cause.trace(out)
-    return CommandErr(msg)
+    out.print("$msg [y/n]: ").flush
+    r := Env.cur.in.readLine
+    return r.lower.startsWith("y")
+  }
+
+  ** Pretty print a pod versions to output stream
+  internal Void printPodVersion(PodSpec version)
+  {
+    printPodVersions([version])
+  }
+
+  ** Pretty print a list of pod versions (of same pod) to output stream
+  internal Void printPodVersions(PodSpec[] versions)
+  {
+    top := versions.sortr.first
+
+    // ensure summary isn't too long
+    summary := top.summary
+    if (summary.size > 100) summary = summary[0..100] + "..."
+
+    // figure out alignment padding for versions
+    verPad := 6
+    versions.each |x| { verPad = verPad.max(x.version.toStr.size) }
+
+    // print it
+    out.printLine(top.name)
+    out.printLine("  $summary")
+    versions.each |x|
+    {
+      // build details as "ts, size"
+      details := StrBuf()
+      if (x.ts != null) details.join(x.ts.date.toLocale("DD-MMM-YYYY"), ", ")
+      if (x.size != null) details.join(x.size.toLocale("B"), ", ")
+
+      // print version info line
+      verStr := x.version.toStr.padr(verPad)
+      out.printLine("  $verStr ($details)")
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -83,10 +118,47 @@ abstract class Command
       throw err("No repoUri available: use -r or set 'repo' in etc/fanr/config.props")
 
     try
-      return Repo.makeForUri(repoUri)
+      return Repo.makeForUri(repoUri, username, password)
     catch (Err e)
       throw err("Cannot init repo: $repoUri", e)
   }
+
+  ** Get the local environment to use this command
+  once FanrEnv env() { FanrEnv() }
+
+  ** Option to dump full stack trace on errors
+  @CommandOpt
+  {
+    name   = "errTrace"
+    help   = "Dump error stack traces"
+  }
+  Bool errTrace
+
+  ** Option to skip confirmation (auto yes)
+  @CommandOpt
+  {
+    name   = "y"
+    help   = "Skip confirmation"
+  }
+  Bool skipConfirm
+
+  ** Username for authentication
+  @CommandOpt
+  {
+    name   = "u"
+    help   = "Username for authentication"
+    config = "username"
+  }
+  Str? username
+
+  ** Password for authentication
+  @CommandOpt
+  {
+    name   = "p"
+    help   = "Password for authentication"
+    config = "password"
+  }
+  Str? password
 
 //////////////////////////////////////////////////////////////////////////
 // Initialization
@@ -95,7 +167,9 @@ abstract class Command
   internal Bool init(Str[] args)
   {
     initOptsFromConfig
-    return parseArgs(args)
+    if (!parseArgs(args)) return false
+    promptPassword
+    return true
   }
 
   private Void initOptsFromConfig()
@@ -244,6 +318,13 @@ abstract class Command
       return File.make(path.toUri, false)
   }
 
+  private Void promptPassword()
+  {
+    // if we have a username, but no password then prompt for it
+    if (username != null && password == null)
+      password = Env.cur.promptPassword("Password for '$username'>")
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Usage
 //////////////////////////////////////////////////////////////////////////
@@ -325,7 +406,7 @@ abstract class Command
 **
 internal const class CommandErr : Err
 {
-  new make(Str msg) : super(msg) {}
+  new make(Str msg, Err? cause) : super(msg, cause) {}
 }
 
 **************************************************************************

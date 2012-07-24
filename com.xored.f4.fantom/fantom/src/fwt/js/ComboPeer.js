@@ -10,7 +10,12 @@
  * ComboPeer.
  */
 fan.fwt.ComboPeer = fan.sys.Obj.$extend(fan.fwt.WidgetPeer);
-fan.fwt.ComboPeer.prototype.$ctor = function(self) {}
+fan.fwt.ComboPeer.prototype.$ctor = function(self)
+{
+  this.m_items = fan.sys.List.make(fan.sys.Obj.$type);
+}
+
+// see init.js for CSS
 
 fan.fwt.ComboPeer.prototype.font   = function(self) { return this.m_font; }
 fan.fwt.ComboPeer.prototype.font$  = function(self, val) { this.m_font = val; }
@@ -43,6 +48,9 @@ fan.fwt.ComboPeer.prototype.create = function(parentElem)
   this.needsRebuild = true;
 
   var select = document.createElement("select");
+  select.className = "_fwt_Combo_";
+  select.style.font = fan.fwt.WidgetPeer.fontToCss(fan.fwt.DesktopPeer.$sysFont);
+
   var div = this.emptyDiv();
   div.appendChild(select);
   parentElem.appendChild(div);
@@ -64,7 +72,8 @@ fan.fwt.ComboPeer.prototype.rebuild = function(self)
   for (var i=0; i<this.m_items.size(); i++)
   {
     var option = document.createElement("option");
-    option.appendChild(document.createTextNode(this.m_items.get(i)));
+    var text   = this.$itemText(self, this.m_items.get(i));
+    option.appendChild(document.createTextNode(text));
     select.appendChild(option);
   }
 }
@@ -73,7 +82,7 @@ fan.fwt.ComboPeer.prototype.sync = function(self)
 {
   if (this.needsRebuild)
   {
-    this.rebuild();
+    this.rebuild(self);
     this.needsRebuild = false;
   }
 
@@ -90,15 +99,21 @@ fan.fwt.ComboPeer.prototype.sync = function(self)
     self.selectedIndex$(select.selectedIndex);
 
     // fire onModify
-    if (self.m_onModify.size() > 0)
+    if (self.onModify().size() > 0)
     {
       var me = fan.fwt.Event.make();
       me.m_id = fan.fwt.EventId.m_modified;
       me.m_widget = self;
-      var list = self.m_onModify.list();
+      var list = self.onModify().list();
       for (var i=0; i<list.size(); i++) list.get(i).call(me);
     }
   }
 
   fan.fwt.WidgetPeer.prototype.sync.call(this, self);
+}
+
+// Backdoor hook to override item text [returns Str]
+fan.fwt.ComboPeer.prototype.$itemText = function(self, item)
+{
+  return fan.sys.ObjUtil.toStr(item);
 }

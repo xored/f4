@@ -47,6 +47,17 @@ public final class Sys
   public static final Pod sysPod = initSysPod();
 
 //////////////////////////////////////////////////////////////////////////
+// Java Version
+//////////////////////////////////////////////////////////////////////////
+
+  public static int JAVA_1_5 = 15;
+  public static int JAVA_1_6 = 16;
+  public static int JAVA_1_7 = 17;
+
+  /** Java version 1.5, 1.6, 1.7, etc */
+  public static int javaVersion = initJavaVersion();
+
+//////////////////////////////////////////////////////////////////////////
 // Fields (type constants)
 //////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +113,7 @@ public final class Sys
   public static final Type BufType          = initType("Buf");
   public static final Type MemBufType       = initType("MemBuf");
   public static final Type FileBufType      = initType("FileBuf");
-  public static final Type MmapBufType      = initType("MmapBuf");
+  public static final Type NioBufType       = initType("NioBuf");
   public static final Type UriType          = initType("Uri");
   public static final Type ZipType          = initType("Zip");
   public static final Type ClassLoaderFileType = initType("ClassLoaderFile");
@@ -154,6 +165,7 @@ public final class Sys
   public static final Type ReadonlyErrType       = initType("ReadonlyErr");
   public static final Type TestErrType           = initType("TestErr");
   public static final Type TimeoutErrType        = initType("TimeoutErr");
+  public static final Type UnknownKeyErrType     = initType("UnknownKeyErr");
   public static final Type UnknownPodErrType     = initType("UnknownPodErr");
   public static final Type UnknownServiceErrType = initType("UnknownServiceErr");
   public static final Type UnknownSlotErrType    = initType("UnknownSlotErr");
@@ -346,6 +358,25 @@ public final class Sys
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Init Java Version
+//////////////////////////////////////////////////////////////////////////
+
+  static int initJavaVersion()
+  {
+    try
+    {
+      String s = System.getProperty("java.version", "1.5.0");
+      if (s.startsWith("1.7.")) return JAVA_1_7;
+      if (s.startsWith("1.6.")) return JAVA_1_6;
+      return JAVA_1_5;
+    }
+    catch (Throwable e)
+    {
+      throw initFail("javaVersion", e);
+    }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Init Types
 //////////////////////////////////////////////////////////////////////////
 
@@ -402,15 +433,33 @@ public final class Sys
   {
     try
     {
+      // if running from JAR, we have to use special JarDistEnv
       if (isJarDist)
       {
         curEnv = JarDistEnv.make();
         return;
       }
 
+      // check FAN_ENV environment variable
       String var = (String)Env.cur().vars().get("FAN_ENV");
-      if (var == null) return;
-      curEnv = (Env)Type.find(var).make();
+      if (var != null)
+      {
+        curEnv = (Env)Type.find(var).make();
+        return;
+      }
+
+      // lookup up from current directory to find "fan.props" file
+      File dir = new File(".").getCanonicalFile();
+      while (dir != null)
+      {
+        File fanFile = new File(dir, "fan.props");
+        if (fanFile.exists())
+        {
+          curEnv = (Env)Type.find("util::PathEnv").method("makeProps").call(new LocalFile(fanFile));
+          return;
+        }
+        dir = dir.getParentFile();
+      }
     }
     catch (Exception e)
     {

@@ -165,3 +165,33 @@ initialization and cleanup such as managing actors.
 The [webmod]`WebMod` pod includes a library of modules which are
 designed to handle common tasks such publishing static files, routing,
 and pipelining.
+
+Expect Continue [#expectContinue]
+*********************************
+Using "Expect: 100-continue" allows the server to fail-fast and
+report an error to the client before the client sends the request
+body.  This technique is often used before posting large files
+to verify preconditions.
+
+The `WebClient` API does not provide automatic support for using the
+Expect header.  You must manually handle flow control yourself.  Here
+is a simple example showing how to post a file using the Expect header:
+
+  c := WebClient(`http://example.com/post-file`)
+  c.reqMethod = "POST"
+  c.reqHeaders["Content-Type"] = file.mimeType.toStr
+  c.reqHeaders["Content-Length"] = file.size.toStr
+  c.reqHeaders["Expect"] = "100-continue"
+  c.writeReq
+  c.readRes
+  if (c.resCode != 100) throw IOErr("Expecting 100, not $c.resCode")
+  file.in.pipe(c.reqOut, file.size)
+  c.reqOut.close
+  c.readRes
+  if (c.resCode != 200) throw IOErr("Expecting 200, not $c.resCode")
+
+Server side processing of the Expect header is automatic.
+When a Weblet acquires the `WebReq.in` stream for the first time, the
+request is checked for the "Expect: 100-continue" header and if
+specified, then a 100 Continue is automatically sent.
+

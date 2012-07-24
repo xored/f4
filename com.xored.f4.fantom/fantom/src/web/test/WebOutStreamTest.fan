@@ -236,6 +236,8 @@ class WebOutStreamTest : Test
 
     out.hr
     verifyOut(buf, "<hr />")
+    out.hr("class='foo'")
+    verifyOut(buf, "<hr class='foo' />")
 
     out.br
     verifyOut(buf, "<br />")
@@ -268,6 +270,27 @@ class WebOutStreamTest : Test
     verifyOut(buf, "<table class='foo'>")
     out.tableEnd
     verifyOut(buf, "</table>")
+
+    out.thead
+    verifyOut(buf, "<thead>")
+    out.thead("class='foo'")
+    verifyOut(buf, "<thead class='foo'>")
+    out.theadEnd
+    verifyOut(buf, "</thead>")
+
+    out.tbody
+    verifyOut(buf, "<tbody>")
+    out.tbody("class='foo'")
+    verifyOut(buf, "<tbody class='foo'>")
+    out.tbodyEnd
+    verifyOut(buf, "</tbody>")
+
+    out.tfoot
+    verifyOut(buf, "<tfoot>")
+    out.tfoot("class='foo'")
+    verifyOut(buf, "<tfoot class='foo'>")
+    out.tfootEnd
+    verifyOut(buf, "</tfoot>")
 
     out.tr
     verifyOut(buf, "<tr>")

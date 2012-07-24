@@ -538,6 +538,7 @@ public class Method
   {
     if (reflect == null) parent.finish();
 
+    java.lang.reflect.Method jm = null;
     try
     {
       // if parent is FFI Java class, then route to JavaType for handling
@@ -549,7 +550,13 @@ public class Method
       if (index < 0) index = 0;
 
       // route to Java reflection
-      return reflect[index].invoke(instance, args);
+      jm = reflect[index];
+      if (jm == null)
+      {
+        fixReflect();
+        jm = reflect[index];
+      }
+      return jm.invoke(instance, args);
     }
     catch (IllegalArgumentException e)
     {
@@ -564,6 +571,10 @@ public class Method
     }
     catch (Exception e)
     {
+
+      if (instance == null && jm != null && !java.lang.reflect.Modifier.isStatic(jm.getModifiers()))
+        throw Err.make("Cannot call method '" + this + "' with null instance");
+
       if (reflect == null)
         throw Err.make("Method not mapped to java.lang.reflect correctly " + qname());
 
@@ -578,8 +589,31 @@ public class Method
       e.printStackTrace();
       */
 
-
       throw Err.make("Cannot call '" + this + "': " + e);
+    }
+  }
+
+  private void fixReflect()
+  {
+    // this code is used to fix up our reflect table which maps
+    // parameter arity to java.lang.reflect.Methods; in sys code we
+    // don't necessarily override every version of a method with default
+    // parameters in subclasses; so if a reflection table is incomplete
+    // then we fill in missing entries from the base type's method
+    try
+    {
+      parent.base().finish();
+      Method inherit = parent.base().method(name);
+      for (int i=0; i<reflect.length; ++i)
+      {
+        if (reflect[i] == null)
+           reflect[i] = inherit.reflect[i];
+      }
+    }
+    catch (Exception e)
+    {
+      System.out.println("ERROR Method.fixReflect " + qname);
+      e.printStackTrace();
     }
   }
 

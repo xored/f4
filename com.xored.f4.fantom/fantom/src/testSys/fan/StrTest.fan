@@ -696,6 +696,7 @@ class StrTest : Test
 
   Void testSpaces()
   {
+    js := Env.cur.runtime == "js"
     x := ""
     for (Int i := 0; i < 100; ++i)
     {
@@ -705,7 +706,8 @@ class StrTest : Test
     verify(Str.spaces(0)    === Str.spaces(0))
     verify(Str.spaces(4)    === Str.spaces(4))
     verify(Str.spaces(10)   === Str.spaces(10))
-    verify(Str.spaces(1000) !== Str.spaces(1000))
+    if (js) verify(Str.spaces(1000) === Str.spaces(1000))
+    else    verify(Str.spaces(1000) !== Str.spaces(1000))
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1127,7 +1129,7 @@ class StrTest : Test
     verifyEq("xxx".toFloat(false), null)
     verifyErr(ParseErr#) { "blah".toFloat }
 
-    verifyEq("8.00".toDecimal, 8.00)
+    verifyEq("8.00".toDecimal, 8.00d)
     verifyEq("5.x".toDecimal(false), null)
     verifyErr(ParseErr#) { "5.x".toDecimal }
 

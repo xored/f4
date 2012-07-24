@@ -35,7 +35,12 @@ public class CanvasPeer
 
   public Widget create(Widget parent)
   {
-    Canvas c = new Canvas((Composite)parent, SWT.NO_BACKGROUND);
+    fan.fwt.Canvas self = (fan.fwt.Canvas)this.self;
+
+    int style = SWT.NO_BACKGROUND;
+    if (self.doubleBuffered) style |= SWT.DOUBLE_BUFFERED;
+
+    Canvas c = new Canvas((Composite)parent, style);
     c.addPaintListener(this);
     return c;
   }
@@ -43,7 +48,14 @@ public class CanvasPeer
   public void paintControl(PaintEvent e)
   {
     FwtGraphics g = new FwtGraphics(e);
-    ((fan.fwt.Canvas)self).onPaint(g);
+    try
+    {
+      ((fan.fwt.Canvas)self).onPaint(g);
+    }
+    finally
+    {
+      g.dispose();
+    }
   }
 
 }

@@ -14,29 +14,45 @@ using compiler
 class JavaPod : CPod
 {
 
-  new make(JavaBridge bridge, Str package, Str[]? classes)
+  new make(JavaBridge bridge, ClassPathPackage package)
   {
-    this.bridge = bridge
-    this.name = "[java]" + package
-    this.packageName = package
-    if (classes != null)
-      this.types = classes.map |Str n->JavaType| { JavaType(this, n) }
-    isInterop = (package == "fanx.interop")
+    this.bridge      = bridge
+    this.name        = "[java]" + package
+    this.packageName = package.name
+    this.isInterop   = (package.name == "fanx.interop")
+
+    this.types = [,]
+    package.classes.each |file, name|
+    {
+      this.types.add(JavaType.makeDasm(this, name, file))
+    }
+  }
+
+  new makePrimitives(JavaBridge bridge)
+  {
+    this.bridge      = bridge
+    this.name        = "[java]"
+    this.packageName = ""
+    this.types       = CType[,]
   }
 
   override CNamespace ns() { return bridge.ns }
 
   override const Str name
 
+  override File file() { throw UnsupportedErr() }
+
   const Str packageName
 
-  override Version version() { return Version("0") }
+  override const Version version := Version.defVal
+
+  override const CDepend[] depends := [,]
 
   override JavaBridge? bridge
 
   override Bool isForeign() { return true }
 
-  override CType[] types := [,]
+  override CType[] types
 
   override JavaType? resolveType(Str typeName, Bool checked)
   {

@@ -27,6 +27,9 @@ public class Fan
     // args
     Sys.bootEnv.setArgs(args);
 
+    // check for pods pending installation
+    checkInstall();
+
     // first try as file name
     File file = new File(target);
     if (file.exists() && target.toLowerCase().endsWith(".fan") && !file.isDirectory())
@@ -39,35 +42,42 @@ public class Fan
     }
   }
 
-  public int executeFile(File file, String[] args)
-    throws Exception
+  private void checkInstall()
   {
-    LocalFile f = (LocalFile)(new LocalFile(file).normalize());
-
-    // options
-    Map options = new Map(Sys.StrType, Sys.ObjType);
-    for (int i=0; i<args.length; ++i)
-      if (args[i].equals("-fcodeDump")) options.add("fcodeDump", Boolean.TRUE);
-
-    // use Fantom reflection to run compiler::Main.compileScript(File)
-    Pod pod = null;
+    // During bootstrap, check for pods located in "lib/install" and
+    // if found copy them to "lib/fan".  This gives us a simple way to
+    // stage installs which don't effect current program until the next
+    // reboot.  This is not really intended to be a long term solution
+    // because it suffers from limitations: assumes only one Fantom program
+    // being restarted at a time and doesn't work with Env very well
     try
     {
-      pod = Env.cur().compileScript(f, options).pod();
+      File installDir = new File(Sys.homeDir, "lib" + File.separator + "install");
+      if (!installDir.exists()) return;
+      File[] files = installDir.listFiles();
+      for (int i=0; files != null && i<files.length; ++i)
+      {
+        File file = files[i];
+        String name = file.getName();
+        if (!name.endsWith(".pod")) continue;
+        System.out.println("INSTALL POD: " + name);
+        FileUtil.copy(file, new File(Sys.podsDir, name));
+        file.delete();
+      }
+      FileUtil.delete(installDir);
     }
-    catch (Err e)
+    catch (Throwable e)
     {
-      System.out.println("ERROR: cannot compile script");
-      if (!e.getClass().getName().startsWith("fan.compiler"))
-        e.trace();
-      return -1;
-    }
-    catch (Exception e)
-    {
-      System.out.println("ERROR: cannot compile script");
+      System.out.println("ERROR: checkInstall");
       e.printStackTrace();
-      return -1;
     }
+  }
+
+  private int executeFile(File file, String[] args)
+    throws Exception
+  {
+    Pod pod = compileScript(file, args);
+    if (pod == null) return -1;
 
     List types = pod.types();
     Type type = null;
@@ -88,7 +98,35 @@ public class Fan
     return callMain(type, main);
   }
 
-  public int executeType(String target, String[] args)
+  static Pod compileScript(File file, String[] args)
+  {
+    LocalFile f = (LocalFile)(new LocalFile(file).normalize());
+
+    Map options = new Map(Sys.StrType, Sys.ObjType);
+    for (int i=0; args != null && i<args.length; ++i)
+      if (args[i].equals("-fcodeDump")) options.add("fcodeDump", Boolean.TRUE);
+
+    try
+    {
+      // use Fantom reflection to run compiler::Main.compileScript(File)
+      return Env.cur().compileScript(f, options).pod();
+    }
+    catch (Err e)
+    {
+      System.out.println("ERROR: cannot compile script");
+      if (!e.getClass().getName().startsWith("fan.compiler"))
+        e.trace();
+      return null;
+    }
+    catch (Exception e)
+    {
+      System.out.println("ERROR: cannot compile script");
+      e.printStackTrace();
+      return null;
+    }
+  }
+
+  private int executeType(String target, String[] args)
     throws Exception
   {
     if (target.indexOf("::") < 0) target += "::Main.main";
@@ -170,7 +208,7 @@ public class Fan
   static void version(String progName)
   {
     println(progName);
-    println("Copyright (c) 2006-2011, Brian Frank and Andy Frank");
+    println("Copyright (c) 2006-2012, Brian Frank and Andy Frank");
     println("Licensed under the Academic Free License version 3.0");
     println("");
     println("Java Runtime:");
@@ -183,8 +221,18 @@ public class Fan
     println("  fan.version:     " + Sys.sysPod.version());
     println("  fan.env:         " + Env.cur());
     println("  fan.home:        " + Env.cur().homeDir().osPath());
-    println("");
+
+    String[] path = Env.cur().toDebugPath();
+    if (path != null)
+    {
+      println("");
+      println("Env Path:");
+      for (int i=0; i<path.length; ++i)
+      println("  " + path[i]);
+      println("");
+    }
   }
+
 
   static void pods(String progName)
   {

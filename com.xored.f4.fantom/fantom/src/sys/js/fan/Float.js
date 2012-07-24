@@ -58,6 +58,9 @@ fan.sys.Float.isNaN = function(self)
   return isNaN(self);
 }
 
+// TODO FIXIT: hash
+fan.sys.Float.hash = function(self) { fan.sys.Str.hash(self.toString()); }
+
 /////////////////////////////////////////////////////////////////////////
 // Conversion
 //////////////////////////////////////////////////////////////////////////
@@ -144,7 +147,7 @@ fan.sys.Float.fromStr = function(s, checked)
   if (isNaN(s))
   {
     if (checked != null && !checked) return null;
-    throw fan.sys.ParseErr.make("Float", s);
+    throw fan.sys.ParseErr.makeStr("Float", s);
   }
   return fan.sys.Float.make(parseFloat(s));
 }

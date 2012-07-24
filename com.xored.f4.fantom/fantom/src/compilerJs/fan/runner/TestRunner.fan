@@ -92,12 +92,13 @@ class TestRunner
       JsIndexedProps().write(out, [Pod.find("testSys")])
 
       // locales
-      JsProps.writeProps(Pod.find("sys"), `locale/fi.props`, out)
-      JsProps.writeProps(p, `locale/en-US.props`, out)
-      JsProps.writeProps(p, `locale/es.props`, out)
-      JsProps.writeProps(p, `locale/es-MX.props`, out)
+      JsProps.writeProps(out, Pod.find("sys"), `locale/fi.props`, 1sec)
+      JsProps.writeProps(out, p, `locale/en-US.props`, 1sec)
+      JsProps.writeProps(out, p, `locale/es.props`, 1sec)
+      JsProps.writeProps(out, p, `locale/es-MX.props`, 1sec)
 
       // timezones
+      JsTimeZone(TimeZone("Phoenix")).write(out)
       JsTimeZone(TimeZone("London")).write(out)
       JsTimeZone(TimeZone("Amsterdam")).write(out)
       JsTimeZone(TimeZone("Kiev")).write(out)
@@ -108,6 +109,8 @@ class TestRunner
       JsTimeZone(TimeZone("St_Johns")).write(out)
       JsTimeZone(TimeZone("Godthab")).write(out)
       JsTimeZone(TimeZone("Taipei")).write(out)
+      JsTimeZone(TimeZone("Kolkata")).write(out)
+      JsTimeZone(TimeZone("Ho_Chi_Minh")).write(out)
 
       // unit db
       JsUnitDatabase().write(out)

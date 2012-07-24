@@ -114,6 +114,9 @@ class DecimalTest : Test
     verifyEq(16d / 5d, 3.2d)
     verifyEq(15d / 5,  3d)
     verifyEq(15d / 5f, 3d)
+    verifyEq(1d / 3d, 0.3333333333d)
+    verifyEq(1d / 3,  0.3333333333d)
+    verifyEq(1d / 3f, 0.3333333333d)
     x = 20d / 2d; x /= -5d; verifyEq(x, -2d)
 
     verifyEq(21d%-6d, 3d)
@@ -189,8 +192,8 @@ class DecimalTest : Test
 
   Void testToStr()
   {
-    verifyEq(2.00.toStr, "2.00")
-    verifyEq(0.040.toStr, "0.040")
+    verifyEq(2.00D.toStr, "2.00")
+    verifyEq(0.040d.toStr, "0.040")
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -203,8 +206,8 @@ class DecimalTest : Test
     verifyEq(Decimal.fromStr("0.8"), 0.8d)
     verifyEq(Decimal.fromStr("99.00"), 99.00d)
     verifyEq(Decimal.fromStr("bad", false),  null)
-    verifyErr(ParseErr#) { Decimal.fromStr("x.x") }
-    verifyErr(ParseErr#) { Decimal.fromStr("%\$##", true) }
+    verifyErr(ParseErr#) { x := Decimal.fromStr("x.x") }
+    verifyErr(ParseErr#) { x := Decimal.fromStr("%\$##", true) }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -226,7 +229,7 @@ class DecimalTest : Test
     // NOTE: most testing is done in FloatTest.testLocale, we just
     //  test decimals which exceed 64-bit int/float range
 
-    verifyToLocale(123_456_789.123_456_789, "#,####.###", "1,2345,6789.123")
+    verifyToLocale(123_456_789.123_456_789d, "#,####.###", "1,2345,6789.123")
     verifyToLocale(123_456_789_123_456_789_123_456_789d, "#,###.0#",  "123,456,789,123,456,789,123,456,789.0")
     verifyToLocale(-123_456_789_123_456_789_123_456_789.55d, "#,###.0",  "-123,456,789,123,456,789,123,456,789.6")
 

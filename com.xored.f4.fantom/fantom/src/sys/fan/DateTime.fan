@@ -82,7 +82,7 @@ const final class DateTime
   **
   ** Throw ArgErr is any of the parameters are out of range.
   **
-  static DateTime make(Int year, Month month, Int day, Int hour, Int min, Int sec := 0, Int ns := 0, TimeZone tz := TimeZone.cur)
+  static new make(Int year, Month month, Int day, Int hour, Int min, Int sec := 0, Int ns := 0, TimeZone tz := TimeZone.cur)
 
   **
   ** Parse the string into a DateTime from the programmatic encoding
@@ -90,7 +90,7 @@ const final class DateTime
   ** DateTime and checked is false then return null, otherwise throw ParseErr.
   ** Also see `fromIso` and `fromHttpStr`.
   **
-  static DateTime? fromStr(Str s, Bool checked := true)
+  static new fromStr(Str s, Bool checked := true)
 
   **
   ** Get the boot time of the Fantom VM with `TimeZone.cur`
@@ -288,9 +288,12 @@ const final class DateTime
   ** based on checked flag.  See `toLocale` for pattern syntax.
   **
   ** The timezone is inferred from the zone pattern, or else the
-  ** given 'tz' parameter is used for the timezone.  If only a zone
-  ** offset is available and it doesn't match the expected for the
-  ** 'tz' parameter, then use a "GMT+/-" timezone.
+  ** given 'tz' parameter is used for the timezone.  The 'z' pattern
+  ** will match "hh:mm", "hhmm", or "hh".  If only a zone offset is
+  ** available and it doesn't match the expected 'tz' parameter,
+  ** then use a "GMT+/-" timezone.  Note that if offset is a fractional
+  ** hour such as GMT-3:30, then result will have ticks, but its
+  ** tz will be floored hour based GMT timezone such as GMT-3.
   **
   static DateTime? fromLocale(Str str, Str pattern, TimeZone tz := TimeZone.cur, Bool checked := true)
 

@@ -129,6 +129,13 @@ public class BootEnv
 
   public OutStream err() { return err; }
 
+  public String promptPassword(String msg)
+  {
+    char[] pass = System.console().readPassword(msg);
+    if (pass == null) return null;
+    return new String(pass);
+  }
+
   public File homeDir() { return homeDir; }
 
   public File workDir() { return homeDir; }
@@ -193,6 +200,7 @@ public class BootEnv
     for (int i=0; i<threadIds.length; ++i)
     {
       ThreadInfo ti = thread.getThreadInfo(threadIds[i]);
+      if (ti == null) continue;
       d.add("thread." + i + ".name",    ti.getThreadName());
       d.add("thread." + i + ".state",   ti.getThreadState().toString());
       d.add("thread." + i + ".cpuTime", Duration.make(thread.getThreadCpuTime(threadIds[i])));

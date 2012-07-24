@@ -24,7 +24,7 @@ internal class FileRepoDb
     this.repo = repo
     this.dir  = repo.dir
     this.log  = Log.get("fanr")
-this.log.level = LogLevel.debug // TODO
+    // this.log.level = LogLevel.debug
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,6 +36,7 @@ this.log.level = LogLevel.debug // TODO
     switch (msg.id)
     {
       case FileRepoMsg.load:     return load
+      case FileRepoMsg.find:     return find(msg.a, msg.b)
       case FileRepoMsg.query:    return query(msg.a, msg.b)
       case FileRepoMsg.publish:  return publish(msg.a)
       default:                   throw Err("Unknown msg: $msg")
@@ -113,6 +114,26 @@ this.log.level = LogLevel.debug // TODO
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Find
+//////////////////////////////////////////////////////////////////////////
+
+  private PodSpec? find(Str name, Version? ver)
+  {
+    // lookup dir record for name
+    dir := podDirs[name]
+    if (dir == null) return null
+
+    // if version null, then find latest one
+    if (ver == null) return dir.cur
+
+    // ensure all pod versions are fully loaded
+    loadAll(dir)
+
+    // find exact version match
+    return dir.all.find |pod| { pod.version == ver }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Query
 //////////////////////////////////////////////////////////////////////////
 
@@ -168,11 +189,14 @@ this.log.level = LogLevel.debug // TODO
     spec := PodSpec.load(inputFile)
 
     // get dest file in our db and verify it doesnt already exist
-    dbFile := specToFile(spec)
+    dbFile := repo.specToFile(spec)
     if (dbFile.exists) throw Err("Pod already published: $spec")
 
     // copy it
     inputFile.copyTo(dbFile)
+
+    // re-read spec using correct dbFile
+    spec = PodSpec.load(dbFile)
 
     // check if we need to update our data structures
     podDir := podDirs[spec.name]
@@ -190,15 +214,6 @@ this.log.level = LogLevel.debug // TODO
 
     // return spec
     return spec
-  }
-
-//////////////////////////////////////////////////////////////////////////
-// Utils
-//////////////////////////////////////////////////////////////////////////
-
-  private File specToFile(PodSpec spec)
-  {
-    dir + `${spec.name}/${spec.toStr}.pod`
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,9 +245,10 @@ internal class PodDir
 internal const class FileRepoMsg
 {
   const static Int load     := 0  //
-  const static Int query    := 1  // a=query, b=numVersions
-  const static Int versions := 2  // a=Str
-  const static Int publish  := 3  // a=File
+  const static Int find     := 1  // a=name, b=version
+  const static Int query    := 2  // a=query, b=numVersions
+  const static Int versions := 3  // a=Str
+  const static Int publish  := 4  // a=File
 
   new make(Int id, Obj? a := null, Obj? b := null) { this.id = id; this.a = a; this.b = b}
 

@@ -23,6 +23,7 @@ final class FPod : CPod, FConst
   {
     this.ns         = ns
     this.version    = Version.defVal
+    this.depends    = CDepend[,]
     this.name       = podName
     this.zip        = zip
     this.names      = FTable.makeStrs(this)
@@ -42,6 +43,8 @@ final class FPod : CPod, FConst
 //////////////////////////////////////////////////////////////////////////
 // CPod
 //////////////////////////////////////////////////////////////////////////
+
+  override File file() { zip.file }
 
   override CType? resolveType(Str name, Bool checked)
   {
@@ -87,9 +90,9 @@ final class FPod : CPod, FConst
   Duration duration(Int index)    { durations[index] }
   Str uri(Int index)              { uris[index] }
 
-  Str typeRefStr(Int index) { return typeRef(index).format(this) }
-  Str fieldRefStr(Int index) { return fieldRef(index).format(this) }
-  Str methodRefStr(Int index) { return methodRef(index).format(this) }
+  Str typeRefStr(Int index) { typeRef(index).format(this) }
+  Str fieldRefStr(Int index) { fieldRef(index).format(this) }
+  Str methodRefStr(Int index) { methodRef(index).format(this) }
 
 //////////////////////////////////////////////////////////////////////////
 // Compile Utils
@@ -159,7 +162,7 @@ final class FPod : CPod, FConst
     name = meta.get("pod.name") ?: throw IOErr("Missing meta pod.name")
     version = Version(meta.get("pod.version"))
     d := meta.get("pod.depends")
-    depends = d.isEmpty ? Depend[,] : d.split(';').map |s->Depend| { Depend(s) }
+    depends = d.isEmpty ? CDepend[,] : d.split(';').map |s->CDepend| { CDepend.fromStr(s) }
 
     // read tables
     names.read(in(`/fcode/names.def`))
@@ -224,10 +227,13 @@ final class FPod : CPod, FConst
     if (!uris.isEmpty)       uris.write(out(`/fcode/uris.def`))
 
     // write type meta-data
-    out := this.out(`/fcode/types.def`)
-    out.writeI2(ftypes.size)
-    ftypes.each |FType t| { t.writeMeta(out) }
-    out.close
+    if (!ftypes.isEmpty)
+    {
+      out := this.out(`/fcode/types.def`)
+      out.writeI2(ftypes.size)
+      ftypes.each |FType t| { t.writeMeta(out) }
+      out.close
+    }
 
     // write type full fcode
     ftypes.each |FType t| { t.write }
@@ -279,7 +285,7 @@ final class FPod : CPod, FConst
   **
   ** Get output stream to write the specified file to zip storage.
   **
-  OutStream out(Uri uri) { return zip.writeNext(uri) }
+  OutStream out(Uri uri) { zip.writeNext(uri) }
 
 //////////////////////////////////////////////////////////////////////////
 // Fields
@@ -288,7 +294,7 @@ final class FPod : CPod, FConst
   override CNamespace ns    // compiler's namespace
   override Str name         // pod's unique name
   override Version version  // pod version
-  Depend[]? depends         // pod dependencies
+  override CDepend[] depends // pod dependencies
   Str:Str meta              // pod meta
   Str:Obj index             // pod index
   Zip? zip                  // zipped storage

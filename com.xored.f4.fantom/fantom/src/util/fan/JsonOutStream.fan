@@ -20,9 +20,9 @@ class JsonOutStream : OutStream
   **
   public static Str writeJsonToStr(Obj? obj)
   {
-    buf := Buf()  // TODO: switch to StrBuf once #1031 is fixed
+    buf := StrBuf()
     JsonOutStream(buf.out).writeJson(obj)
-    return buf.flip.readAllStr
+    return buf.toStr
   }
 
   **
@@ -72,8 +72,8 @@ class JsonOutStream : OutStream
     writeChar(JsonToken.objectStart)
     type.fields.each |f, i|
     {
-      if (i != 0) writeChar(JsonToken.comma).writeChar('\n')
       if (f.isStatic || f.hasFacet(Transient#) == true) return
+      if (i != 0) writeChar(JsonToken.comma).writeChar('\n')
       writeJsonPair(f.name, f.get(obj))
     }
     writeChar(JsonToken.objectEnd)

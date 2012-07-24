@@ -192,6 +192,8 @@ abstract class Expr : Node
 
   **
   ** Get this expression as a string suitable for documentation.
+  ** This string must not contain a newline or it will break the
+  ** DocApiParser.
   **
   Str? toDocStr()
   {
@@ -201,6 +203,14 @@ abstract class Expr : Node
     // the buffer by the time the tokens are passed to the parser
     try
     {
+      // literals
+      if (this is LiteralExpr)
+      {
+        s := serialize
+        if (s.size > 40) s = "..."
+        return s
+      }
+
       // if we access an internal slot then don't expose in public docs
       CSlot? slot := null
       if (this is CallExpr) slot = ((CallExpr)this).method
@@ -508,12 +518,12 @@ class ListLiteralExpr : Expr
 
   override Str serialize()
   {
-    return format |Expr e->Str| { return e.serialize }
+    return format |Expr e->Str| { e.serialize }
   }
 
   override Str toStr()
   {
-    return format |Expr e->Str| { return e.toStr }
+    return format |Expr e->Str| { e.toStr }
   }
 
   Str format(|Expr e->Str| f)
@@ -558,12 +568,12 @@ class MapLiteralExpr : Expr
 
   override Str serialize()
   {
-    return format |Expr e->Str| { return e.serialize }
+    return format |Expr e->Str| { e.serialize }
   }
 
   override Str toStr()
   {
-    return format |Expr e->Str| { return e.toStr }
+    return format |Expr e->Str| { e.toStr }
   }
 
   Str format(|Expr e->Str| f)
@@ -655,7 +665,7 @@ class BinaryExpr : Expr
 
   override Obj? assignTarget() { id === ExprId.assign ? lhs : null }
 
-  override Bool isStmt() { return id === ExprId.assign }
+  override Bool isStmt() { id === ExprId.assign }
 
   override Bool isDefiniteAssign(|Expr lhs->Bool| f)
   {
@@ -705,7 +715,7 @@ class CondExpr : Expr
     this.operands = [first]
   }
 
-  override Bool isCond() { return true }
+  override Bool isCond() { true }
 
   override Void walkChildren(Visitor v)
   {
@@ -772,16 +782,10 @@ abstract class NameExpr : Expr
 **
 class UnknownVarExpr : NameExpr
 {
-  new make(Loc loc, Expr? target, Str name)
-    : super(loc, ExprId.unknownVar, target, name)
+  new make(Loc loc, Expr? target, Str name, ExprId id := ExprId.unknownVar)
+    : super(loc, id, target, name)
   {
   }
-
-  new makeStorage(Loc loc, Expr? target, Str name)
-    : super.make(loc, ExprId.storage, target, name)
-  {
-  }
-
 }
 
 **************************************************************************
@@ -834,7 +838,7 @@ class CallExpr : NameExpr
     return true
   }
 
-  virtual Bool isCompare() { return false }
+  virtual Bool isCompare() { false }
 
   override Void walkChildren(Visitor v)
   {
@@ -848,7 +852,7 @@ class CallExpr : NameExpr
     if (id != ExprId.construction || method.name != "fromStr")
       return super.serialize
 
-    argSer := args.join(",") |Expr e->Str| { return e.serialize }
+    argSer := args.join(",") |Expr e->Str| { e.serialize }
     return "$method.parent($argSer)"
   }
 
@@ -1042,9 +1046,9 @@ class FieldExpr : NameExpr
     }
   }
 
-  override Bool isAssignable() { return true }
+  override Bool isAssignable() { true }
 
-  override Bool assignRequiresTempVar() { return !field.isStatic }
+  override Bool assignRequiresTempVar() { !field.isStatic }
 
   override Bool sameVarAs(Expr that)
   {
@@ -1131,12 +1135,11 @@ class LocalVarExpr : Expr
     }
   }
 
-  new makeNoUnwrap(Loc loc, MethodVar var)
-    : super.make(loc, ExprId.localVar)
+  static LocalVarExpr makeNoUnwrap(Loc loc, MethodVar var)
   {
-    this.var    = var
-    this.ctype  = var.ctype
-    this.unwrap = false
+    self := make(loc, var, ExprId.localVar)
+    self.unwrap = false
+    return self
   }
 
   override Bool isAssignable() { true }
@@ -1151,7 +1154,7 @@ class LocalVarExpr : Expr
     return register == x.register
   }
 
-  virtual Int register() { return var.register }
+  virtual Int register() { var.register }
 
   override Str toStr()
   {
@@ -1257,6 +1260,11 @@ class StaticTargetExpr : Expr
     this.ctype = ctype
   }
 
+  override Bool sameVarAs(Expr that)
+  {
+    that.id === ExprId.staticTarget && ctype == that.ctype
+  }
+
   override Str toStr()
   {
     return ctype.signature
@@ -1304,6 +1312,8 @@ class TypeCheckExpr : Expr
 
   override Bool isAlwaysNullable() { id === ExprId.asExpr }
 
+  override Bool isDefiniteAssign(|Expr lhs->Bool| f) { target.isDefiniteAssign(f) }
+
   override Str serialize()
   {
     if (id == ExprId.coerce)
@@ -1336,7 +1346,7 @@ class TypeCheckExpr : Expr
   }
 
   ** From type if coerce
-  CType? from { get { return &from ?: target.ctype } }
+  CType? from { get { &from ?: target.ctype } }
 
   Expr target
   CType check    // to type if coerce
@@ -1474,6 +1484,13 @@ class ClosureExpr : Expr
       out.nl
       code.print(out)
     }
+  }
+
+  override Bool isDefiniteAssign(|Expr lhs->Bool| f)
+  {
+    // at this point, we have moved code into doCall method
+    if (doCall == null) return false
+    return doCall.code.isDefiniteAssign(f)
   }
 
   Expr toWith(Expr target)

@@ -18,13 +18,13 @@ const class Image
   ** Convenience for `makeFile` to create an image which
   ** is loaded from the file referenced by `sys::Uri.get`.
   **
-  static Image? make(Uri uri, Bool checked := true)
+  static new make(Uri uri, Bool checked := true)
   {
     try
     {
       f := (File)uri.get
       if (!f.exists) throw UnresolvedErr("file does not exist: $f")
-      return makeUri(uri) { it.file = f }
+      return makeFields(uri, f)
     }
     catch (Err e)
     {
@@ -43,7 +43,7 @@ const class Image
   **     g.fillRect(0, 0, 100, 100)
   **   }
   **
-  static Image makePainted(Size size, |Graphics| f)
+  static new makePainted(Size size, |Graphics| f)
   {
     GfxEnv.cur.imagePaint(size, f)
   }
@@ -60,12 +60,12 @@ const class Image
   ** image once this method completes successfully.  Completion of
   ** this method is based only on file existence.
   **
-  static Image? makeFile(File f, Bool checked := true)
+  static new makeFile(File f, Bool checked := true)
   {
     try
     {
       if (!f.exists) throw UnresolvedErr("file does not exist: $f")
-      return makeUri(f.uri) { it.file = f }
+      return makeFields(f.uri, f)
     }
     catch (Err e)
     {
@@ -77,20 +77,20 @@ const class Image
   **
   ** Convenience for 'make(uri.toUri, checked)'.
   **
-  static Image? fromStr(Str uri, Bool checked := true)
+  static new fromStr(Str uri, Bool checked := true)
   {
     make(uri.toUri, checked)
   }
 
   **
-  ** Construct an image identified by the given URI.  This
-  ** constructor is used for subclasses and graphics toolkits.
-  ** Developers should use `make` or `makeFile`.
+  ** Construct with field values.  This constructor is used
+  ** for subclasses and graphics toolkits.  Developers
+  ** should use `make` or `makeFile`.
   **
-  @NoDoc new makeUri(Uri uri, |This|? f := null)
+  @NoDoc new makeFields(Uri uri, File file)
   {
     this.uri = uri
-    if (f != null) f(this)
+    this.file = file
   }
 
   **
@@ -104,6 +104,14 @@ const class Image
   ** null if this image represents a buffered image in memory.
   **
   const File? file
+
+  **
+  ** Free any operating system resources used by this image.
+  ** Dispose is required if this image has been used in an operation
+  ** such as FWT onPaint which allocated a system resource to
+  ** represent this instance.
+  **
+  Void dispose() { GfxEnv.cur(false)?.imageDispose(this) }
 
   **
   ** Return 'uri.hash'.

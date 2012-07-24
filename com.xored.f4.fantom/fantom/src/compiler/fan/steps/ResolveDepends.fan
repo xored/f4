@@ -42,24 +42,40 @@ class ResolveDepends : CompilerStep
     // if the input has no dependencies, then
     // assume a dependency on sys
     input := compiler.input
-    isSys := input.podName == "sys"
+    myName := input.podName
+    isSys := myName == "sys"
     if (compiler.depends.isEmpty && !isSys)
-      compiler.depends.add(Depend.fromStr("sys 0+"))
+      compiler.depends.add(CDepend.fromStr("sys 0+"))
 
     // we initialize the CNamespace.depends map
     // as we process each dependency
-    ns.depends = Str:Depend[:]
+    ns.depends = Str:CDepend[:]
 
     // process each dependency
-    compiler.depends.each |Depend depend|
+    compiler.depends.each |cdepend|
     {
-      ns.depends[depend.name] = depend
-      resolveDepend(depend)
+      ns.depends[cdepend.name] = cdepend
+      cdepend.pod = resolveDepend(cdepend.depend)
     }
 
     // check that everything has a dependency on sys
     if (!ns.depends.containsKey("sys") && !isSys)
       err("All pods must have a dependency on 'sys'", loc)
+
+    bombIfErr
+
+    // now that we've resolved all depends, ensure there are no
+    // cyclic dependencies; this means that none of my dependent
+    // pods should have a cyclic dependency back on me
+    ns.depends.each |myDepend|
+    {
+      if (myDepend.name == myName) err("Cyclic dependency on self '$myName'", loc)
+      myDepend.pod.depends.each |podDepend|
+      {
+        if (podDepend.name == myName)
+          err("Cyclic dependency on '$myDepend.name'", loc)
+      }
+    }
 
     bombIfErr
   }
@@ -68,9 +84,9 @@ class ResolveDepends : CompilerStep
   ** Resolve the dependency via reflection using
   ** the pods the compiler is running against.
   **
-  private Void resolveDepend(Depend depend)
+  private CPod? resolveDepend(Depend depend)
   {
-    CPod? pod := null
+    CPod? pod
     try
     {
       pod = ns.resolvePod(depend.name, loc)
@@ -78,14 +94,15 @@ class ResolveDepends : CompilerStep
     catch (CompilerErr e)
     {
       err("Cannot resolve depend: pod '$depend.name' not found", loc)
-      return
+      return null
     }
 
     if (!depend.match(pod.version))
     {
       err("Cannot resolve depend: '$pod.name $pod.version' != '$depend'", loc)
-      return
     }
+
+    return pod
   }
 
 //////////////////////////////////////////////////////////////////////////

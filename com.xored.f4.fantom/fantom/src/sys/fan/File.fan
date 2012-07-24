@@ -30,7 +30,7 @@ abstract const class File
   ** directory.  Throw ArgErr if the Uri has a scheme other than null
   ** or "file:".
   **
-  static File make(Uri uri, Bool checkSlash := true)
+  static new make(Uri uri, Bool checkSlash := true)
 
   **
   ** Make a File for the specified operating system specific path
@@ -141,6 +141,13 @@ abstract const class File
   ** directory or unknown.
   **
   abstract Int? size()
+
+  **
+  ** If this is a file return if the file size is zero or null.
+  ** If this is a directory return if this directory has no
+  ** files without reading a full listing.
+  **
+  virtual Bool isEmpty()
 
   **
   ** Get time the file was last modified or null if unknown.

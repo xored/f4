@@ -77,13 +77,13 @@ namespace Fan.Sys
     public static bool approx(double self, double that, Double tolerance)
     {
       // need this to check +inf, -inf, and nan
-      if (equals(self, that)) return true;
+      if (compare(self, new Double(that)) == 0) return true;
 
       double t;
       if (tolerance == null)
         t = Math.Min(Math.Abs(self/1e6), Math.Abs(that/1e6));
       else
-        t = (tolerance as Double).doubleValue();
+        t = tolerance.doubleValue();
       return Math.Abs(self - that) <= t;
     }
 

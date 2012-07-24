@@ -27,7 +27,7 @@ public class IpAddrPeer
 // Constructors
 //////////////////////////////////////////////////////////////////////////
 
-  public static IpAddr make(String str)
+  public static IpAddr makeNative(String str)
   {
     try
     {
@@ -158,6 +158,11 @@ public class IpAddrPeer
   public String hostname(IpAddr fan)
   {
     return java.getHostName();
+  }
+
+  public Object toNative(IpAddr fan)
+  {
+    return java;
   }
 
 //////////////////////////////////////////////////////////////////////////

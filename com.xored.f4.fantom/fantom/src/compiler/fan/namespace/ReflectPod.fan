@@ -20,9 +20,13 @@ class ReflectPod : CPod
 
   override ReflectNamespace ns { private set }
 
-  override Str name() { return pod.name }
+  override Str name() { pod.name }
 
-  override Version version() { return pod.version }
+  override Version version() { pod.version }
+
+  override once CDepend[] depends() { CDepend.makeList(pod.depends) }
+
+  override once File file() { Env.cur.findPodFile(name) }
 
   override CType[] types()
   {

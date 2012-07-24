@@ -56,8 +56,10 @@ public class Pod
           // if resolving is non-null, check that our pod name it
           // isn't in the resolving map, because then we have a cyclic
           // dependency which is bad, bad, bad
+          if (resolving == null) resolving = new HashMap();
           if (resolving != null && resolving.containsKey(name))
             throw new Exception("Cyclic dependency on '" + name + "'");
+          resolving.put(name, name);
 
           // if fpod is non-null, then we are "creating" this pod in
           // memory direct from the compiler, otherwise we need to
@@ -71,20 +73,20 @@ public class Pod
           // dependency check, keep track of what we are loading
           // via depends checking to prevent a cyclic dependency
           // from putting us into an infinite loop
-          HashMap thisResolving = new HashMap();
-          thisResolving.put(name, name);
+          Pod[] dependPods = new Pod[fpod.depends.length];
           for (int i=0; i<fpod.depends.length; ++i)
           {
             Depend d = fpod.depends[i];
-            Pod dpod = doFind(d.name(), false, null, thisResolving);
+            Pod dpod = doFind(d.name(), false, null, resolving);
             if (dpod == null)
               throw new Exception("Missing dependency for '" + name + "': " + d);
             if (!d.match(dpod.version()))
               throw new Exception("Missing dependency for '" + name + "': " + dpod.name() + " " + dpod.version() + " != " + d);
+            dependPods[i] = dpod;
           }
 
           // create the pod and register it
-          ref = new SoftReference(new Pod(fpod));
+          ref = new SoftReference(new Pod(fpod, dependPods));
           podsByName.put(name, ref);
         }
         return (Pod)ref.get();
@@ -125,7 +127,7 @@ public class Pod
         throw Err.make("Duplicate pod name: " + name);
 
       // create Pod and add to master table
-      Pod pod = new Pod(fpod);
+      Pod pod = new Pod(fpod, new Pod[]{});
       podsByName.put(name, new SoftReference(pod));
       return pod;
     }
@@ -207,10 +209,11 @@ public class Pod
 // Constructor
 //////////////////////////////////////////////////////////////////////////
 
-  Pod(FPod fpod)
+  Pod(FPod fpod, Pod[] dependPods)
   {
     this.name = fpod.podName;
     this.classLoader = new FanClassLoader(this);
+    this.dependPods = dependPods;
     load(fpod);
   }
 
@@ -438,7 +441,7 @@ public class Pod
       try
       {
         cls = Env.cur().loadPodClass(this);
-        FPodEmit.initFields(fpod, cls);
+        FPodEmit.initFields(this, fpod, cls);
       }
       catch (Exception e)
       {
@@ -453,7 +456,7 @@ public class Pod
     throws Exception
   {
     this.cls = cls;
-    FPodEmit.initFields(fpod, cls);
+    FPodEmit.initFields(this, fpod, cls);
   }
 
   Type type(int qname)
@@ -475,7 +478,7 @@ public class Pod
     String typeName = ref.typeName;
     if (podName.startsWith("[java]"))
     {
-      Type t = Env.cur().loadJavaType(podName, typeName);
+      Type t = Env.cur().loadJavaType(this, podName, typeName);
       if (ref.isNullable()) t = t.toNullable();
       return t;
     }
@@ -515,6 +518,7 @@ public class Pod
 
   final String name;
   final FanClassLoader classLoader;
+  final Pod[] dependPods;
   Uri uri;
   FPod fpod;
   Version version;

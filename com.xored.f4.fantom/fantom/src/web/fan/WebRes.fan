@@ -72,9 +72,7 @@ abstract class WebRes
   **
   ** Send an error response to client using the specified status and
   ** HTML formatted message.  If this response has already been committed
-  ** this method throws an Err.  If the server has a preconfigured page
-  ** for this error code, it will trump the message passed in.
-  ** This method implicitly calls `done`.
+  ** this method throws an Err.  This method implicitly calls `done`.
   **
   abstract Void sendErr(Int statusCode, Str? msg := null)
 

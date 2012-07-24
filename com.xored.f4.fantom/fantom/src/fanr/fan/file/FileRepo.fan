@@ -53,11 +53,31 @@ internal const class FileRepo : Repo
 
   override const Uri uri
 
+  override Str:Str ping()
+  {
+    ["fanr.type":    typeof.toStr,
+     "fanr.version": FileRepo#.pod.version.toStr]
+  }
+
+  override PodSpec? find(Str name, Version? ver, Bool checked := true)
+  {
+    msg := FileRepoMsg(FileRepoMsg.find, name, ver)
+    spec := actor.send(msg).get(timeout) as PodSpec
+    if (spec != null) return spec
+    if (checked) throw UnknownPodErr("$name-$ver")
+    return null
+  }
+
   override PodSpec[] query(Str query, Int numVersions := 1)
   {
     msg := FileRepoMsg(FileRepoMsg.query, query, numVersions)
     Unsafe r := actor.send(msg).get(timeout)
     return r.val
+  }
+
+  override InStream read(PodSpec spec)
+  {
+    specToFile(spec).in
   }
 
   override PodSpec publish(File podFile)
@@ -73,6 +93,15 @@ internal const class FileRepo : Repo
     db := Actor.locals["fanr.file.db"] as FileRepoDb
     if (db == null)  Actor.locals["fanr.file.db"] = db = FileRepoDb(this)
     return db.dispatch(msg)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Utils
+//////////////////////////////////////////////////////////////////////////
+
+  internal File specToFile(PodSpec spec)
+  {
+    dir + `${spec.name}/${spec.toStr}.pod`
   }
 
 //////////////////////////////////////////////////////////////////////////

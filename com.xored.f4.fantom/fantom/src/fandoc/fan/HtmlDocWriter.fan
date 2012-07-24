@@ -11,6 +11,7 @@
 **
 ** See [pod doc]`pod-doc#api` for usage.
 **
+@Js
 class HtmlDocWriter : DocWriter
 {
 
@@ -22,6 +23,14 @@ class HtmlDocWriter : DocWriter
   {
     this.out = out
   }
+
+//////////////////////////////////////////////////////////////////////////
+// Config
+//////////////////////////////////////////////////////////////////////////
+
+  ** Callback to perform link resolution and checking for
+  ** every Link element
+  |Link link|? onLink := null
 
 //////////////////////////////////////////////////////////////////////////
 // DocWriter
@@ -67,8 +76,11 @@ class HtmlDocWriter : DocWriter
     if (elem.isBlock) out.writeChar('\n')
 
     // if hyperlink to code, then wrap in code element
-    if (elem.id == DocNodeId.link && ((Link)elem).isCode)
-      out.print("<code>")
+    if (elem.id == DocNodeId.link)
+    {
+      if (onLink != null) onLink(elem)
+      if (elem->isCode) out.print("<code>")
+    }
 
     out.writeChar('<').print(elem.htmlName)
     if (elem.anchorId != null) out.print(" id='$elem.anchorId'")

@@ -14,7 +14,13 @@ fan.sys.ObjUtil = function() {};
 
 fan.sys.ObjUtil.hash = function(obj)
 {
-  // TODO
+  if (obj instanceof fan.sys.Obj) return obj.hash();
+
+  var t = typeof obj;
+  if (t === "number") return fan.sys.Int.hash(obj);
+  if (t === "string") return fan.sys.Str.hash(obj);
+
+  // TODO FIXIT
   return 0;
 }
 

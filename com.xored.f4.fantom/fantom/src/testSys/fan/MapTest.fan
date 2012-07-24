@@ -272,7 +272,7 @@ class MapTest : Test
     verifyEq(m[9], null)
     verifyEq(m.get(0, "?"), "?")
     verifyEq(m.get(2, "?"), "two")
-    verifyEq(m.get(9, "?"), "?") // mapped, but null returns def
+    verifyEq(m.get(9, "?"), null)
     verifyErr(ArgErr#) { m.add(5, "err") }
     verifyErr(ArgErr#) { m.add(9, "err") }
 
@@ -329,12 +329,25 @@ class MapTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// getOrThrow
+//////////////////////////////////////////////////////////////////////////
+
+  Void testGetOrThrow()
+  {
+    m := ["a": "A", "b": null]
+    verifyEq(m.getOrThrow("a"), "A")
+    verifyEq(m.getOrThrow("b"), null)
+    verifyErr(UnknownKeyErr#) { x := m.getOrThrow("c") }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Null Vals
 //////////////////////////////////////////////////////////////////////////
 
   Void testNullVals()
   {
     m := ["a": "A", "b": null]
+    m.def = "def field"
 
     verifyEq(m.size, 2)
 
@@ -343,6 +356,9 @@ class MapTest : Test
 
     verifyEq(m["a"], "A")
     verifyEq(m["b"], null)
+    verifyEq(m["c"], "def field")
+    verifyEq(m.get("b", "def param"), null)
+    verifyEq(m.get("x", "def param"), "def param")
 
     keys := Str[,]
     vals := Str?[,]
@@ -800,10 +816,13 @@ class MapTest : Test
     verifyEq(rw.vals, [0, 11, 2, 3, 4, 66, 7, 88, 9, 5])
 
     // set false
-    m.ordered = false
-    10.times |Int j| { m.add(j.toStr, j) }
-    verifyNotEq(m.keys, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
-    verifyNotEq(m.vals, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    if (Env.cur.runtime != "js")
+    {
+      m.ordered = false
+      10.times |Int j| { m.add(j.toStr, j) }
+      verifyNotEq(m.keys, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+      verifyNotEq(m.vals, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    }
 
     // errors
     verifyErr(UnsupportedErr#) { ["a":0].ordered = true }
@@ -965,6 +984,34 @@ class MapTest : Test
     // typed assign
     Int:Str a := map.findAll |Str v->Bool| { return v.size == 4 }
     verifyEq(a, [0:"zero", 4:"four"])
+
+    // ordered
+    mo := Str:Int[:]
+    mo.ordered = true
+    mo.add("one",   1)
+    mo.add("two",   2)
+    mo.add("three", 3)
+    mo.add("four",  4)
+    mx1 := mo.findAll { true }
+    mx2 := mo.exclude { false }
+    verifyEq(mx1.ordered, true)
+    verifyEq(mx2.ordered, true)
+    verifyEq(mx1.keys, ["one", "two", "three", "four"])
+    verifyEq(mx2.keys, ["one", "two", "three", "four"])
+
+    // case insensitive
+    mc := Str:Int[:]
+    mc.caseInsensitive = true
+    mc.add("One",   1)
+    mc.add("TWO",   2)
+    mc.add("three", 3)
+    mc.add("Four",  4)
+    mx1 = mc.findAll { it.isEven }
+    mx2 = mc.exclude { it.isOdd }
+    verifyEq(mx1.caseInsensitive, true)
+    verifyEq(mx2.caseInsensitive, true)
+    verifyEq(mx1["two"], 2)
+    verifyEq(mx2["two"], 2)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1208,4 +1255,60 @@ class MapTest : Test
     verifyErr(NotImmutableErr#) { [4:[8ns:this]].toImmutable }
   }
 
+//////////////////////////////////////////////////////////////////////////
+// Collisions
+//////////////////////////////////////////////////////////////////////////
+
+  Void testCollisions()
+  {
+    a := CollisionTest("a")
+    b := CollisionTest("b")
+    c := CollisionTest("c")
+    d := CollisionTest("d")
+    e := CollisionTest("e")
+
+    m := CollisionTest:Str[a:"a", b:"b", c:"c", d:"d", e:"e"]
+    verifyEq(m.size, 5)
+    verifyEq(m, [a:"a", b:"b", c:"c", d:"d", e:"e"])
+    verifyEq(m[a], "a")
+    verifyEq(m[b], "b")
+    verifyEq(m[c], "c")
+    verifyEq(m[d], "d")
+    verifyEq(m[e], "e")
+
+    m.remove(c)
+    verifyEq(m.size, 4)
+    verifyEq(m, [a:"a", b:"b", d:"d", e:"e"])
+    verifyEq(m[a], "a")
+    verifyEq(m[b], "b")
+    verifyEq(m[d], "d")
+    verifyEq(m[e], "e")
+
+    m.remove(a)
+    verifyEq(m.size, 3)
+    verifyEq(m, [b:"b", d:"d", e:"e"])
+    verifyEq(m[b], "b")
+    verifyEq(m[d], "d")
+    verifyEq(m[e], "e")
+
+    m.remove(e)
+    verifyEq(m.size, 2)
+    verifyEq(m, [b:"b", d:"d"])
+    verifyEq(m[b], "b")
+    verifyEq(m[d], "d")
+  }
 }
+
+@Js
+const class CollisionTest
+{
+  new make(Str val) { this.val = val }
+  override Int hash() { 12 }
+  override Bool equals(Obj? that)
+  {
+    (that is CollisionTest) ? that->val == val : false
+  }
+  override Str toStr() { val }
+  const Str val
+}
+
