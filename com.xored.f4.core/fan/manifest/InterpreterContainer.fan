@@ -51,7 +51,7 @@ class InterpreterContainer :
         }
         else
         {
-          podFile := File(Uri.fromStr(path.toStr))
+          podFile := Uri.fromStr(path.toStr).toFile
           if( podFile.exists) 
           {
             Zip zipfile := Zip.open(podFile)

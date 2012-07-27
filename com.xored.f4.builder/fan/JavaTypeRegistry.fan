@@ -56,6 +56,10 @@ class JavaTypeRegistry
       doLoad(type, slots)
   }
   
+  Void loadFromJdt(JdtJavaType type, Str:CSlot slots) {
+    populateType(type, type.jdtType, slots)
+  }
+  
   private Void doLoad(JavaType type, Str:CSlot slots)
   {
     qname := type.toJavaClassName
@@ -185,6 +189,8 @@ class JavaTypeRegistry
     islots := [Str:CSlot[]][:]
     populateInterfaceSlots(type, info, slots)
     populateFields(type, info, slots)
+    populateObjSlots(type, slots)
+    
     result.addAll(collapseSlots(slots))
     
     // Add <init> method for non interfaces
@@ -195,6 +201,17 @@ class JavaTypeRegistry
         ctor := JavaMethod(type, "<init>", FConst.Public.or(FConst.Ctor).or(FConst.Virtual), type, [,] )
         result["<init>"] = ctor
       }
+  }
+  
+  private Void populateObjSlots(JavaType type, Str:CSlot[] slots) 
+  {
+    type.bridge.ns.objType.slots.each |slot, name| 
+    {  
+      if (slot.isCtor) return
+      if (!slot.isPublic && !slot.isProtected) return
+      if(!slots.containsKey(name)) 
+        slots[name] = [slot] 
+    }
   }
  
   private Str:CSlot collapseSlots(Str:CSlot[] slots)
@@ -373,7 +390,7 @@ class JavaTypeRegistry
     IType? superClass := null
     if( info.getSuperclassTypeSignature != null )
     { 
-       type.base = fanType(type.pod.bridge, info.getSuperclassTypeSignature, false, info)
+       type.base = fanType(type.pod.bridge, info.getSuperclassTypeSignature, false, info).toNonNullable
       //echo("type.base - $type.base")
     }
   }

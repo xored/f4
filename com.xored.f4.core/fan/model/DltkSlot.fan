@@ -15,7 +15,7 @@ using f4model
 **
 **
 **
-internal abstract const class DltkSlot : IFanSlot, Flags
+abstract const class DltkSlot : IFanSlot, Flags
 {
   override const Int flags
   override const Str name
@@ -49,7 +49,7 @@ internal const class DltkField : DltkSlot, IFanField
   override Str of() { (type as DltkType).evaluateType(declaredType) }
 }
 
-internal const class DltkMethod : DltkSlot, IFanMethod
+const class DltkMethod : DltkSlot, IFanMethod
 {
   private const Str declaredReturnType
   override const IFanParam[] params

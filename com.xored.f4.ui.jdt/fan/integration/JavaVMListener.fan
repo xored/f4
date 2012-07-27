@@ -34,11 +34,11 @@ const class JavaVMListener : IVMInstallChangedListener {
   }
 
   override Void defaultVMInstallChanged(IVMInstall? previous, IVMInstall? current) {
-    PlatformUI.getWorkbench?.getDisplay().asyncExec(|->| { updateVM })
+    PlatformUI.getWorkbench?.getDisplay?.asyncExec(|->| { updateVM })
   }  
   
   private Void updateVM() {
-    Shell shell := PlatformUI.getWorkbench?.getActiveWorkbenchWindow().getShell()
+    Shell shell := PlatformUI.getWorkbench.getActiveWorkbenchWindow.getShell
     if (FanBuildUtils.doBuildDialog(null, shell)) {
       WorkbenchRunnableAdapter op := WorkbenchRunnableAdapter(
         |IProgressMonitor? monitor| { 

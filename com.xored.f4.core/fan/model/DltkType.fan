@@ -19,7 +19,7 @@ using f4parser
 **
 **
 **
-internal const class DltkType : IFanType, Flags
+const class DltkType : IFanType, Flags
 {
   override const Str pod 
   override const Str name
