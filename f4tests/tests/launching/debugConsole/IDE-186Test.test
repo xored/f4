@@ -1,0 +1,26 @@
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: IDE-186 Test
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _-uSqsNfDEeGiSb--1mn_XQ,_ZdyMINfEEeGiSb--1mn_XQ
+Save-Time: 7/27/12 6:42 PM
+Id: _QXE2kdfVEeGFp5EIzsvJ2A
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-menu "Run/Debug Configurations..." | click
+with [get-window "Debug Configurations"] {
+    get-tree | select "Fantom Script"
+    get-button "New launch configuration" | click
+    get-group "Launch class:" | get-editbox | set-text main
+    get-button Apply | click
+    get-button Debug | click
+}
+get-view Console | get-editbox | get-property text | equals Hello | verify-true
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
