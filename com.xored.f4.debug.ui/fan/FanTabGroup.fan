@@ -8,6 +8,7 @@
 
 using [java] org.eclipse.debug.ui
 using [java] org.eclipse.debug.core
+using [java] org.eclipse.debug.core::DebugPlugin
 using [java] org.eclipse.dltk.debug.ui.launchConfigurations
 using "[java]org.eclipse.dltk.internal.launching"
 using [java] org.eclipse.swt.widgets
@@ -71,6 +72,7 @@ class FanMainConfigTab : MainLaunchConfigurationTab
   {
     super.doPerformApply(config)
     config.setAttribute(LaunchConsts.fanClass, mainClassText)
+    config.removeAttribute(DebugPlugin.ATTR_PROCESS_FACTORY_ID)
   }
   
   ** we don't need script name
