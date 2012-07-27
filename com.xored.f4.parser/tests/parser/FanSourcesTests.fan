@@ -4,49 +4,49 @@ class FanSourcesTests : Test, UnixExecutableCutter
 {
   Void testParseBuild()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/build/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/build/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("build"))))    
   }
   
   Void testParseCompiler()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/compiler/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/compiler/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("compiler"))))    
   }
   
   Void testParseCompilerJs()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/compilerJs/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/compilerJs/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("compilerJs"))))    
   }
   
   Void testParseDocCompiler()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/doCompiler/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/doCompiler/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("docCompiler"))))    
   }
   
   Void testParseDom()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/dom/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/dom/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("dom"))))    
   }
   
   Void testParseEmail()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/email/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/email/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("email"))))    
   }
   
   Void testParseFandoc()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/fandoc/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/fandoc/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("fandoc"))))    
   }
   
   Void testParseFansh()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/fansh/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/fansh/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("fansh"))))    
   }
   
@@ -58,97 +58,97 @@ class FanSourcesTests : Test, UnixExecutableCutter
   
   Void testParseFwt()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/fwt/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/fwt/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("fwt"))))    
   }
   
   Void testParseGfx()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/gfx/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/gfx/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("gfx"))))    
   }
   
   Void testParseInet()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/inet/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/inet/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("inet"))))    
   }
   
   Void testParseJson()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/json/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/json/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("json"))))    
   }
   
   Void testParseObix()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/obix/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/obix/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("obix"))))    
   }
   
   Void testParseSql()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/sql/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/sql/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("sql"))))    
   }
   
   Void testParseSys()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/sys/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/sys/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("sys"))))    
   }
   
   Void testParseTestCompiler()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/testCompiler/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/testCompiler/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("testCompiler"))))    
   }
   
   Void testParseTestJava()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/testJava/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/testJava/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("testJava"))))    
   }
   
   Void testParseTestNative()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/testNative/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/testNative/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("testNative"))))    
   }
   
   Void testParseTestSys()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/testSys/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/testSys/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("testSys"))))    
   }
   
   Void testParseUtil()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/util/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/util/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("util"))))    
   }
   
   Void testParseTestWeb()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/web/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/web/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("web"))))    
   }
   
   Void testParseTestWebmod()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/webmod/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/webmod/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("webmod"))))    
   }
   
   Void testParseTestWisp()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/wisp/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/wisp/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("wisp"))))    
   }
   
   Void testParseTestXml()
   {   
-    parse(File(`file:/D:/work/fan/fantom-1.0.52/src/xml/`),
+    parse(`file:/D:/work/fan/fantom-1.0.52/src/xml/`.toFile,
       FakeFanNamespace(FakeFanPod(Pod.find("xml"))))    
   }
   
