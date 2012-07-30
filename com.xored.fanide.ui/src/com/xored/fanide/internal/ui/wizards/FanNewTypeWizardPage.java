@@ -375,6 +375,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 
 	private final int PUBLIC_INDEX = 0, INTERNAL_INDEX = 1, DEFAULT_INDEX = 2;
 	private final int ABSTRACT_INDEX = 0, FINAL_INDEX = 1, CONST_INDEX = 2;
+	private final int CONST_INDEX_MIXIN = 0;
 
 	private int fTypeKind;
 	public static final int CLASS_TYPE = 1;
@@ -896,17 +897,25 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 			mdf += F_INTERNAL;
 		}
 
-		if (fOtherMdfButtons.isSelected(ABSTRACT_INDEX)) {
-			mdf += F_ABSTRACT;
+		if (fTypeKind == CLASS_TYPE) {
+			if (fOtherMdfButtons.isSelected(ABSTRACT_INDEX)) {
+				mdf += F_ABSTRACT;
+			}
+			if (fOtherMdfButtons.isSelected(FINAL_INDEX)) {
+				mdf += F_FINAL;
+			}
+			if (fOtherMdfButtons.isSelected(CONST_INDEX)) {
+				mdf += F_CONST;
+			}
+		} else if (fTypeKind == MIXIN_TYPE) {
+			if (fOtherMdfButtons.isSelected(CONST_INDEX_MIXIN)) {
+				mdf += F_CONST;
+			}
 		}
-		if (fOtherMdfButtons.isSelected(FINAL_INDEX)) {
-			mdf += F_FINAL;
-		}
-		if (fOtherMdfButtons.isSelected(CONST_INDEX)) {
-			mdf += F_CONST;
-		}
+		
+		
 		return mdf;
-	}
+	} 
 
 	public void setModifiers(int modifiers, boolean canBeModified) {
 		if (FanModifiers.isPublic(modifiers)) {
