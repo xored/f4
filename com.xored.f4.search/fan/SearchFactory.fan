@@ -110,6 +110,9 @@ class SearchPatternProcessor : DltkSearchPatternProcessor
       pattern = pattern[0..<methodIndex]
     }
     
+    if(podIndex==null && methodIndex==null)
+    return [null]
+    
     type = pattern
 
     return [pod, type, method]
