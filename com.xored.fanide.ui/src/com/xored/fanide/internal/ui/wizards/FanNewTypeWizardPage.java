@@ -129,16 +129,16 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 			usings = new TreeSet<FanUsing>();
 			moduleUsings = new TreeSet<FanUsing>();
 			// parse without caching because we are going to change it anyway
-//			ModuleDeclaration moduleDecl = SourceParserUtil
-//					.getModuleDeclaration(module);
-//			if (moduleDecl != null) {
-//				usingStatements = FanASTUtils.getUsingPackages(moduleDecl);
-//			} else {
-//				usingStatements = new UsingStmt[0];
-//			}
-//			for (UsingStmt stmt : usingStatements) {
-//				moduleUsings.add(new FanUsing(stmt));
-//			}
+			ModuleDeclaration moduleDecl = SourceParserUtil
+					.getModuleDeclaration(module);
+			if (moduleDecl != null) {
+				usingStatements = FanASTUtils.getUsingPackages(moduleDecl);
+			} else {
+				usingStatements = new UsingStmt[0];
+			}
+			for (UsingStmt stmt : usingStatements) {
+				moduleUsings.add(new FanUsing(stmt));
+			}
 		}
 
 		public void addUsing(String qualifiedName, boolean allPod) {
