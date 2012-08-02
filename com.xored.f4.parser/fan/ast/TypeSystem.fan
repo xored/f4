@@ -33,6 +33,15 @@ const class NullableType : CType
     : super(start, end, valType.resolvedType?.toNullable) {this.valType = valType} 
   
   override Str toStr() {return "$valType?"}
+
+  override Void accept(AstVisitor v)
+  {
+    if(v.enterNode(this))
+    {
+      valType.accept(v)
+      v.exitNode(this)
+    }
+  }
 }
 
 const class ListType : CType
@@ -43,6 +52,15 @@ const class ListType : CType
      : super(start, end, listType) {this.valType = valType}
   
   override Str toStr() {return "$valType[]"}
+
+  override Void accept(AstVisitor v)
+  {
+    if(v.enterNode(this))
+    {
+      valType.accept(v)
+      v.exitNode(this)
+    }
+  }
 }
 
 const class MapType : CType
@@ -71,6 +89,7 @@ const class MapType : CType
     {
       keyType.accept(v)
       valType.accept(v)
+      v.exitNode(this)
     }
   }
 }
@@ -128,5 +147,14 @@ const class FuncTypeParam : Node
     tstr := t?:"";
     nstr := n?:"";
     return """$tstr $nstr""".trim
+  }
+
+  override Void accept(AstVisitor v)
+  {
+    if(v.enterNode(this))
+    {
+      ctype?.accept(v)
+      v.exitNode(this)
+    }
   }
 }
