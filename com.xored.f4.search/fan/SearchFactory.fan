@@ -46,7 +46,7 @@ class FanTypePattern : ITypePattern
   {
     podTypeMethod := SearchPatternProcessor.podTypeMethod(pattern)
     getQualification = podTypeMethod.first
-    getSimpleName = podTypeMethod.getSafe(1, "unrecognized")
+    getSimpleName = podTypeMethod.getSafe(1, "unrecognized")  //get type
     
   }
   override CharArray? qualification() {
@@ -71,13 +71,15 @@ class SearchPatternProcessor : DltkSearchPatternProcessor
   ** podName from podName::typeName.methodName
   override CharArray? extractDeclaringTypeQualification(Str? pattern)
   {
-    nullOrArray(podTypeMethod(pattern).first)
+    if (pattern.index(podType)==null) return null;
+    return nullOrArray(podTypeMethod(pattern).first)
   }
   
   ** typeName from podName::typeName.methodName
   override CharArray? extractDeclaringTypeSimpleName(Str? pattern)
   {
-    nullOrArray(podTypeMethod(pattern).getSafe(1))
+    if (pattern.index(typeMethod)==null) return null;
+    return nullOrArray(podTypeMethod(pattern).getSafe(1))
   }
   
   ** methodName from [podName::]typeName.methodName
@@ -109,9 +111,6 @@ class SearchPatternProcessor : DltkSearchPatternProcessor
       method = pattern[(methodIndex + typeMethod.size)..-1]
       pattern = pattern[0..<methodIndex]
     }
-    
-    if(podIndex==null && methodIndex==null)
-    return [null]
     
     type = pattern
 
