@@ -1561,8 +1561,7 @@ class Parser : AstFactory
     items.add(expr)
     while(matchAndConsume(Token.comma))
     {
-      if (match(Token.rbracket)) items.add(noneLiteral)
-      else items.add(expr)
+        if (!match(Token.rbracket)) items.add(expr)
     }
     consume(Token.rbracket)
     endRule(s)
@@ -1601,17 +1600,11 @@ class Parser : AstFactory
     vals.add(expr)
     while(matchAndConsume(Token.comma))
     {
-      if (match(Token.rbracket))
-      {
-        keys.add(noneLiteral)
-        vals.add(noneLiteral)
-      }
-      else
-      {
-        keys.add(expr)
-        consume(Token.colon)
-        vals.add(expr) 
-      }
+        if (!match(Token.rbracket)){
+          keys.add(expr)
+          consume(Token.colon)
+          vals.add(expr) 
+        }
     }
     consume(Token.rbracket)
     endRule(s)

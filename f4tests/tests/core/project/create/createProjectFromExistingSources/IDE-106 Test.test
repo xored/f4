@@ -1,0 +1,41 @@
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: IDE-106 Test
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _30WT8d1AEeGT2YwxjC6zKw,_6iGToN1AEeGT2YwxjC6zKw
+Save-Time: 8/3/12 3:38 PM
+Id: _8qYOwN1AEeGT2YwxjC6zKw
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-editor "build.fan" | get-text-viewer | set-caret-pos 9 8
+get-editor "build.fan" | get-editbox | get-property text | equals "using build\n"
+    + "class Build : build::BuildPod\n{\n"
+    + "  new make()\n"
+    + "  {\n"
+    + "    podName = \"test\"\n"
+    + "    summary = \"\"\n"
+    + "    srcDirs = [`fan/`]\n"
+    + "    depends = [\"sys 1.0\",]\n"
+    + "  }\n"
+    + "}" | verify-true
+get-menu "Window/Show View/Other..." | click
+with [get-window "Show View"] {
+    get-editbox | set-text ast
+    get-tree | select "Other/AST View" | double-click
+}
+with [get-view "AST View" | get-tree] {
+    get-item "CUnit/TypeDef/MethodDef/Block" | get-item ExprStmt -index 3 
+        | get-item "BinaryExpr \\(sys::Str\\[\\]\\) \\(op assign\\)/ListLiteral \\(sys::Str\\[\\]\\) \\(op listLiteral\\)" 
+        | get-property caption | equals "ListLiteral (sys::Str[]) (op listLiteral)" | verify-true
+    get-item "CUnit/TypeDef/MethodDef/Block" | get-item ExprStmt -index 3 
+        | get-item "BinaryExpr \\(sys::Str\\[\\]\\) \\(op assign\\)/ListLiteral \\(sys::Str\\[\\]\\) \\(op listLiteral\\)" 
+        | get-property childCount | equals 1 | verify-true
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
