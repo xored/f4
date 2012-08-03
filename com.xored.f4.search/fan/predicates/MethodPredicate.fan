@@ -20,11 +20,7 @@ class MethodPredicate : IPredicate
   override FanMatch? match(Node node) {
     if (node is SlotRef)
     {
-      if (pattern.findDeclarations)
-      {
-        if (typePredicate != null && typePredicate?.nameMatch(node->modelSlot->type->name, node) == null ) return null
-        return null
-      }
+      if (typePredicate != null && typePredicate?.nameMatch(node->modelSlot->type->name, node) == null ) return null
       SlotRef r := node
       if( r.modelSlot != null && r is IFanField) return null
       return namePredicate.nameMatch(r.text, node)

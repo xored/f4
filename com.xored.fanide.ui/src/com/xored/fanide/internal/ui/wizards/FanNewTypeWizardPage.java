@@ -128,14 +128,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 			}
 			usings = new TreeSet<FanUsing>();
 			moduleUsings = new TreeSet<FanUsing>();
-			// parse without caching because we are going to change it anyway
-			ModuleDeclaration moduleDecl = SourceParserUtil
-					.getModuleDeclaration(module);
-			if (moduleDecl != null) {
-				usingStatements = FanASTUtils.getUsingPackages(moduleDecl);
-			} else {
-				usingStatements = new UsingStmt[0];
-			}
+			usingStatements = new UsingStmt[0];
 			for (UsingStmt stmt : usingStatements) {
 				moduleUsings.add(new FanUsing(stmt));
 			}
@@ -479,8 +472,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 	 * 
 	 * @param elem
 	 *            the selection used to initialize this page or <code>
-	 * null</code> if
-	 *            no selection was available
+	 * null</code> if no selection was available
 	 */
 	protected void initTypePage(IModelElement elem) {
 		//		String initSuperclass= "java.lang.Object"; //$NON-NLS-1$
@@ -489,7 +481,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		// IJavaProject project= null;
 		// IPackageFragment pack= null;
 		// IType enclosingType= null;
-		//				
+		//
 		// if (elem != null) {
 		// // evaluate the enclosing type
 		// project= elem.getJavaProject();
@@ -507,7 +499,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		// enclosingType= cu.findPrimaryType();
 		// }
 		// }
-		//			
+		//
 		// try {
 		// IType type= null;
 		// if (elem.getElementType() == IJavaElement.TYPE) {
@@ -527,9 +519,9 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		// // ignore this exception now
 		// }
 		// }
-		//		
+		//
 		//		String typeName= ""; //$NON-NLS-1$
-		//		
+		//
 		// ITextSelection selection= getCurrentTextSelection();
 		// if (selection != null) {
 		// String text= selection.getText();
@@ -541,11 +533,11 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		// setPackageFragment(pack, true);
 		// setEnclosingType(enclosingType, true);
 		// setEnclosingTypeSelection(false, true);
-		//	
+		//
 		// setTypeName(typeName, true);
 		// setSuperClass(initSuperclass, true);
 		// setSuperInterfaces(initSuperinterfaces, true);
-		//		
+		//
 		setAddComments(FanUILanguageToolkit.getInstance().getPreferenceStore()
 				.getBoolean(FanPreferenceConstants.CODEGEN_ADD_COMMENTS), true); // from
 		// project or workspace
@@ -689,13 +681,13 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		// contentAssistant);
 		// TextFieldNavigationHandler.install(cellEditorText);
 		// cellEditor.setContentAssistant(contentAssistant);
-		//		
+		//
 		// tableViewer.setCellEditors(new CellEditor[] { cellEditor });
 		// tableViewer.setCellModifier(new ICellModifier() {
 		// public void modify(Object element, String property, Object value) {
 		// if (element instanceof Item)
 		// element = ((Item) element).getData();
-		//				
+		//
 		// ((InterfaceWrapper) element).interfaceName= (String) value;
 		// fSuperInterfacesDialogField.elementChanged(element);
 		// }
@@ -731,8 +723,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 
 	protected void createCommentControls(Composite composite, int nColumns) {
 		Link link = new Link(composite, SWT.NONE);
-		link
-				.setText(FanWizardMessages.NewTypeWizardPage_addcomment_description);
+		link.setText(FanWizardMessages.NewTypeWizardPage_addcomment_description);
 		link.addSelectionListener(new FanTypeFieldsAdapter());
 		link.setLayoutData(new GridData(GridData.FILL, GridData.CENTER, false,
 				false, nColumns, 1));
@@ -771,8 +762,8 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 			if (fCurrentSourceModule != null) {
 				fFilenameDialogField.setText(fCurrentSourceModule
 						.getElementName());
-				setScriptFolder((IScriptFolder) fCurrentSourceModule
-						.getParent(), true);
+				setScriptFolder(
+						(IScriptFolder) fCurrentSourceModule.getParent(), true);
 				try {
 					lineDelimiter = CodeGeneration
 							.getLineDelimiterUsed(fCurrentSourceModule);
@@ -912,10 +903,9 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 				mdf += F_CONST;
 			}
 		}
-		
-		
+
 		return mdf;
-	} 
+	}
 
 	public void setModifiers(int modifiers, boolean canBeModified) {
 		if (FanModifiers.isPublic(modifiers)) {
@@ -1026,33 +1016,28 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		StatusInfo status = new StatusInfo();
 
 		if (getFilename().length() == 0) {
-			status
-					.setError(FanWizardMessages.NewTypeWizardPage_fileNameCannotBeEmpty);
+			status.setError(FanWizardMessages.NewTypeWizardPage_fileNameCannotBeEmpty);
 		} else {
 			if (!Path.EMPTY.isValidSegment(getFilename())) {
-				status
-						.setError(FanWizardMessages.NewTypeWizardPage_invalidFileName);
+				status.setError(FanWizardMessages.NewTypeWizardPage_invalidFileName);
 			}
 			if (currentScriptFolder != null) {
 				ISourceModule module = currentScriptFolder
 						.getSourceModule(getFilename());
 				IResource resource = module.getResource();
 				if (module.exists() && !isFilenameExistingSelected()) {
-					status
-							.setError(FanWizardMessages.NewTypeWizardPage_fileAlreadyExists);
+					status.setError(FanWizardMessages.NewTypeWizardPage_fileAlreadyExists);
 				} else if (resource != null && !isFilenameExistingSelected()) {
 					URI location = resource.getLocationURI();
 					if (location != null) {
 						try {
 							IFileStore store = EFS.getStore(location);
 							if (store.fetchInfo().exists()) {
-								status
-										.setError(NewWizardMessages.NewTypeWizardPage_error_TypeNameExistsDifferentCase);
+								status.setError(NewWizardMessages.NewTypeWizardPage_error_TypeNameExistsDifferentCase);
 								return status;
 							}
 						} catch (CoreException e) {
-							status
-									.setError(NewWizardMessages.NewTypeWizardPage_error_uri_location_unkown);
+							status.setError(NewWizardMessages.NewTypeWizardPage_error_uri_location_unkown);
 						}
 					}
 				}
@@ -1067,8 +1052,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		final String typeName = getTypeName();
 		// must not be empty
 		if (typeName.length() == 0) {
-			status
-					.setError(FanWizardMessages.NewTypeWizardPage_typeNameCannotBeEmpty);
+			status.setError(FanWizardMessages.NewTypeWizardPage_typeNameCannotBeEmpty);
 			return status;
 		}
 
@@ -1084,11 +1068,9 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 					val.getMessage()));
 			return status;
 		} else if (val.getSeverity() == IStatus.WARNING) {
-			status
-					.setWarning(NLS
-							.bind(
-									FanWizardMessages.NewTypeWizardPage_warning_TypeNameDiscouraged,
-									val.getMessage()));
+			status.setWarning(NLS
+					.bind(FanWizardMessages.NewTypeWizardPage_warning_TypeNameDiscouraged,
+							val.getMessage()));
 		}
 
 		// must not exist
@@ -1125,15 +1107,15 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		StatusInfo status = new StatusInfo();
 		// IPackageFragmentRoot root= getPackageFragmentRoot();
 		// fSuperClassDialogField.enableButton(root != null);
-		//		
+		//
 		// fSuperClassStubTypeContext= null;
-		//		
+		//
 		// String sclassName= getSuperClass();
 		// if (sclassName.length() == 0) {
 		// // accept the empty field (stands for java.lang.Object)
 		// return status;
 		// }
-		//		
+		//
 		// if (root != null) {
 		// Type type= TypeContextChecker.parseSuperClass(sclassName);
 		// if (type == null) {
@@ -1171,7 +1153,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 
 		// IPackageFragmentRoot root= getPackageFragmentRoot();
 		// fSuperInterfacesDialogField.enableButton(0, root != null);
-		//						
+		//
 		// if (root != null) {
 		// List elements= fSuperInterfacesDialogField.getElements();
 		// int nElements= elements.size();
@@ -1212,10 +1194,10 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 	protected IStatus modifiersChanged() {
 		StatusInfo status = new StatusInfo();
 		int modifiers = getModifiers();
-		if (FanModifiers.isFinal(modifiers) && FanModifiers.isAbstract(modifiers)) {
-			status
-					.setError(FanWizardMessages.NewTypeWizardPage_error_ModifiersFinalAndAbstract);
-		} 
+		if (FanModifiers.isFinal(modifiers)
+				&& FanModifiers.isAbstract(modifiers)) {
+			status.setError(FanWizardMessages.NewTypeWizardPage_error_ModifiersFinalAndAbstract);
+		}
 		return status;
 	}
 
@@ -1226,10 +1208,8 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 				provider, FanUI.getDefault().getPreferenceStore());
 		ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog(
 				getShell(), labelProvider, provider);
-		dialog
-				.setTitle(DLTKLaunchConfigurationsMessages.mainTab_searchButton_title);
-		dialog
-				.setMessage(DLTKLaunchConfigurationsMessages.mainTab_searchButton_message);
+		dialog.setTitle(DLTKLaunchConfigurationsMessages.mainTab_searchButton_title);
+		dialog.setMessage(DLTKLaunchConfigurationsMessages.mainTab_searchButton_message);
 		IScriptProject proj = getProjectFragment().getScriptProject();
 		if (proj == null)
 			return null;
@@ -1255,11 +1235,9 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 						.getProgressService(), scope,
 				IDLTKSearchConstants.TYPE, new FanTypeSelectionExtension(),
 				FanLanguageToolkit.getDefault());
-		dialog
-				.setMessage(FanWizardMessages.NewTypeWizardPage_superClassDialog_message);
+		dialog.setMessage(FanWizardMessages.NewTypeWizardPage_superClassDialog_message);
 		dialog.setInitialPattern(getSuperClass());
-		dialog
-				.setTitle(FanWizardMessages.NewTypeWizardPage_superClassDialog_title);
+		dialog.setTitle(FanWizardMessages.NewTypeWizardPage_superClassDialog_title);
 		if (dialog.open() == IDialogConstants.OK_ID) {
 			Object[] types = dialog.getResult();
 			if (types != null && types.length > 0) {
@@ -1280,8 +1258,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		SuperMixinSelectionDialog dialog = new SuperMixinSelectionDialog(
 				getShell(), getWizard().getContainer(), this, project);
 		dialog.setTitle(getMixinDialogTitle());
-		dialog
-				.setMessage(FanWizardMessages.NewTypeWizardPage_mixinsDialog_message);
+		dialog.setMessage(FanWizardMessages.NewTypeWizardPage_mixinsDialog_message);
 		dialog.open();
 	}
 
@@ -1341,8 +1318,9 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 
 		monitor.worked(1);
 
-		fCreatedType = new SourceType((ModelElement) fCurrentSourceModule
-				.getPrimaryElement(), getTypeName());
+		fCreatedType = new SourceType(
+				(ModelElement) fCurrentSourceModule.getPrimaryElement(),
+				getTypeName());
 
 		monitor.done();
 	}
@@ -1530,8 +1508,8 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 						.getContextType(template.getContextTypeId());
 				// TODO introduce a way to create context by contextType
 				final SourceModuleTemplateContext context = new SourceModuleTemplateContext(
-						contextType, CodeGeneration
-								.getLineDelimiterUsed(module));
+						contextType,
+						CodeGeneration.getLineDelimiterUsed(module));
 				context.setSourceModuleVariables(module);
 				final String[] fullLine = {};
 				final String result = CodeGeneration.evaluateTemplate(context,
@@ -1558,8 +1536,8 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 						.getContextType(template.getContextTypeId());
 				// TODO introduce a way to create context by contextType
 				final SourceModuleTemplateContext context = new SourceModuleTemplateContext(
-						contextType, CodeGeneration
-								.getLineDelimiterUsed(module));
+						contextType,
+						CodeGeneration.getLineDelimiterUsed(module));
 				context.setSourceModuleVariables(module);
 				final String[] fullLine = {};
 				final String result = CodeGeneration.evaluateTemplate(context,
