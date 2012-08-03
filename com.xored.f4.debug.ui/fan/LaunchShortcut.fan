@@ -12,6 +12,7 @@ using [java] org.eclipse.debug.ui
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.dltk.core
+using [java] org.eclipse.jface.operation
 
 using [java] java.util::Map as JavaMap
 
@@ -29,6 +30,35 @@ class LaunchShortcut : AbstractScriptLaunchShortcut
   override protected ILaunchConfigurationType? getConfigurationType()
   {
     getLaunchManager.getLaunchConfigurationType(LaunchConsts.fanScriptId)
+  }
+  
+  override protected IResource?[]? findScripts(Obj?[]? elements, IRunnableContext? context)
+  {    
+    IResource?[]? scripts := super.findScripts(elements, context)
+    IResource?[]? launchableScripts := [,]
+    scripts.each |item, index|
+    {     
+      if (isScriptLaunchable(item))
+        launchableScripts.add(item)           
+    }
+    
+    return launchableScripts    
+  }  
+  
+  static Bool? isScriptLaunchable(IResource? script)
+  {    
+    sourceModule := DLTKCore.createSourceModuleFrom(script)
+    ns := ParseUtil.ns(sourceModule)   
+    type := ParseUtil.typeNames(sourceModule).find |Str name -> Bool|   
+    {
+      type := ns.currPod.findType(name,false)
+      if(type == null) return false
+      return type.findSlot("main", ns, false) != null   //return type with main, else return null
+    }         
+    if(type == null) return false      
+       
+
+    return true
   }
   
   override protected ILaunchConfiguration? findLaunchConfiguration
