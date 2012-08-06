@@ -11,6 +11,8 @@ using [java] org.eclipse.dltk.ui.documentation
 using [java] com.xored.f4.ui.text
 using [java] org.eclipse.jdt.core::IJavaElement
 using [java] org.eclipse.jdt.core::IMember as JavaMember
+using [java] org.eclipse.jdt.ui::JavaElementLabels
+using "[java]org.eclipse.jdt.internal.ui.viewsupport"::JavaElementImageProvider
 
 using f4core
 using f4parser
@@ -34,10 +36,13 @@ class FandocProvider : ScriptDocumentationProviderBridge, IScriptDocumentationPr
   {
     if( element is JavaMember )
     {
-      Str? doc := JDTJavaDocBridge.getJavaDoc((IJavaElement)element);
+      doc := JDTJavaDocBridge.getJavaDoc((IJavaElement)element);
+      label := JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_FULLY_QUALIFIED)
+      img := imageProvider.getJavaImageDescriptor(element, JavaElementImageProvider.SMALL_ICONS
+          .or(JavaElementImageProvider.OVERLAY_ICONS))
       if( doc != null)
       {
-        return TextDocumentationResponse(element, doc)
+        return TextDocumentationResponse(element, label, img, doc)
       }
     }
     else if( element is IMember)
@@ -47,6 +52,8 @@ class FandocProvider : ScriptDocumentationProviderBridge, IScriptDocumentationPr
     return null
   }
     
+  private JavaElementImageProvider imageProvider := JavaElementImageProvider()
+  
   protected CUnit unit(IMember member)
   {
     ParseUtil.parse(member.getSourceModule)
