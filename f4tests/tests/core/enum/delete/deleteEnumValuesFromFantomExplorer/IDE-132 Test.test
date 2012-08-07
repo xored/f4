@@ -1,0 +1,40 @@
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: IDE-132 Test
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _prYlYeCGEeG97YnFo6jlPg,_saeB0OCGEeG97YnFo6jlPg
+Save-Time: 8/7/12 7:06 PM
+Id: _uWH2MOCGEeG97YnFo6jlPg
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-view "Fantom Explorer" | get-tree | select "test/fan/main.fan/TestEnum/test" | get-menu Delete | click
+get-window "Confirm Delete" | get-button Yes | click
+get-editor "main.fan" | get-editbox | get-property text | equals "enum class TestEnum \n"
+    + "{ \n"
+    + "  clubs, \n"
+    + "  diamonds, \n"
+    + "  hearts \n"
+    + "}" | verify-true
+get-view "Fantom Explorer" | get-tree | select "test/fan/main.fan/TestEnum/clubs" | get-menu Delete | click
+get-window "Confirm Delete" | get-button Yes | click
+get-editor "main.fan" | get-editbox | get-property text | equals "enum class TestEnum \n"
+    + "{ \n"
+    + "   \n"
+    + "  diamonds, \n"
+    + "  hearts \n"
+    + "}" | verify-true
+get-view "Fantom Explorer" | get-tree | select "test/fan/main.fan/TestEnum/hearts" | get-menu Delete | click
+get-window "Confirm Delete" | get-button Yes | click
+get-editor "main.fan" | get-editbox | get-property text | equals "enum class TestEnum \n"
+    + "{ \n"
+    + "   \n"
+    + "  diamonds \n"
+    + "}" | verify-true
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
