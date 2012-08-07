@@ -378,9 +378,11 @@ class StructureParser
     Int start := cur.start
     Int flags := Flag.Static.or(Flag.Public).or(Flag.Const)//.or(Flag.EnumVal)
     while (curt === Token.docComment) consume
+    if (prevt === Token.comma && peekt === Token.rbrace) {
+      start = prev.end
+    }
     TokenVal name := consume
     visitor?.visitField(start, flags, typeName, name)
-
     if (curt === Token.lparen)
     {
       while (true) {
@@ -388,6 +390,12 @@ class StructureParser
         if (curt === Token.eof) break
         consume
       }
+    }
+    
+    if (curt === Token.rbrace) {
+      visitor?.endVisitField(prev.end)
+    } else {
+      visitor?.endVisitField(cur.end)
     }
   }
   
