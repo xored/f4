@@ -22,6 +22,10 @@ class AstView : ViewPart, IPartListener
     PlatformUI.getWorkbench?.getActiveWorkbenchWindow?.getPartService?.addPartListener(this)
   }
  
+  override Void dispose() {
+    PlatformUI.getWorkbench?.getActiveWorkbenchWindow?.getPartService?.removePartListener(this);
+    super.dispose
+  }
   override Void setFocus() {
     tree.getControl().setFocus()
   }
@@ -29,6 +33,7 @@ class AstView : ViewPart, IPartListener
   public Void update(ISourceModule? module) {
     unit := (module == null) ? null : parse(module)
     node := (unit == null) ? null : AstNode(null, unit)
+    if(tree.getTree.isDisposed) return
     tree.setInput([node])
     tree.expandToLevel(3)
   }
