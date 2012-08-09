@@ -1,10 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:com.xored.tesla.core.protocol="http:///com/xored/tesla/core/protocol.ecore" xmlns:com.xored.tesla.core.protocol.raw="http:///com/xored/tesla/core/protocol/raw.ecore" xmlns:com.xored.tesla.core.ui="http:///com/xored/tesla/core/ui.ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="renameProjectViaMainMenu" version="3.0" id="_izDEoPSyEeC9XrHaQGXVxw" description="1. Select project&#xD;&#xA;2. Select &quot;File->Rename&quot; in main menu&#xD;&#xA;3. In the &quot;Rename Resource&quot; window enter new name and press &quot;Ok&quot; button&#xD;&#xA;4. Make sure that name of project is changed&#xD;&#xA;5. Make sure that PodName is not changed in build.fan" tags="core/fantomproject/rename, feature/refactoring/rename/fantomproject" type="ecl">
-  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_7rWIAdnkEeCZ-u3bYoGPTQ</contexts>
-  <content xsi:type="org.eclipse.ecl.core:Script">
-    <content><![CDATA[get-view "Fantom Explorer" | get-tree | select TestProject
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: renameProjectViaMainMenu
+Tags: core/fantomproject/rename, feature/refactoring/rename/fantomproject, skipExecution
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_7rWIAdnkEeCZ-u3bYoGPTQ
+Save-Time: 8/10/12 12:20 AM
+Id: _izDEoPSyEeC9XrHaQGXVxw
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Entry-Name: .description
+Content-Type: text/plain
+
+1. Select project
+2. Select "File->Rename" in main menu
+3. In the "Rename Resource" window enter new name and press "Ok" button
+4. Make sure that name of project is changed
+5. Make sure that PodName is not changed in build.fan
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-view "Fantom Explorer" | get-tree | select TestProject
 get-menu "File/Rename..." | click
 with [get-window "Rename Resource"] {
     get-editbox -after [get-label "New name:"] | set-text NewTestProject
@@ -43,141 +64,5 @@ get-window "Properties for NewTestProject" | get-button Cancel | click
 get-view "Fantom Explorer" | get-tree | select "NewTestProject/build.fan" | double-click -nowait
 get-editor "build.fan" | get-editbox | get-property value 
     | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"TestProject\"    summary = \"\"    srcDirs = [`fan/`]    depends = [\"sys 1.0\", \"fantest 1.0\"]  }}" 
-    | verify-true]]></content>
-  </content>
-  <teslaContent xsi:type="com.xored.tesla.core.protocol.raw:TeslaScenario">
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="EclipseWindow" multiplicity="1"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="View" pattern="Fantom Explorer" multiplicity="1">
-        <parent id="EclipseWindow267" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Tree" multiplicity="1">
-        <parent id="View229" kind="View"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetSelection">
-      <element id="Tree247" kind="Tree"/>
-      <path>TestProject</path>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Menu" multiplicity="1">
-        <path>File</path>
-        <path>Rename...</path>
-        <parent id="EclipseWindow267" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click">
-      <element id="Menu57" kind="Menu"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
-      <state id="State114" kind="State"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Window" pattern="Rename Resource" multiplicity="1">
-        <parent id="EclipseWindow267" kind="EclipseWindow" description=".*- Eclipse SDK"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Label" pattern="New name:" multiplicity="1">
-        <parent id="Window159" kind="Window" description="Rename Resource"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Text" multiplicity="1">
-        <after id="Label99" kind="Label"/>
-        <parent id="Window159" kind="Window" description="Rename Resource"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SetText" value="NewTestProject">
-      <element id="Text108" kind="Text"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:SelectCommand">
-      <data kind="Button" pattern="OK" multiplicity="1">
-        <parent id="Window159" kind="Window" description="Rename Resource"/>
-      </data>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:GetState"/>
-    <commands xsi:type="com.xored.tesla.core.protocol:Click">
-      <element id="Button111" kind="Button"/>
-    </commands>
-    <commands xsi:type="com.xored.tesla.core.protocol:WaitForState">
-      <state id="State115" kind="State"/>
-    </commands>
-    <elementMapping command="//@teslaContent/@commands.0">
-      <elements id="EclipseWindow267" kind="EclipseWindow"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Fantom - Eclipse SDK" sizeable="true" hasMinimizeButton="true" hasMaximizeButton="true" hasCloseButton="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-1114" y="36" width="1024" height="768"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.1">
-      <elements id="View229" kind="View"/>
-      <controls xsi:type="com.xored.tesla.core.ui:View" className="org.eclipse.swt.widgets.Composite" enablement="true" title="Fantom Explorer">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="3" y="50" width="194" height="594"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.2">
-      <elements id="Tree247" kind="Tree"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Tree" className="org.eclipse.swt.widgets.Tree" enablement="true" containMenu="true" multiSelection="true" itemCount="2">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds width="194" height="594"/>
-        <selection>
-          <path>TestProject</path>
-        </selection>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.4">
-      <elements id="Menu57" kind="Menu"/>
-      <controls xsi:type="com.xored.tesla.core.ui:MenuItem" caption="Rena&amp;me..." enablement="true" index="12" accelerator="F2" cascade="true"/>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.5">
-      <elements id="State114" kind="State"/>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.8">
-      <elements id="Window159" kind="Window"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Window" className="org.eclipse.swt.widgets.Shell" enablement="true" borderWith="1" title="Rename Resource" sizeable="true" hasBorder="true" hasMaximizeButton="true" hasCloseButton="true" isApplicationModal="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="-850" y="296" width="496" height="187"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.9">
-      <elements id="Label99" kind="Label"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Label" className="org.eclipse.swt.widgets.Label" enablement="true" caption="New na&amp;me:">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds y="3" width="60" height="15"/>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.10">
-      <elements id="Text108" kind="Text"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Text" className="org.eclipse.swt.widgets.Text" enablement="true" borderWith="2" value="TestProject">
-        <backgroundColor red="255" green="255" blue="255"/>
-        <foregroundColor/>
-        <bounds x="65" width="395" height="21"/>
-        <rawValue>TestProject</rawValue>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.12">
-      <elements id="Button111" kind="Button"/>
-      <controls xsi:type="com.xored.tesla.core.ui:Button" className="org.eclipse.swt.widgets.Button" enablement="true">
-        <backgroundColor red="240" green="240" blue="240"/>
-        <foregroundColor/>
-        <bounds x="109" y="13" width="92" height="25"/>
-        <caption>OK</caption>
-      </controls>
-    </elementMapping>
-    <elementMapping command="//@teslaContent/@commands.13">
-      <elements id="State115" kind="State"/>
-    </elementMapping>
-  </teslaContent>
-</com.xored.q7.scenario:Scenario>
+    | verify-true
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
