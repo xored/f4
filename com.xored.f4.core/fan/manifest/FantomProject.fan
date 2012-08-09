@@ -20,6 +20,7 @@ using [java]org.eclipse.dltk.core::IScriptProject
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.dltk.launching::LibraryLocation
+using [java]org.eclipse.pde.core.project::IBundleProjectDescription
 using f4model
 **
 ** Models a Fantom project
@@ -65,7 +66,8 @@ const class FantomProject
     version = manifest.version
     index = manifest.index 
     rawOutDir = manifest.outDir
-    outDir = resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir 
+    isPlugin = project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
+    outDir = getOutDir(project, manifest) //resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir 
     resDirs = manifest.resDirs             
     jsDirs = manifest.jsDirs
     javaDirs = manifest.javaDirs
@@ -82,6 +84,16 @@ const class FantomProject
     }
     projectErrs = perrs
     buildfanErrs = berrs
+  }
+  
+  private File getOutDir(IProject project, Manifest manifest) {
+    if(isPlugin) {
+      return resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
+    }
+    outLoc := javaProject.getOutputLocation
+    return (File.os(ResourcesPlugin.getWorkspace.getRoot
+              .getFolder(javaProject.getOutputLocation)
+              .getLocation.toFile.getAbsolutePath).uri.plusSlash + `fan/lib/fan/`).toFile
   }
   
   public Bool isInterpreterSet()
@@ -269,6 +281,8 @@ const class FantomProject
   const File outDir 
   
   const Uri? rawOutDir
+  
+  const Bool isPlugin
 //////////////////////////////////////////////////////////////////////////
 // Pod meta info
 //////////////////////////////////////////////////////////////////////////

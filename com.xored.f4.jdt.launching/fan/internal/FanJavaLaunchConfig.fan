@@ -13,7 +13,6 @@ using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jdt.launching
 
 using f4launching
-
 using f4core
 **
 **
@@ -21,6 +20,14 @@ using f4core
 class FanJavaLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig
 {
 
+  override Str?[]? getEnvironment(ILaunchConfiguration? config) 
+  {
+    res:= JavaLaunchUtil.environment(config, super.getEnvironment(config))
+    if(res == null) {
+      return null
+    }
+    return res
+  }
   override Str?[]? getClasspath(ILaunchConfiguration? config)
   {
     JavaLaunchUtil.classpath(config, super.getClasspath(config))

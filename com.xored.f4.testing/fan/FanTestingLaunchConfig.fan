@@ -49,4 +49,12 @@ class FanTestingLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig
     JavaLaunchUtil.config(src,target,mode,mainLaunchType)
   }
   
+  override Str?[]? getEnvironment(ILaunchConfiguration? config) 
+  {
+    res:= JavaLaunchUtil.environment(config, super.getEnvironment(config))
+    if(res == null) {
+      return null
+    }
+    return res
+  } 
 }

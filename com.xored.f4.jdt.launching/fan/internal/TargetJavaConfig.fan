@@ -9,6 +9,8 @@
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.dltk.launching
+using [java] java.util::Map
+using [java] java.util::HashMap
 using f4launching
 using f4core
 
@@ -61,5 +63,20 @@ class JavaLaunchUtil
       if(!s.contains(".fantom.sys") && !s.endsWith(".pod")) result.add(s)
     }
     return result
+  }
+  
+  static Str?[]? environment(ILaunchConfiguration? config, Str?[]? base)
+  {
+    copy := config.getWorkingCopy
+    Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
+    configEnv.put("FAN_ENV", "util::PathEnv")
+    configEnv.put("FAN_ENV_PATH", buildFanEnvPath)
+    copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
+    return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
+  }
+  
+  private static Str buildFanEnvPath() {
+    FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
+    .map |FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
   }
 }
