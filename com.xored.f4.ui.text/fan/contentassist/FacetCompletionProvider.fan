@@ -34,7 +34,7 @@ class FacetCompletionProvider : CompletionProvider
     {
       //if( availablePods.contains(it))
       pod := ns.findPod(it)
-      pod.typeNames.findAll { it.startsWith(prefix) } .each {
+      pod.typeNames.findAll { it.lower.startsWith(prefix.lower) } .each {
         IFanType? type := pod.findType(it)
         if( type != null)
         {

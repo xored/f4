@@ -84,7 +84,7 @@ abstract class CompletionProvider
   ** 
   protected Void reportSlots(IFanSlot[] slots)
   {
-    slots = slots.findAll { it.name.startsWith(prefix) }
+    slots = slots.findAll { it.name.lower.startsWith(prefix.lower) }
     slots.each |slot|
     {
       if(slot.isField) reportField(slot)
@@ -161,9 +161,9 @@ abstract class CompletionProvider
   {
     if(pod == null || reporter.ignores(ProposeKind.type)) return
     pod.typeNames
-      .findAll { it.startsWith(prefix) }
+      .findAll { it.lower.startsWith(prefix.lower) }
       .each {
-        if(constructors && !reporter.ignores(ProposeKind.method) && it.startsWith(prefix)) {
+        if(constructors && !reporter.ignores(ProposeKind.method) && it.lower.startsWith(prefix.lower)) {
           IFanType? type := pod.findType(it)
           if( type != null)
           {
@@ -246,7 +246,7 @@ abstract class CompletionProvider
         Str? tname := (it.asTypeName != null)?it.asTypeName.text:it.typeName.text
         if( tname != null) 
         {
-          if( tname.startsWith(prefix))
+          if( tname.lower.startsWith(prefix.lower))
           {
             if(constructors || prefix.equals(tname)) 
             {
@@ -273,7 +273,7 @@ abstract class CompletionProvider
           modelpod := it.podName.modelPod
           types := modelpod.typeNames
           types.each {
-            if( it.startsWith(prefix))
+            if( it.lower.startsWith(prefix.lower))
             {
               type := modelpod.findType(it)
               if( type != null ) {
@@ -312,7 +312,7 @@ abstract class CompletionProvider
     if(reporter.ignores(ProposeKind.pod)) return
     ns.podNames.each 
     {
-      if(it.startsWith(prefix) && it != ns.currPod.name)
+      if(it.lower.startsWith(prefix.lower) && it != ns.currPod.name)
         reportPod(ns.findPod(it)) 
     }
   }
@@ -326,7 +326,7 @@ abstract class CompletionProvider
   
   protected Void reportLocal(Str name, Str? type := null, IModelElement? parent := null)
   {    
-    if(reporter.ignores(ProposeKind.var) || !name.startsWith(prefix)) return
+    if(reporter.ignores(ProposeKind.var) || !name.lower.startsWith(prefix.lower)) return
     if(type == null || parent == null)
     {
       reporter.report(createProposal(ProposeKind.var, name))
@@ -350,14 +350,14 @@ abstract class CompletionProvider
     if(reporter.ignores(ProposeKind.keyword)) return
     keywords.each |kw|
     {
-      if(!kw.startsWith(prefix)) return
+      if(!kw.lower.startsWith(prefix.lower)) return
       reporter.report(createProposal(ProposeKind.keyword, kw))
     }
   }
   
   protected Void reportDefaultCtor()
   {
-    if(!"make".startsWith(prefix)) return
+    if(!"make".startsWith(prefix.lower)) return
     if(reporter.ignores(ProposeKind.method)) return
     proposal := createProposal(ProposeKind.field, "make")
     proposal.setIsConstructor(true)

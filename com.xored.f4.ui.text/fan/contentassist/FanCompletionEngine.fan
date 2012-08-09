@@ -221,7 +221,7 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
   
   protected Void completeKeywords(Str[] keywords, Str nameStarting)
   {
-    keywords.findAll { it.startsWith(nameStarting) }.each 
+    keywords.findAll { it.lower.startsWith(nameStarting.lower) }.each 
     {
       reportWord(it, 
         ProposeKind.keyword, 
@@ -231,7 +231,7 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
   
   protected Void completePods(Str[] podNames, Str nameStarting)
   {
-    podNames.findAll { it.startsWith(nameStarting) }.each 
+    podNames.findAll { it.lower.startsWith(nameStarting.lower) }.each 
     {
       reportWord(it, 
         ProposeKind.pod, 
@@ -241,7 +241,7 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
   
   protected Void completeSlots(IFanSlot[] slots, Str nameStarting)
   {
-    slots.findAll { it.name.startsWith(nameStarting) }.each |slot|
+    slots.findAll { it.name.lower.startsWith(nameStarting.lower) }.each |slot|
     {
       kind := getKind(slot)
       
@@ -265,13 +265,13 @@ class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
   
   protected Void completeTypes(Str[] typeNames, Str prefix)
   {
-    typeNames.findAll { it.startsWith(prefix) }. each 
+    typeNames.findAll { it.lower.startsWith(prefix.lower) }. each 
     { reportWord(it, ProposeKind.type, Relevance.type) }
   }
   
   protected Void completeLocals(MethodVar[] locals, Str prefix)
   {
-    locals.findAll { it.name.text.startsWith(prefix) }.
+    locals.findAll { it.name.text.lower.startsWith(prefix.lower) }.
     each { reportWord(it.name.text, ProposeKind.var, Relevance.var) }
   }
   
