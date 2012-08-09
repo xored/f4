@@ -60,6 +60,13 @@ class InternalBuilder : Builder
       input.outDir      = File.os(projectPath.toOSString) 
       input.output      = CompilerOutputMode.podFile
       input.jsFiles     = fp.jsDirs
+      meta := fp.meta.dup 
+      meta["pod.docApi"] = fp.docApi.toStr
+      meta["pod.docSrc"] = fp.docSrc.toStr
+      meta["pod.native.java"]   = (!fp.javaDirs.isEmpty).toStr
+      meta["pod.native.dotnet"] = false.toStr
+      meta["pod.native.js"]     = (!fp.jsDirs.isEmpty).toStr
+      input.meta        = meta
       errs := compile(input)
       if (!errs[0].isEmpty) return errs.flatten
       

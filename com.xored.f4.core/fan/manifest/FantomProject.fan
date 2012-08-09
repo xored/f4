@@ -51,6 +51,7 @@ const class FantomProject
       javaDirs = Uri[,]
       summary = ""
       rawDepends = Depend[,]
+      meta = [Str:Str][:]
       projectErrs = perrs
       return
     }
@@ -72,6 +73,7 @@ const class FantomProject
     jsDirs = manifest.jsDirs
     javaDirs = manifest.javaDirs
     summary = manifest.summary
+    meta = manifest.meta.dup
     rawDepends = manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]|
     {
       Depend? depend := null
@@ -137,6 +139,7 @@ const class FantomProject
     this.version = project.version
     this.projectErrs = project.projectErrs
     this.buildfanErrs = project.buildfanErrs
+    this.meta = project.meta
     f?.call(this)
   }
   
@@ -296,6 +299,17 @@ const class FantomProject
     
   const Version version
   
+  ** Pod meta-data name/value pairs to compile into pod.  
+  ** See `sys::Pod.meta`.
+  const Str:Str meta
+  
+  ** Indicates if if fandoc API should be included in the documentation. 
+  ** By default API is included.
+  const Bool docApi := true
+  
+  ** Indicates if if source code should be included in the pod/documentation. 
+  ** By default source code it not included.
+  const Bool docSrc := false
   
 //////////////////////////////////////////////////////////////////////////
 // Private helper methods
