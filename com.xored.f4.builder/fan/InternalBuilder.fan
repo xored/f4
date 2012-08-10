@@ -18,6 +18,9 @@ using "[java]org.eclipse.core.externaltools.internal"::IExternalToolConstants as
 using [java]com.xored.fanide.core::FanCore
 using [java]org.eclipse.core.runtime::IPath
 using [java]org.eclipse.core.runtime::Path
+using [java]org.eclipse.core.runtime::NullProgressMonitor
+using [java]org.eclipse.core.resources::ResourcesPlugin
+using [java]org.eclipse.core.resources::IResource
 using [java]java.io::File as JFile
 using [java]java.util::HashMap as JHashMap
 
@@ -82,6 +85,10 @@ class InternalBuilder : Builder
         newPodFile.copyTo(podFile, ["overwrite" : true])
         jp := JavaCore.create(fp.project)
         jp.getJavaModel.refreshExternalArchives([jp], null)
+        
+        ResourcesPlugin.getWorkspace
+          .getRoot.getFileForLocation(Path.fromOSString(podFile.osPath))
+          ?.refreshLocal(IResource.DEPTH_ZERO, NullProgressMonitor())
       }
       
       return errs.flatten
