@@ -46,7 +46,7 @@ class TodoProcessor
             if (haveTag){
               reporter.reportTask(
                 tagWord + array,
-                comment.line + i,
+                comment.line + i-1,
                 tags[tagWord],
                 comment.start,
                 comment.end + 1)
@@ -62,7 +62,7 @@ class TodoProcessor
         if (haveTag) {
           reporter.reportTask(
                 tagWord + array,
-                comment.line + i,
+                comment.line + i-1,
                 tags[tagWord],
                 comment.start,
                 comment.end + 1)
