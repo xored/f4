@@ -28,6 +28,7 @@ mixin CompletionReporter
   abstract CompletionProposal create(ProposeKind kind)
   abstract Void report(CompletionProposal proposal)
   abstract Bool ignores(ProposeKind kind)
+  abstract Int computeCaseRelevance(Str prefix, Str name)
 }
 
 **************************************************************************
@@ -98,7 +99,7 @@ abstract class CompletionProvider
   protected Void reportField(IFanSlot field)
   {
     if(reporter.ignores(ProposeKind.field)) return
-    reporter.report(createProposal(ProposeKind.field, field.name, field.me))
+    reporter.report(createProposal(ProposeKind.field, field.name, field.me, reporter.computeCaseRelevance(this.prefix, field.name)))
   }
 
   protected Void reportMethod(IFanMethod method, Str? mname := null)
@@ -140,7 +141,7 @@ abstract class CompletionProvider
       methodName := mname != null?mname:method.name
       allRelatedParams.each |relatedParams|
       {
-        proposal := createProposal(ProposeKind.method, methodName, method.me)
+        proposal := createProposal(ProposeKind.method, methodName, method.me, reporter.computeCaseRelevance(this.prefix, methodName))
         proposal.setIsConstructor(method.isCtor)
         if( method is IFfiForeigh)
         {
@@ -261,7 +262,7 @@ abstract class CompletionProvider
               }
             }
             else if( !reporter.ignores(ProposeKind.type)) {
-              reporter.report(createProposal(ProposeKind.type, tname , it.typeName.resolvedType.me))
+              reporter.report(createProposal(ProposeKind.type, tname , it.typeName.resolvedType.me, reporter.computeCaseRelevance(this.prefix, tname)))
             }
           }
         }
@@ -290,7 +291,7 @@ abstract class CompletionProvider
                   }
                 }
                 else if( !reporter.ignores(ProposeKind.type)) {
-                  reporter.report(createProposal(ProposeKind.type, it , type.me))
+                  reporter.report(createProposal(ProposeKind.type, it , type.me, reporter.computeCaseRelevance(this.prefix, it)))
                 }
               }
             }
@@ -304,7 +305,7 @@ abstract class CompletionProvider
   {
     if(pod == null) return
     if(reporter.ignores(ProposeKind.pod)) return
-    reporter.report(createProposal(ProposeKind.pod, pod.name))
+    reporter.report(createProposal(ProposeKind.pod, pod.name, null, reporter.computeCaseRelevance(this.prefix, pod.name)))
   }
   
   protected Void reportNsPods()
@@ -321,7 +322,7 @@ abstract class CompletionProvider
   {
     if(reporter.ignores(ProposeKind.type)) return
     
-    reporter.report(createProposal(ProposeKind.type, type.name, type.me))
+    reporter.report(createProposal(ProposeKind.type, type.name, type.me, reporter.computeCaseRelevance(this.prefix, type.name)))
   }
   
   protected Void reportLocal(Str name, Str? type := null, IModelElement? parent := null)
@@ -329,7 +330,7 @@ abstract class CompletionProvider
     if(reporter.ignores(ProposeKind.var) || !name.lower.startsWith(prefix.lower)) return
     if(type == null || parent == null)
     {
-      reporter.report(createProposal(ProposeKind.var, name))
+      reporter.report(createProposal(ProposeKind.var, name, null, reporter.computeCaseRelevance(this.prefix, name)))
       return
     }
     
@@ -342,7 +343,7 @@ abstract class CompletionProvider
         type
         )
     
-    reporter.report(createProposal(ProposeKind.var, name, locaVar))
+    reporter.report(createProposal(ProposeKind.var, name, locaVar, reporter.computeCaseRelevance(this.prefix, name)))
   }
   
   protected Void reportKeywords(Str[] keywords)
@@ -351,7 +352,7 @@ abstract class CompletionProvider
     keywords.each |kw|
     {
       if(!kw.lower.startsWith(prefix.lower)) return
-      reporter.report(createProposal(ProposeKind.keyword, kw))
+      reporter.report(createProposal(ProposeKind.keyword, kw, null, reporter.computeCaseRelevance(this.prefix, kw)))
     }
   }
   
@@ -359,18 +360,18 @@ abstract class CompletionProvider
   {
     if(!"make".startsWith(prefix.lower)) return
     if(reporter.ignores(ProposeKind.method)) return
-    proposal := createProposal(ProposeKind.field, "make")
+    proposal := createProposal(ProposeKind.field, "make", null, reporter.computeCaseRelevance(this.prefix, "make"))
     proposal.setIsConstructor(true)
     proposal.setFlags(FanModifiers.AccPublic)
     reporter.report(proposal)
   }
 
-  protected CompletionProposal createProposal(ProposeKind kind, Str name, IModelElement? me := null)
+  protected CompletionProposal createProposal(ProposeKind kind, Str name, IModelElement? me := null, Int relevance := 0)
   {
     proposal := reporter.create(kind)
     proposal.setName(name)
     proposal.setCompletion(name)
-    proposal.setRelevance(kind.relevance.val)
+    proposal.setRelevance(kind.relevance.val + relevance)
     proposal.setModelElement(me)
     if(me is IMember) 
     {

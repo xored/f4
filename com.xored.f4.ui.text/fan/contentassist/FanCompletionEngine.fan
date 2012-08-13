@@ -59,6 +59,10 @@ enum class ProposeKind
 **************************************************************************
 class FanCompletionEngine : ScriptCompletionEngine, CompletionReporter
 {  
+  override Int computeCaseRelevance(Str prefix, Str name) {
+    return computeRelevanceForCaseMatching(InteropUtil.toCharArray(prefix.chars), name)
+  }
+  
   ** Type inferencer timeout
   //private static const Int TI_TIMEOUT := 2000
   
