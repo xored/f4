@@ -85,10 +85,7 @@ class InternalBuilder : Builder
         newPodFile.copyTo(podFile, ["overwrite" : true])
         jp := JavaCore.create(fp.project)
         jp.getJavaModel.refreshExternalArchives([jp], null)
-        
-        ResourcesPlugin.getWorkspace
-          .getRoot.getFileForLocation(Path.fromOSString(podFile.osPath))
-          ?.refreshLocal(IResource.DEPTH_ZERO, NullProgressMonitor())
+        fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
       }
       
       return errs.flatten
