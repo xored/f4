@@ -7,6 +7,8 @@ using [java]org.eclipse.debug.core.model::IProcess
 using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.debug.core::ILaunchManager
 using [java]org.eclipse.core.runtime::NullProgressMonitor
+using [java]org.eclipse.core.resources::IResource
+using [java]org.eclipse.jdt.core::JavaCore
 
 
 class ExternalBuilder : Builder
@@ -26,6 +28,19 @@ class ExternalBuilder : Builder
     if(!install.getInstallLocation.exists)
       return interpreterErrs
     out := launch(wc, consumer)
+    
+    podFileName := `${fp.podName}.pod` 
+    newPodFile := fp.baseDir + podFileName
+    podFile := fp.outDir + podFileName
+
+    if(newPodFile.exists) 
+    {
+      newPodFile.copyTo(podFile, ["overwrite" : true])
+      newPodFile.delete
+      jp := JavaCore.create(fp.project)
+      jp.getJavaModel.refreshExternalArchives([jp], null)
+      fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+    }
     return parseErrors(out.toStr)
   }
   
