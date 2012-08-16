@@ -124,7 +124,7 @@ class ProjectTab : AbstractLaunchConfigurationTab
       enableViewer(true)
       if (!configEnv.isEmpty)
       {
-        selectedProj := allProj.exclude |FantomProject p -> Bool| { return !configEnv.contains(p.outDir.parent.parent.osPath) }
+        selectedProj := allProj.exclude |FantomProject p -> Bool| { return !configEnv.contains(p.podName) }
         fPluginTreeViewer.setCheckedElements(selectedProj)
       } else {
         fPluginTreeViewer.setCheckedElements([,])
@@ -141,15 +141,22 @@ class ProjectTab : AbstractLaunchConfigurationTab
   override Void performApply(ILaunchConfigurationWorkingCopy? configuration) 
   {
     configuration.setAttribute(ATTR_PROJECT_SELECTION, (fSelectionCombo.getSelectionIndex == CUSTOM_SELECTION))
-    FantomProject[] proj := (fSelectionCombo.getSelectionIndex == CUSTOM_SELECTION)? fPluginTreeViewer.getCheckedElements : getFantomProjects
-    ArrayList configEnv := ArrayList()
-    proj.each |FantomProject p| 
-    { 
-      string := p.outDir.parent.parent.osPath
-      if (!configEnv.contains(string))
-        configEnv.add(string)  
+    if (fSelectionCombo.getSelectionIndex == DEFAULT_SELECTION) 
+    {
+      // if all projects selected -> no list saving
+      configuration.removeAttribute(LaunchConsts.projectList)
+    } else
+    {
+      FantomProject[] proj := (fSelectionCombo.getSelectionIndex == CUSTOM_SELECTION)? fPluginTreeViewer.getCheckedElements : getFantomProjects
+      ArrayList configEnv := ArrayList()
+      proj.each |FantomProject p| 
+      { 
+        string := p.podName
+        if (!configEnv.contains(string))
+          configEnv.add(string)  
+      }
+      configuration.setAttribute(LaunchConsts.projectList, configEnv)
     }
-    configuration.setAttribute(LaunchConsts.projectList, configEnv)
   }
   
   private FantomProject[] getFantomProjects()
@@ -177,6 +184,8 @@ class ProjectTab : AbstractLaunchConfigurationTab
   protected Void comboSelected()
   {
     enableViewer(fSelectionCombo.getSelectionIndex == CUSTOM_SELECTION)
+    if (fSelectionCombo.getSelectionIndex == DEFAULT_SELECTION) 
+      fPluginTreeViewer.setCheckedElements([,])
     updateLaunchConfigurationDialog
   }
   

@@ -72,12 +72,28 @@ class JavaLaunchUtil
     Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
     configEnv.put("FAN_ENV", "util::PathEnv")
     projectList := config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-    configEnv.put("FAN_ENV_PATH", buildFanEnvPath(projectList))
+    if (projectList.isEmpty)
+    {
+      configEnv.put("FAN_ENV_PATH", buildFanEnvPath(getAllProjectsPaths))
+    } else {
+      configEnv.put("FAN_ENV_PATH", buildFanEnvPath(getCheckedProjectList(projectList)))
+    }
     copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
   
+  private static Str[] getCheckedProjectList (Str[] podNames) 
+  {
+    allPodNames := getAllProjectsPaths
+    return podNames.exclude |Str name -> Bool| { return !allPodNames.contains(name) }
+  }
+  
   private static Str buildFanEnvPath(Str[] projects) {
     projects.join(File.pathSep)
+  }
+  
+  private static Str[] getAllProjectsPaths() {
+    FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
+    .map |FantomProject p -> Str| { p.podName }
   }
 }
