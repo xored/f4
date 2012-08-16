@@ -71,18 +71,13 @@ class JavaLaunchUtil
     copy := config.getWorkingCopy
     Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
     configEnv.put("FAN_ENV", "util::PathEnv")
-    projectList := config.getAttribute(LaunchConsts.projectList, ArrayList())
+    projectList := config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
     configEnv.put("FAN_ENV_PATH", buildFanEnvPath(projectList))
     copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
   
-  private static Str buildFanEnvPath(ArrayList projects) {
-    path := Str.defVal
-    for (index := 0; index < projects.size; ++index)
-    {
-      path.plus((Str)projects.get(index) + File.pathSep)
-    }
-    return path
+  private static Str buildFanEnvPath(Str[] projects) {
+    projects.join(File.pathSep)
   }
 }
