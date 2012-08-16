@@ -157,11 +157,6 @@ class ProjectTab : AbstractLaunchConfigurationTab
     return FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
   }
   
-  private static Str buildPath(FantomProject[] projs)
-  {
-    return projs.map | FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
-  }
-  
   private Void toggleProjects(Bool select)
   {
     fPluginTreeViewer.setCheckedElements(select ? getFantomProjects : [,])
@@ -262,10 +257,7 @@ class TreeLabelProvider : LabelProvider
     return ((FantomProject) element).podName
   }
 
-  override Image? getImage(Obj? element) 
-  {
-    return icon
-  }
+  override Image? getImage(Obj? element) { return icon }
 }
 
 **************************************************************************

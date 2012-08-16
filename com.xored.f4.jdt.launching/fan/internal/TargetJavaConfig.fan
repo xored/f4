@@ -11,6 +11,7 @@ using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.dltk.launching
 using [java] java.util::Map
 using [java] java.util::HashMap
+using [java] java.util::ArrayList
 using f4launching
 using f4core
 
@@ -70,13 +71,18 @@ class JavaLaunchUtil
     copy := config.getWorkingCopy
     Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
     configEnv.put("FAN_ENV", "util::PathEnv")
-    configEnv.put("FAN_ENV_PATH", buildFanEnvPath)
+    projectList := config.getAttribute(LaunchConsts.projectList, ArrayList())
+    configEnv.put("FAN_ENV_PATH", buildFanEnvPath(projectList))
     copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
   
-  private static Str buildFanEnvPath() {
-    FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
-    .map |FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
+  private static Str buildFanEnvPath(ArrayList projects) {
+    path := Str.defVal
+    for (index := 0; index < projects.size; ++index)
+    {
+      path.plus((Str)projects.get(index) + File.pathSep)
+    }
+    return path
   }
 }
