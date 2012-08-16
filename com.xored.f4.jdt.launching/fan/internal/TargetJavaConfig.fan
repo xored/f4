@@ -72,28 +72,15 @@ class JavaLaunchUtil
     Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
     configEnv.put("FAN_ENV", "util::PathEnv")
     projectList := config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-    if (projectList.isEmpty)
-    {
-      configEnv.put("FAN_ENV_PATH", buildFanEnvPath(getAllProjectsPaths))
-    } else {
-      configEnv.put("FAN_ENV_PATH", buildFanEnvPath(getCheckedProjectList(projectList)))
-    }
+    configEnv.put("FAN_ENV_PATH", getFanEnvPath(projectList))
     copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
   
-  private static Str[] getCheckedProjectList (Str[] podNames) 
-  {
-    allPodNames := getAllProjectsPaths
-    return podNames.exclude |Str name -> Bool| { return !allPodNames.contains(name) }
-  }
-  
-  private static Str buildFanEnvPath(Str[] projects) {
-    projects.join(File.pathSep)
-  }
-  
-  private static Str[] getAllProjectsPaths() {
-    FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
-    .map |FantomProject p -> Str| { p.podName }
+  private static Str getFanEnvPath(Str[] checked) {
+    FantomProjectManager.instance.listProjects.exclude { 
+      it.isPlugin 
+    }.findAll { checked.isEmpty ? true : checked.contains(it.podName) }
+    .map |FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
   }
 }
