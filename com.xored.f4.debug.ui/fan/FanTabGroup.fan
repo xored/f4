@@ -26,8 +26,8 @@ class FanTabGroup : AbstractLaunchConfigurationTabGroup
   override Void createTabs(ILaunchConfigurationDialog? dialog, Str? mode)
   {
     main := FanMainConfigTab(mode)
-    tabs := [main, ScriptArgumentsTab(), InterpreterTab(main),
-      EnvironmentTab(), CommonTab()]
+    tabs := [main, ScriptArgumentsTab(), ProjectTab(), InterpreterTab(main),
+      EnvironmentTab(), CommonTab() ]
     setTabs(tabs)
   }
 }

@@ -23,4 +23,5 @@ class LaunchConsts : ScriptLaunchConfigurationConstants
   static const Str fanProject := ATTR_PROJECT_NAME
   static const Str scriptNature := ATTR_SCRIPT_NATURE
   static const Str consoleEncoding := DebugPlugin.ATTR_CONSOLE_ENCODING
+  static const Str projectList := "PROJECT_LIST"
 }
