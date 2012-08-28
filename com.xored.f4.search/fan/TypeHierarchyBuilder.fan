@@ -11,7 +11,6 @@ class TypeHierarchyBuilder: ITypeHierarchyBuilder
   override FanTypeHierarchy? build(IType? type, Mode? mode, IProgressMonitor? monitor) {
     ns := ParseUtil.ns(type.getSourceModule)
     fanType := DltkType(ns.currPod.name, type)
-    
     return FanTypeHierarchy(fanType)
   }
 }
@@ -45,7 +44,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   {
     superTypes := getAllSupertypes(savedType)
     temp := superTypes.dup
-    while (temp.size != 0)
+    while (!temp.isEmpty)
     {
       superTypes.clear
       superTypes.addAll(temp)
@@ -56,8 +55,11 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     rootClasses.addAll(superTypes)
     classToSuperclass.clear
     classToSuperclass.add(savedType.getElementName, getAllSupertypes(savedType))
-    typeToSubtype.clear
-    typeToSubtype.add(savedType.getElementName, (savedType.getTypes.isEmpty)? [,] : savedType.getTypes)
+    
+    allTypes := (IType?[]?) savedType.getSourceModule.getTypes
+    allUsedTypes := getAllClasses
+    allTypes = allTypes.exclude { allUsedTypes.contains(it) }
+    allTypes.each |IType subType| { superCls := getAllSuperclasses(subType) }
   }
   
   override Void addTypeHierarchyChangedListener(ITypeHierarchyChangedListener? listener)
@@ -113,6 +115,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   {
     classes := rootClasses.dup
     classToSuperclass.each |IType[] list, Str typeName| { classes.addAll(list) }
+    classes.add(savedType)
     return classes
   }
   
@@ -121,29 +124,11 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
    */
   override IType?[]? getAllSubtypes(IType? type)
   {
-    subTypes := IType[,]
-    alreadyProcessed := IType[,]
-    getAllSubtypesForType0(type, subTypes, alreadyProcessed)
-    subClasses := IType[,]
-    subClasses.addAll(subTypes)
-    return subClasses
-  }
-  
-  private Void getAllSubtypesForType0(IType type, IType[] subs, IType[] alreadyProcessed) 
-  {
-    subTypes := getAllSubtypes(type)
-    if (subTypes.size != 0) {
-      subTypes.each 
-      {   
-        IType subType := it
-        if (!alreadyProcessed.contains(subType))
-        {
-          alreadyProcessed.add(subType)
-          subs.add(subType)
-          getAllSubtypesForType0(subType, subs, alreadyProcessed)
-        }
-      }
+    if (typeToSubtype == null)
+    {
+      return IType[,]
     }
+    return (IType?[]?) typeToSubtype.get(type.getElementName)
   }
   
   /**
@@ -151,21 +136,18 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
    */
   override IType?[]? getAllSuperclasses(IType? type)
   {
-//    IType?[]? superclass := getSuperclass(type)
-//    IType[] supers := [,]
-//    if (superclass == null) {
-//      return supers
-//    }
-//    superclass.each 
-//    { 
-//      if (!type.equals(it))
-//      {
-//        supers.add(it)
-//        supers.addAll(getAllSuperclasses(it))
-//      }
-//    }
-//    return supers
     return (IType?[]?) getAllSupertypes(type)
+  }
+  
+  private Void addToSubtypeMap(IType type, IType subType)
+  {
+    tmp := typeToSubtype.get(type.getElementName)
+    if (tmp == null) 
+      tmp = [,]
+    if (!tmp.contains(subType))
+      tmp.add(subType)
+    typeToSubtype.remove(type.getElementName)
+    typeToSubtype.add(type.getElementName, tmp) 
   }
   
   /*
@@ -176,6 +158,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     ns := ParseUtil.ns(type.getSourceModule)
     fanType := DltkType(ns.currPod.name, type)
     IType?[]? superTypes := fanType.inheritance.map { ns.findType(it).me }.exclude { it == null }
+    superTypes.each { addToSubtypeMap(it, type) }
     return (superTypes.size == 0)? (IType?[]?)[,] : superTypes 
   }
   
@@ -206,10 +189,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     {
       list := getAllSupertypes(focusType.me)
       rootClasses.addAll( list.findAll { !rootClasses.contains(it) } )
-    } else 
-    {
-      return IType[,]
-    }
+    } 
     return rootClasses
   }
   
@@ -226,8 +206,12 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
    */
   override IType?[]? getSubtypes(IType? type)
   {
-//    return (IType[])type.getTypes
-    return typeToSubtype.get(type.getElementName)
+    subTypes := typeToSubtype.get(type.getElementName)
+    if (subTypes == null)
+    {
+      return (IType?[]?) type.getTypes
+    } 
+    return subTypes
   }
   
   /**
@@ -235,7 +219,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
    */
   override IType?[]? getSuperclass(IType? type)
   {
-//    return (IType[])type.getSuperClasses
     tmp := classToSuperclass.get(type.getElementName)
     if (tmp == null)
     {
@@ -275,7 +258,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       
       if (focusType != null) 
       {
-        // TODO write refresh action here
         buildMaps
       }
       
@@ -297,18 +279,10 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     if (changeListeners == null)
       return
     changeListeners.remove(listener)
-//    if (changeListeners.isEmpty)
-//    {
-//      DLTKCore.removeElementChangedListener(this)
-//    }
   }
   
   /**
   * Stores the type hierarchy in an output stream
   * */
-  override Void store(OutputStream? outputStream, IProgressMonitor? monitor)
-  {
-    
-  }
-  
+  override Void store(OutputStream? outputStream, IProgressMonitor? monitor){ }
 }
