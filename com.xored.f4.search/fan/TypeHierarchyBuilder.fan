@@ -5,6 +5,7 @@ using [java] org.eclipse.dltk.core::ITypeHierarchy$Mode as Mode
 
 using f4core
 using f4model
+using f4parser
 
 class TypeHierarchyBuilder: ITypeHierarchyBuilder
 {
@@ -17,17 +18,11 @@ class TypeHierarchyBuilder: ITypeHierarchyBuilder
 
 class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
 {
-  /** Change listeners - null if no one is listening */
   protected ITypeHierarchyChangedListener?[]? changeListeners := [,]
-  
-  /** The type the hierarchy was specifically computed for, possibly null */
   protected IFanType? focusType := null
-  
   protected IType? savedType := null
-  
-  /** Whether this hierarchy needs refresh */
+  protected ISourceModule? module := null
   public Bool needsRefresh := true
-  
   protected IType?[]? rootClasses := [,]
   protected [Str:IType[]]? typeToSubtype := [:]
   protected [Str:IType[]]? classToSuperclass := [:]
@@ -35,31 +30,46 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   new make(IFanType? type)
   {
     focusType = (type == null) ? null : type
-    savedType = type.me 
+    savedType = type.me
+    module = savedType.getSourceModule
     buildMaps
   }
   
-    //create all maps and lists? 
   private Void buildMaps()
   {
-    superTypes := getAllSupertypes(savedType)
+    superTypes := getAllSupertypes0(savedType)
+    classToSuperclass.clear
+    classToSuperclass.add(savedType.getElementName, superTypes.dup)
+    
     temp := superTypes.dup
     while (!temp.isEmpty)
     {
       superTypes.clear
       superTypes.addAll(temp)
       temp.clear
-      superTypes.each { temp.addAll(getAllSupertypes(it)) }
+      superTypes.each 
+      { 
+        supers := getAllSupertypes0(it)
+        var := classToSuperclass.get(it.getElementName)
+        if (var == null && (supers.size != 0))
+          classToSuperclass.add(it.getElementName, supers.dup)
+        supers.each |IType type| {
+          if (!containsType(temp, type))
+            temp.add(type) 
+        }
+      }
     }
     rootClasses.clear
     rootClasses.addAll(superTypes)
-    classToSuperclass.clear
-    classToSuperclass.add(savedType.getElementName, getAllSupertypes(savedType))
-    
     allTypes := (IType?[]?) savedType.getSourceModule.getTypes
     allUsedTypes := getAllClasses
     allTypes = allTypes.exclude { allUsedTypes.contains(it) }
-    allTypes.each |IType subType| { superCls := getAllSuperclasses(subType) }
+    allTypes.each |IType subType| { superCls := getAllSupertypes0(subType) }
+  }
+  
+  private Bool containsType(IType?[]? list, IType value)
+  {
+    list.any |IType type -> Bool| {  return type.getFullyQualifiedName.equals(value.getFullyQualifiedName) }
   }
   
   override Void addTypeHierarchyChangedListener(ITypeHierarchyChangedListener? listener)
@@ -86,21 +96,13 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   
   override Bool contains(IType? type)
   {
-    if (classToSuperclass.get(type.getElementName) != null)
-    {
-      return true
-    }
-    // root classes
-    if (rootClasses.contains(type))
+    if ((classToSuperclass.get(type.getElementName) != null) || (containsType(rootClasses, type)))
     {
       return true
     }
     return false
   }
   
-  /*
-   * Returns whether the type and project this hierarchy was created on exist.
-   */
   override Bool exists()
   {
     if (!needsRefresh)
@@ -108,20 +110,22 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     return (focusType == null || focusType.me.exists) && focusType.me.getScriptProject.exists
   }
   
-  /*
-   * Returns all classes in this type hierarchy's graph
-   */
   override IType?[]? getAllClasses()
   {
     classes := rootClasses.dup
-    classToSuperclass.each |IType[] list, Str typeName| { classes.addAll(list) }
-    classes.add(savedType)
+    classToSuperclass.each |IType[] list, Str typeName| 
+    { 
+      list.each 
+      {   
+        if (!containsType(classes, it))
+          classes.add(it) 
+      }
+    }
+    if (!containsType(classes, savedType))
+      classes.add(savedType)
     return classes
   }
   
-  /*
-   * Returns all resolved subtypes (direct and indirect) of the given type
-   */
   override IType?[]? getAllSubtypes(IType? type)
   {
     if (typeToSubtype == null)
@@ -131,9 +135,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     return (IType?[]?) typeToSubtype.get(type.getElementName)
   }
   
-  /**
-   * Returns all resolved superclasses of the given class, in bottom-up order
-   */
   override IType?[]? getAllSuperclasses(IType? type)
   {
     return (IType?[]?) getAllSupertypes(type)
@@ -141,69 +142,93 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   
   private Void addToSubtypeMap(IType type, IType subType)
   {
-    tmp := typeToSubtype.get(type.getElementName)
+    elementName := type.getElementName
+    tmp := typeToSubtype.get(elementName)
     if (tmp == null) 
       tmp = [,]
-    if (!tmp.contains(subType))
-      tmp.add(subType)
-    typeToSubtype.remove(type.getElementName)
-    typeToSubtype.add(type.getElementName, tmp) 
+    if (containsType(tmp, subType))
+      return
+    tmp.add(subType)
+    typeToSubtype.remove(elementName)
+    typeToSubtype.add(elementName, tmp)
   }
   
-  /*
-   * Returns all resolved supertypes of the given type, in bottom-up order
-   */
   override IType?[]? getAllSupertypes(IType? type)
   {
-    ns := ParseUtil.ns(type.getSourceModule)
-    fanType := DltkType(ns.currPod.name, type)
-    IType?[]? superTypes := fanType.inheritance.map { ns.findType(it).me }.exclude { it == null }
-    superTypes.each { addToSubtypeMap(it, type) }
-    return (superTypes.size == 0)? (IType?[]?)[,] : superTypes 
+    if (classToSuperclass == null)
+    {
+      return IType[,]
+    }
+    return classToSuperclass.get(type.getElementName)
   }
   
-  /*
-  *  Returns all types in this type hierarchy's graph
-  **/
+  IType?[]? getAllSupertypes0(IType? type)
+  {
+    IType?[]? superTypes := [,]
+    allTypes := [,]
+    if (type is FanTypeWrapper)
+    {
+      fanType := (FanTypeWrapper) type
+      ns := ParseUtil.ns(module)
+      parents := fanType.getSuperClasses
+      parents.each 
+      {
+        pod := ns.findType(it)
+        wrapper := FanTypeWrapper(pod, savedType.getScriptProject, savedType.getSourceModule)
+        if (!containsType(superTypes, wrapper))
+          superTypes.add(wrapper)
+      }
+    } else {
+      ns := ParseUtil.ns(type.getSourceModule)
+      fanType := DltkType(ns.currPod.name, type)
+      allTypes = fanType.inheritance.dup
+      cunit := ParseUtil.parse((ISourceModule) type.getSourceModule)
+      usings := cunit.usings.dup
+      usings.exclude { it.typeName == null }.each 
+      {
+        if(allTypes.contains(it.typeName.text)) 
+        {
+          needType := it.typeName.modelType
+          wrapper := FanTypeWrapper(needType, savedType.getScriptProject, savedType.getSourceModule)
+          allTypes.remove(it.typeName.text)
+          if (!containsType(superTypes, wrapper))
+            superTypes.add(wrapper)
+        }
+      }
+      superTypes.addAll( allTypes.map 
+      { 
+        ns.findType(it).me 
+      }.exclude { it == null } )
+    }
+    superTypes.each { addToSubtypeMap(it, type) }
+    return (superTypes.size == 0)? (IType?[]?)[,] : superTypes
+  }
+  
   override IType?[]? getAllTypes()
   {
-    return (IType[])getAllClasses
+    (IType[])getAllClasses
   }
   
-  /**
-  * Return the flags associated with the given type (would be equivalent to
-   * <code>IMember.getFlags()</code>), or <code>-1</code> if this
-   * information wasn't cached on the hierarchy during its computation
-   *  */
   override Int getCachedFlags(IType? type)
   {
-    return type.getFlags
+    type.getFlags
   }
   
-  /**
-   * Returns all classes in the graph which have no resolved superclass
-   **/
   override IType?[]? getRootClasses()
   {
     if (rootClasses == null)
     {
       list := getAllSupertypes(focusType.me)
-      rootClasses.addAll( list.findAll { !rootClasses.contains(it) } )
+      rootClasses.addAll( list.findAll { !containsType(rootClasses, it) } )
     } 
     return rootClasses
   }
   
-  /**
-  * Returns the direct resolved subclasses of the given class
-  * */
   override IType?[]? getSubclasses(IType? type)
   {
-    return typeToSubtype.get(type.getElementName)
+    typeToSubtype.get(type.getElementName)
   }
   
-  /**
-   * Returns the direct resolved subtypes of the given type
-   */
   override IType?[]? getSubtypes(IType? type)
   {
     subTypes := typeToSubtype.get(type.getElementName)
@@ -214,32 +239,24 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     return subTypes
   }
   
-  /**
-   * Returns the resolved superclass of the given class
-   */
   override IType?[]? getSuperclass(IType? type)
   {
     tmp := classToSuperclass.get(type.getElementName)
     if (tmp == null)
     {
-      return (IType?[]?) getAllSupertypes(type) //(IType?[]?)[,]
+      return IType[,]
     }
     return tmp
   }
   
-  /**
-   * Returns the resolved supertypes of the given type
-   */
   override IType?[]? getSupertypes(IType? type)
   {
-    return (IType[])getSuperclass(type)
+    (IType[]) getSuperclass(type)
   }
   
-  ** Returns the type this hierarchy was computed for
-  ** see ITypeHierarchy
   override IType? getType()
   {
-    return focusType.me
+    focusType.me
   }
   
   override Void refresh(IProgressMonitor? monitor)
@@ -263,10 +280,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       
       needsRefresh = false
     }
-    catch (Err err_variable_name)
-    {
-      // todo: handle error
-    }
+    catch (Err err_variable_name) { }
     finally 
     {
       if (monitor != null)
@@ -281,8 +295,5 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     changeListeners.remove(listener)
   }
   
-  /**
-  * Stores the type hierarchy in an output stream
-  * */
   override Void store(OutputStream? outputStream, IProgressMonitor? monitor){ }
 }
