@@ -1,0 +1,64 @@
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: TypeHierarchyTest
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _wp7jUPjZEeGLYu94TYiIDg,_to5bQPjZEeGLYu94TYiIDg
+Save-Time: 9/10/12 11:53 AM
+Id: _zD5EUPjZEeGLYu94TYiIDg
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-view "Fantom Explorer" | get-tree | select "test/fan/Main.fan" | double-click
+with [get-editor "Main.fan" | get-text-viewer] {
+    set-caret-pos 33 2
+    key-type F4
+}
+with [get-view "Type Hierarchy"] {
+    get-button "Show the Supertype Hierarchy" | click
+    get-button "Show the Type Hierarchy" | click
+}
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item A | get-property caption | equals A | verify-true
+    get-item A | get-property childCount | equals 1 | verify-true
+    get-item "A/B" | get-property caption | equals B | verify-true
+    get-item "A/B" | get-property childCount | equals 1 | verify-true
+    get-item "A/B/C" | get-property caption | equals C | verify-true
+    get-item "A/B/C" | get-property childCount | equals 1 | verify-true
+    get-item "A/B/C/D" | get-property caption | equals D | verify-true
+    get-item "A/B/C/D" | get-property childCount | equals 1 | verify-true
+    get-item "A/B/C/D/E" | get-property caption | equals E | verify-true
+    get-item "A/B/C/D/E" | get-property childCount | equals 0 | verify-true
+}
+with [get-view "Type Hierarchy"] {
+    get-button "Show the Type Hierarchy" | click
+    get-button "Show the Supertype Hierarchy" | click
+}
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item D | get-property caption | equals D | verify-true
+    get-item D | get-property childCount | equals 1 | verify-true
+    get-item "D/C" | get-property caption | equals C | verify-true
+    get-item "D/C" | get-property childCount | equals 2 | verify-true
+    get-item "D/C/a" | get-property caption | equals a | verify-true
+    get-item "D/C/a" | get-property childCount | equals 0 | verify-true
+    get-item "D/C/B" | get-property caption | equals B | verify-true
+    get-item "D/C/B" | get-property childCount | equals 1 | verify-true
+    get-item "D/C/B/A" | get-property caption | equals A | verify-true
+    get-item "D/C/B/A" | get-property childCount | equals 0 | verify-true
+}
+with [get-view "Type Hierarchy"] {
+    get-button "Show the Supertype Hierarchy" | click
+    get-button "Show the Subtype Hierarchy" | click
+}
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item D | get-property caption | equals D | verify-true
+    get-item D | get-property childCount | equals 1 | verify-true
+    get-item "D/E" | get-property caption | equals E | verify-true
+    get-item "D/E" | get-property childCount | equals 0 | verify-true
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

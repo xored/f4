@@ -1,0 +1,60 @@
+--- Q7 testcase ---
+Q7-vendor: www.xored.com/q7
+Format-Version: 1.0
+Element-Name: TypeHierarchyTestBinaryTypes
+External-Reference: 
+Element-Type: testcase
+Element-Version: 3.0
+Contexts: _O9X0APjXEeGLYu94TYiIDg,_M6J_EPjXEeGLYu94TYiIDg
+Save-Time: 9/10/12 11:50 AM
+Id: _IA80cPjXEeGLYu94TYiIDg
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Entry-Name: .content
+Content-Type: text/ecl
+
+get-view "Fantom Explorer" | get-tree | select "test/fan/Main.fan" | double-click
+
+with [get-editor "Main.fan" | get-text-viewer] {
+    set-caret-pos 1 17
+    hover-text 1 16
+    set-caret-pos 1 16
+    open-declaration
+}
+with [get-editor "Float.fcode" | get-text-viewer] {
+    set-caret-pos 16 1
+    key-type F4
+}
+get-toolbar -index 8 | key-type F4
+get-editor "Float.fcode" | get-text-viewer | hover-text 36 40
+get-view "Type Hierarchy" | get-button "Show the Type Hierarchy" | click
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item Obj | get-property caption | equals Obj | verify-true
+    get-item Obj | get-property childCount | equals 1 | verify-true
+    get-item "Obj/Num" | get-property caption | equals Num | verify-true
+    get-item "Obj/Num" | get-property childCount | equals 1 | verify-true
+    get-item "Obj/Num/Float" | get-property caption | equals Float | verify-true
+    get-item "Obj/Num/Float" | get-property childCount | equals 0 | verify-true
+}
+with [get-view "Type Hierarchy"] {
+    get-button "Show the Type Hierarchy" | click
+    get-button "Show the Supertype Hierarchy" | click
+}
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item Float | get-property caption | equals Float | verify-true
+    get-item Float | get-property childCount | equals 1 | verify-true
+    get-item "Float/Num" | get-property caption | equals Num | verify-true
+    get-item "Float/Num" | get-property childCount | equals 1 | verify-true
+    get-item "Float/Num/Obj" | get-property caption | equals Obj | verify-true
+    get-item "Float/Num/Obj" | get-property childCount | equals 0 | verify-true
+}
+with [get-view "Type Hierarchy"] {
+    get-button "Show the Supertype Hierarchy" | click
+    get-button "Show the Subtype Hierarchy" | click
+}
+with [get-view "Type Hierarchy" | get-tree] {
+    get-item Float | get-property caption | equals Float | verify-true
+    get-item Float | get-property childCount | equals 0 | verify-true
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
