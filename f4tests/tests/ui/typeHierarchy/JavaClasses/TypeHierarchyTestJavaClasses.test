@@ -6,7 +6,7 @@ External-Reference:
 Element-Type: testcase
 Element-Version: 3.0
 Contexts: _89l44PjPEeGLYu94TYiIDg,_AQB6APjQEeGLYu94TYiIDg
-Save-Time: 9/7/12 5:23 PM
+Save-Time: 9/10/12 12:56 PM
 Id: _4ItNkfjPEeGLYu94TYiIDg
 Testcase-Type: ecl
 
@@ -14,15 +14,15 @@ Testcase-Type: ecl
 Entry-Name: .content
 Content-Type: text/ecl
 
-with [get-editor "test2.fan" | get-text-viewer] {
+with [get-editor "Main.fan" | get-text-viewer] {
     set-caret-pos 5 2
     key-type F4
 }
 get-toolbar -index 8 | key-type F4
 get-view "Type Hierarchy" | get-button "Show the Subtype Hierarchy" | click
 with [get-view "Type Hierarchy" | get-tree] {
-    get-item test2 | get-property caption | equals test2 | verify-true
-    get-item test2 | get-property childCount | equals 1 | verify-true
+    get-item Main | get-property caption | equals Main | verify-true
+    get-item Main | get-property childCount | equals 0 | verify-true
 }
 with [get-view "Type Hierarchy"] {
     get-button "Show the Subtype Hierarchy" | click
@@ -31,8 +31,8 @@ with [get-view "Type Hierarchy"] {
     }
 }
 with [get-view "Type Hierarchy" | get-tree] {
-    get-item test2 | get-property caption | equals test2 | verify-true
-    get-item test2 | get-property childCount | equals 2 | verify-true
+    get-item Main | get-property caption | equals Main | verify-true
+    get-item Main | get-property childCount | equals 1 | verify-true
 }
 with [get-view "Type Hierarchy"] {
     get-button "Show the Supertype Hierarchy" | click
@@ -40,6 +40,6 @@ with [get-view "Type Hierarchy"] {
 }
 with [get-view "Type Hierarchy" | get-tree] {
     get-item Obj | get-property caption | equals Obj | verify-true
-    get-item Obj | get-property childCount | equals 8 | verify-true
+    get-item Obj | get-property childCount | equals 7 | verify-true
 }
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

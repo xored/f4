@@ -6,7 +6,7 @@ External-Reference:
 Element-Type: testcase
 Element-Version: 3.0
 Contexts: _wp7jUPjZEeGLYu94TYiIDg,_to5bQPjZEeGLYu94TYiIDg
-Save-Time: 9/10/12 11:53 AM
+Save-Time: 9/10/12 1:00 PM
 Id: _zD5EUPjZEeGLYu94TYiIDg
 Testcase-Type: ecl
 
@@ -15,10 +15,13 @@ Entry-Name: .content
 Content-Type: text/ecl
 
 get-view "Fantom Explorer" | get-tree | select "test/fan/Main.fan" | double-click
+
 with [get-editor "Main.fan" | get-text-viewer] {
     set-caret-pos 33 2
     key-type F4
 }
+get-window "Open In Type Hierarchy" | get-table | select "D - Main.fan -  - test\\/fan" | click -default
+
 with [get-view "Type Hierarchy"] {
     get-button "Show the Supertype Hierarchy" | click
     get-button "Show the Type Hierarchy" | click
@@ -61,4 +64,5 @@ with [get-view "Type Hierarchy" | get-tree] {
     get-item "D/E" | get-property caption | equals E | verify-true
     get-item "D/E" | get-property childCount | equals 0 | verify-true
 }
+
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
