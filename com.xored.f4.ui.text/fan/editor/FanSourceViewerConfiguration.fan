@@ -18,6 +18,8 @@ using [java] org.eclipse.dltk.ui.text::ScriptSourceViewerConfiguration
 using [java] org.eclipse.dltk.ui.text::ScriptPresentationReconciler
 using [java] org.eclipse.dltk.ui.text::TodoTaskPreferencesOnPreferenceStore
 using [java] org.eclipse.dltk.ui.text.completion::ContentAssistPreference
+using [java] org.eclipse.jface.text.information::IInformationPresenter
+using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptSourceViewer
 
 class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 {
@@ -190,4 +192,9 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 
   override ITextDoubleClickStrategy? getDoubleClickStrategy(
       ISourceViewer? sourceViewer, Str? contentType) { FanDoubleClickStrategy() }
+  
+  override IInformationPresenter? getHierarchyPresenter(ScriptSourceViewer? viewer, Bool b) 
+  {
+    return null
+  }
 }

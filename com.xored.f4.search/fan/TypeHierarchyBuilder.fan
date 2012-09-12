@@ -234,9 +234,49 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     subTypes := typeToSubtype.get(type.getElementName)
     if (subTypes == null)
     {
-      return (IType?[]?) type.getTypes
+      ns := ParseUtil.ns(module)
+      echo(ns.podNames)
+      
+      allPods := ns.podNames
+      allPods.each 
+      {   
+        pod := ns.findPod(it)
+        name := pod.name + "::" + type.getElementName
+        types := pod.typeNames.dup
+        types.each 
+        { 
+          subType := ns.findType(it)
+          inheritance := subType.inheritance
+          if ( inheritance.contains(name) )
+          {
+            itype := FanTypeWrapper(subType, savedType.getScriptProject, module)
+            addToSubtypeMap(type, itype)
+            addClassToSuperclass(itype, type)
+            subTyps := getSubtypes(itype)
+            subTyps.each {
+              addToSubtypeMap((IType)itype, it)
+              addClassToSuperclass(itype, it)
+            }
+          }
+        }
+      }
+      
+      subTypes = typeToSubtype.get(type.getElementName)
     } 
-    return subTypes
+    return (subTypes == null)? IType[,] : subTypes
+  }
+  
+  private Void addClassToSuperclass(IType type, IType superType)
+  {
+    elementName := type.getElementName
+    tmp := classToSuperclass.get(elementName)
+    if (tmp == null) 
+      tmp = [,]
+    if (containsType(tmp, superType))
+      return
+    tmp.add(superType)
+    classToSuperclass.remove(elementName)
+    classToSuperclass.add(elementName, tmp)
   }
   
   override IType?[]? getSuperclass(IType? type)
