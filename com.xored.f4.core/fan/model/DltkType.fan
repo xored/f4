@@ -99,6 +99,8 @@ const class DltkType : IFanType, Flags
     }
   }
   
+  Int getFlags(){ this.flags }
+  
   override DltkType parameterize(Str:IFanType parametrization)
   {
     return DltkType(pod, me, [:].addAll(this.parametrization).addAll(parametrization))

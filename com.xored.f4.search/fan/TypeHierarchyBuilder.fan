@@ -2,6 +2,7 @@ using [java] java.io::OutputStream
 using [java] org.eclipse.core.runtime::IProgressMonitor
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.core::ITypeHierarchy$Mode as Mode
+using [java] org.eclipse.dltk.core::Flags
 
 using f4core
 using f4model
@@ -40,7 +41,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     superTypes := getAllSupertypes0(savedType)
     classToSuperclass.clear
     classToSuperclass.add(savedType.getElementName, superTypes.dup)
-    
+    // find root classes and all superclasses
     temp := superTypes.dup
     while (!temp.isEmpty)
     {
@@ -48,23 +49,24 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       superTypes.addAll(temp)
       temp.clear
       superTypes.each 
-      { 
-        supers := getAllSupertypes0(it)
-        var := classToSuperclass.get(it.getElementName)
-        if (var == null && (supers.size != 0))
-          classToSuperclass.add(it.getElementName, supers.dup)
-        supers.each |IType type| {
-          if (!containsType(temp, type))
-            temp.add(type) 
+      {
+        supers := getAllSupertypes0(it).dup
+        if (classToSuperclass.get(it.getElementName) == null && (!supers.isEmpty))
+        {
+          // exclude all unnecessary Object elements
+          if (Flags.isInterface(it.getFlags))
+          {
+            supers.exclude { "Obj".equals(it.getElementName) }
+          }
+          classToSuperclass.add(it.getElementName, supers)
         }
+        temp.map { supers.exclude { containsType(temp, it) } }
       }
     }
     rootClasses.clear
     rootClasses.addAll(superTypes)
     allTypes := (IType?[]?) savedType.getSourceModule.getTypes
-    allUsedTypes := getAllClasses
-    allTypes = allTypes.exclude { allUsedTypes.contains(it) }
-    allTypes.each |IType subType| { superCls := getAllSupertypes0(subType) }
+    allTypes.exclude { getAllClasses.contains(it) }.each { getAllSupertypes0(it) }
   }
   
   private Bool containsType(IType?[]? list, IType value)
@@ -143,6 +145,10 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   private Void addToSubtypeMap(IType type, IType subType)
   {
     elementName := type.getElementName
+    if (Flags.isInterface(subType.getFlags) && "Obj".equals(elementName)) 
+    {
+      return
+    }
     tmp := typeToSubtype.get(elementName)
     if (tmp == null) 
       tmp = [,]
@@ -173,8 +179,8 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       parents := fanType.getSuperClasses
       parents.each 
       {
-        pod := ns.findType(it)
-        wrapper := FanTypeWrapper(pod, savedType.getScriptProject, savedType.getSourceModule)
+        ffiType := ns.findType(it)
+        wrapper := FanTypeWrapper(ffiType, savedType.getScriptProject, savedType.getSourceModule)
         if (!containsType(superTypes, wrapper))
           superTypes.add(wrapper)
       }
@@ -182,9 +188,13 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       ns := ParseUtil.ns(type.getSourceModule)
       fanType := DltkType(ns.currPod.name, type)
       allTypes = fanType.inheritance.dup
+      if (allTypes.isEmpty && !type.getElementName.equals("Obj"))
+      {
+        allTypes.add("Obj")
+      }
       cunit := ParseUtil.parse((ISourceModule) type.getSourceModule)
       usings := cunit.usings.dup
-      usings.exclude { it.typeName == null }.each 
+      usings.exclude { it.typeName == null }.each
       {
         if(allTypes.contains(it.typeName.text)) 
         {
@@ -195,10 +205,7 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
             superTypes.add(wrapper)
         }
       }
-      superTypes.addAll( allTypes.map 
-      { 
-        ns.findType(it).me 
-      }.exclude { it == null } )
+      superTypes.addAll( allTypes.map { ns.findType(it).me }.exclude { it == null } )
     }
     superTypes.each { addToSubtypeMap(it, type) }
     return (superTypes.size == 0)? (IType?[]?)[,] : superTypes
@@ -235,19 +242,20 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     if (subTypes == null)
     {
       ns := ParseUtil.ns(module)
-      echo(ns.podNames)
-      
       allPods := ns.podNames
-      allPods.each 
+      podName := allPods.find |Str name->Bool|  { ns.findPod(name).findType(type.getElementName, false) != null }
+      name := podName + "::" + type.getElementName
+      allPods.each
       {   
-        pod := ns.findPod(it)
-        name := pod.name + "::" + type.getElementName
-        types := pod.typeNames.dup
-        types.each 
+        types := ns.findPod(it).typeNames.dup
+        types.each
         { 
           subType := ns.findType(it)
-          inheritance := subType.inheritance
-          if ( inheritance.contains(name) )
+          inheritance := subType.inheritance.dup
+          if (inheritance.isEmpty && !subType.name.equals("Obj")){
+            inheritance.add("Obj")
+          }
+          if ( inheritance.contains(name) || inheritance.contains(type.getElementName))
           {
             itype := FanTypeWrapper(subType, savedType.getScriptProject, module)
             addToSubtypeMap(type, itype)
@@ -260,7 +268,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
           }
         }
       }
-      
       subTypes = typeToSubtype.get(type.getElementName)
     } 
     return (subTypes == null)? IType[,] : subTypes
@@ -268,6 +275,10 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
   
   private Void addClassToSuperclass(IType type, IType superType)
   {
+    if (Flags.isInterface(type.getFlags) && "Obj".equals(superType.getElementName)) 
+    {
+      return
+    }
     elementName := type.getElementName
     tmp := classToSuperclass.get(elementName)
     if (tmp == null) 
@@ -317,7 +328,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       {
         buildMaps
       }
-      
       needsRefresh = false
     }
     catch (Err err_variable_name) { }

@@ -9,6 +9,7 @@ using [java]org.eclipse.jdt.core::IType
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.core::Flags as JavaFlags
 using [java]com.xored.fanide.core::JDTSupport
+using [java]org.eclipse.dltk.ast::Modifiers
 
 using f4model
 using f4parser
@@ -90,12 +91,12 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
    //   javaFlags = javaFlags.or(JavaFlags.AccAbstract).or(JavaFlags.AccInterface)
    // }
     flags := 0
-    if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Abstract)
-    if (type.isEnum) flags = flags.or(Flag.Enum)
-    if (JavaFlags.isFinal(javaFlags)) flags = flags.or(Final)
-    if (JavaFlags.isPackageDefault(javaFlags)) flags = flags.or(Internal)
-    if (type.isInterface) flags = flags.or(Mixin)
-    if (JavaFlags.isPublic(javaFlags)) flags.or(Public)
+    if (JavaFlags.isAbstract(javaFlags)) flags = flags.or(Modifiers.AccAbstract)
+   // if (type.isEnum) flags = flags.or(Modifiers.AccEnum)
+    if (JavaFlags.isFinal(javaFlags)) flags = flags.or(Modifiers.AccFinal)
+    if (JavaFlags.isPackageDefault(javaFlags)) flags = flags.or(Modifiers.AccPrivate)
+    if (type.isInterface) flags = flags.or(Modifiers.AccInterface)
+    if (JavaFlags.isPublic(javaFlags)) flags.or(Modifiers.AccPublic)
     if (JavaFlags.isSynthetic(javaFlags)) isSynthetic = true
     this.flags = flags
     slots := IFanSlot[,]
@@ -190,6 +191,7 @@ internal const class FfiType : IFanType, Flag, IFfiForeigh
   override Bool isNullable() { false }
   override protected const Str:IFanSlot slotsMap
   override Str? findImportedType(Str name) {null}
+  Int getFlags(){ this.flags }
 }
 
 internal abstract const class FfiSlot : IFanSlot, Flag, IFfiForeigh

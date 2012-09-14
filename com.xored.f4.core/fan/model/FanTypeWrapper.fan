@@ -44,4 +44,13 @@ class FanTypeWrapper : ITypeWrapper
   }
   
   override IType? getDeclaringType() { this }
+  
+  override Int getFlags() 
+  { 
+    if (type is FfiType)
+      return ((FfiType)type).getFlags
+    else 
+      return ((DltkType)type).getFlags
+    return 0
+  }
 }
