@@ -3,6 +3,8 @@ using [java] org.eclipse.core.runtime::IProgressMonitor
 using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.core::ITypeHierarchy$Mode as Mode
 using [java] org.eclipse.dltk.core::Flags
+using "[java]org.eclipse.dltk.internal.core"::SourceModule
+using "[java]org.eclipse.dltk.internal.core"::DefaultWorkingCopyOwner
 
 using f4core
 using f4model
@@ -69,11 +71,6 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
     allTypes.exclude { getAllClasses.contains(it) }.each { getAllSupertypes0(it) }
   }
   
-  private Bool containsType(IType?[]? list, IType value)
-  {
-    list.any |IType type -> Bool| {  return type.getFullyQualifiedName.equals(value.getFullyQualifiedName) }
-  }
-  
   override Void addTypeHierarchyChangedListener(ITypeHierarchyChangedListener? listener)
   {
     if (changeListeners == null)
@@ -103,6 +100,28 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       return true
     }
     return false
+  }
+  
+  private Bool containsType(IType?[]? list, IType value)
+  {
+//    return list.contains(value)
+    list.any |IType type -> Bool| 
+    { 
+      if ((value is FanTypeWrapper) && (type is FanTypeWrapper))
+      {
+        ivalue := (FanTypeWrapper) value
+        itype := (FanTypeWrapper) type
+        if (!itype.type.name.equals(ivalue.type.name))
+          return false
+        if (!itype.type.qname.equals(ivalue.type.qname))
+          return false
+        if (!itype.type.inheritance.equals(ivalue.type.inheritance))
+          return false
+        if (!itype.type.pod.equals(ivalue.type.pod))
+          return false  
+      }
+      return true
+    }
   }
   
   override Bool exists()
@@ -179,36 +198,74 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
       parents := fanType.getSuperClasses
       parents.each 
       {
-        ffiType := ns.findType(it)
-        wrapper := FanTypeWrapper(ffiType, savedType.getScriptProject, savedType.getSourceModule)
+        ffiType := (ns.findType(it) != null ? ns.findType(it) : findInUsings(it, type)) as IFanType
+        wrapper := FanTypeWrapper(ffiType, null, savedType.getScriptProject, savedType.getSourceModule)
         if (!containsType(superTypes, wrapper))
           superTypes.add(wrapper)
       }
     } else {
       ns := ParseUtil.ns(type.getSourceModule)
-      fanType := DltkType(ns.currPod.name, type)
-      allTypes = fanType.inheritance.dup
-      if (allTypes.isEmpty && !type.getElementName.equals("Obj"))
+      allTypes = DltkType(ns.currPod.name, type).inheritance.dup
+//      if (allTypes.isEmpty && !type.getElementName.equals("Obj"))
+//      {
+//        allTypes.add("Obj")
+//      }
+      allTypes.each 
       {
-        allTypes.add("Obj")
-      }
-      cunit := ParseUtil.parse((ISourceModule) type.getSourceModule)
-      usings := cunit.usings.dup
-      usings.exclude { it.typeName == null }.each
-      {
-        if(allTypes.contains(it.typeName.text)) 
+        nextType := findInUsings(it, type)
+        if (nextType != null)
         {
-          needType := it.typeName.modelType
-          wrapper := FanTypeWrapper(needType, savedType.getScriptProject, savedType.getSourceModule)
-          allTypes.remove(it.typeName.text)
-          if (!containsType(superTypes, wrapper))
-            superTypes.add(wrapper)
+          if (!containsType(superTypes, nextType))
+                superTypes.add(nextType)
         }
+      }
+      superTypes.each 
+      { 
+        name := ((FanTypeWrapper)it).getAsTypeName != null ? ((FanTypeWrapper)it).getAsTypeName : it.getElementName
+        allTypes.remove(name) 
       }
       superTypes.addAll( allTypes.map { ns.findType(it).me }.exclude { it == null } )
     }
     superTypes.each { addToSubtypeMap(it, type) }
     return (superTypes.size == 0)? (IType?[]?)[,] : superTypes
+  }
+  
+  private IType? findInUsings(Str name, IType type)
+  {
+    cunit := ParseUtil.parse((ISourceModule) type.getSourceModule)
+    usings := cunit.usings.dup
+    usng := usings.exclude
+    { 
+      it.typeName == null 
+    }.find |UsingDef def->Bool|
+    { 
+      typeName := def.asTypeName
+      if (typeName != null)
+        return typeName.text.equals(name)
+      return def.typeName.text.equals(name)
+    }
+    if (usng != null)
+    {
+      needType := usng.typeName.modelType
+      typeName := usng.asTypeName != null ? usng.asTypeName.text : null
+      return FanTypeWrapper(needType, typeName, savedType.getScriptProject, savedType.getSourceModule)
+    }
+    
+    wrapper := null
+    usings.findAll { it.typeName == null }.each
+    {
+      if (it.typeName == null)
+      {
+        // using without ::
+        types := it.podName.modelPod.typeNames
+        modelPod := it.podName.modelPod
+        if (types.contains(name)){
+            fondType := modelPod.findType(name)
+            wrapper = FanTypeWrapper(fondType, null, savedType.getScriptProject, savedType.getSourceModule)
+        }
+      } 
+    }
+    return wrapper
   }
   
   override IType?[]? getAllTypes()
@@ -252,12 +309,12 @@ class FanTypeHierarchy : ITypeHierarchy, IElementChangedListener
         { 
           subType := ns.findType(it)
           inheritance := subType.inheritance.dup
-          if (inheritance.isEmpty && !subType.name.equals("Obj")){
-            inheritance.add("Obj")
-          }
+//          if (inheritance.isEmpty && !subType.name.equals("Obj")){
+//            inheritance.add("Obj")
+//          }
           if ( inheritance.contains(name) || inheritance.contains(type.getElementName))
           {
-            itype := FanTypeWrapper(subType, savedType.getScriptProject, module)
+            itype := FanTypeWrapper(subType, null, savedType.getScriptProject, savedType.getSourceModule)
             addToSubtypeMap(type, itype)
             addClassToSuperclass(itype, type)
             subTyps := getSubtypes(itype)
