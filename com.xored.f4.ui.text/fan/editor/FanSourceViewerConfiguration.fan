@@ -20,6 +20,15 @@ using [java] org.eclipse.dltk.ui.text::TodoTaskPreferencesOnPreferenceStore
 using [java] org.eclipse.dltk.ui.text.completion::ContentAssistPreference
 using [java] org.eclipse.jface.text.information::IInformationPresenter
 using "[java]org.eclipse.dltk.internal.ui.editor"::ScriptSourceViewer
+using [java] org.eclipse.jface.text::IInformationControlCreator
+using [java] org.eclipse.swt::SWT
+using [java] org.eclipse.jdt.ui.text::IJavaPartitions
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::HierarchyInformationControl
+using [java] org.eclipse.swt.widgets::Shell
+using [java] org.eclipse.jface.text::IInformationControl
+using [java] org.eclipse.jface.text::AbstractInformationControlManager
+using "[java]org.eclipse.jdt.internal.ui.text"::JavaElementProvider
+using "[java]org.eclipse.dltk.internal.ui.text"::ScriptElementProvider
 
 class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 {
@@ -193,8 +202,31 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
   override ITextDoubleClickStrategy? getDoubleClickStrategy(
       ISourceViewer? sourceViewer, Str? contentType) { FanDoubleClickStrategy() }
   
-  override IInformationPresenter? getHierarchyPresenter(ScriptSourceViewer? viewer, Bool b) 
+  override IInformationPresenter? getHierarchyPresenter(ScriptSourceViewer? viewer, Bool doCodeResolve) 
   {
-    return null
+    InformationPresenter presenter := InformationPresenter(getHierarchyPresenterControlCreator)
+    presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(viewer))
+    presenter.setAnchor(AbstractInformationControlManager.ANCHOR_GLOBAL)
+    IInformationProvider provider := ScriptElementProvider(getEditor, doCodeResolve)
+    presenter.setInformationProvider(provider, IFanPartitions.multiLineComment)
+    presenter.setInformationProvider(provider, IFanPartitions.singleLineComment)
+    presenter.setInformationProvider(provider, IFanPartitions.interpreterString)
+    presenter.setInformationProvider(provider, IFanPartitions.fandoc)
+    presenter.setInformationProvider(provider, IFanPartitions.dsl)
+    presenter.setInformationProvider(provider, IFanPartitions.string)
+    presenter.setSizeConstraints(50, 20, true, false)
+    return presenter
+  }
+  
+  private IInformationControlCreator getHierarchyPresenterControlCreator() {
+    return InformationControlCreator()
+  }
+  
+}
+
+private class InformationControlCreator : IInformationControlCreator 
+{
+  override public IInformationControl? createInformationControl(Shell? parent) {
+    return HierarchyInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL.or(SWT.H_SCROLL));
   }
 }
