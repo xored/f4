@@ -202,31 +202,41 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
   override ITextDoubleClickStrategy? getDoubleClickStrategy(
       ISourceViewer? sourceViewer, Str? contentType) { FanDoubleClickStrategy() }
   
+  private IInformationControlCreator getHierarchyPresenterControlCreator() {
+    return InformationControlCreator()
+  }
+  
   override IInformationPresenter? getHierarchyPresenter(ScriptSourceViewer? viewer, Bool doCodeResolve) 
   {
     InformationPresenter presenter := InformationPresenter(getHierarchyPresenterControlCreator)
     presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(viewer))
     presenter.setAnchor(AbstractInformationControlManager.ANCHOR_GLOBAL)
     IInformationProvider provider := ScriptElementProvider(getEditor, doCodeResolve)
+    presenter.setInformationProvider(provider, IDocument.DEFAULT_CONTENT_TYPE);
     presenter.setInformationProvider(provider, IFanPartitions.multiLineComment)
     presenter.setInformationProvider(provider, IFanPartitions.singleLineComment)
     presenter.setInformationProvider(provider, IFanPartitions.interpreterString)
     presenter.setInformationProvider(provider, IFanPartitions.fandoc)
     presenter.setInformationProvider(provider, IFanPartitions.dsl)
     presenter.setInformationProvider(provider, IFanPartitions.string)
+//    presenter.setInformationProvider(provider, IDocument.DEFAULT_CATEGORY)//DEFAULT_CONTENT_TYPE)
+    
+//    getOutlinePresenterContentTypes(viewer, doCodeResolve).each
+//    {
+//      if (!IDocument.DEFAULT_CONTENT_TYPE.equals(it) && presenter.getInformationProvider(it) == null)
+//        presenter.setInformationProvider(provider, it)
+//    }
+    
     presenter.setSizeConstraints(50, 20, true, false)
     return presenter
   }
   
-  private IInformationControlCreator getHierarchyPresenterControlCreator() {
-    return InformationControlCreator()
-  }
-  
 }
 
-private class InformationControlCreator : IInformationControlCreator 
+class InformationControlCreator : IInformationControlCreator 
 {
   override public IInformationControl? createInformationControl(Shell? parent) {
-    return HierarchyInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL.or(SWT.H_SCROLL));
+    echo("hello from FanSourceVievverConfiguration")
+    return FanHierarchyInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL.or(SWT.H_SCROLL));
   }
 }
