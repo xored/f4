@@ -10,14 +10,41 @@ using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::HierarchyInformationCon
 using [java] org.eclipse.swt.widgets::Shell
 using "[java]org.eclipse.dltk.internal.core"::SourceType
 using [java]org.eclipse.dltk.core::IModelElement
-using [java]org.eclipse.dltk.core::IMethod
+using [java]org.eclipse.jdt.core/*org.eclipse.dltk.core*/::IMethod
 using [java]org.eclipse.dltk.core::IImportDeclaration
 using [java]org.eclipse.jdt.ui::JavaElementLabels
+using [java]org.eclipse.jdt.core::IType
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::TypeHierarchyLifeCycle
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::TypeHierarchyViewPart
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::TraditionalHierarchyContentProvider
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::SuperTypeHierarchyContentProvider
+using "[java]org.eclipse.jdt.internal.ui.text"::NamePatternFilter
+using [java]org.eclipse.jdt.core::IMember
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::HierarchyLabelProvider
+using [java]org.eclipse.swt.events::KeyAdapter
+using "[java]org.eclipse.jdt.internal.ui.typehierarchy"::TypeHierarchyContentProvider
+using "[java]org.eclipse.jdt.internal.corext.util"::MethodOverrideTester
 
 class FanHierarchyInformationControl : HierarchyInformationControl
 {
+  private TypeHierarchyLifeCycle? lifeCycle
+  private TypeHierarchyViewPart part
+  private Bool fDoFilter
+  private IMethod? fFocus // method to filter for or null if type hierarchy
+  
+  private HierarchyLabelProvider? fLabelProvider
+  private KeyAdapter? fKeyAdapter
+
+  private Obj?[]? fOtherExpandedElements := [,]
+  private TypeHierarchyContentProvider? fOtherContentProvider
+  private MethodOverrideTester? fMethodOverrideTester
+  
 	new make(Shell parent, Int shellStyle, Int treeStyle)
-  : super(parent, shellStyle, treeStyle) {}
+  : super(parent, shellStyle, treeStyle) 
+  {
+    part = TypeHierarchyViewPart()
+    lifeCycle = TypeHierarchyLifeCycle(part)
+  }
   
   override public Void setInput(Obj? information)
   {
@@ -59,8 +86,37 @@ class FanHierarchyInformationControl : HierarchyInformationControl
 //    super.fLifeCycle.ensureRefreshedTypeHierarchy(input, JavaPlugin.getActiveWorkbenchWindow)
     memberFilter := (locked != null) ? [locked] : null
     
+    TraditionalHierarchyContentProvider contentProvider := TraditionalHierarchyContentProvider(lifeCycle)
+//    contentProvider.setMemberFilter(memberFilter)
+    getTreeViewer.setContentProvider(contentProvider)
+    
+    fOtherContentProvider := SuperTypeHierarchyContentProvider(lifeCycle)
+//    fOtherContentProvider.setMemberFilter(memberFilter)
     
     
+    Obj[] topLevelObjects := contentProvider.getElements(lifeCycle)
+    if (topLevelObjects.size > 0 && contentProvider.getChildren(topLevelObjects[0]).size > 40) {
+      fDoFilter = false
+    } else {
+//      filter := NamePatternFilter()
+//      getTreeViewer.addFilter(filter)
+    }
+
+    selection := null
+    if (input is IMember) {
+      selection =  input
+    } else if (topLevelObjects.size > 0) {
+      selection =  topLevelObjects[0]
+    }
+    inputChanged(lifeCycle, selection)
+  }
+  
+  override protected Void stringMatcherUpdated() {
+    if (fDoFilter) {
+      super.stringMatcherUpdated // refresh the view
+    } else {
+      selectFirstMatch
+    }
   }
   
   private Str getHeaderLabel(IModelElement? input) {
@@ -75,4 +131,41 @@ class FanHierarchyInformationControl : HierarchyInformationControl
     }
   }
   
+  override protected Str? getId() {
+    "com.xored.f4.ui.text.editor.QuickHierarchy"
+  }
+  
+  private IMethod? findMethod(IMethod filterMethod, IType typeToFindIn) {
+    IType filterType := filterMethod.getDeclaringType
+    if (filterType.equals(typeToFindIn)) {
+      return filterMethod
+    }
+    
+    hierarchy := lifeCycle.getHierarchy
+
+    Bool filterOverrides := true//JavaModelUtil.isSuperType(hierarchy, typeToFindIn, filterType)
+    IType focusType := filterOverrides ? filterType : typeToFindIn
+
+    if (fMethodOverrideTester == null || !fMethodOverrideTester.getFocusType.equals(focusType)) {
+      fMethodOverrideTester = MethodOverrideTester(focusType, hierarchy)
+    }
+
+    if (filterOverrides) {
+      return fMethodOverrideTester.findOverriddenMethodInType((IType)typeToFindIn, (IMethod)filterMethod)
+    } else {
+      return fMethodOverrideTester.findOverridingMethodInType(typeToFindIn, filterMethod)
+    }
+  }
+  
+  override protected Obj? getSelectedElement() {
+    Obj selectedElement := super.getSelectedElement
+    if (selectedElement is IType && fFocus != null) {
+      IType type := (IType) selectedElement
+      IMethod? method := findMethod(fFocus, type)
+      if (method != null) {
+        return method
+      }
+    }
+    return selectedElement
+  }
 }
