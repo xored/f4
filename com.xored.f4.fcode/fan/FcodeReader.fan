@@ -15,30 +15,28 @@ class FcodeReader
   new make(File podFile) { this.podFile = podFile }
   
   private File podFile
-  private FPod? fpod := null
-  private Bool loaded() { fpod != null }
-  private Void load() 
-  { 
-    if(loaded) return
-    fpod = FPod(FakeNamespace(), podFile.basename, Zip.open(podFile))
-    fpod.read
-  }
   
   Void accept(FcodeVisitor visitor)
   {
-    load
-    visitor.visitPod(fpod)
-    fpod.ftypes.each |ftype|
+    Zip? zip := null
+    try
     {
-      if(visitor.visitType(ftype))
+      zip = Zip.open(podFile)
+      fpod := FPod(FakeNamespace(), podFile.basename, Zip.open(podFile))
+      fpod.read
+      visitor.visitPod(fpod)
+      fpod.ftypes.each |ftype|
       {
-        ftype.read
-        ftype.ffields.each { visitor.visitField(it) }
-        ftype.fmethods.each { visitor.visitMethod(it) }
-        visitor.endVisitType
+        if(visitor.visitType(ftype))
+        {
+          ftype.read
+          ftype.ffields.each { visitor.visitField(it) }
+          ftype.fmethods.each { visitor.visitMethod(it) }
+          visitor.endVisitType
+        }
       }
-    }
-    visitor.endVisitPod
+      visitor.endVisitPod
+    } finally zip?.close
   }
 }
 
