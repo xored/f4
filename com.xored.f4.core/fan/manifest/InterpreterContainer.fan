@@ -54,16 +54,17 @@ class InterpreterContainer :
           podFile := Uri.fromStr(path.toStr).toFile
           if( podFile.exists) 
           {
-            Zip zipfile := Zip.open(podFile)
-            srcDir := zipfile.contents.find |File f, Uri uri->Bool| {
-              return uri.toStr.startsWith("/src/") && uri.toStr.endsWith(".fan")
-            }
-            if( srcDir != null )
-            {
-              // try to use pod itself as source container
-              entry.setSourceAttachmentPath(PathUtil.toPath(path))
-              entry.setSourceAttachmentRootPath(Path.EMPTY)
-            }
+            Zip.open(podFile) {
+              srcDir := it.contents.find |File f, Uri uri->Bool| {
+                return uri.toStr.startsWith("/src/") && uri.toStr.endsWith(".fan")
+              }
+              if( srcDir != null )
+              {
+                // try to use pod itself as source container
+                entry.setSourceAttachmentPath(PathUtil.toPath(path))
+                entry.setSourceAttachmentRootPath(Path.EMPTY)
+              }
+            }.close
           }
         }
       }
