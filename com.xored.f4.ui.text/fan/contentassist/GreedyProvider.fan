@@ -68,6 +68,7 @@ class GreedyProvider : CompletionProvider
       reportKeywords(defOrCallKeywords)
       // Report FFI
       reportUsings(true)
+      reportTypeSlots(type(path))
       return true
     }
     //pods
