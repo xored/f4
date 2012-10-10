@@ -1,91 +1,93 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>f4tests</artifactId>
+  <artifactId>f4tests</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>q7test</packaging>
+
+  <parent>
+	<groupId>com.xored.f4</groupId>
+	<artifactId>f4</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>q7test</packaging>
+  </parent>
+  
+  <!--dependencies>
+	  <dependency>
+	  <groupId>com.xored.q7</groupId>
+	  <artifactId>com.xored.q7.pro</artifactId>
+	  <version>1.0.0-SNAPSHOT</version>
+	  </dependency>
+	  </dependencies-->
+  <build>
+	<plugins>
+	  <plugin>
+		<groupId>com.xored.q7</groupId>
+		<artifactId>q7-maven-plugin</artifactId>
+		<version>${q7-maven-version}</version>
+		<extensions>true</extensions>
+		<configuration>
+		  <aut>
+			<groupId>eclipse</groupId>
+			<artifactId>sdk</artifactId>
+			<version>3.7.0</version>
+			
+			<injections>
+			  <injection>
+				<site>${project.baseUri}../repository/target/repository</site>
+			  </injection>
+			</injections>
+            <vmArgs>
+              <vmArg>-javaagent:${project.basedir}/mg42.jar=tracers=${project.basedir}/files.config</vmArg>
+            </vmArgs>
+		  </aut>
+		  <testOptions>
+			<execTimeout>7200</execTimeout>
+		  </testOptions>
+		  <q7>
+			<version>${q7-runner-version}</version>
+            <licenseFile>${project.basedir}/q7runner.license</licenseFile>
+		  </q7>
+		</configuration>
+	  </plugin>
+	</plugins>
+  </build>
+  
+  <pluginRepositories>
+	<pluginRepository>
+	  <id>q7-releases</id>
+	  <name>Xored Maven repository</name>
+	  <url>http://maven.xored.com/nexus/content/repositories/q7-releases/</url>
+	</pluginRepository>
+	<pluginRepository>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
 
-	<parent>
-		<groupId>com.xored.f4</groupId>
-		<artifactId>f4</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
+      <id>q7-snapshots</id>
+      <name>Xored Maven repository</name>
+      <url>http://maven.xored.com/nexus/content/repositories/q7-snapshots/</url>
+	</pluginRepository>
+  </pluginRepositories>	
+  
+  <repositories>
+	<repository>
+	  <id>xored</id>
+	  <name>Xored Maven repository</name>
+	  <url>http://maven.xored.com/nexus/content/repositories/releases/</url>
+	</repository>
 	
-	<!--dependencies>
-		<dependency>
-		  <groupId>com.xored.q7</groupId>
-		  <artifactId>com.xored.q7.pro</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
-		</dependency>
-	</dependencies-->
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.xored.q7</groupId>
-				<artifactId>q7-maven-plugin</artifactId>
-				<version>${q7-maven-version}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<aut>
-						<groupId>eclipse</groupId>
-						<artifactId>sdk</artifactId>
-						<version>3.7.0</version>
-						
-						<injections>
-							<injection>
-								<site>${project.baseUri}../repository/target/repository</site>
-							</injection>
-						</injections>
+	<repository>
+	  <id>thirdparty</id>
+	  <name>Xored thridparty repository</name>
+	  <url>http://maven.xored.com/nexus/content/repositories/thirdparty/</url>
+	</repository>
 
-					</aut>
-					<testOptions>
-						<execTimeout>7200</execTimeout>
-					</testOptions>
-					<q7>
-						<version>${q7-runner-version}</version>
-                        <licenseFile>${project.basedir}/q7runner.license</licenseFile>
-					</q7>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	
-	<pluginRepositories>
-		<pluginRepository>
-			<id>q7-releases</id>
-			<name>Xored Maven repository</name>
-			<url>http://maven.xored.com/nexus/content/repositories/q7-releases/</url>
-		</pluginRepository>
-		<pluginRepository>
-          <snapshots>
-            <updatePolicy>always</updatePolicy>
-          </snapshots>
-
-          <id>q7-snapshots</id>
-          <name>Xored Maven repository</name>
-          <url>http://maven.xored.com/nexus/content/repositories/q7-snapshots/</url>
-		</pluginRepository>
-	</pluginRepositories>	
-	
-	<repositories>
-		<repository>
-			<id>xored</id>
-			<name>Xored Maven repository</name>
-			<url>http://maven.xored.com/nexus/content/repositories/releases/</url>
-		</repository>
-		
-		<repository>
-			<id>thirdparty</id>
-			<name>Xored thridparty repository</name>
-			<url>http://maven.xored.com/nexus/content/repositories/thirdparty/</url>
-		</repository>
-
-	</repositories>
-	
-	<properties>
-		<q7-runner-version>1.2.7</q7-runner-version>
-		<q7-maven-version>1.2.7</q7-maven-version>
-	</properties>
-	
+  </repositories>
+  
+  <properties>
+	<q7-runner-version>1.2.7-SNAPSHOT</q7-runner-version>
+	<q7-maven-version>1.2.7</q7-maven-version>
+  </properties>
+  
 </project>
