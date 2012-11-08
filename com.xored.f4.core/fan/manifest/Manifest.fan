@@ -118,20 +118,24 @@ class Manifest
       }
       return result
     }
+    
     if (expr is CallExpr)
-    {
+    { 
       call := expr as CallExpr
-      // Possibly, more generic solution is needed
-      
-      if (((call.callee as InvokeExpr)?.callee as UnresolvedRef)?.text == "Version")
-      {
-        s := (call.args.getSafe(0) as Literal)?.val as Str
-        if (s != null) return Version(s)
+      callee := call.callee
+      if (isVersionConstructor(callee)) {
+        versionStr := (call.args.first as Literal)?.val as Str
+        if(versionStr != null) return Version(versionStr)
       }
     }
     return null
   }
   
+  private static Bool isVersionConstructor(Expr callee) 
+  {
+    (callee as UnresolvedRef)?.text == "Version" ||
+      (callee as StaticTargetExpr)?.ctype?.resolvedType?.qname == "sys::Version";
+  }
 }
 
 
