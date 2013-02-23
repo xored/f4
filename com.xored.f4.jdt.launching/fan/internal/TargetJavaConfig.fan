@@ -42,10 +42,11 @@ class JavaLaunchUtil
     if(!scriptArgs.isEmpty) { args.add(scriptArgs) }
     
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, args.join(" "))
-    args.clear
-    args.add("-Dfan.home=\"$fanHome.toFile.osPath\"")
+    
+    vmArgs := [LaunchConfigDelegate.getVMArgs(src)]
+    vmArgs.add("-Dfan.home=\"$fanHome.toFile.osPath\"")
 
-    target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args.join(" "))
+    target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, vmArgs.join(" "))
   }
   static Void setSourceLocator(ILaunch? launch, ILaunchConfiguration? config, ILaunchManager? manager)
   {
