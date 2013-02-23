@@ -312,4 +312,10 @@ public class ITypeWrapper implements IType {
 			IProgressMonitor monitor) throws ModelException {
 		return null;
 	}
+
+	@Override
+	public <E extends IModelElement> E getAncestor(Class<E> clazz) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -8,7 +8,9 @@
 
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.jdt.launching
-using [java] org.eclipse.dltk.launching
+using [java] org.eclipse.dltk.launching::ScriptLaunchConfigurationConstants
+using [java] org.eclipse.dltk.launching::AbstractScriptLaunchConfigurationDelegate
+using [java] org.eclipse.dltk.launching::ScriptRuntime
 using [java] java.util::Map
 using [java] java.util::HashMap
 using [java] java.util::ArrayList
@@ -22,10 +24,14 @@ class JavaLaunchUtil
     Str mainLaunchType
     )
   {
+    map := src.getAttributes
+    
     scriptName := AbstractScriptLaunchConfigurationDelegate.getScriptProjectName(src)
     interpreter := ScriptRuntime.computeInterpreterInstall(src)
     fanHome := PathUtil.fanHome(interpreter.getInstallLocation.getPath)
     
+    target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, 
+      src.getAttribute(ScriptLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, fanHome.toFile.osPath))
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, scriptName)
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, mainLaunchType)
     
