@@ -9,6 +9,9 @@
 using [java] java.lang::Class
 using [java] java.lang.reflect::Array 
 using [java] java.util::HashMap
+using [java] java.util::Iterator
+using [java] java.util::Map as JMap
+using [java] java.util::Map$Entry as Entry
 using [java] fanx.interop
 using [java] java.io::File as JFile
 **
@@ -20,6 +23,16 @@ class InteropUtil
   {
     result := HashMap()
     map.each |v, k| { result.put(k, v) }
+    return result
+  }
+  
+  static Map toFanMap(JMap map) {
+    result := [:]
+    iterator := map.entrySet.iterator
+    while(iterator.hasNext) {
+      Entry entry := iterator.next
+      result[entry.getKey] = entry.getValue
+    }
     return result
   }
   

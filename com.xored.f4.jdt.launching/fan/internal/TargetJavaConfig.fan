@@ -14,6 +14,7 @@ using [java] org.eclipse.dltk.launching::ScriptRuntime
 using [java] java.util::Map
 using [java] java.util::HashMap
 using [java] java.util::ArrayList
+using [java] fanx.interop::Interop
 using f4launching
 using f4core
 
@@ -24,8 +25,6 @@ class JavaLaunchUtil
     Str mainLaunchType
     )
   {
-    map := src.getAttributes
-    
     scriptName := AbstractScriptLaunchConfigurationDelegate.getScriptProjectName(src)
     interpreter := ScriptRuntime.computeInterpreterInstall(src)
     fanHome := PathUtil.fanHome(interpreter.getInstallLocation.getPath)
@@ -42,12 +41,11 @@ class JavaLaunchUtil
     if(!scriptArgs.isEmpty) { args.add(scriptArgs) }
     
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, args.join(" "))
-    
     vmArgs := [LaunchConfigDelegate.getVMArgs(src)]
     vmArgs.add("-Dfan.home=\"$fanHome.toFile.osPath\"")
-
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, vmArgs.join(" "))
   }
+
   static Void setSourceLocator(ILaunch? launch, ILaunchConfiguration? config, ILaunchManager? manager)
   {
     if(launch.getSourceLocator == null)

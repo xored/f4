@@ -74,7 +74,6 @@ class LaunchConfigDelegate : AbstractScriptLaunchConfigurationDelegate
         config.getAttribute(LaunchConsts.ATTR_SCRIPT_ARGUMENTS, ""))
   }
   
-  
   static Str getVMArgs(ILaunchConfiguration config) 
   {
     VariablesPlugin.getDefault.getStringVariableManager.performStringSubstitution(
@@ -83,7 +82,6 @@ class LaunchConfigDelegate : AbstractScriptLaunchConfigurationDelegate
   override protected Void setDebugConsoleAttributes(Launch? launch,
     ILaunchConfiguration? config)
   {
-    // FIXME - to be removed later -- Alex  -- Ivan: just copied from Java code
     launch.setAttribute(
       DLTKDebugLaunchConstants.ATTR_DEBUG_CONSOLE, 
       DLTKDebugLaunchConstants.FALSE)
