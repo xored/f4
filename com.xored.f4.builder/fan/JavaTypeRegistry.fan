@@ -19,6 +19,7 @@ using [java]org.eclipse.jdt.core::IField
 using [java]org.eclipse.jdt.core::Signature
 using [java]org.eclipse.jdt.core::Flags
 using [java]org.eclipse.jdt.core::IType
+using [java]org.eclipse.jdt.core::ITypeParameter
 using [java]org.eclipse.jdt.core::IMethod
 using [java]org.eclipse.jdt.core::IMember
 using [java]org.eclipse.jdt.core::IJavaElement
@@ -282,15 +283,18 @@ class JavaTypeRegistry
         }
       }
       result_flags := memberFlags(flg).or(isCtor ? FConst.Ctor : 0)
-      returnTypeName := m.getReturnType
+      returnTypeName := resolveGenericType(m.getReturnType, m, info)
       
       result_returnType := isCtor ? type : fanType(type.pod.bridge, returnTypeName, false, info)
       
-      //paramNames := m.getParameterNames
+      paramNames := m.getParameterNames
       paramTypes := m.getParameterTypes
-      i := -1
-      result_params := m.getParameterTypes.map {
-        JDTParam("Arg" + (++i), fanType(type.pod.bridge, it, false, info), false)
+      
+      
+      result_params := paramTypes.map |pt, i| {
+        name := paramNames.getSafe(i, "arg$i")
+        paramType := resolveGenericType(pt, m, info)
+        return JDTParam(name, fanType(type.pod.bridge, paramType, false, info), false)
       }
       //echo(" method "+ result.name + "(" + result.params +")")
       result := JavaMethod( type, result_name, result_flags, result_returnType, result_params )
@@ -332,6 +336,18 @@ class JavaTypeRegistry
     }
   }
 
+  private static Str resolveGenericType(Str? type, IMethod m, IType t) {
+    typeParams := ITypeParameter[,] 
+    typeParams.addAll(m.getTypeParameters)
+    typeParams.addAll(t.getTypeParameters)
+    Str?[] typeParamNames := typeParams.map { it.getElementName }.unique
+    qualifier := Signature.getSignatureQualifier(type)
+    name := Signature.getSignatureSimpleName(type)
+    if(type.chars.first == Signature.C_UNRESOLVED && qualifier.isEmpty && typeParamNames.contains(name)) {
+      return "Ljava.lang.Object;"
+    }
+    return type
+  }
   private Void populateInterfaceSlots(JavaType type, IType nfo, [Str:JavaSlot[]] slots)
   {
     if(nfo.getSuperInterfaceNames.isEmpty) return
@@ -458,11 +474,8 @@ class JavaTypeRegistry
     
     type = Signature.getTypeErasure(type)
     package := Signature.getSignatureQualifier(type)
-    name := Signature.getSimpleName(type)
-    if( name.endsWith(";"))
-    {
-      name = name[0..-2]
-    }
+    name := Signature.getSignatureSimpleName(type)
+
     if( package.size == 0 || !fragments.containsKey(package)) {
       stype := Signature.toString(type)
       resultName := resolveJDTType(info, stype)
