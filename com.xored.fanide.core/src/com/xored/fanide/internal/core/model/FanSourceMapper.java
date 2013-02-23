@@ -133,7 +133,7 @@ public class FanSourceMapper extends SourceMapper {
 				sourceElementParser.setReporter(null);
 				Map<IModelElement, ModelElementInfo> newElements = new HashMap<IModelElement, ModelElementInfo>();
 				SourceAsBinaryElementRequestor requestor = new SourceAsBinaryElementRequestor(
-						binaryModule, null, this, newElements);
+						binaryModule, this, newElements);
 				sourceElementParser.setRequestor(requestor);
 				sourceElementParser
 						.parseSourceModule((org.eclipse.dltk.compiler.env.ISourceModule) binaryModule);

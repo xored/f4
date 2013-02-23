@@ -78,7 +78,7 @@ public class FanSourceAttachmentPropertyPage extends PropertyPage implements
 			IBuildpathEntry[] eentries = fRoot.getScriptProject()
 					.getRawBuildpath();
 			for (IBuildpathEntry iBuildpathEntry : eentries) {
-				if (iBuildpathEntry.isContainerEntry()
+				if (iBuildpathEntry.getEntryKind() == IBuildpathEntry.BPE_CONTAINER
 						&& iBuildpathEntry.getPath().segment(0).equals(
 								ScriptRuntime.INTERPRETER_CONTAINER)) {
 					containerEntry = iBuildpathEntry;

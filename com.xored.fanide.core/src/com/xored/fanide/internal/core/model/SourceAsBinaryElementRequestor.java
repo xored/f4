@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.eclipse.dltk.compiler.ISourceElementRequestor;
 import org.eclipse.dltk.core.IModelElement;
-import org.eclipse.dltk.core.model.binary.BinaryModuleElementInfo;
 import org.eclipse.dltk.core.model.binary.BinaryModuleStructureRequestor;
 import org.eclipse.dltk.core.model.binary.IBinaryModule;
 import org.eclipse.dltk.core.model.binary.SourceMapper;
@@ -14,9 +13,9 @@ public class SourceAsBinaryElementRequestor extends
 		BinaryModuleStructureRequestor implements ISourceElementRequestor {
 
 	public SourceAsBinaryElementRequestor(IBinaryModule module,
-			BinaryModuleElementInfo moduleInfo, SourceMapper mapper,
+			SourceMapper mapper,
 			Map<IModelElement, ModelElementInfo> newElements) {
-		super(module, moduleInfo, mapper, newElements);
+		super(module, null, mapper, newElements);
 	}
 
 	public boolean enterFieldCheckDuplicates(FieldInfo info) {
@@ -34,5 +33,15 @@ public class SourceAsBinaryElementRequestor extends
 	}
 
 	public void updateField(FieldInfo arg0, int arg1) {
+	}
+
+	public void enterMethodRemoveSame(MethodInfo info) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean enterTypeAppend(String fullName, String delimiter) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
