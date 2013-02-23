@@ -474,7 +474,7 @@ class JavaTypeRegistry
     
     type = Signature.getTypeErasure(type)
     package := Signature.getSignatureQualifier(type)
-    name := Signature.getSignatureSimpleName(type)
+    name := Signature.getSignatureSimpleName(type).replace(".", "\$")
 
     if( package.size == 0 || !fragments.containsKey(package)) {
       stype := Signature.toString(type)
