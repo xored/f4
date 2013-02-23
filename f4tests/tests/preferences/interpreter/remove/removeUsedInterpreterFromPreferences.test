@@ -1,19 +1,19 @@
 --- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
 Format-Version: 1.0
+Q7-vendor: www.xored.com/q7
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_-OGa4O8oEeCo8LZBmdU2EA,_ex81IMyOEeCqoItsrYQC5Q,_kNDLIPV7EeCU6sULCU9Auw,_BDVZwPVXEeCU6sULCU9Auw
 Element-Name: removeUsedInterpreterFromPreferences
-Tags: preferences/fantom/interpreter/remove
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_-OGa4O8oEeCo8LZBmdU2EA,_ex81IMyOEeCqoItsrYQC5Q,_kNDLIPV7EeCU6sULCU9Auw,_BDVZwPVXEeCU6sULCU9Auw
-Save-Time: 7/24/12 6:48 PM
+External-Reference: 
 Id: _ksJmIPV0EeCU6sULCU9Auw
+Save-Time: 2/24/13 12:59 AM
+Tags: preferences/fantom/interpreter/remove
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Open "Preferences->Fantom->Interpreters" 
 2. Select interpreter, which is used in project
@@ -22,8 +22,8 @@ Content-Type: text/plain
 5. Make sure that in the Problems view the error about link to interpreter is displayed
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-preferences-menu | click
 with [get-window Preferences] {
@@ -57,19 +57,19 @@ with [get-view "Fantom Explorer" | get-tree] {
 }
 get-view Problems | get-tree | get-property itemCount | equals 1 | verify-true
 with [get-view Problems | get-tree] {
-    get-item "Errors \\(1 item\\)" | get-property caption | equals "Errors (1 item)" | verify-true
-    get-item "Errors \\(1 item\\)" | get-property childCount | equals 1 | verify-true
-    get-item "Errors \\(1 item\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
+    get-item "Errors \\(2 items\\)" | get-property caption | equals "Errors (2 items)" | verify-true
+    get-item "Errors \\(2 items\\)" | get-property childCount | equals 2 | verify-true
+    get-item "Errors \\(2 items\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | get-property columns -index 0 
         | equals "Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | verify-true
-    get-item "Errors \\(1 item\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
+    get-item "Errors \\(2 items\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | get-property columns -index 1 | equals testWithFantomLibrary | verify-true
-    get-item "Errors \\(1 item\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
+    get-item "Errors \\(2 items\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | get-property columns -index 2 | equals "" | verify-true
-    get-item "Errors \\(1 item\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
+    get-item "Errors \\(2 items\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | get-property columns -index 3 | equals "/testWithFantomLibrary" | verify-true
-    get-item "Errors \\(1 item\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
+    get-item "Errors \\(2 items\\)/Compilation of project testWithFantomLibrary is not possible, there is no Fantom interpreter specified." 
         | get-property columns -index 4 | equals "Fantom Problem" | verify-true
 }
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
