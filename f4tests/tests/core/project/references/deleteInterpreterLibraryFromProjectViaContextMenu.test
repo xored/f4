@@ -7,8 +7,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _ARXJMPYmEeCU6sULCU9Auw
-Save-Time: 2/24/13 1:06 AM
-Tags: core/fantomproject/references, skipExecution, issues/23
+Save-Time: 2/24/13 1:13 AM
+Tags: core/fantomproject/references, issues/23
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -27,6 +27,9 @@ Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select "fantest/Interpreter Libraries \\[fantom-.*" 
     | get-menu "Build Path/Remove from Build Path" | click
+//Line added because of issue #23, need to investigate why manual refresh is required
+get-view "Fantom Explorer" | get-tree | get-item fantest | get-menu "Refresh" | click
+    
 with [get-view "Fantom Explorer" | get-tree] {
     get-item fantest | get-property childCount | equals 4 | verify-true
     get-item "fantest/JRE System Library.*" | get-property caption | equals "JRE System Library.*" | verify-true
