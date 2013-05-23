@@ -755,7 +755,8 @@ class Parser : AstFactory
     while (matchAndConsume(Token.caseKeyword))
     {
       s["cases"] = expr
-      consume(Token.colon)
+      try consume(Token.colon)
+      catch (Err e) return endRule(s).makeCaseStmt(s)
     }
     if (!match(Token.defaultKeyword))
     {
