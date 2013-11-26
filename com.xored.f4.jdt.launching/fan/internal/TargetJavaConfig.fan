@@ -86,6 +86,7 @@ class JavaLaunchUtil
     FantomProjectManager.instance.listProjects.exclude { 
       it.isPlugin 
     }.findAll { checked.isEmpty ? true : checked.contains(it.podName) }
+    .findAll { it.outDir.exists }
     .map |FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
   }
 }
