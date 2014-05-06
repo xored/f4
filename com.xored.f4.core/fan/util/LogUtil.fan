@@ -9,4 +9,10 @@ class LogUtil
   {
     FanCore.getDefault.getLog.log(Status(IStatus.ERROR, pluginId, message, e?->toJava))
   }
+
+  public static Void logWarn(Str pluginId, Str? message, Err? e := null)
+  {
+    FanCore.getDefault.getLog.log(Status(IStatus.WARNING, pluginId, message, e?->toJava))
+  }
+
 }

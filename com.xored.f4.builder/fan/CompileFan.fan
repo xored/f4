@@ -172,7 +172,8 @@ class CompileFan : IScriptBuilder
       hasErrs = hasErrs || err.isErr
     }
     writeToLog //append empty line
-    if(!hasErrs) refreshPod(fp)
+    if(hasErrs) clearOutFolder(fp)
+    else refreshPod(fp)
     return hasErrs
   }
   
@@ -185,6 +186,7 @@ class CompileFan : IScriptBuilder
   {
     BuilderPrefs.get(fp).isUseExternalBuilder ? ExternalBuilder(fp) : InternalBuilder(fp) 
   }
+
   private Void refreshPod(FantomProject project)
   {
     if(project.rawOutDir == null || project.rawOutDir.isAbs) return
@@ -195,8 +197,29 @@ class CompileFan : IScriptBuilder
       podFile.refreshLocal(IResource.DEPTH_ZERO, null)
     } catch(Err e) 
     { 
-      //do nothing
-      //TODO: report warning
+      LogUtil.logWarn(pluginId, "Internal err refreshing pod file", e);
+    }
+  }
+
+  private Void clearOutFolder(FantomProject project) {
+    // When we write Eclipse plugins on Fantom,
+    // we have to put a pod file in project root
+    // and store in VCS.
+    //
+    // Compiled pods are being compared with previous
+    // version (see InternalBuilder#isPodChanged) to
+    // avoid unnecessary changes in pods, so we want to
+    // keep an old version
+    if(project.isPlugin) return
+
+    try {
+      loc := project.javaProject.getOutputLocation
+      f := ResourcesPlugin.getWorkspace.getRoot.getFolder(loc)
+      f.refreshLocal(IResource.DEPTH_INFINITE, null);
+      f.members.each |IResource r|{ r.delete(true, null) }
+    } catch(Err e)
+    {
+      LogUtil.logErr(pluginId, "Internal err clearing output folder", e)
     }
   }
   
