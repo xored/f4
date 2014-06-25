@@ -1857,16 +1857,34 @@ class Parser : AstFactory
     found := null
     if (p == null)
     {
-      found = usings.eachWhile |UsingDef def->IFanType?|
-      {
-        if (def.typeName == null)
-          return def.podName.modelPod?.findType(typeName,false)
-        else if (typeName == def.typeName.text)
-          return def.typeName.resolvedType
-        else if( typeName == def.asTypeName?.text)
-          return def.typeName.resolvedType
-        return null;
+      // find across explicit usings
+      UsingDef[] usingsWithAs := UsingDef[,]
+      UsingDef[] usingsWithType := UsingDef[,]
+      UsingDef[] otherUsings := UsingDef[,]
+      usings.each {
+        if(it.asTypeName != null) usingsWithAs.add(it)
+        else if(it.typeName != null) usingsWithType.add(it)
+        else otherUsings.add(it)
       }
+
+      found = usingsWithAs.eachWhile {
+        it.asTypeName.text == typeName ?
+          it.typeName.resolvedType
+          : null
+      }
+
+      if (found == null)
+        found = usingsWithType.eachWhile {
+          it.typeName.text == typeName ?
+            it.typeName.resolvedType
+            : null
+        }
+
+      if (found == null)
+        found = otherUsings.eachWhile {
+          it.podName.modelPod?.findType(typeName, false)
+        }
+
       if (found == null)
         found = currPod.findType(typeName,false)
       if (found == null)
