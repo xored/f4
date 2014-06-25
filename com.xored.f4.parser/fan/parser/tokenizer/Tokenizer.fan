@@ -145,6 +145,15 @@ public class Tokenizer
 
     // check keywords
     keyword := Token.keywords[word]
+
+    if(keyword === Token.facetKeyword)
+    {
+      // See github.com/xored/f4/issues/29
+      prevTokenKind := tokens.last?.kind
+      if(prevTokenKind === Token.dot || prevTokenKind === Token.doubleColon)
+        return TokenVal(Token.identifier, word)
+    }
+
     if (keyword != null)
       return TokenVal(keyword)
 
