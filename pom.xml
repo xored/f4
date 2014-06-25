@@ -1,49 +1,132 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.xored.f4</groupId>
-	<artifactId>f4</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	
-	<parent>
-		<groupId>com.xored.f4</groupId>
-		<artifactId>base-pom</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>./pom-base.xml</relativePath>
-	</parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.xored.f4</groupId>
+  <artifactId>f4</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  
+  <properties>
+    <tycho-version>0.19.0</tycho-version>
+    <tycho-groupid>org.eclipse.tycho</tycho-groupid>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-	<modules>
-		<!-- Fantom plugins -->
-		<module>com.xored.f4.astView</module>
-		<module>com.xored.f4.builder</module>
-		<module>com.xored.f4.builder.ui</module>
-		<module>com.xored.f4.core</module>
-		<module>com.xored.f4.debug</module>
-		<module>com.xored.f4.debug.ui</module>
-		<module>com.xored.f4.fcode</module>
-		<module>com.xored.f4.fcode.ui</module>
-		<module>com.xored.f4.jdt.launching</module>
-		<module>com.xored.f4.jdt.launching.ui</module>
-		<module>com.xored.f4.launching</module>
-		<module>com.xored.f4.model</module>
-		<module>com.xored.f4.parser</module>
-		<module>com.xored.f4.search</module>
-		<module>com.xored.f4.testing</module>
-		<module>com.xored.f4.ui.jdt</module>
-		<module>com.xored.f4.ui.text</module>
-		<module>com.xored.f4.ui.core</module>
-		<module>com.xored.f4.platform</module>
-		<!-- Java plugins -->
-		<module>com.xored.fanide.core</module>
-		<module>com.xored.fanide.ui</module>
-		<!-- Packaging -->
-		<module>com.xored.f4.feature</module>
-		<!-- Embedded -->
-		<module>com.xored.f4.fantom-feature</module>
-		<module>com.xored.f4.fantom</module>
-		<!-- Result -->
-		<module>repository</module>
-		<module>f4tests/pom.xml</module>
-	</modules>
+  <modules>
+    <!-- Fantom plugins -->
+    <module>com.xored.f4.astView</module>
+    <module>com.xored.f4.builder</module>
+    <module>com.xored.f4.builder.ui</module>
+    <module>com.xored.f4.core</module>
+    <module>com.xored.f4.debug</module>
+    <module>com.xored.f4.debug.ui</module>
+    <module>com.xored.f4.fcode</module>
+    <module>com.xored.f4.fcode.ui</module>
+    <module>com.xored.f4.jdt.launching</module>
+    <module>com.xored.f4.jdt.launching.ui</module>
+    <module>com.xored.f4.launching</module>
+    <module>com.xored.f4.model</module>
+    <module>com.xored.f4.parser</module>
+    <module>com.xored.f4.search</module>
+    <module>com.xored.f4.testing</module>
+    <module>com.xored.f4.ui.jdt</module>
+    <module>com.xored.f4.ui.text</module>
+    <module>com.xored.f4.ui.core</module>
+    <module>com.xored.f4.platform</module>
+    <!-- Java plugins -->
+    <module>com.xored.fanide.core</module>
+    <module>com.xored.fanide.ui</module>
+    <!-- Packaging -->
+    <module>com.xored.f4.feature</module>
+    <!-- Embedded -->
+    <module>com.xored.f4.fantom-feature</module>
+    <module>com.xored.f4.fantom</module>
+    <!-- Result -->
+    <module>repository</module>
+    <module>product</module>
+    <module>f4tests</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>indigo</id>
+      <layout>p2</layout>
+      <url>http://download.eclipse.org/releases/indigo/</url>
+    </repository>
+    <repository>
+      <snapshots>
+	<updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>dltk-core</id>
+      <layout>p2</layout>
+      <url>http://download.eclipse.org/technology/dltk/updates-dev/5.0/</url>
+    </repository>
+    <repository>
+      <snapshots>
+	<updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>fantom-runtime</id>
+      <layout>p2</layout>
+      <url>http://updates.xored.com/fantom-runtime/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>q7-releases</id>
+      <name>Xored Maven repository</name>
+      <url>http://maven.xored.com/nexus/content/repositories/q7-releases/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>xored-snapshots</id>
+      <name>Xored snapshots maven repo</name>
+      <url>http://maven.xored.com/nexus/content/repositories/snapshots</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>${tycho-groupid}</groupId>
+	<artifactId>tycho-maven-plugin</artifactId>
+	<version>${tycho-version}</version>
+	<extensions>true</extensions>
+      </plugin>
+      <plugin>
+	<groupId>${tycho-groupid}</groupId>
+	<artifactId>target-platform-configuration</artifactId>
+	<version>${tycho-version}</version>
+	<configuration>
+	  <resolver>p2</resolver>
+	  <environments>
+	    <environment>
+	      <os>win32</os>
+	      <ws>win32</ws>
+	      <arch>x86</arch>
+	    </environment>
+	    <environment>
+	      <os>win32</os>
+	      <ws>win32</ws>
+	      <arch>x86_64</arch>
+	    </environment>
+	    <environment>
+	      <os>linux</os>
+	      <ws>gtk</ws>
+	      <arch>x86</arch>
+	    </environment>
+	    <environment>
+	      <os>linux</os>
+	      <ws>gtk</ws>
+	      <arch>x86_64</arch>
+	    </environment>
+	    <environment>
+	      <os>macosx</os>
+	      <ws>cocoa</ws>
+	      <arch>x86_64</arch>
+	    </environment>
+	  </environments>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
