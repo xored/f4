@@ -59,6 +59,18 @@ class DotCompletionProvider : CompletionProvider
     
     if(type.qname == "sys::Void") return true //no slots
     slots := type.allSlots(ns).findAll(filter)
+
+    // TODO Ivan Inozemtsev: StrProvider should be reworked to support this filtering logic too
+    TypeDef? thisType := path.findLast(TypeDef#)
+    if(thisType != null) {
+      thisQname := "$this.ns.currPod.name::$thisType.name.text"
+      thatQname := type.qname
+
+      if (thisQname != thatQname) {
+        slots = slots.exclude { it.isPrivate }
+      }
+    }
+
     reportSlots(slots)
 
     if(isStatic && !slots.any { it.isCtor })
