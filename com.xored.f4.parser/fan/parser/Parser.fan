@@ -1155,7 +1155,17 @@ class Parser : AstFactory
       case Token.durationLiteral : val := consume.val; endRule(s)
         return Literal(s.start, s.end, ExprId.durationLiteral, val, resolveDuration)
       case Token.uriLiteral : val := consume.val; endRule(s)
-        return Literal(s.start, s.end, ExprId.uriLiteral, Uri.fromStr(val), resolveUri)
+        // Ivan Inozemtsev: It's kinda strange that we had Uri.parseUri here before
+        // fix of https://github.com/xored/f4/issues/37
+        //
+        // Previous behaviour caused issues when Uri literal contained
+        // interpolations
+        //
+        // Assuming Str literal does not make anything special to handle
+        // interpolations and that other type literals use String values
+        // instead of parsing, I think it is safe just to use 'val' as
+        // is without performing type conversion
+        return Literal(s.start, s.end, ExprId.uriLiteral, val, resolveUri)
       
       case Token.lbracket : return listOrMapLiteral
     }
