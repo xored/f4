@@ -68,8 +68,8 @@ class FanTestProcessor : ITestingProcessor
     switch (state) {
     case STATE_TEST_FAILED:
       try {
-        resultActual = line[line.index("Test failed: ") + "Test failed: ".size .. line.index(" != ")]
-        resultExpected = line[line.index(" != ") + 4 ..-1]
+        resultExpected = line[line.index("Test failed: ") + "Test failed: ".size .. line.index(" != ")]
+        resultActual = line[line.index(" != ") + 4 ..-1]
         client.testActual(resultActual)
         client.testExpected(resultExpected)
       } catch (Err e) {
