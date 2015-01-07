@@ -216,7 +216,11 @@ class CompileFan : IScriptBuilder
       loc := project.javaProject.getOutputLocation
       f := ResourcesPlugin.getWorkspace.getRoot.getFolder(loc)
       f.refreshLocal(IResource.DEPTH_INFINITE, null);
-      f.members.each |IResource r|{ r.delete(true, null) }
+      if(f.exists) 
+      {
+        f.members.each |IResource r|{ r.delete(true, null) }
+      }
+      
     } catch(Err e)
     {
       LogUtil.logErr(pluginId, "Internal err clearing output folder", e)
