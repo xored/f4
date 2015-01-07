@@ -175,7 +175,10 @@ class InternalBuilder : Builder
     
     try compiler.compile  
     catch(CompilerErr e) caughtErrs.add(e) 
-    catch(Err e) e.trace //TODO: add logging
+    catch(Err e) {
+      LogUtil.logErr(pluginId, "Internal error during build", e)
+      caughtErrs.add(CompilerErr("Internal compiler error, please check Error Log view", null))
+    }
     return [caughtErrs.addAll(compiler.errs), compiler.warns]
   }
 
