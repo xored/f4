@@ -95,9 +95,12 @@ class FandocProvider : ScriptDocumentationProviderBridge, IScriptDocumentationPr
     docs(node).map |doc|
     {
       src[doc.start..doc.end].splitLines.map |s|
-      { 
+      {
         s = s.trim
-        return s.startsWith("**") ? s[2..-1] : s
+        if (s.startsWith("**")) s = s[2..-1]
+        // See compiler::Tokenizer#docComment
+        if (s.startsWith(" ")) s = s[1..-1]
+        return s
       }.join("\n")
     }.join("\n") 
   }
