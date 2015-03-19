@@ -1,26 +1,26 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_1ljj0NRlEeCKlPPbNL0FHw
 Element-Name: checkPresenceBuildFile
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_1ljj0NRlEeCKlPPbNL0FHw
-Save-Time: 8/10/12 12:34 AM
+External-Reference: 
 Id: _krFAYNguEeCWXvk8UUBU4Q
+Runtime-Version: 1.5.5.201503042102
+Save-Time: 3/19/15 8:48 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Open fantom project
 2. Rename build.fan file
 3. Make sure that Error is displayed in Problem view
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-menu "Customize View..." | click
 with [get-window "Available Customizations"] {
@@ -49,13 +49,13 @@ with [get-view "Fantom Explorer" | get-tree] {
 with [get-view Problems | get-tree] {
     select "Errors (1 item)"
     get-item "Errors (1 item)" | get-property childCount | equals 1 | verify-true
-    select item "Errors (1 item)/build.fan is not found"
-    get-item "Errors (1 item)/build.fan is not found" | get-property columns -index 0 
-        | equals "build.fan is not found" | verify-true
-    get-item "Errors (1 item)/build.fan is not found" | get-property columns -index 1 | equals fantest | verify-true
-    get-item "Errors (1 item)/build.fan is not found" | get-property columns -index 3 | equals "/fantest" 
+    select "Errors (1 item)/build.fan is not found"
+    get-item "Errors \\(1 item\\)/build.fan is not found" | get-property "columns[0]" | equals "build.fan is not found" 
         | verify-true
-    get-item "Errors (1 item)/build.fan is not found" | get-property columns -index 4 | equals "Fantom Problem" 
+    get-item "Errors \\(1 item\\)/build.fan is not found" | get-property "columns[1]" | equals fantest | verify-true
+    get-item "Errors \\(1 item\\)/build.fan is not found" | get-property "columns[3]" | equals "/fantest" | verify-true
+    get-item "Errors \\(1 item\\)/build.fan is not found" | get-property "columns[4]" | equals "Fantom Problem" 
         | verify-true
 }
+
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
