@@ -24,31 +24,22 @@ import org.eclipse.dltk.compiler.util.Util;
 import org.eclipse.dltk.core.IDLTKLanguageToolkit;
 import org.eclipse.dltk.core.IScriptProject;
 import org.eclipse.dltk.internal.ui.wizards.BuildpathDetector;
-import org.eclipse.dltk.ui.DLTKUILanguageManager;
 import org.eclipse.dltk.ui.DLTKUIPlugin;
-import org.eclipse.dltk.ui.IDLTKUILanguageToolkit;
-import org.eclipse.dltk.ui.PreferenceConstants;
-import org.eclipse.dltk.ui.util.BusyIndicatorRunnableContext;
-import org.eclipse.dltk.ui.util.IStatusChangeListener;
-import org.eclipse.dltk.ui.wizards.BuildpathsBlock;
 import org.eclipse.dltk.ui.wizards.IBuildpathDetector;
 import org.eclipse.dltk.ui.wizards.ProjectCreator;
 import org.eclipse.dltk.ui.wizards.ProjectWizard;
-import org.eclipse.dltk.ui.wizards.ProjectWizardFirstPage;
-import org.eclipse.dltk.ui.wizards.ProjectWizardSecondPage;
 
 import com.xored.fanide.core.BuildFan;
 import com.xored.fanide.core.FanCore;
 import com.xored.fanide.core.FanNature;
 import com.xored.fanide.core.utils.FanProjectUtils;
 import com.xored.fanide.internal.ui.FanImages;
-import com.xored.fanide.internal.ui.preferences.FanBuildPathsBlock;
 
 public class FanProjectCreationWizard extends ProjectWizard {
 	public static final String WIZARD_ID = "com.xored.fanide.ui.internal.wizards.newproject";
 
 	private FanProjectWizardFirstPage fFirstPage;
-	private ProjectWizardSecondPage fSecondPage;
+	private FanProjectWizardSecondPage fSecondPage;
 
 	public FanProjectCreationWizard() {
 		setDefaultPageImageDescriptor(FanImages.DESC_WIZBAN_PROJECT_CREATION);
@@ -65,38 +56,25 @@ public class FanProjectCreationWizard extends ProjectWizard {
 	public void addPages() {
 		super.addPages();
 		fFirstPage = new FanProjectWizardFirstPage();
-		fFirstPage
-				.setTitle(FanWizardMessages.ProjectCreationWizardFirstPage_title);
-		fFirstPage
-				.setDescription(FanWizardMessages.ProjectCreationWizardFirstPage_description);
+		fFirstPage.setTitle(FanWizardMessages.ProjectCreationWizardFirstPage_title);
+		fFirstPage.setDescription(FanWizardMessages.ProjectCreationWizardFirstPage_description);
 		addPage(fFirstPage);
-		fSecondPage = new ProjectWizardSecondPage(fFirstPage) {
-			@Override
-			protected BuildpathsBlock createBuildpathBlock(
-					IStatusChangeListener listener) {
-				return new FanBuildPathsBlock(
-						new BusyIndicatorRunnableContext(), listener, 0,
-						useNewSourcePage(), null);
-			}
-		};
+		fSecondPage = new FanProjectWizardSecondPage(fFirstPage);
 		addPage(fSecondPage);
 	}
 
 	private static class FanBuildpathDetector extends BuildpathDetector {
-
 		/**
 		 * @param project
 		 * @param toolkit
 		 */
-		public FanBuildpathDetector(IProject project,
-				IDLTKLanguageToolkit toolkit) {
+		public FanBuildpathDetector(IProject project, IDLTKLanguageToolkit toolkit) {
 			super(project, toolkit);
 		}
 
 		@Override
 		public boolean visit(IResourceProxy proxy, List<IFile> files) {
-			if (proxy.getType() == IResource.FILE
-					&& BuildFan.FILENAME.equals(proxy.getName())) {
+			if (proxy.getType() == IResource.FILE && BuildFan.FILENAME.equals(proxy.getName())) {
 				return false;
 			} else {
 				return super.visit(proxy, files);
@@ -109,8 +87,7 @@ public class FanProjectCreationWizard extends ProjectWizard {
 		return new ProjectCreator(this, getFirstPage()) {
 			@Override
 			protected IBuildpathDetector createBuildpathDetector() {
-				return new FanBuildpathDetector(getProject(),
-						getLanguageToolkit());
+				return new FanBuildpathDetector(getProject(), getLanguageToolkit());
 			}
 		};
 	}
@@ -140,7 +117,7 @@ public class FanProjectCreationWizard extends ProjectWizard {
 		if (!file.exists()) {
 			final String fileContent = BuildFan.generateContent(project
 					.getProject().getName(), FanProjectUtils
-					.getSrcDirs(project), createJavaSourceFolder?"`java/`":null);
+					.getSrcDirs(project), createJavaSourceFolder ? "`java/`" : null);
 			byte[] bytes;
 			try {
 				bytes = fileContent.getBytes(Util.UTF_8);
