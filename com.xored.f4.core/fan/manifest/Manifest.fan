@@ -84,22 +84,28 @@ class Manifest
   
   Uri? outDir() 
   { 
-    vals["outPodDir"] 
+    vals["outPodDir"] != null ? Uri.fromStr(vals["outPodDir"]) : null
   }
   
   Str[] depends() { vals["depends"] ?: Str[,] }
   
-  Uri[] resDirs() { vals["resDirs"] ?: Uri[,] }
+  Uri[] resDirs() { resolveUris(vals["resDirs"]) }
   
-  Uri[] jsDirs() { vals["jsDirs"] ?: Uri[,] }
+  Uri[] jsDirs() { resolveUris(vals["jsDirs"]) }
   
-  Uri[] javaDirs() { vals["javaDirs"] ?: Uri[,] }
+  Uri[] javaDirs() { resolveUris(vals["javaDirs"]) }
   
   Str:Str meta() { vals["meta"] ?: [Str:Str][:] }
   
   //////////////////////////////////////////////////////////////////////////
   // Helper methods
   //////////////////////////////////////////////////////////////////////////
+  private static Uri[] resolveUris(Obj? vals) {
+    res := Uri[,]
+    (vals as Str[])?.each { res.add(Uri.fromStr(it)) }
+    return res
+  }
+  
   private static Obj? resolveLiteral(Expr expr)
   {
     if (expr is Literal) return expr->val
