@@ -27,7 +27,7 @@ class Manifest
     vals =  method.body.stmts
       .findAll { it is ExprStmt }
       .findAll |ExprStmt st->Bool| { st.expr.id == ExprId.assign }
-      .map |ExprStmt st -> BinaryExpr| { st.expr}
+      .map |ExprStmt st -> BinaryExpr| { st.expr }
       .reduce([Str:Obj?][:]) |Str:Obj? result, BinaryExpr expr->Str:Obj?|
       {
         if(expr.left isnot Ref) return result
@@ -128,7 +128,7 @@ class Manifest
     if (expr is CallExpr)
     { 
       call := expr as CallExpr
-      callee := call.callee
+      callee := (call.callee as InvokeExpr)?.callee
       if (isVersionConstructor(callee)) {
         versionStr := (call.args.first as Literal)?.val as Str
         if(versionStr != null) return Version(versionStr)

@@ -13,6 +13,7 @@ using [java]org.eclipse.core.resources::IResourceDelta
 using [java]org.eclipse.core.resources::IProject
 using [java]org.eclipse.core.resources::IResource
 using [java]org.eclipse.dltk.core::DLTKCore
+using [java]org.eclipse.jdt.core::IJavaProject
 using concurrent
 
 **
@@ -142,8 +143,8 @@ class DeltaVisitor : IResourceDeltaVisitor
       case IResource.FOLDER:
         return false
       case IResource.FILE:
-        if(resource.getName == Manifest.filename 
-          && contentChanged(delta)) 
+        if((resource.getName == Manifest.filename || resource.getName == IJavaProject.CLASSPATH_FILE_NAME) 
+          && contentChanged(delta))
           change.updatedProjects.add(resource.getProject)
         return false
       default: return true

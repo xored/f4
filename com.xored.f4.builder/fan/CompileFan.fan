@@ -211,6 +211,8 @@ class CompileFan : IScriptBuilder
     // avoid unnecessary changes in pods, so we want to
     // keep an old version
     if(project.isPlugin) return
+    
+    if(project.isOutputNotSet) return
 
     try {
       loc := project.javaProject.getOutputLocation

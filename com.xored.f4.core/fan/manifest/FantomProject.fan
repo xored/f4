@@ -68,7 +68,10 @@ const class FantomProject
     index = manifest.index 
     rawOutDir = manifest.outDir
     isPlugin = project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
-    outDir = getOutDir(project, manifest) //resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir 
+    outDir = getOutDir(project, manifest) //resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
+    if (!isPlugin && isOutputNotSet) {
+      perrs.add(ProjectErr("Output folder is not set"))
+    }
     resDirs = manifest.resDirs             
     jsDirs = manifest.jsDirs
     javaDirs = manifest.javaDirs
@@ -92,10 +95,18 @@ const class FantomProject
     if(isPlugin) {
       return resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
     }
-    outLoc := javaProject.getOutputLocation
-    return (File.os(ResourcesPlugin.getWorkspace.getRoot
-              .getFolder(javaProject.getOutputLocation)
-              .getLocation.toFile.getAbsolutePath).uri.plusSlash + `fan/lib/fan/`).toFile
+    
+    try {
+      return (File.os(ResourcesPlugin.getWorkspace.getRoot
+                .getFolder(javaProject.getOutputLocation)
+                .getLocation.toFile.getAbsolutePath).uri.plusSlash + `fan/lib/fan/`).toFile
+    } catch (Err e) {
+      return baseDir
+    }
+  }
+  
+  public Bool isOutputNotSet() {
+    javaProject.getOutputLocation.equals(javaProject.getPath)
   }
   
   public Bool isInterpreterSet()
