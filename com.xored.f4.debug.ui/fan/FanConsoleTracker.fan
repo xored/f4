@@ -83,8 +83,7 @@ class SourceSearchJob : Job
   override IStatus? run(IProgressMonitor? m)
   {
     
-    Obj? result := ((tryFindInProjects ?: 
-      tryFindByPath) ?: tryFindSourceModule) ?: tryFindType
+    Obj? result := ((tryFindInProjects ?: tryFindByPath) ?: tryFindSourceModule) ?: tryFindType
     
     if(result != null) 
       reportResults(result) 
@@ -94,7 +93,8 @@ class SourceSearchJob : Job
   
   private Obj? tryFindByPath()
   {
-    ResourcesPlugin.getWorkspace.getRoot.getFileForLocation(Path(link.fileName))
+    linkFileName := link.fileName
+    return linkFileName == null ? null : ResourcesPlugin.getWorkspace.getRoot.getFileForLocation(Path(linkFileName))
   }
   
   private Obj? tryFindInProjects()
