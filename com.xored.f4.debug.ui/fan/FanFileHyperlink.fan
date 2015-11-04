@@ -67,6 +67,7 @@ class FanHyperlink
     result := linkLine
     start := result.indexr("(") ?: 0
     end := result.indexr(")") ?: -1
+    if (start+1 >= result.size) return linkLine
     return result[start+1..<end]
   }
   
