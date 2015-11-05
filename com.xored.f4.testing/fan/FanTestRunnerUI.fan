@@ -42,7 +42,7 @@ class FanTestRunnerUI : AbstractTestRunnerUI, ITestElementResolver
   }
   
   private Bool isJavaSource(Str traceLine) {
-    FanHyperlink(traceLine).fileName.split('.').last == "java"
+    FanHyperlink(traceLine).fileName?.split('.')?.last == "java"
   }
   
   override Bool canFilterStack() {
