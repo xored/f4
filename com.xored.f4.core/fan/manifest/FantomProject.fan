@@ -99,7 +99,7 @@ const class FantomProject
     try {
       return (File.os(ResourcesPlugin.getWorkspace.getRoot
                 .getFolder(javaProject.getOutputLocation)
-                .getLocation.toFile.getAbsolutePath).uri.plusSlash + `fan/lib/fan/`).toFile
+                .getLocation.toFile.getAbsolutePath).uri.plusSlash).toFile
     } catch (Err e) {
       return baseDir
     }
