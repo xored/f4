@@ -37,7 +37,7 @@ using [java]org.eclipse.dltk.logconsole::LogConsoleType
 ** CompileFan
 **************************************************************************
 **
-** IScriptBuilder implementationt to build Fantom projects
+** IScriptBuilder implementation to build Fantom projects
 ** 
 class CompileFan : IScriptBuilder
 {
