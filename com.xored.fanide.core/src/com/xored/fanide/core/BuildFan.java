@@ -269,7 +269,23 @@ public class BuildFan {
 		return TextUtils.join(sb, Util.LINE_SEPARATOR) + Util.LINE_SEPARATOR;
 	}
 
-	private static String fromProjectName(String string) {
-		return Character.toLowerCase(string.charAt(0)) + string.substring(1);
+	// Nicked from Fantom's Str.fromDisplayName()
+	private static String fromProjectName(String self) {
+		if (self.length() == 0) return "";
+		StringBuilder s = new StringBuilder(self.length());
+		int c = self.charAt(0);
+		int c2 = self.length() == 1 ? 0 : self.charAt(1);
+		if ('A' <= c && c <= 'Z' && !('A' <= c2 && c2 <= 'Z')) c |= 0x20;
+		s.append((char) c);
+		int last = c;
+		for (int i = 1; i < self.length(); ++i) {
+			c = self.charAt(i);
+			if (c != ' ') {
+				if (last == ' ' && 'a' <= c && c <= 'z') c &= ~0x20;
+				s.append((char) c);
+			}
+			last = c;
+		}
+		return s.toString();
 	}
 }
