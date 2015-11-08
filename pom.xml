@@ -5,13 +5,11 @@
   <artifactId>f4</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
   <properties>
-    <tycho-version>0.19.0</tycho-version>
+    <tycho-version>0.22.0</tycho-version>
     <tycho-groupid>org.eclipse.tycho</tycho-groupid>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
   <modules>
     <!-- Fantom plugins -->
     <module>com.xored.f4.astView</module>
@@ -53,9 +51,10 @@
       <layout>p2</layout>
       <url>http://download.eclipse.org/releases/indigo/</url>
     </repository>
+
     <repository>
       <snapshots>
-	<updatePolicy>always</updatePolicy>
+        <updatePolicy>always</updatePolicy>
       </snapshots>
       <id>dltk-core</id>
       <layout>p2</layout>
@@ -63,7 +62,7 @@
     </repository>
     <repository>
       <snapshots>
-	<updatePolicy>always</updatePolicy>
+        <updatePolicy>always</updatePolicy>
       </snapshots>
       <id>fantom-runtime</id>
       <layout>p2</layout>
@@ -71,11 +70,17 @@
     </repository>
   </repositories>
 
+
   <pluginRepositories>
     <pluginRepository>
       <id>rcptt-releases</id>
+      <name>RCPTT Maven repository</name>
+      <url>https://repo.eclipse.org/content/repositories/rcptt-releases/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>rcptt-snapshots</id>
       <name>Xored Maven repository</name>
-      <url>http://maven.xored.com/nexus/content/repositories/ci4rcptt-releases/</url>
+      <url>https://repo.eclipse.org/content/repositories/rcptt-snapshots/</url>
     </pluginRepository>
     <pluginRepository>
       <id>xored-snapshots</id>
@@ -83,49 +88,48 @@
       <url>http://maven.xored.com/nexus/content/repositories/snapshots</url>
     </pluginRepository>
   </pluginRepositories>
-
   <build>
     <plugins>
       <plugin>
-	<groupId>${tycho-groupid}</groupId>
-	<artifactId>tycho-maven-plugin</artifactId>
-	<version>${tycho-version}</version>
-	<extensions>true</extensions>
+        <groupId>${tycho-groupid}</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <extensions>true</extensions>
       </plugin>
       <plugin>
-	<groupId>${tycho-groupid}</groupId>
-	<artifactId>target-platform-configuration</artifactId>
-	<version>${tycho-version}</version>
-	<configuration>
-	  <resolver>p2</resolver>
-	  <environments>
-	    <environment>
-	      <os>win32</os>
-	      <ws>win32</ws>
-	      <arch>x86</arch>
-	    </environment>
-	    <environment>
-	      <os>win32</os>
-	      <ws>win32</ws>
-	      <arch>x86_64</arch>
-	    </environment>
-	    <environment>
-	      <os>linux</os>
-	      <ws>gtk</ws>
-	      <arch>x86</arch>
-	    </environment>
-	    <environment>
-	      <os>linux</os>
-	      <ws>gtk</ws>
-	      <arch>x86_64</arch>
-	    </environment>
-	    <environment>
-	      <os>macosx</os>
-	      <ws>cocoa</ws>
-	      <arch>x86_64</arch>
-	    </environment>
-	  </environments>
-	</configuration>
+        <groupId>${tycho-groupid}</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <resolver>p2</resolver>
+          <environments>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>win32</os>
+              <ws>win32</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86</arch>
+            </environment>
+            <environment>
+              <os>linux</os>
+              <ws>gtk</ws>
+              <arch>x86_64</arch>
+            </environment>
+            <environment>
+              <os>macosx</os>
+              <ws>cocoa</ws>
+              <arch>x86_64</arch>
+            </environment>
+          </environments>
+        </configuration>
       </plugin>
     </plugins>
   </build>
