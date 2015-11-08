@@ -776,7 +776,10 @@ class StructureParser
         || cur.newline 
         || prevt === Token.semicolon 
         || prevt === Token.rbrace
-        || (prevt === Token.lbrace && scope == ParserScope.insideType))
+        || (prevt === Token.lbrace && scope == ParserScope.insideType)
+        // support plain facets --> @NoDoc Str wotever
+        // see https://github.com/xored/f4/issues/41
+        || (prevt === Token.identifier && curt === Token.identifier))
     {
       if (!methodOnly && curt === Token.identifier 
           && (peekt === Token.defAssign || peekt === Token.assign))
