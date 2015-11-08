@@ -40,14 +40,11 @@ class InterpreterContainer :
         path := PathUtil.resolveLocalPath(entry.getPath, false)
         if(path == null || !path.exists || path.ext != "pod") return
         
-        if( fanSrcExist)
+        src := fanSrc + Uri.fromStr(path.basename).plusSlash
+        if(fanSrcExist && src.exists)
         {
-          src := fanSrc + Uri.fromStr(path.basename).plusSlash
-          if(src.exists)
-          {
-            entry.setSourceAttachmentPath(PathUtil.toPath(src))
-            entry.setSourceAttachmentRootPath(Path.EMPTY)
-          }
+          entry.setSourceAttachmentPath(PathUtil.toPath(src))
+          entry.setSourceAttachmentRootPath(Path.EMPTY)
         }
         else
         {
