@@ -21,7 +21,7 @@ class FanPairMatcher : FanJavaPairMatcher
   override IRegion? doMatch(IDocument? document, Int offset)
   {
     return offset < 0 || offset > document.getLength || document == null
-      ? null : super.match(document, offset)
+      ? null : super.doMatch(document, offset)
   }
 
   /*public int getAnchor() {

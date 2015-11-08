@@ -11,7 +11,7 @@ public class FanJavaPairMatcher extends DefaultCharacterPairMatcher {
 
 	/* @see ICharacterPairMatcher#match(IDocument, int) */
 	public IRegion doMatch(IDocument document, int offset) {
-		return null;
+		return super.match(document, offset);
 	}
 
 	public IRegion match(IDocument document, int offset) {
