@@ -40,7 +40,7 @@ const class FantomProject
     } catch(Err e)
     {
 //      e.trace
-      perrs.add(ProjectErr("build.fan is not found"))
+      perrs.add(ProjectErr(e.toStr))
       podName = "<unknown>"
       version = Version.defVal
       index = [Str:Obj][:]
@@ -99,7 +99,7 @@ const class FantomProject
     try {
       return (File.os(ResourcesPlugin.getWorkspace.getRoot
                 .getFolder(javaProject.getOutputLocation)
-                .getLocation.toFile.getAbsolutePath).uri.plusSlash + `fan/lib/fan/`).toFile
+                .getLocation.toFile.getAbsolutePath).uri.plusSlash).toFile
     } catch (Err e) {
       return baseDir
     }

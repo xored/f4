@@ -67,10 +67,11 @@ class FanHyperlink
     result := linkLine
     start := result.indexr("(") ?: 0
     end := result.indexr(")") ?: -1
+    if (start+1 >= result.size) return linkLine
     return result[start+1..<end]
   }
   
-  public once Str fileName()
+  public once Str? fileName()
   {
     txt := linkText[0..-1]
     if(isWin32 && txt[0] == '/') txt = txt[1..-1]
@@ -80,7 +81,8 @@ class FanHyperlink
       return matcher.group(1)
     }
     
-    throw ArgErr(ConsoleMessages.cantParseFile) //TODO: add normal logging
+    // not every line in a stack trace is a trace frame - sometimes there are multiline messages
+    return null
   }
   
   public once Str? projectName()

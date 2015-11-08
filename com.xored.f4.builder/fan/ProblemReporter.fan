@@ -21,15 +21,17 @@ class ProblemReporter : ProblemCollector
   
   Void flush()
   {
-    if( resource.isAccessible) {
-      problems.toArray.each |IProblem p|
-      {
-        marker := resource.createMarker(F4Consts.buildProblem)
-        marker.setAttribute(IMarker.LINE_NUMBER, Integer(p.getSourceLineNumber))
-        marker.setAttribute(IMarker.MESSAGE, p.getMessage)
-        marker.setAttribute(IMarker.LOCATION, resource.getFullPath.toString)
-        marker.setAttribute(IMarker.SEVERITY, p.isWarning? IMarker.SEVERITY_WARNING: IMarker.SEVERITY_ERROR)
-      }
+    // make sure all errors are reported, even if the reported resource doesn't exist  
+    // see https://github.com/xored/f4/issues/32
+    append   := (Str?)      (resource.isAccessible ? null     : ": ${resource.getFullPath.toString}")
+    resource := (IResource) (resource.isAccessible ? resource : resource.getProject.getFile("build.fan"))
+    problems.toArray.each |IProblem p|
+    {
+      marker := resource.createMarker(F4Consts.buildProblem)
+      marker.setAttribute(IMarker.LINE_NUMBER, Integer(p.getSourceLineNumber))
+      marker.setAttribute(IMarker.MESSAGE, append == null ? p.getMessage : p.getMessage + append)
+      marker.setAttribute(IMarker.LOCATION, resource.getFullPath.toString)
+      marker.setAttribute(IMarker.SEVERITY, p.isWarning? IMarker.SEVERITY_WARNING: IMarker.SEVERITY_ERROR)
     }
     problems.clear
   }

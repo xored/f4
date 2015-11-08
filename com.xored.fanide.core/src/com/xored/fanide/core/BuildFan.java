@@ -30,12 +30,12 @@ import org.eclipse.dltk.utils.TextUtils;
 public class BuildFan {
 
 	public static final String FILENAME = "build.fan"; //$NON-NLS-1$
-	private static final String POD_NAME = "podName";
+//	private static final String POD_NAME = "podName";
 	private static final String SRC_DIRS = "srcDirs";
-	private static final String JAVA_DIRS = "javaDirs";
-	private static final String DEPS = "depends";
-	//private static final String VERSION = "version";
-	//private static final Version defaultVersion = Version.fromStr("0");
+//	private static final String JAVA_DIRS = "javaDirs";
+//	private static final String DEPS = "depends";
+//	private static final String VERSION = "version";
+//	private static final Version defaultVersion = Version.fromStr("0");
 
 	/*public static String readPodName(IProject project) {
 		IFile podConf = project.getFile(new Path(FILENAME));
@@ -238,23 +238,54 @@ public class BuildFan {
 		}
 	}
 
-	public static String generateContent(String podName, String srcDirs, String javaDirs) {
+	public static String generateContent(String projName, String srcDirs, String javaDirs) {
 		List<String> sb = new ArrayList<String>();
 		sb.add("using build");
-		sb.add("class Build : build::BuildPod");
-		sb.add("{");
-		sb.add("  new make()");
-		sb.add("  {");
-		sb.add("    " + POD_NAME + " = \"" + podName + "\"");
-		sb.add("    summary = \"\"");
-		sb.add("    " + SRC_DIRS + " = [" + srcDirs + "]");
-		if( javaDirs != null) {
-			sb.add("    " + JAVA_DIRS + " = [" + javaDirs + "]");
-		}
-		sb.add("    " + DEPS + " = [\"sys 1.0\"]");
-		sb.add("  }");
+		sb.add("");
+		sb.add("class Build : BuildPod {");
+		sb.add("");
+		sb.add("\tnew make() {");
+		sb.add("\t\tpodName = \"" + fromProjectName(projName) + "\"");
+		sb.add("\t\tsummary = \"My Awesome " + projName + " Project\"");
+		sb.add("\t\tversion = Version(\"0.0.1\")");
+		sb.add("");
+		sb.add("\t\tmeta = [");
+		sb.add("\t\t\t\"proj.name\" : \"" + projName + "\"");
+		sb.add("\t\t]");
+		sb.add("");
+		sb.add("\t\tdepends = [");
+		sb.add("\t\t\t\"sys 1.0\"");
+		sb.add("\t\t]");
+		sb.add("");
+		sb.add("\t\tsrcDirs = [" + srcDirs + "]");
+		sb.add("\t\tresDirs = [,]");
+		if( javaDirs != null)
+			sb.add("\t\tjavaDirs = [" + javaDirs + "]");
+		sb.add("");
+		sb.add("\t\tdocApi = true");
+		sb.add("\t\tdocSrc = true");
+		sb.add("\t}");
 		sb.add("}");
 		return TextUtils.join(sb, Util.LINE_SEPARATOR) + Util.LINE_SEPARATOR;
 	}
 
+	// Nicked from Fantom's Str.fromDisplayName()
+	private static String fromProjectName(String self) {
+		if (self.length() == 0) return "";
+		StringBuilder s = new StringBuilder(self.length());
+		int c = self.charAt(0);
+		int c2 = self.length() == 1 ? 0 : self.charAt(1);
+		if ('A' <= c && c <= 'Z' && !('A' <= c2 && c2 <= 'Z')) c |= 0x20;
+		s.append((char) c);
+		int last = c;
+		for (int i = 1; i < self.length(); ++i) {
+			c = self.charAt(i);
+			if (c != ' ') {
+				if (last == ' ' && 'a' <= c && c <= 'z') c &= ~0x20;
+				s.append((char) c);
+			}
+			last = c;
+		}
+		return s.toString();
+	}
 }

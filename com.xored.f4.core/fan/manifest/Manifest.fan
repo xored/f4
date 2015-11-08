@@ -128,10 +128,19 @@ class Manifest
     if (expr is CallExpr)
     { 
       call := expr as CallExpr
-      callee := (call.callee as InvokeExpr)?.callee
+      callee := call.callee
       if (isVersionConstructor(callee)) {
+        // first look for a Str ctor
         versionStr := (call.args.first as Literal)?.val as Str
-        if(versionStr != null) return Version(versionStr)
+
+        // then for an Int array ctor
+        if (versionStr == null)
+          versionStr = (call.args.first as ListLiteral)?.items?.join(".") { (it as Literal)?.val?.toStr ?: null }
+        
+        if (versionStr != null) {
+          version := Version.fromStr(versionStr, false)
+          if (version != null) return version
+        }
       }
     }
     return null

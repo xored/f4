@@ -37,7 +37,7 @@ using [java]org.eclipse.dltk.logconsole::LogConsoleType
 ** CompileFan
 **************************************************************************
 **
-** IScriptBuilder implementationt to build Fantom projects
+** IScriptBuilder implementation to build Fantom projects
 ** 
 class CompileFan : IScriptBuilder
 {
@@ -172,8 +172,7 @@ class CompileFan : IScriptBuilder
       hasErrs = hasErrs || err.isErr
     }
     writeToLog //append empty line
-    if(hasErrs) clearOutFolder(fp)
-    else refreshPod(fp)
+    if(!hasErrs) refreshPod(fp)
     return hasErrs
   }
   

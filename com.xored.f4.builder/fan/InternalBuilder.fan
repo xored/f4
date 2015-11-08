@@ -37,7 +37,7 @@ class InternalBuilder : Builder
   
   override CompilerErr[] buildPod(|Str|? consumer)
   {
-    // Prepare temporaty output directory for pod building
+    // Prepare temporary output directory for pod building
     IPath statePath := FanCore.getDefault.getStateLocation
     IPath projectPath := statePath.append("compiler").append(fp.podName)
     JFile root := projectPath.toFile
