@@ -186,6 +186,7 @@ public class Service$
 
   public static Service start(Service self)
   {
+    State state = null;
     try
     {
       synchronized (lock)
@@ -194,7 +195,7 @@ public class Service$
         install(self);
 
         // if already running, short circuit
-        State state = (State)byService.get(self);
+        state = (State)byService.get(self);
         if (state.running) return self;
 
         // put into the running state
@@ -206,7 +207,8 @@ public class Service$
     }
     catch (Throwable e)
     {
-      e.printStackTrace();
+      if (state != null) state.running = false;
+      dumpErr(self, "onStart", e);
     }
     return self;
   }
@@ -230,7 +232,7 @@ public class Service$
     }
     catch (Throwable e)
     {
-      e.printStackTrace();
+      dumpErr(self, "onStop", e);
     }
     return self;
   }
@@ -238,6 +240,16 @@ public class Service$
   public static void onStart(Service self) {}
 
   public static void onStop(Service self) {}
+
+  private static void dumpErr(Service self, String method, Throwable e)
+  {
+    if (e.toString().equals("sys::Err: test-nodump")) return;
+    System.out.println("ERROR: " + self.getClass().getName() + "." +  method);
+    if (e instanceof Err)
+      ((Err)e).trace();
+    else
+      e.printStackTrace();
+  }
 
 //////////////////////////////////////////////////////////////////////////
 // State/Node
@@ -248,7 +260,7 @@ public class Service$
   {
     State(Service s) { service = s; }
     Service service;
-    boolean running;
+    volatile boolean running;
   }
 
   /** Value for byType map */

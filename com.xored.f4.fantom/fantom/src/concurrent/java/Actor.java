@@ -136,7 +136,7 @@ public class Actor
   private Future _send(Object msg, Duration dur, Future whenDone)
   {
     // ensure immutable or safe copy
-    msg = Sys.safe(msg);
+    msg = _safe(msg);
 
     // don't deliver new messages to a stopped pool
     if (pool.isStopped()) throw Err.make("ActorPool is stopped");
@@ -256,6 +256,29 @@ public class Actor
     }
   }
 
+  static Object _safe(Object obj)
+  {
+    if (obj == null) return null;
+    if (FanObj.isImmutable(obj)) return obj;
+
+    if (_safeLogErr)
+    {
+      _safeLogErr = false;
+      System.out.println("==");
+      System.out.println("==");
+      System.out.println("== Actor msg serialization is deprecated;");
+      System.out.println("== See http://fantom.org/forum/topic/2428");
+      System.out.println("==");
+      System.out.println("==");
+    }
+
+    Buf buf = new MemBuf(512);
+    buf.out().writeObj(obj);
+    buf.flip();
+    return buf.in().readObj();
+  }
+  private static volatile boolean _safeLogErr = true;
+
 //////////////////////////////////////////////////////////////////////////
 // Queue
 //////////////////////////////////////////////////////////////////////////
@@ -283,6 +306,12 @@ public class Actor
     public Future coalesce(Future f)
     {
       return null;
+    }
+
+    void dump(fan.sys.OutStream out)
+    {
+      for (Future x = head; x != null; x = x.next)
+        out.print("  ").printLine(x.msg);
     }
 
     Future head, tail;
@@ -357,6 +386,34 @@ public class Actor
 
     Func toKeyFunc, coalesceFunc;
     HashMap pending = new HashMap();
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Debug
+//////////////////////////////////////////////////////////////////////////
+
+  public Object trap(String name, List args)
+  {
+    if (name.equals("dump")) return dump(args);
+    return super.trap(name, args);
+  }
+
+  public final Object dump(List args)
+  {
+    fan.sys.OutStream out = fan.sys.Env.cur().out();
+    if (args != null && args.size() > 0)
+      out = (fan.sys.OutStream)args.get(0);
+    try
+    {
+      out.printLine("Actor");
+      out.printLine("  pool:      " + pool.name);
+      out.printLine("  submitted: " + submitted);
+      out.printLine("  queue:     " + queueSize());
+      queue.dump(out);
+
+    }
+    catch (Exception e) { out.printLine("  " + e + "\n"); }
+    return out;
   }
 
 //////////////////////////////////////////////////////////////////////////

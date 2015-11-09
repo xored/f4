@@ -735,6 +735,33 @@ class StreamTest : Test
     in.close
   }
 
+  Void testReadNullTerminatedStr()
+  {
+    f := tempDir + `readNullTerminatedStr.hex`
+    f.create
+
+    // verify empty file
+    in := f.in
+    verifyEq(in.readNullTerminatedStr, null)
+    in.close
+
+    OutStream out := f.out
+    out.print("foo\u0000|bar\u0000longer one\u0000")
+    out.close
+
+    in = f.in
+    verifyEq(in.readNullTerminatedStr, "foo")
+    verifyEq(in.readChar, '|')
+    verifyEq(in.readNullTerminatedStr, "bar")
+    verifyEq(in.readNullTerminatedStr(4), "long");
+    verifyEq(in.readNullTerminatedStr(0), "");
+    verifyEq(in.readNullTerminatedStr(1), "e");
+    verifyEq(in.readNullTerminatedStr(9), "r one");
+    verifyEq(in.readNullTerminatedStr(4), null);
+
+    in.close
+  }
+
   Void testReadAllLines()
   {
     f := tempDir + `readAllLines.hex`
@@ -843,6 +870,8 @@ class StreamTest : Test
   {
     str :=
       "// header\n" +
+      "# not in there\n" +
+      "# another comment\n" +
       "a=alpha\n"+
       " b = beta \r"+
       "c = charlie // who /* block ignored\r\n"+
@@ -857,6 +886,7 @@ class StreamTest : Test
       "g=\\\n"+
       " g\\u0001value\r\n"+
       "/*"+
+      "# line comment\n" +
       "no=nope/*"+
       "no=\\uJKEK"+
       "*/ */"+
@@ -865,6 +895,7 @@ class StreamTest : Test
       "eq1=a != b\n"+
       "eq2\\u003d=~!@#\$%^&*()_+\n"+
       "comment=\\u002f* \\u002f/!\n" +
+      "# line comment\n" +
       "// skip\n" +
       "foo=http://foo/"
 
@@ -908,6 +939,15 @@ class StreamTest : Test
     verifyErr(IOErr#) { "a=1\\x".in.readProps }
     verifyErr(IOErr#) { "novalue".in.readProps }
     verifyErr(IOErr#) { "novalue\na=b".in.readProps }
+  }
+
+  Void testTicket2436()
+  {
+    verify("#".in.readProps.isEmpty)
+    verify("#\n".in.readProps.isEmpty)
+    verify("#\r".in.readProps.isEmpty)
+    verify("#\r\n".in.readProps.isEmpty)
+    verify("#oops".in.readProps.isEmpty)
   }
 
 //////////////////////////////////////////////////////////////////////////

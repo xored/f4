@@ -15,6 +15,14 @@ fan.fwt.DialogPeer.prototype.$ctor = function(self)
   this.hasKeyBinding = false;
 }
 
+// see init.js for CSS
+
+fan.fwt.DialogPeer.prototype.setDefButton = function(self, button)
+{
+  button.peer.m_def = true;
+  this.m_defButton = button;
+}
+
 fan.fwt.DialogPeer.prototype.open = function(self)
 {
   // attach event handlers
@@ -27,78 +35,34 @@ fan.fwt.DialogPeer.prototype.open = function(self)
       function(it)
       {
         if (it.m_key == fan.fwt.Key.m_esc) { self.close(null); it.consume(); }
+        if (it.m_key == fan.fwt.Key.m_enter)
+        {
+          // workaround to not fire defCmd for Text { multiLine=true }
+          if (it.m_$target != null && it.m_$target.tagName == "TEXTAREA") return;
+
+          var def = self.peer.m_defButton;
+          if (def != null && def.enabled()) { def.peer.fireAction(def); it.consume(); }
+        }
       }));
   }
 
   // mount mask that functions as input blocker for modality
   var mask = document.createElement("div")
-  with (mask.style)
-  {
-    position   = "fixed";
-    top        = "0";
-    left       = "0";
-    width      = "100%";
-    height     = "100%";
-    background = "#000";
-    opacity    = "0.0";
-    zIndex     = "100";
-    filter     = "progid:DXImageTransform.Microsoft.Alpha(opacity=25);"
-    MozTransition    = "100ms";
-    webkitTransition = "100ms";
-  }
+  mask.className = "_fwt_Dialog_mask_";
 
   // mount shell we use to attach widgets to
   var shell = document.createElement("div")
-  with (shell.style)
-  {
-    position   = "fixed";
-    top        = "0";
-    left       = "0";
-    width      = "100%";
-    height     = "100%";
-    zIndex     = "101";
-  }
+  shell.className = "_fwt_Dialog_shell_";
 
   // mount window
   var tbar = this.emptyDiv();
-  with (tbar.style)
-  {
-    height     = "18px";
-    padding    = "4px 6px";
-    color      = "#fff";
-    font       = "bold " + fan.fwt.WidgetPeer.fontToCss(fan.fwt.DesktopPeer.$sysFont);
-    //textShadow = "0 -1px 1px #1c1c1c";
-    textAlign  = "center";
-    borderTop    = "1px solid #7c7c7c";
-    borderBottom = "1px solid #282828";
-    MozBorderRadiusTopleft     = "4px";
-    MozBorderRadiusTopright    = "4px";
-    webkitBorderTopLeftRadius  = "4px";
-    webkitBorderTopRightRadius = "4px";
-    borderRadius = "4px 4px 0 0";
-  }
-  fan.fwt.WidgetPeer.setBg(tbar, fan.gfx.Gradient.fromStr("0% 0%, 0% 100%, #707070, #5a5a5a 0.5, #525252 0.5, #484848"));
+  tbar.className = "_fwt_Dialog_tbar_";
+
   var content = this.emptyDiv();
-  with (content.style)
-  {
-    background = "#eee";
-  }
+  content.style.background = "#eee";
+
   var dlg = this.emptyDiv();
-  with (dlg.style)
-  {
-    border     = "1px solid #404040";
-    MozBorderRadiusTopleft     = "5px";
-    MozBorderRadiusTopright    = "5px";
-    webkitBorderTopLeftRadius  = "5px";
-    webkitBorderTopRightRadius = "5px";
-    borderRadius    = "5px 5px 0 0";
-    MozBoxShadow    = "0 5px 12px #404040";
-    webkitBoxShadow = "0 5px 12px #404040";
-    boxShadow       = "0 5px 12px #404040";
-    MozTransform    = "scale(0.75)";
-    webkitTransform = "scale(0.75)";
-    opacity = "0.0";
-  }
+  dlg.className = "_fwt_Dialog_ opening";
   tbar.appendChild(document.createTextNode(this.m_title));
   dlg.appendChild(tbar);
   dlg.appendChild(content);
@@ -115,29 +79,22 @@ fan.fwt.DialogPeer.prototype.open = function(self)
 
   // animate open and dialog resizes
   mask.style.opacity = "0.25";
-  var tx   = "-transform 100ms, ";
-//  var anim = "opacity 100ms, top 250ms, left 250ms, width 250ms, height 250ms";
-// 27 May 2012: Safari 5.1.7 is showing layout problems
-// with height transitons during relayout
-var anim = "opacity 100ms, left 250ms, width 250ms";
-if (!fan.fwt.DesktopPeer.$isSafari) anim += ", top 250ms, height 250ms";
-  dlg.style.webkitTransition = "-webkit" + tx + anim;
-  dlg.style.MozTransition    = "-moz" + tx + anim;
-  dlg.style.webkitTransform  = "scale(1.0)";
-  dlg.style.MozTransform     = "scale(1.0)";
-  dlg.style.opacity = "1.0";
+  dlg.className = "_fwt_Dialog_ open";
 
-  // try to focus first form element
-  self.focus();
-  var elem = fan.fwt.DialogPeer.findFormControl(content);
-  if (elem != null)
-  {
-    // NOTE: needed to use a delay here for this to
-    // work reliably, assumingly to give the renderer
-    // time to layout DOM changes.
-    var func = function() { elem.focus(); }
-    setTimeout(func, 50);
-  }
+  setTimeout(function() {
+    // try to focus first form element - give DOM a few ms
+    // to layout content before we attempt to focus
+    var elem = fan.fwt.DialogPeer.findFormControl(content);
+    if (elem != null) elem.focus();
+    else self.focus();
+
+    // fire onOpen event
+    var evt = fan.fwt.Event.make();
+    evt.m_widget = self;
+    evt.m_id     = fan.fwt.EventId.m_open;
+    var list = self.onOpen().list();
+    for (var i=0; i<list.size(); i++) list.get(i).call(evt);
+  }, 50);
 
   // 16 May 2012: Chrome 19 appears to have resolved this issue
   //
@@ -193,11 +150,7 @@ fan.fwt.DialogPeer.prototype.close = function(self, result)
   if (this.$shell)
   {
     var dlg = this.$shell.firstChild;
-    dlg.style.MozTransition = "-moz-transform 100ms, opacity 100ms";
-    dlg.style.webkitTransition = "-webkit-transform 100ms, opacity 100ms";
-    dlg.style.opacity = "0.0";
-    dlg.style.MozTransform = "scale(0.75)";
-    dlg.style.webkitTransform = "scale(0.75)";
+    dlg.className = "_fwt_Dialog_ opening";
     this.$mask.style.opacity = "0.0";
   }
 
@@ -241,13 +194,10 @@ fan.fwt.DialogPeer.prototype.sync = function(self)
   var y  = Math.floor((shell.offsetHeight - h) / 2);
 
   tbar.style.width = (w-12) + "px";  // -padding/border
-  with (dlg.style)
-  {
-    left   = x + "px";
-    top    = y + "px";
-    width  = w + "px";
-    height = h + "px";
-  }
+  dlg.style.left   = x + "px";
+  dlg.style.top    = y + "px";
+  dlg.style.width  = w + "px";
+  dlg.style.height = h + "px";
 
   this.pos$(this, fan.gfx.Point.make(0, th));
   this.size$(this, fan.gfx.Size.make(pw, ph));

@@ -41,6 +41,18 @@ namespace Fan.Sys
       return new Regex(s.ToString());
     }
 
+    public static Regex quote(string str)
+    {
+      StringBuilder s = new StringBuilder();
+      for (int i=0; i<str.Length; ++i)
+      {
+        int c = str[i];
+        if (FanInt.isAlphaNum(c)) s.Append((char)c);
+        else s.Append('\\').Append((char)c);
+      }
+      return new Regex(s.ToString());
+    }
+
     Regex(string source)
     {
       this.m_source  = source;
@@ -99,6 +111,8 @@ namespace Fan.Sys
   //////////////////////////////////////////////////////////////////////////
   // Fields
   //////////////////////////////////////////////////////////////////////////
+
+    public static readonly Regex m_defVal = new Regex("");
 
     private string m_source;
     private NRegex m_pattern;

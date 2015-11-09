@@ -185,6 +185,14 @@ const final class Int : Num
   **
   Int shiftr(Int b)
 
+
+  **
+  ** Bitwise arithmetic right-shift of this by b. The left-most bit is shifted
+  ** into the highest bits performing like a signed shift. This is equivalent
+  ** to the Java '>>' operator.
+  **
+  Int shifta(Int b)
+
 /////////////////////////////////////////////////////////////////////////
 // Math
 //////////////////////////////////////////////////////////////////////////
@@ -335,7 +343,7 @@ const final class Int : Num
   **   100_000.toLocale("B")        =>  98KB
   **   (3*1024*1024).toLocale("B")  =>  3MB
   **
-  Str toLocale(Str? pattern := null)
+  Str toLocale(Str? pattern := null, Locale locale := Locale.cur)
 
   **
   ** Return if this Unicode char is an uppercase letter in
@@ -388,6 +396,16 @@ const final class Int : Num
   Str toHex(Int? width := null)
 
   **
+  ** Return string representation in given radix.  If width is non-null,
+  ** then leading zeros are prepended to ensure the specified width.
+  **
+  ** Examples:
+  **   255.toRadix(8)    =>  "ff"
+  **   255.toRadix(8, 3) =>  "00ff"
+  **
+  Str toRadix(Int radix, Int? width := null)
+
+  **
   ** Map as a Unicode code point to a single character Str.
   **
   Str toChar()
@@ -415,6 +433,10 @@ const final class Int : Num
 
   **
   ** Call the specified function to this times passing the current counter.
+  ** The counter begins at zero.  Also see `Range.each`.
+  **
+  ** Example:
+  **   3.times |i| { echo(i) }  =>  0, 1, 2
   **
   Void times(|Int i| c)
 

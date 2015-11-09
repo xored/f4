@@ -9,7 +9,7 @@
 **
 ** ParserErrTest verifies docs not well formed
 **
-class ParserErrTest : XmlTest
+@Js class ParserErrTest : XmlTest
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ class ParserErrTest : XmlTest
     verifyXErr("", 1, 1)
     verifyXErr(" ", 1, 2)
     verifyXErr("x", 1, 1)
-    verifyXErr("xyz <r/>", 1, 1)
+    verifyXErr("xyz <r/>", 1, 2)
 
     verifyXIncompleteErr("<?")
     verifyXIncompleteErr("<?xml")

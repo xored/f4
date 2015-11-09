@@ -10,6 +10,7 @@ package fan.sys;
 import java.io.*;
 import java.nio.*;
 import java.security.*;
+import java.util.zip.*;
 
 /**
  * MemBuf
@@ -209,10 +210,19 @@ public final class MemBuf
 
   public String toBase64()
   {
+    return doBase64(Buf.base64chars, true);
+  }
+
+  public String toBase64Uri()
+  {
+    return doBase64(Buf.base64UriChars, false);
+  }
+
+  private String doBase64(char[] table, final boolean pad)
+  {
     byte[] buf = this.buf;
     int size = this.size;
     StringBuilder s = new StringBuilder(size*2);
-    char[] base64chars = Buf.base64chars;
     int i = 0;
 
     // append full 24-bit chunks
@@ -220,10 +230,10 @@ public final class MemBuf
     for (; i<end; i += 3)
     {
       int n = ((buf[i] & 0xff) << 16) + ((buf[i+1] & 0xff) << 8) + (buf[i+2] & 0xff);
-      s.append(base64chars[(n >>> 18) & 0x3f]);
-      s.append(base64chars[(n >>> 12) & 0x3f]);
-      s.append(base64chars[(n >>> 6) & 0x3f]);
-      s.append(base64chars[n & 0x3f]);
+      s.append(table[(n >>> 18) & 0x3f]);
+      s.append(table[(n >>> 12) & 0x3f]);
+      s.append(table[(n >>> 6) & 0x3f]);
+      s.append(table[n & 0x3f]);
     }
 
     // pad and encode remaining bits
@@ -231,10 +241,10 @@ public final class MemBuf
     if (rem > 0)
     {
       int n = ((buf[i] & 0xff) << 10) | (rem == 2 ? ((buf[size-1] & 0xff) << 2) : 0);
-      s.append(base64chars[(n >>> 12) & 0x3f]);
-      s.append(base64chars[(n >>> 6) & 0x3f]);
-      s.append(rem == 2 ? base64chars[n & 0x3f] : '=');
-      s.append('=');
+      s.append(table[(n >>> 12) & 0x3f]);
+      s.append(table[(n >>> 6) & 0x3f]);
+      s.append(rem == 2 ? table[n & 0x3f] : (pad ? '=' : ""));
+      if (pad) s.append('=');
     }
 
     return s.toString();
@@ -253,6 +263,52 @@ public final class MemBuf
       throw ArgErr.make("Unknown digest algorthm: " + algorithm);
     }
   }
+
+//////////////////////////////////////////////////////////////////////////
+// CRC
+//////////////////////////////////////////////////////////////////////////
+
+  public long crc(String algorithm)
+  {
+    if (algorithm.equals("CRC-16")) return crc16();
+    if (algorithm.equals("CRC-32")) return crc(new CRC32());
+    if (algorithm.equals("CRC-32-Adler")) return crc(new Adler32());
+    throw ArgErr.make("Unknown CRC algorthm: " + algorithm);
+  }
+
+  private long crc(Checksum checksum)
+  {
+    checksum.update(buf, 0, size);
+    return checksum.getValue() & 0xffffffff;
+  }
+
+  private long crc16()
+  {
+    int seed = 0xffff;
+    for (int i=0; i<size; ++i) seed = crc16(buf[i], seed);
+    return seed;
+  }
+
+  private int crc16(int dataToCrc, int seed)
+  {
+    int dat = ((dataToCrc ^ (seed & 0xFF)) & 0xFF);
+    seed = (seed & 0xFFFF) >>> 8;
+    int index1 = (dat & 0x0F);
+    int index2 = (dat >>> 4);
+    if ((CRC16_ODD_PARITY[index1] ^ CRC16_ODD_PARITY[index2]) == 1)
+      seed ^= 0xC001;
+    dat  <<= 6;
+    seed ^= dat;
+    dat  <<= 1;
+    seed ^= dat;
+    return seed;
+  }
+
+  static private final int[] CRC16_ODD_PARITY = { 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0 };
+
+//////////////////////////////////////////////////////////////////////////
+// HMAC
+//////////////////////////////////////////////////////////////////////////
 
   public Buf hmac(String algorithm, Buf keyBuf)
   {

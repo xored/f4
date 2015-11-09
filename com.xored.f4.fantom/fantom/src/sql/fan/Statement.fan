@@ -17,11 +17,14 @@ class Statement
   **
   ** Make a new statement with the specified SQL text.
   **
-  internal new make(SqlConn conn, Str sql)
+  internal new make(SqlConnImpl conn, Str sql)
   {
     this.conn = conn
     this.sql = sql
+    init
   }
+
+  private native Void init()
 
   **
   ** Prepare this statement by compiling for efficient
@@ -44,12 +47,22 @@ class Statement
   native Void queryEach([Str:Obj]? params, |Row row| eachFunc)
 
   **
-  ** Execute a SQL statement and if applicable return a result.
-  ** If the statement produced auto-generated keys, then return
-  ** an Int[] list of the keys generated, otherwise return number
-  ** of rows modified.
+  ** Execute a SQL statement and if applicable return a result:
+  **   - If the statement is a query or procedure which produces
+  **     a result set, then return 'Row[]'
+  **   - If the statement is an insert and auto-generated keys
+  **     are supported by the connector then return 'Int[]' or 'Str[]'
+  **     of keys generated
+  **   - Return an 'Int' with the update count
   **
   native Obj execute([Str:Obj]? params := null)
+
+  **
+  ** If the last execute has more results from a multi-result stored
+  ** procedure, then return the next batch of results as Row[].  Otherwise
+  ** if there are no more results then return null.
+  **
+  @NoDoc native Row[]? more()
 
   **
   ** Close the statement.
@@ -63,7 +76,7 @@ class Statement
   **
   ** The connection that this statement uses.
   **
-  internal SqlConn conn { private set }
+  internal SqlConnImpl conn { private set }
 
   **
   ** The SQL text used to create this statement.

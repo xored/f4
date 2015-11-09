@@ -136,6 +136,7 @@ namespace Fan.Sys
     public static long xor       (long self, long x) { return self ^ x; }
     public static long shiftl    (long self, long x) { return self << ((int)x); }
     public static long shiftr    (long self, long x) { return (long)((ulong)self >> (int)x); }
+    public static long shifta    (long self, long x) { return self >> ((int)x); }
 
   //////////////////////////////////////////////////////////////////////////
   // Math
@@ -433,10 +434,12 @@ namespace Fan.Sys
     }
 
     public static string toHex(long self) { return toHex(self, null); }
-    public static string toHex(long self, Long width)
+    public static string toHex(long self, Long width) { return toRadix(self, 16, width); }
+
+    public static string toRadix(long self, long radix) { return toRadix(self, radix, null); }
+    public static string toRadix(long self, long radix, Long width)
     {
-      long val = self;
-      string s = val.ToString("X").ToLower();
+      string s = Convert.ToString(self, (int)radix);
       if (width != null && s.Length < width.intValue())
       {
         StringBuilder sb = new StringBuilder(width.intValue());

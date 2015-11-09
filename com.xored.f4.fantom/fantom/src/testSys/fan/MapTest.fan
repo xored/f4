@@ -14,6 +14,17 @@ class MapTest : Test
 {
 
 //////////////////////////////////////////////////////////////////////////
+// Make
+//////////////////////////////////////////////////////////////////////////
+
+  Void testMake()
+  {
+    verifyEq(Map.make(Str:File#).typeof.signature, "[sys::Str:sys::File]")
+    verifyEq(Map.make(Map#.parameterize(["K":Int#, "V":Obj?#])).typeof.signature, "[sys::Int:sys::Obj?]")
+    verifyErr(ArgErr#) { x := Map.make(Map#.parameterize(["K":Int?#, "V":Obj?#])) }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Equal
 //////////////////////////////////////////////////////////////////////////
 
@@ -338,6 +349,12 @@ class MapTest : Test
     verifyEq(m.getOrThrow("a"), "A")
     verifyEq(m.getOrThrow("b"), null)
     verifyErr(UnknownKeyErr#) { x := m.getOrThrow("c") }
+
+    verifyEq(m.getChecked("a"), "A")
+    verifyEq(m.getChecked("b"), null)
+    verifyEq(m.getChecked("c", false), null)
+    verifyErr(UnknownKeyErr#) { x := m.getChecked("c") }
+    verifyErr(UnknownKeyErr#) { x := m.getChecked("c", true) }
   }
 
 //////////////////////////////////////////////////////////////////////////

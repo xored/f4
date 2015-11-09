@@ -107,6 +107,8 @@ public final class Uri
       int c = str.charAt(i);
       if (c < 128 && (charMap[c] & QUERY) != 0 && (delimEscMap[c] & QUERY) == 0)
         buf.append((char)c);
+      else if (c == ' ')
+        buf.append('+');
       else
         percentEncodeChar(buf, c);
     }
@@ -143,18 +145,23 @@ public final class Uri
 
     void normalize()
     {
-      normalizeHttp();
+      normalizeSchemes();
       normalizePath();
       normalizeQuery();
     }
 
-    private void normalizeHttp()
+    private void normalizeSchemes()
     {
-      if (scheme == null || !scheme.equals("http"))
-        return;
+      if (scheme == null) return;
+      if (scheme.equals("http"))  { normalizeScheme(80);  return; }
+      if (scheme.equals("https")) { normalizeScheme(443); return; }
+      if (scheme.equals("ftp"))   { normalizeScheme(21);  return; }
+    }
 
-      // port 80 -> null
-      if (port != null && port.longValue() == 80) port = null;
+    private void normalizeScheme(int p)
+    {
+      // port  -> null
+      if (port != null && port.longValue() == p) port = null;
 
       // if path is "" -> "/"
       if (pathStr == null || pathStr.length() == 0)
@@ -370,13 +377,13 @@ public final class Uri
 
     private List pathSegments(String pathStr, int numSegs)
     {
-      // if pathStr is "/" then path si the empty list
+      // if pathStr is "/" then path is the empty list
       int len = pathStr.length();
       if (len == 0 || (len == 1 && pathStr.charAt(0) == '/'))
         return emptyPath();
 
-      // check for trailing slash
-      if (len > 1 && pathStr.charAt(len-1) == '/')
+      // check for trailing slash (unless backslash escaped)
+      if (charAtSafe(pathStr, len-1) == '/'  && charAtSafe(pathStr, len-2) != '\\')
       {
         numSegs--;
         len--;
@@ -570,6 +577,12 @@ public final class Uri
 
       // return character as is
       return c;
+    }
+
+    static int charAtSafe(String s, int index)
+    {
+      if (index < s.length()) return s.charAt(index);
+      return 0;
     }
 
     boolean decoding;
@@ -1156,7 +1169,7 @@ public final class Uri
   public Uri plusName(String name, boolean asDir)
   {
     int size         = path.sz();
-    boolean isDir    = isDir();
+    boolean isDir    = isDir() || path.isEmpty();
     int newSize      = isDir ? size + 1 : size;
     String[] temp    = (String[])path.toArray(new String[newSize]);
     temp[newSize-1]  = name;
@@ -1170,7 +1183,7 @@ public final class Uri
     t.queryStr = null;
     t.frag     = null;
     t.path     = new List(Sys.StrType, temp);
-    t.pathStr  = toPathStr(isPathAbs(), t.path, asDir);
+    t.pathStr  = toPathStr(isAbs() || isPathAbs(), t.path, asDir);
     return new Uri(t);
   }
 

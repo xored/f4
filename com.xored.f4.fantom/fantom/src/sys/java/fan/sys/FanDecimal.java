@@ -151,23 +151,23 @@ public final class FanDecimal
     return self.toString() + "d";
   }
 
-  public static String toLocale(BigDecimal self) { return toLocale(self, null); }
-  public static String toLocale(BigDecimal self, String pattern)
+  public static String toLocale(BigDecimal self) { return toLocale(self, null, null); }
+  public static String toLocale(BigDecimal self, String pattern) { return toLocale(self, pattern, null); }
+  public static String toLocale(BigDecimal self, String pattern, Locale locale)
   {
     // get current locale
-    Locale locale = Locale.cur();
-    java.text.DecimalFormatSymbols df = locale.decimal();
+    if (locale == null) locale = Locale.cur();
 
     // get default pattern if necessary
     if (pattern == null)
-      pattern = Env.cur().locale(Sys.sysPod, "decimal", "#,###.0##");
+      pattern = Env.cur().locale(Sys.sysPod, "decimal", "#,###.0##", locale);
 
     // parse pattern and get digits
     NumPattern p = NumPattern.parse(pattern);
     NumDigits d = new NumDigits(self);
 
     // route to common FanNum method
-    return FanNum.toLocale(p, d, df);
+    return FanNum.toLocale(p, d, locale);
   }
 
 //////////////////////////////////////////////////////////////////////////

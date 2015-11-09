@@ -152,6 +152,10 @@ const class Type
   ** rather than an instance and a type.  All types (including
   ** mixin types) fit 'sys::Obj'.
   **
+  ** This method implicitly ignores the nullability of both 'this'
+  ** and 't' such that this method is always equivalent to:
+  **   this.toNonNullable.fits(t.toNonNullable)
+  **
   ** Example:
   **   Float#.fits(Float#) =>  true
   **   Float#.fits(Num#)   =>  true
@@ -347,6 +351,9 @@ const class Type
   **
   ** Lookup a slot by name.  If the slot doesn't exist and checked
   ** is false then return null, otherwise throw UnknownSlotErr.
+  ** Slots are any field or method in this type's scope including
+  ** those defined directly by this type and those inherited from
+  ** super class or mixins.
   **
   Slot? slot(Str name, Bool checked := true)
 
@@ -390,9 +397,6 @@ const class Type
 
   **
   ** Return the raw fandoc for this type or null if not available.
-  ** If there is additional documentation meta-data available it is
-  ** included an the start of the string as a series of "@name=value"
-  ** lines.
   **
   Str? doc()
 

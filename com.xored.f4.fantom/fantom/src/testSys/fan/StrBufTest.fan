@@ -63,6 +63,45 @@ class StrBufTest : Test
     verifyEq(s.toStr, "ABCD")
   }
 
+  Void testGetRange()
+  {
+    s := StrBuf.make(4).add("abcd")
+    verifyEq(s[0..1],    "ab")
+    verifyEq(s[0..<0],   "")
+    verifyEq(s[0..2],    "abc")
+    verifyEq(s[0..3],    "abcd")
+    verifyEq(s[1..1],    "b")
+    verifyEq(s[1..2],    "bc")
+    verifyEq(s[1..3],    "bcd")
+    verifyEq(s[3..2],    "")
+    verifyEq(s[3..3],    "d")
+    verifyEq(s[4..-1],   "")
+    verifyEq(s[0..<1],   "a")
+    verifyEq(s[0..<2],   "ab")
+    verifyEq(s[0..<3],   "abc")
+    verifyEq(s[0..<4],   "abcd")
+    verifyEq(s[0..-1],   "abcd")
+    verifyEq(s[0..-2],   "abc")
+    verifyEq(s[0..-3],   "ab")
+    verifyEq(s[0..-4],   "a")
+    verifyEq(s[0..-5],   "")
+    verifyEq(s[0..<-1],  "abc")
+    verifyEq(s[0..<-2],  "ab")
+    verifyEq(s[0..<-3],  "a")
+    verifyEq(s[1..<-3],  "")
+    verifyEq(s[1..<-1],  "bc")
+    verifyEq(s[-3..<-1], "bc")
+    verifyEq(s[-2..<-1], "c")
+    verifyEq(s[-3..<-1], "bc")
+    verifyEq(s[-1..<-1], "")
+
+    verifyErr(IndexErr#) { x:=s[0..4] }
+    verifyErr(IndexErr#) { x:=s[1..4] }
+    verifyErr(IndexErr#) { x:=s[3..1] }
+    verifyErr(IndexErr#) { x:=s[3..<2] }
+    verifyErr(IndexErr#) { x:=s[0..<5] }
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Add
 //////////////////////////////////////////////////////////////////////////
@@ -163,6 +202,32 @@ class StrBufTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Replace
+//////////////////////////////////////////////////////////////////////////
+
+  Void testReplace()
+  {
+    verifyEq(StrBuf().replaceRange(0..<0, "").toStr, "")
+    verifyEq(StrBuf().replaceRange(0..<0, "abc").toStr, "abc")
+
+    s := StrBuf.make.add("abcdefghijklmnop")
+    verifyEq(s.replaceRange(0..<2, "").toStr,   "cdefghijklmnop")
+    verifyEq(s.replaceRange(1..3, "ab").toStr,  "cabghijklmnop")
+    verifyEq(s.replaceRange(-3..-2, "").toStr,  "cabghijklmp")
+    verifyEq(s.replaceRange(-1..-1, "").toStr,  "cabghijklm")
+    verifyEq(s.replaceRange(4..<-2, "").toStr,  "cabglm")
+    verifyEq(s.replaceRange(1..1, "h").toStr,   "chbglm")
+    verifyEq(s.replaceRange(-3..-1, "").toStr,  "chb")
+    verifyEq(s.replaceRange(0..1, "xyz").toStr, "xyzb")
+    verifyEq(s.replaceRange(0..3, "").toStr,    "")
+
+    verifyErr(IndexErr#) { StrBuf().add("").replaceRange(0..1, "") }
+    verifyErr(IndexErr#) { StrBuf().add("abc").replaceRange(0..3, "") }
+    verifyErr(IndexErr#) { StrBuf().add("abc").replaceRange(0..<4, "") }
+    verifyErr(IndexErr#) { StrBuf().add("abc").replaceRange(-4..-1, "abc") }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Clear
 //////////////////////////////////////////////////////////////////////////
 
@@ -190,6 +255,8 @@ class StrBufTest : Test
     verifyOut("x\u0abc\n") |out| { out.writeChar('x').writeChar('\u0abc').writeChar('\n') }
     verifyOut("x\u0abc\n") |out| { out.writeChars("x\u0abc\n") }
     verifyOut("&lt;foo>") |out| { out.writeXml("<foo>") }
+    verifyOut("&lt;&amp;\"'") |out| { out.writeXml("<&\"'") }
+    verifyOut("&lt;&amp;&quot;&#39;") |out| { out.writeXml("<&\"'", OutStream.xmlEscQuotes) }
 
     verifyErr(UnsupportedErr#) { StrBuf().out.write(3) }
     verifyErr(UnsupportedErr#) { StrBuf().out.writeBuf(Buf()) }
@@ -234,6 +301,15 @@ class StrBufTest : Test
     out.writeXml("<foo>");  verifyEq(buf.toStr, "&lt;foo>")
   }
 
+//////////////////////////////////////////////////////////////////////////
+// Charset
+//////////////////////////////////////////////////////////////////////////
+
+  Void testDefaultCharset()
+  {
+    s := StrBuf.make
+    verify(s.out.charset.name == "UTF-8")
+  }
 }
 
 @Js

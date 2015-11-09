@@ -147,6 +147,7 @@ class SerializationTest : Test
     verifySer("sys::DateTime(\"$now\")", now)
     verifySer("sys::Charset(\"utf-8\")", Charset.utf8)
     verifySer("testSys::SerSimple(\"7,8\")", SerSimple.make(7,8))
+    verifySer("sys::Regex(\"foo\")", Regex<|foo|>)
 
     verifySer("testSys::EnumAbc(\"C\")", EnumAbc.C)
     verifySer("testSys::Suits(\"spades\")", Suits.spades)
@@ -217,6 +218,10 @@ class SerializationTest : Test
     verifySer("[1:null, 2:8ns]", Int:Duration?[1:null, 2:8ns])
     verifySer("[1:8ms, 2:null]", Int:Duration?[1:8ms, 2:null])
     verifySer("[1:null, 2:8ns, 3:3]", Int:Obj?[1:null, 2:8ns, 3:3])
+
+    // test ordering
+    Str:Int m := verifySer("""["b":1, "a":2, "c":5, "e":3, "f":3]""",  ["b":1, "a":2, "c":5, "e":3, "f":3])
+    verifyEq(m.keys, ["b", "a", "c", "e", "f"])
 
     // various nested type/list type signatures
     verifySer("sys::Int:sys::Uri[,]", Int:Uri[,])

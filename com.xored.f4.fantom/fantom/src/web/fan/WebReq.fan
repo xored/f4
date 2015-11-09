@@ -200,10 +200,42 @@ abstract class WebReq
   abstract SocketOptions socketOptions()
 
   **
+  ** Access to underlying socket - internal use only!
+  **
+  @NoDoc abstract TcpSocket socket()
+
+  **
   ** Stash allows you to stash objects on the WebReq object
   ** in order to pass data b/w Weblets while processing
   ** this request.
   **
-  Str:Obj? stash := Str:Obj?["web.startTime":Duration.now]
+  virtual Str:Obj? stash() { stashRef }
+  private Str:Obj? stashRef := Str:Obj?["web.startTime":Duration.now]
+
+  **
+  ** Given a web request:
+  **   1. check that the content-type is form-data
+  **   2. get the boundary string
+  **   3. invoke callback for each part (see `WebUtil.parseMultiPart`)
+  **
+  ** For each part in the stream call the given callback function with
+  ** the part's form name, headers, and an input stream used to read the
+  ** part's body.
+  **
+  Void parseMultiPartForm(|Str formName, InStream in, Str:Str headers| cb)
+  {
+    mime := MimeType(this.headers["Content-Type"])
+    if (mime.subType != "form-data") throw Err("Invalid content-type: $mime")
+    boundary := mime.params["boundary"] ?: throw Err("Missing boundary param: $mime")
+    WebUtil.parseMultiPart(this.in, boundary) |partHeaders, partIn|
+    {
+      cd := partHeaders["Content-Disposition"] ?: throw Err("Multi-part missing Content-Disposition")
+      semi := cd.index(";") ?: throw Err("Expected semicolon; Content-Disposition: $cd")
+      params := MimeType.parseParams(cd[cd.index(";")+1..-1])
+      formName := params["name"] ?: throw Err("Expected name param; Content-Disposition: $cd")
+      cb(formName, partIn, partHeaders)
+      try { partIn.skip(Int.maxVal) } catch {} // drain stream
+    }
+  }
 
 }

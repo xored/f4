@@ -85,7 +85,13 @@ fan.sys.Date.prototype.weekday = function()
 
 fan.sys.Date.prototype.dayOfYear = function()
 {
-  return fan.sys.DateTime.dayOfYear(this.year(), this.m_month, this.day()+1);
+  return fan.sys.DateTime.dayOfYear(this.year(), this.month().m_ordinal, this.day())+1;
+}
+
+fan.sys.Date.prototype.weekOfYear = function(startOfWeek)
+{
+  if (startOfWeek === undefined) startOfWeek = fan.sys.Weekday.localeStartOfWeek();
+  return fan.sys.DateTime.weekOfYear(this.year(), this.month().m_ordinal, this.day(), startOfWeek);
 }
 
 fan.sys.Date.prototype.plus = function(d)
@@ -192,15 +198,14 @@ fan.sys.Date.prototype.lastOfMonth = function()
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Date.prototype.toLocale = function(pattern)
+fan.sys.Date.prototype.toLocale = function(pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
 
   // locale specific default
-  var locale = null;
   if (pattern == null)
   {
-    if (locale == null) locale = fan.sys.Locale.cur();
     var pod = fan.sys.Pod.find("sys");
     pattern = fan.sys.Env.cur().locale(pod, "date", "D-MMM-YYYY", locale);
   }

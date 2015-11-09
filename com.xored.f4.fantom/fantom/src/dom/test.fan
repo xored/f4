@@ -22,7 +22,7 @@ class DomTestMain : AbstractMain
   {
     wisp := WispService
     {
-      it.port = this.port
+      it.httpPort = this.port
       it.root = DomTestMod()
     }
     return runServices([wisp])
@@ -36,7 +36,7 @@ const class DomTestMod : WebMod
     name := req.modRel.path.first
     if (name == null) onIndex
     else if (name == "pod") onPodFile
-    else if (name == "dom") DomTest().onService
+    else if (name == "dom") dom::DomTest().onService
     else res.sendErr(404)
   }
 

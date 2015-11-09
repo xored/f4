@@ -88,12 +88,34 @@ fan.fwt.TablePeer.injectCss = function()
     fan.fwt.WidgetPeer.addCss("table.__fwt_table td img.right + span { margin-right:25px; }");
 }
 
+fan.fwt.TablePeer.$blank     = fan.sys.Uri.fromStr("fan://fwt/res/img/blank16.png");
 fan.fwt.TablePeer.$arrowUp   = fan.sys.Uri.fromStr("fan://fwt/res/img/arrowUp.png");
 fan.fwt.TablePeer.$arrowDown = fan.sys.Uri.fromStr("fan://fwt/res/img/arrowDown.png");
+fan.fwt.TablePeer.$imgClass  = [];
 
 // TODO
 //fan.fwt.TablePeer.prototype.colAt = function(self, pos) {}
 //fan.fwt.TablePeer.prototype.rowAt = function(self, pos) {}
+
+fan.fwt.TablePeer.prototype.$cellPos = function(self, col, row)
+{
+  // check args
+  var model = self.m_model;
+  if (col >= model.numCols()) throw fan.sys.ArgErr.make("col out of bounds");
+  if (row >= model.numRows()) throw fan.sys.ArgErr.make("row out of bounds");
+
+  // find cell
+  if (this.m_headerVisible) row++;
+  var div   = this.elem;
+  var table = this.elem.firstChild;
+  var tr    = table.rows[row]
+  var td    = tr.cells[col]
+
+  // find pos
+  var x = td.offsetLeft - div.scrollLeft;
+  var y = tr.offsetTop  - div.scrollTop;
+  return fan.gfx.Point.make(x,y);
+}
 
 fan.fwt.TablePeer.prototype.m_headerVisible = true;
 fan.fwt.TablePeer.prototype.headerVisible   = function(self) { return this.m_headerVisible; }
@@ -250,7 +272,9 @@ fan.fwt.TablePeer.prototype.rebuild = function(self)
   }
 
   // used for firefox workaround
-  var isFirefox = navigator.userAgent.indexOf("Firefox/") != -1;
+  var isWebkit  = fan.fwt.DesktopPeer.$isWebkit;
+  var isChrome  = fan.fwt.DesktopPeer.$isChrome;
+  var isFirefox = fan.fwt.DesktopPeer.$isFirefox;
 
   // build new content
   var $this = this;
@@ -260,6 +284,7 @@ fan.fwt.TablePeer.prototype.rebuild = function(self)
   var rows  = view.numRows();
   var cols  = view.numCols();
   var sortCol = self.sortCol();
+  var blank = fan.fwt.WidgetPeer.uriToImageSrc(fan.fwt.TablePeer.$blank);
 
   if (this.m_headerVisible)
   {
@@ -321,17 +346,45 @@ fan.fwt.TablePeer.prototype.rebuild = function(self)
       if (img != null)
       {
         imgElem = document.createElement("img");
-        imgElem.src = fan.fwt.WidgetPeer.uriToImageSrc(img.m_uri);
+        imgElem.src = blank;
+        imgElem.style.backgroundImage = "url(" + fan.fwt.WidgetPeer.uriToImageSrc(img.m_uri) + ")";
+        imgElem.style.backgroundSize = "16px 16px";
+        imgElem.width  = 16;
+        imgElem.height = 16;
+
+        // check for imageSel
+        if (model.$imageSel)
+        {
+          var sel = model.$imageSel(view.m_cols.get(c), view.m_rows.get(r));
+          if (sel != null)
+          {
+            var name = "sel_" + sel.m_uri.basename();
+            if (fan.fwt.TablePeer.$imgClass[name] == null)
+            {
+              var cls = "div.__fwt_table:focus tr.selected td img." + name + " {" +
+               " background-image: url(" + fan.fwt.WidgetPeer.uriToImageSrc(sel.m_uri) + ")" +
+               " !important; }";
+              fan.fwt.WidgetPeer.addCss(cls);
+              fan.fwt.TablePeer.$imgClass[name] = true;
+            }
+            fan.fwt.WidgetPeer.addClassName(imgElem, name);
+          }
+        }
 
         // image align
         var halignImg = fan.gfx.Halign.m_left;
         if (model.$halignImage) halignImg = model.$halignImage(view.m_cols.get(c));
-        if (halignImg === fan.gfx.Halign.m_right) imgElem.className = "right";
+        if (halignImg === fan.gfx.Halign.m_right) fan.fwt.WidgetPeer.addClassName(imgElem, "right");
       }
 
       // cell text
       var text = view.text(c,r);
-      if (imgElem == null) node.appendChild(document.createTextNode(text));
+      var addTextNode = function(n,t)
+      {
+        if (t == "") n.innerHTML = "&nbsp;"
+        else n.appendChild(document.createTextNode(t));
+      }
+      if (imgElem == null) addTextNode(node, text);
       else
       {
         node.appendChild(imgElem);
@@ -339,11 +392,15 @@ fan.fwt.TablePeer.prototype.rebuild = function(self)
         {
           var span = document.createElement("span");
 
+          // workaround for Webkit float "bug"
+          if (isWebkit)
+            span.style.paddingRight = "16px";
+
           // workaround for Firefox float "bug"
-          if (isFirefox && imgElem.className == "right")
+          else if (isFirefox && imgElem.className == "right")
             span.style.marginRight = "22px";
 
-          span.appendChild(document.createTextNode(text));
+          addTextNode(span, text);
           node.appendChild(span);
         }
       }
@@ -376,8 +433,13 @@ fan.fwt.TablePeer.prototype.rebuild = function(self)
   }
   table.appendChild(tbody);
 
-  // sync selection
-  this.selection.select(this.m_selected);
+  // sync selection - must map row model back to view in case sorted
+  var sel = [];
+  var selLen=this.m_selected.size();
+  for (var i=0; i<selLen; i++) {
+    sel[i] = view.rowModelToView(this.m_selected.get(i));
+  }
+  this.selection.select(sel);
 }
 
 fan.fwt.TablePeer.prototype.$onMouseDown = function(self, event, count)
@@ -401,6 +463,9 @@ fan.fwt.TablePeer.prototype.$onMouseDown = function(self, event, count)
   if (target.tagName == "SPAN") target = target.parentNode;
   if (target.tagName == "TD")
   {
+    var model = self.m_model;
+    var view  = self.view();
+
     // find cell address
     var col = target.cellIndex;
     var row = target.parentNode.rowIndex;
@@ -416,15 +481,13 @@ fan.fwt.TablePeer.prototype.$onMouseDown = function(self, event, count)
       var ae = fan.fwt.Event.make();
       ae.m_id = fan.fwt.EventId.m_action;
       ae.m_widget = self;
-      ae.m_index = row;
+      ae.m_index = view.m_rows.get(row);
       self.onAction().fire(ae);
       return;
     }
 
     // check for valid callback
-    var model = self.m_model;
-    var view  = self.view();
-    if (!model.$onMouseDown) return;
+    if (!model.$onMouseDown && !self.onCellMouseDown) return;
 
     // find pos on display
     var dis = this.posOnDisplay(self);
@@ -443,14 +506,18 @@ fan.fwt.TablePeer.prototype.$onMouseDown = function(self, event, count)
     var data = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Obj.$type);
     data.set("posOnDisplay", posOnDis);
     data.set("cellSize",     fan.gfx.Size.make(td.offsetWidth, td.offsetHeight));
+    data.set("col", view.m_cols.get(col));
+    data.set("row", view.m_rows.get(row));
 
     // fire event
     var evt = fan.fwt.Event.make();
     evt.m_id = fan.fwt.EventId.m_mouseDown;
     evt.m_pos = rel;
     evt.m_widget = self;
+    evt.m_index = row;
     evt.m_data = data;
-    model.$onMouseDown(evt, view.m_cols.get(col), view.m_rows.get(row));
+    if (model.$onMouseDown) model.$onMouseDown(evt, view.m_cols.get(col), view.m_rows.get(row));
+    if (self.onCellMouseDown) self.onCellMouseDown().fire(evt);
   }
 }
 
@@ -462,6 +529,7 @@ fan.fwt.TablePeer.prototype.$onKeyDown = function(self, event)
 
   // consume event
   event.stopPropagation();
+  event.preventDefault();
 
   // if table is empty, short-circuit here
   var rows = self.model().numRows();
@@ -591,7 +659,12 @@ fan.fwt.TableSelection.prototype.select = function(rows)
   var selected = [];
   var view  = this.table.view();
   var tbody = this.table.peer.elem.firstChild.firstChild;
+  if (tbody == null || tbody.childNodes == null) {
+    return fan.sys.List.make(fan.sys.Int.$type, selected);
+  }
   var start = this.table.peer.m_headerVisible ? 1 : 0; // skip th row
+  var first = null;
+  var last  = null;
   for (var i=start; i<tbody.childNodes.length; i++)
   {
     var row = i-start;
@@ -603,6 +676,8 @@ fan.fwt.TableSelection.prototype.select = function(rows)
     for (var s=0; s<len; s++)
       if (row == rows[s])
       {
+        if (first == null) first = tr;
+        last = tr;
         on = true;
         selected.push(view.m_rows.get(row));
         break;
@@ -611,6 +686,18 @@ fan.fwt.TableSelection.prototype.select = function(rows)
     tr.className = on ? "selected" : "";
     tr.firstChild.firstChild.checked = on;
   }
+
+  if (first != null && first == last)
+  {
+    var div = tbody.parentNode.parentNode;
+    var et = first.offsetTop;
+    var eh = first.offsetHeight;
+    var cs = div.scrollTop;
+    var ch = div.offsetHeight;
+    if (et < cs) first.scrollIntoView(true);
+    else if ((et+eh) > (cs+ch)) first.scrollIntoView(false);
+  }
+
   selected.sort();
   return fan.sys.List.make(fan.sys.Int.$type, selected);
 }

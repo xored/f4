@@ -87,16 +87,21 @@ public final class Date
   public long compare(Object that)
   {
     Date x = (Date)that;
-    if (year == x.year)
+    return compare(x.year, x.month, x.day);
+  }
+
+  public int compare(int y, int m, int d)
+  {
+    if (year == y)
     {
-      if (month == x.month)
+      if (month == m)
       {
-        if (day == x.day) return 0;
-        return day < x.day ? -1 : +1;
+        if (day == d) return 0;
+        return day < d ? -1 : +1;
       }
-      return month < x.month ? -1 : +1;
+      return month < m ? -1 : +1;
     }
-    return year < x.year ? -1 : +1;
+    return year < y ? -1 : +1;
   }
 
   public int hashCode()
@@ -128,6 +133,7 @@ public final class Date
   public final int getYear() { return year; }
 
   public final Month month() { return Month.array[month]; }
+  public final int getMonth() { return month; }
 
   public final long day() { return day; }
   public final int getDay() { return day; }
@@ -143,21 +149,22 @@ public final class Date
     return DateTime.dayOfYear(getYear(), month().ord, getDay())+1;
   }
 
+  public final long weekOfYear() { return weekOfYear(Weekday.localeStartOfWeek()); }
+  public final long weekOfYear(Weekday startOfWeek)
+  {
+    return DateTime.weekOfYear(getYear(), month().ord, getDay(), startOfWeek);
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-  public String toLocale() { return toLocale((String)null); }
-  public String toLocale(String pattern)
+  public String toLocale() { return toLocale(null, null); }
+  public String toLocale(String pattern) { return toLocale(pattern, null); }
+  public String toLocale(String pattern, Locale locale)
   {
-    // locale specific default
-    Locale locale = null;
-    if (pattern == null)
-    {
-      if (locale == null) locale = Locale.cur();
-      pattern = Env.cur().locale(Sys.sysPod, localeKey, "D-MMM-YYYY", locale);
-    }
-
+    if (locale == null) locale = Locale.cur();
+    if (pattern == null) pattern = Env.cur().locale(Sys.sysPod, localeKey, "D-MMM-YYYY", locale);
     return new DateTimeStr(pattern, locale, this).format();
   }
 

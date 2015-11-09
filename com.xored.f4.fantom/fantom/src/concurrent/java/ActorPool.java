@@ -40,8 +40,8 @@ public class ActorPool
     }
     if (self.maxThreads < 1) throw ArgErr.make("ActorPool.maxThreads must be >= 1, not " + self.maxThreads);
 
-    self.threadPool = new ThreadPool((int)self.maxThreads);
-    self.scheduler = new Scheduler();
+    self.threadPool = new ThreadPool(self.name, (int)self.maxThreads);
+    self.scheduler = new Scheduler(self.name);
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ public class ActorPool
 
   public Object trap(String name, List args)
   {
-    if (name.equals("dump")) { threadPool.dump(args); return null; }
+    if (name.equals("dump")) return dump(args);
     return super.trap(name, args);
   }
 
@@ -114,6 +114,26 @@ public class ActorPool
   final void schedule(Actor a, Duration d, Future f)
   {
     scheduler.schedule(d.ticks(), new ScheduledWork(a, f));
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Debug
+//////////////////////////////////////////////////////////////////////////
+
+  public final Object dump(List args)
+  {
+    fan.sys.OutStream out = fan.sys.Env.cur().out();
+    if (args != null && args.size() > 0)
+      out = (fan.sys.OutStream)args.get(0);
+    try
+    {
+      out.printLine("ActorPool");
+      out.printLine("  name:       " + name);
+      out.printLine("  maxThreads: " + maxThreads);
+      threadPool.dump(out);
+    }
+    catch (Exception e) { out.printLine("  " + e + "\n"); }
+    return out;
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,7 +157,7 @@ public class ActorPool
   private ThreadPool threadPool;
   private Scheduler scheduler;
   volatile boolean killed;
+  public String name = "ActorPool";
   public long maxThreads = 100;
   public long maxMsgsBeforeYield = 100;
-
 }

@@ -171,24 +171,28 @@ abstract const class File
   ** List the files contained by this directory.  This list includes
   ** both child sub-directories and normal files.  If the directory
   ** is empty or this file doesn't represent a directory, then return
-  ** an empty list.
+  ** an empty list.  If pattern is non-null then only filenames matched
+  ** are returned or if null then all filenames.
   **
-  abstract File[] list()
+  abstract File[] list(Regex? pattern := null)
 
   **
   ** List the child sub-directories contained by this directory.  If
   ** the directory doesn't contain any sub-direcotries or this file
-  ** doesn't represent a directory, then return an empty list.
+  ** doesn't represent a directory, then return an empty list.  If
+  ** pattern is non-null then only filenames matched are returned or
+  ** if null then all filenames.
   **
-  virtual File[] listDirs()
+  virtual File[] listDirs(Regex? pattern := null)
 
   **
   ** List the child files (excludes directories) contained by this
   ** directory.  If the directory doesn't contain any child files
   ** or this file doesn't represent a directory, then return an
-  ** empty list.
+  ** empty list.  If pattern is non-null then only filenames matched
+  ** are returned or if null then all filenames.
   **
-  virtual File[] listFiles()
+  virtual File[] listFiles(Regex? pattern := null)
 
   **
   ** Recursively walk this file/directory top down.  If this
@@ -218,6 +222,13 @@ abstract const class File
   **   File(`a/b`) + `c`  => File(`a/c`)
   **
   @Operator abstract File plus(Uri path, Bool checkSlash := true)
+
+  **
+  ** Get the store instance which models the storage pool, device,
+  ** partition, or volume used to store this file.  Raise UnsupportedErr
+  ** if this file is not associated with a store.
+  **
+  virtual FileStore store()
 
 //////////////////////////////////////////////////////////////////////////
 // Management
@@ -374,7 +385,7 @@ abstract const class File
   ** Open a new buffered OutStream used to write to this file.  If append is
   ** true, then we open the file to append to the end, otherwise it is
   ** opened as an empty file.  A bufferSize of null or zero will return an
-  ** unbuffered input stream.  Throw IOErr on error.
+  ** unbuffered output stream.  Throw IOErr on error.
   **
   abstract OutStream out(Bool append := false, Int? bufferSize := 4096)
 
@@ -452,7 +463,7 @@ internal const class LocalFile : File
   override DateTime? modified
   override Str? osPath()
   override File? parent()
-  override File[] list()
+  override File[] list(Regex? pattern := null)
   override File normalize()
   override File plus(Uri uri, Bool checkSlash := true)
   override File create()
@@ -477,7 +488,7 @@ internal const class ZipEntryFile : File
   override DateTime? modified
   override Str? osPath()
   override File? parent()
-  override File[] list()
+  override File[] list(Regex? pattern := null)
   override File normalize()
   override File plus(Uri uri, Bool checkSlash := true)
   override File create()

@@ -431,6 +431,33 @@ namespace Fan.Sys
 
     public long dayOfYear() { return dayOfYear(getYear(), month().ord, getDay())+1; }
 
+    public long weekOfYear() { return weekOfYear(Weekday.localeStartOfWeek()); }
+    public long weekOfYear(Weekday startOfWeek) { return weekOfYear(getYear(), month().ord, getDay(), startOfWeek); }
+    internal static int weekOfYear(int year, int month, int day, Weekday startOfWeek)
+    {
+      int firstWeekday = DateTime.firstWeekday(year, 0); // zero based
+      int lastDayInFirstWeek = 7 - (firstWeekday - startOfWeek.ord);
+
+      // special case for first week
+      if (month == 0 && day <= lastDayInFirstWeek) return 1;
+
+      // compute from dayOfYear - lastDayInFirstWeek
+      int doy = dayOfYear(year, month, day) + 1;
+      int woy = (doy - lastDayInFirstWeek - 1) / 7;
+      return woy + 2; // add first week and make one based
+    }
+
+    public long hoursInDay()
+    {
+      int year  = getYear();
+      int month = getMonth();
+      int day   = getDay();
+      TimeZone.Rule rule = tz().rule(year);
+      if (TimeZone.isDstDate(rule, rule.dstStart, year, month, day)) return 23;
+      if (TimeZone.isDstDate(rule, rule.dstEnd, year, month, day))   return 25;
+      return 24;
+    }
+
   //////////////////////////////////////////////////////////////////////////
   // Locale
   //////////////////////////////////////////////////////////////////////////
@@ -659,11 +686,12 @@ namespace Fan.Sys
   // Java
   //////////////////////////////////////////////////////////////////////////
 
-    public static DateTime fromJava(long millis) { return fromJava(millis, TimeZone.m_cur); }
-    public static DateTime fromJava(long millis, TimeZone tz)
+    public static DateTime fromJava(long millis) { return fromJava(millis, TimeZone.m_cur, true); }
+    public static DateTime fromJava(long millis, TimeZone tz) { return fromJava(millis, tz, true); }
+    public static DateTime fromJava(long millis, TimeZone tz, bool negIsNull)
     {
-      if (millis <= 0) return null;
-      return new DateTime((millis-diffJava)*nsPerMilli, TimeZone.m_cur);
+      if (millis <= 0 && negIsNull) return null;
+      return new DateTime((millis-diffJava)*nsPerMilli, tz);
     }
 
     public long toJava() { return (m_ticks / nsPerMilli) + diffJava; }
