@@ -92,6 +92,8 @@ fan.sys.Uri.encodeQueryStr = function(buf, str)
     var c = str.charCodeAt(i);
     if (c < 128 && (fan.sys.Uri.charMap[c] & fan.sys.Uri.QUERY) != 0 && (fan.sys.Uri.delimEscMap[c] & fan.sys.Uri.QUERY) == 0)
       buf += str.charAt(i);
+    else if (c == 32)
+      buf += "+"
     else
       buf = fan.sys.UriEncoder.percentEncodeChar(buf, c);
   }
@@ -148,18 +150,23 @@ fan.sys.UriSections.prototype.setFrag = function(x)  { this.frag = x.m_frag; }
 
 fan.sys.UriSections.prototype.normalize = function()
 {
-  this.normalizeHttp();
+  this.normalizeSchemes();
   this.normalizePath();
   this.normalizeQuery();
 }
 
-fan.sys.UriSections.prototype.normalizeHttp = function()
+fan.sys.UriSections.prototype.normalizeSchemes = function()
 {
-  if (this.scheme == null || this.scheme != "http")
-    return;
+  if (this.scheme == null) return;
+  if (this.scheme == "http")  { this.normalizeScheme(80);  return; }
+  if (this.scheme == "https") { this.normalizeScheme(443); return; }
+  if (this.scheme == "ftp")   { this.normalizeScheme(21);  return; }
+}
 
+fan.sys.UriSections.prototype.normalizeScheme = function(p)
+{
   // port 80 -> null
-  if (this.port != null && this.port == 80) this.port = null;
+  if (this.port != null && this.port == p) this.port = null;
 
   // if path is "" -> "/"
   if (this.pathStr == null || this.pathStr.length == 0)
@@ -1161,7 +1168,7 @@ fan.sys.Uri.toPathStr = function(isAbs, path, isDir)
 fan.sys.Uri.prototype.plusName = function(name, asDir)
 {
   var size        = this.m_path.size();
-  var isDir       = this.isDir();
+  var isDir       = this.isDir() || this.m_path.isEmpty();
   var newSize     = isDir ? size + 1 : size;
   var temp        = this.m_path.dup().m_values;
   temp[newSize-1] = name;
@@ -1175,7 +1182,7 @@ fan.sys.Uri.prototype.plusName = function(name, asDir)
   t.queryStr = null;
   t.frag     = null;
   t.path     = fan.sys.List.make(fan.sys.Str.$type, temp);
-  t.pathStr  = fan.sys.Uri.toPathStr(this.isPathAbs(), t.path, asDir);
+  t.pathStr  = fan.sys.Uri.toPathStr(this.isAbs() || this.isPathAbs(), t.path, asDir);
   return fan.sys.Uri.makeSections(t);
 }
 

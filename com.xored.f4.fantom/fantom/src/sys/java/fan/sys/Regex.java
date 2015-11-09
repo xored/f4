@@ -39,6 +39,18 @@ public final class Regex
     return new Regex(s.toString());
   }
 
+  public static Regex quote(String str)
+  {
+    StringBuilder s = new StringBuilder();
+    for (int i=0; i<str.length(); ++i)
+    {
+      int c = str.charAt(i);
+      if (FanInt.isAlphaNum(c)) s.append((char)c);
+      else s.append('\\').append((char)c);
+    }
+    return new Regex(s.toString());
+  }
+
   Regex(String source)
   {
     this.source  = source;
@@ -88,6 +100,8 @@ public final class Regex
 //////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////
+
+  public static final Regex defVal = new Regex("");
 
   private String source;
   private Pattern pattern;

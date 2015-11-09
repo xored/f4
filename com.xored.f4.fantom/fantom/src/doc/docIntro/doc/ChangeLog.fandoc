@@ -6,6 +6,135 @@
 ** license:    Licensed under the Academic Free License version 3.0
 **************************************************************************
 
+*Build 1.0.68 (working)*
+- JsonOutStream: remove newlines from output
+- WispService.extraResHeaders
+- Doc: deprecate query, queryAll -> use querySelector, querySelectorAll
+- Elem: add Style type
+- Elem: trap support
+- Elem: deprecate hasClassName, addClassName, removeClassName -> moved to Style
+- Elem: deprecate name, val, checked -> use trap operator
+- Elem: deprecate first, last, prev, next -> firstChild, lastChild, prevSibling, nextSibling
+- Elem: deprecate find, findAll in favor of querySelector, querySelectorAll
+- Elem: add animate(), replace(), scrollPos, scrollSize
+- Elem: drag and drop API support
+- DomEvent renamed to Event; rework API to use dom::Key
+- InStream.readNullTerminatedStr
+- Map.getChecked
+- Win.hisReplaceState
+- Win.screenSize
+- JS compiler optimized closure call sites
+- JS source map support
+- HTTPS support for WispService
+- Rework WispSession to use immutable session maps
+- WebSocket prototype
+- Change Java emitter to raise exception in abstract factory methods
+- Range.eachWhile
+- Enhance Env.props to work with pods
+- Method.paramDef reflection (JVM only)
+- #2428: Actor deprecate support for serialized messages
+- #2436: Cannot parse .props file when first line is # comment
+- #2438: Handle quotes in Cookie per RFC 6265
+- #1591: JS RegexMatcher support
+
+*Build 1.0.67 (8 Jan 2015)*
+- Mark sys::Regex as serializable and add defVal
+- DateTime.fromJava add negIsNull flag
+- Add fandoc::FandocDocWriter
+- Add locale parameter to sys toLocale methods
+- CompilerInput.docTests
+- WebClient includes Accept-Encoding: gzip
+- Str.trimToNull
+- MimeType.parseParams accepts valueless attributes
+- DocElem redesigned parent/child APIs
+- File.list optional Regex parameter
+- Env.prompt and integrated support for JLine
+- Dom: Win.parent,top, Doc.query,queryAll, Elem.text
+- JavaScript compiler now includes all a pod's props files
+- Fwt: JavaScript impl for WebBrowser
+- Rebuild timezone database using tzinfo 2014h
+- Deprecate Buf.flush in favor of Buf.sync
+- Tweak locale dateTime formats to always include timezone
+- Enum support for facets on items
+- #1948: js: Pod meta-data not available in js
+- #2059: Ordered map is unordered after serialization
+- #2246: Java FFI: ClassFormatError: Illegal class name
+- #2256: Improve Map.make error message
+- #2257: # Comment in Fantom Property Files?
+- #2260: File.copyTo() overwrite func is passed the wrong file
+- #2265: Deprecated enum values
+- #2270: Wrapper object refs not immutable
+- #2325: document.querySelectorAll() in dom::Doc
+
+*Build 1.0.66 (19 Mar 2014)*
+- Wisp support for secureSessionCookie config prop
+- ActorPool name
+- MimeType.parseParams fix for equals in value
+- BuildPod.compileJni added
+- Date, DateTime weekInYear and VVV formatting pattern
+- DateTime.hoursInDay
+- WispService.errMod
+- New inet APIs: MulticastSocket, IpInterface
+- OutStream wrappers default to charset of inner stream
+- Fix WispRes charset for non-persistent connections
+- InStream.avail
+- List.indexr
+- fwt-js: Improve mouseMove/mouseExit when exiting widget/browser bounds
+- webfwt::CanvasTable: rewrite for large table performance
+- FileStore API to check file system capacity
+- FileUploader.useMultiPart,headers
+- XParser charset sniffing
+- WebClient default receiveTimeout to 1min
+- MimeType.noParams
+- Redesign Num/Int/Float/Decimal formatting to use locale props
+- Add adm/tools/textadept and notepadpp
+- Image.write
+- Int.toRadix
+- GraphicsPath API
+- #1478: js: Invalid type order for sys pod
+- #1614: fwt-js: Parse order bugs for peer defs
+- #2147: Stack trace manipulation / filter
+- #2149: java.lang.ClassFormatError: Duplicate field name&signature
+
+*Build 1.0.65 (20 May 2013)*
+- Add build javacParams config option (#1765)
+- Fandoc abstract Test classes
+- WebOutStream: add header, footer, nav, section, article, aside
+- Convert SqlConn from class to mixin
+- fwt: AsyncTask
+- Locale default support for /etc/sys/config.props
+- Normalize Uri https, ftp ports
+- #1891: Fix fandoc images embedded in paragraph text
+- #2051: Opening Uri by its scheme handler
+- #2052: sys::Uri.encodeQuery does not conform standard
+- #2054: Problem of Reduced Stack Trace
+- #2121: Runtime error when using Map as a type
+- #2133: Errs on Service.start()
+- #2134: NullErr with Safe Invoke
+- #2139: Can not override method that returns 'This'
+
+*Build 1.0.64 (21 Dec 2012)*
+- Move webfwt into Fantom core
+- BuildScript.applyMacros
+- fwt: Dialog.defCommand
+- FanClassLoader support for resource URLs
+- Fix sql::Statement.execute to return Row[] on result sets
+- Add StrBuf getRange, replaceRange
+- Fix fanr signature encoding from abs to rel URI
+- Suppress deprecated warnings from within deprecated type
+- Enhance JarDist to generate Main.boot method
+- Buf.crc
+- Add bin/msvcr100.dll
+- Upgrade SWT to 4.2
+- Add Time.plus/minus(Duration)
+- Keep InStream.readProps ordered
+- #1942: Err when making of err
+- #1960: Add List.removeAll
+- #2029: compiler bug - wrong non-nullabillity inference
+- #2031: json bug linebreak before comma crushed parser
+- #2043: Compiler NPE in static field assignment
+- #2058: No shutdownInput and shutdownOutput for inet::TcpSocket
+
 *Build 1.0.63 (16 Jun 2012)*
 - Move dispose from Desktop to Color, Font, Image
 - Add util::FloatArray
@@ -28,8 +157,15 @@
 - SmtpClient STARTTLS support
 - ObixMod batch op support
 - Add IpAddr.toNative
+- #1479: Cannot use strings inside string interpolation
+- #1788: Range Serialization from Fantom1.0.60 -> Fantom1.0.61
+- #1790: Fix Java dasm overloaded inheritance
+- #1792: Lenient compilation for 'once' methods
+- #1844: sys::Field.get
 - #1862: WebReq.locales
 - #1862: Wisp set Locale.cur via WebReq.locales for request
+- #1885: the too-clever-editor bug
+- #1901: fwt::Tree does not repaint on refreshAll on OS X
 
 *Build 1.0.62 (24 Feb 2012)*
 - Add gedit config file
@@ -1197,4 +1333,3 @@
 - Compiler emits straight to Java bytecode or .NET IL
 - Basic expr compilation
 - Basic class, method support
-

@@ -4,13 +4,13 @@
 //
 // History:
 //   17 Mar 08  Brian Frank  Creation
+//   03 Aug 15  Matthew Giannini  RFC6265
 //
 
 **
 ** Cookie models an HTTP cookie used to pass data between the server
-** and brower as defined by the original Netscape cookie specification
-** and RFC 2109.  Note the newer RFC 2965 is unsupported by most browsers,
-** and even 2109 isn't really supported by some of the major browsers.
+** and user agent as defined by [RFC 6265]`http://tools.ietf.org/html/rfc6265`.
+**
 ** See `WebReq.cookies` and `WebRes.cookies`.
 **
 @Js
@@ -18,18 +18,43 @@ const class Cookie
 {
 
   **
-  ** Parse a HTTP cookie header name/value pair.
-  ** Throw ParseErr if not formatted correctly.
+  ** Parse a HTTP cookie header name/value pair. The parsing of the name-value pair
+  ** is done according to the algorithm outlined in [§ 5.2]`http://tools.ietf.org/html/rfc6265#section-5.2`
+  ** of the RFC.
   **
-  static Cookie fromStr(Str s)
+  ** Throw ParseErr or return null if not formatted correctly.
+  **
+  static new fromStr(Str s, Bool checked := true)
   {
-    eq := s.index("=")
-    if (eq == null) throw ParseErr(s)
-    name := s[0..<eq].trim
-    val := s[eq+1..-1].trim
-    if (val.size >= 2 && val[0] == '"' && val[-1] == '"')
-      val = WebUtil.fromQuotedStr(val)
-    return make(name, val)
+    try
+    {
+      Str? params := null
+      semi := s.index(";")
+      if (semi != null)
+      {
+        params = s[semi+1..-1]
+        s = s[0..<semi]
+      }
+
+      eq := s.index("=")
+      if (eq == null) throw ParseErr(s)
+      name := s[0..<eq].trim
+      val := s[eq+1..-1].trim
+
+      if (params == null) return make(name, val)
+
+      return make(name, val)
+      {
+        p := MimeType.parseParams(params)
+        it.domain = p["Domain"]
+        it.path = p.get("Path", "/")
+      }
+    }
+    catch (Err e)
+    {
+      if (checked) throw ParseErr("Cookie: $s")
+      return null
+    }
   }
 
   **
@@ -114,12 +139,12 @@ const class Cookie
   const Bool secure := false
 
   **
-  ** Return the cookie formatted as an HTTP header.
+  ** Return the cookie formatted as an Set-Cookie HTTP header.
   **
   override Str toStr()
   {
     s := StrBuf(64)
-    s.add(name).add("=").add(WebUtil.toQuotedStr(val))
+    s.add(name).add("=").add(val)
     if (maxAge != null)
     {
       // we need to use Max-Age *and* Expires since many browsers
@@ -135,5 +160,7 @@ const class Cookie
     if (secure) s.add(";Secure")
     return s.toStr
   }
+
+  internal Str toNameValStr() { "$name=$val" }
 
 }

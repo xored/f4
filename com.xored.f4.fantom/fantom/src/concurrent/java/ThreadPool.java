@@ -24,8 +24,9 @@ public class ThreadPool
   /**
    * Construct with max number of threads.
    */
-  public ThreadPool(int max)
+  public ThreadPool(String name, int max)
   {
+    this.name     = name;
     this.max      = max;
     this.idleTime = 5000; // 5sec
     this.idle     = new LinkedList();
@@ -145,7 +146,7 @@ public class ThreadPool
     // if we are below max, then spawn a new thread
     if (workers.size() < max)
     {
-      worker = new Worker("ThreadPool-Worker-" + (counter++), work);
+      worker = new Worker(name + "-Worker-" + (counter++), work);
       worker.start();
       workers.put(worker, worker);
       return;
@@ -197,21 +198,27 @@ public class ThreadPool
 // Debug
 //////////////////////////////////////////////////////////////////////////
 
-  public void dump(fan.sys.List args)
+  public void dump(fan.sys.OutStream out)
   {
-    fan.sys.OutStream out = fan.sys.Env.cur().out();
-    if (args != null && args.size() > 0)
-      out = (fan.sys.OutStream)args.get(0);
-
-    out.printLine("ThreadPool");
-    out.printLine("  pending: " + pending.size());
-    out.printLine("  idle:    " + idle.size());
-    out.printLine("  workers: " + workers.size());
+    out.printLine("  pending:    " + pending.size());
+    out.printLine("  idle:       " + idle.size());
+    out.printLine("  workers:    " + workers.size());
     Iterator it = workers.values().iterator();
     while (it.hasNext())
     {
       Worker w = (Worker)it.next();
-      out.printLine("  " + w + "  " + w.work);
+      out.print("  ").print(w.getName()).print(": ");
+      Work work = w.work;
+      if (work == null)
+        out.print("idle");
+      else
+        out.print(work);
+      if (work instanceof Actor)
+      {
+        Actor actor = (Actor)work;
+        out.print(" [queue: ").print(actor.queueSize()).print("]");
+      }
+      out.printLine();
     }
   }
 
@@ -336,6 +343,7 @@ public class ThreadPool
   static final int STOPPING = 1;
   static final int DONE     = 2;
 
+  final String name;           // actor pool name
   final int max;               // maximum number of threads to use
   final int idleTime;          // time in ms to let threads idle (5sec)
   private volatile int state;  // life cycle state

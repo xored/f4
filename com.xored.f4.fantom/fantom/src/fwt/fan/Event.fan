@@ -197,17 +197,14 @@ class EventListeners
   ** Fire the event to all the listeners
   Void fire(Event? event)
   {
-    listeners.each | |Event| cb |
+    listeners.each |cb|
     {
-      try
+      if (event?.consumed == true) return
+      if (Env.cur.runtime == "js") cb(event)
+      else
       {
-        if (event == null || !event.consumed)
-          cb(event)
-      }
-      catch (Err e)
-      {
-        echo("event: $event")
-        e.trace
+        try { cb(event) }
+        catch (Err e) { echo("event: $event"); e.trace }
       }
     }
   }

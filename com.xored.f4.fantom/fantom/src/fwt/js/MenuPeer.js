@@ -9,8 +9,12 @@
 /**
  * MenuPeer.
  */
-fan.fwt.MenuPeer = fan.sys.Obj.$extend(fan.fwt.WidgetPeer);
-fan.fwt.MenuPeer.prototype.$ctor = function(self) {}
+fan.fwt.MenuPeer = fan.sys.Obj.$extend(fan.fwt.MenuItemPeer);
+fan.fwt.MenuPeer.prototype.$ctor = function(self)
+{
+  this.hasKeyBinding = false;
+  this.selIndex = null;
+}
 
 fan.fwt.MenuPeer.prototype.open = function(self, parent, point)
 {
@@ -29,6 +33,7 @@ fan.fwt.MenuPeer.prototype.open = function(self, parent, point)
     background = "#fff";
     opacity    = "0.01";
     filter     = "progid:DXImageTransform.Microsoft.Alpha(opacity=1);"
+    zIndex     = 200;
   }
 
   // mount shell we use to attach widgets to
@@ -40,12 +45,14 @@ fan.fwt.MenuPeer.prototype.open = function(self, parent, point)
     left       = "0";
     width      = "100%";
     height     = "100%";
+    zIndex     = 201;
   }
   var $this = this;
-  shell.onclick = function() { $this.close(); }
+  shell.onclick = function() { $this.close(self); }
 
   // mount menu content
   var content = this.emptyDiv();
+  content.tabIndex = 0;
   with (content.style)
   {
     background = "#fff";
@@ -57,6 +64,23 @@ fan.fwt.MenuPeer.prototype.open = function(self, parent, point)
     MozBorderRadius     = "5px";
     webkitBorderRadius  = "5px";
     borderRadius        = "5px";
+    overflowY = "auto";
+  }
+
+  // attach event handlers
+  if (!this.hasKeyBinding)
+  {
+    this.hasKeyBinding = true;
+    self.onKeyDown().add(fan.sys.Func.make(
+      fan.sys.List.make(fan.sys.Param.$type, [new fan.sys.Param("it","fwt::Event",false)]),
+      fan.sys.Void.$type,
+      function(it)
+      {
+        if (it.m_key == fan.fwt.Key.m_esc)   { $this.close(self);   it.consume(); }
+        if (it.m_key == fan.fwt.Key.m_up)    { $this.selPrev(self); it.consume(); }
+        if (it.m_key == fan.fwt.Key.m_down)  { $this.selNext(self); it.consume(); }
+        if (it.m_key == fan.fwt.Key.m_space) { $this.invoke(self);  it.consume(); }
+      }));
   }
 
   // attach to DOM
@@ -69,13 +93,65 @@ fan.fwt.MenuPeer.prototype.open = function(self, parent, point)
   // cache elements so we can remove when we close
   this.$mask = mask;
   this.$shell = shell;
+
+  // focus menu widget
+  setTimeout(function() { content.focus(); }, 50);
 }
 
-fan.fwt.MenuPeer.prototype.close = function()
+fan.fwt.MenuPeer.prototype.selPrev = function(self)
 {
+  var kids  = self.children();
+  var size  = kids.size();
+  var index = this.selIndex;
+  if (index == null) index = size;
+  index--;
+  if (index < 0) return;
+  while (index > 0 && !kids.get(index).enabled()) index--;
+  if (!kids.get(index).enabled()) return;
+  kids.get(index).focus();
+  this.selIndex = index;
+}
+
+fan.fwt.MenuPeer.prototype.selNext = function(self)
+{
+  var kids  = self.children();
+  var size  = kids.size();
+  var index = this.selIndex;
+  if (index == null) index = -1;
+  index++;
+  if (index > size-1) return;
+  while (index < size-1 && !kids.get(index).enabled()) index++;
+  if (!kids.get(index).enabled()) return;
+  kids.get(index).focus();
+  this.selIndex = index;
+}
+
+fan.fwt.MenuPeer.prototype.invoke = function(self)
+{
+  var kids = self.children();
+  var index = this.selIndex;
+  if (index == null || index < 0 || index > kids.size()-1) return;
+
+  this.close(self);
+  var item = kids.get(index);
+  item.peer.invoke(item);
+}
+
+fan.fwt.MenuPeer.prototype.close = function(self)
+{
+  // remove DOM node
   if (this.$shell) this.$shell.parentNode.removeChild(this.$shell);
   if (this.$mask) this.$mask.parentNode.removeChild(this.$mask);
+
+  // refocus the parent widget
   this.$parent.focus();
+
+  // fire onClose event
+  var evt = fan.fwt.Event.make();
+  evt.m_id = fan.fwt.EventId.m_close;
+  evt.m_widget = self;
+  var list = self.onClose().list();
+  for (var i=0; i<list.size(); i++) list.get(i).call(evt);
 }
 
 fan.fwt.MenuPeer.prototype.relayout = function(self)
@@ -106,17 +182,24 @@ fan.fwt.MenuPeer.prototype.relayout = function(self)
     ph += mh;
   }
 
-  var pp = this.$parent.posOnDisplay();
-  var ps = this.$parent.size();
+  var pp = self.posOnDisplay();
+  var ps = self.size();
   var x = pp.m_x + this.$point.m_x;
   var y = pp.m_y + this.$point.m_y;
   var w = pw;
   var h = ph;
 
-  // check if we need to swap dir
+  // clip if too big
   var shell = this.elem.parentNode;
-  if (x+w >= shell.offsetWidth-4)  x = pp.m_x + ps.m_w - w -1;
-  if (y+h >= shell.offsetHeight-4) y = pp.y - h;
+  if (h > shell.offsetHeight-24)
+  {
+    y = 12;
+    h = shell.offsetHeight-36;
+  }
+
+  // check if we need to swap dir
+  if (x+w >= shell.offsetWidth-4)  x = pp.m_x + ps.m_w - w - 1;
+  if (y+h >= shell.offsetHeight-4) y = pp.m_y - h;
 
   this.pos$(self, fan.gfx.Point.make(x, y));
   this.size$(self, fan.gfx.Size.make(w, h));

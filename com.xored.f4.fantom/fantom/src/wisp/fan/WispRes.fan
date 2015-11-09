@@ -24,7 +24,7 @@ internal class WispRes : WebRes
   {
     this.service = service
     this.socket  = socket
-    headers.caseInsensitive = true
+    this.headers = service.extraResHeaders.dup
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -41,7 +41,6 @@ internal class WispRes : WebRes
     set
     {
       checkUncommitted
-      if (statusMsg[it] == null) throw Err("Unknown status code: $it");
       &statusCode = it
     }
   }
@@ -49,17 +48,17 @@ internal class WispRes : WebRes
   **
   ** Map of HTTP response headers.  You must set all headers before
   ** you access out() for the first time, which commits the response.
-  ** After the response is commited this map becomes read only.
+  ** Throw an err if response is already committed.
   **
-  override Str:Str headers := Str:Str[:]
+  override Str:Str headers
   {
     get { checkUncommitted; return &headers }
   }
 
   **
   ** Get the list of cookies to set via a header fields.  Add a
-  ** a Cookie to this list to set a cookie.  Once the response
-  ** is commited, this list becomes readonly.
+  ** a Cookie to this list to set a cookie.  Throw an err if
+  ** response is already committed.
   **
   override Cookie[] cookies := Cookie[,]
   {
@@ -202,12 +201,13 @@ internal class WispRes : WebRes
       else
       {
         webOut = WebOutStream(sout)
+        webOut.charset = WebUtil.headersToCharset(&headers)
       }
     }
 
     // write response line and headers
-    sout.print("HTTP/1.1 ").print(statusCode).print(" ").print(toStatusMsg).print("\r\n");
-    &headers.each |Str v, Str k| { sout.print(k).print(": ").print(v).print("\r\n") };
+    sout.print("HTTP/1.1 ").print(statusCode).print(" ").print(toStatusMsg).print("\r\n")
+    WebUtil.writeHeaders(sout, &headers)
     &cookies.each |Cookie c| { sout.print("Set-Cookie: ").print(c).print("\r\n") }
     sout.print("\r\n").flush
   }
@@ -218,7 +218,7 @@ internal class WispRes : WebRes
     if (statusCode == 101 && &headers["Upgrade"] == "WebSocket")
       return "Web Socket Protocol Handshake"
     else
-      return statusMsg[statusCode]
+      return statusMsg[statusCode] ?: statusCode.toStr
   }
 
   **

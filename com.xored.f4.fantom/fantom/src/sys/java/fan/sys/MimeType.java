@@ -120,16 +120,28 @@ public final class MimeType
     {
       int c = s.charAt(i);
 
-      if (c == '(' && !inQuotes)
-        throw ParseErr.make("MimeType", s, "comments not supported");
+      // let parens slide since sometimes they occur in cookies
+      // if (c == '(' && !inQuotes)
+      //   throw ParseErr.make("MimeType", s, "comments not supported");
 
-      if (c == '=' && !inQuotes)
+      if (c == '=' && !inQuotes && valStart < 0)
       {
         eq = i++;
         while (FanInt.isSpace(s.charAt(i))) ++i;
         if (s.charAt(i) == '"') { inQuotes = true; ++i; c=s.charAt(i); }
         else inQuotes = false;
         valStart = i;
+      }
+
+      if (c == ';' && eq < 0 && !inQuotes)
+      {
+        // key with no =val
+        String key = s.substring(keyStart, i).trim();
+        params.set(key, "");
+        keyStart = i+1;
+        eq = valStart = valEnd = -1;
+        hasEsc = false;
+        continue;
       }
 
       if (eq < 0) continue;
@@ -163,10 +175,18 @@ public final class MimeType
     if (keyStart < s.length())
     {
       if (valEnd < 0) valEnd = s.length()-1;
-      String key = s.substring(keyStart, eq).trim();
-      String val = s.substring(valStart, valEnd+1).trim();
-      if (hasEsc) val = unescape(val);
-      params.set(key, val);
+      if (eq < 0)
+      {
+        String key = s.substring(keyStart, s.length()).trim();
+        params.set(key, "");
+      }
+      else
+      {
+        String key = s.substring(keyStart, eq).trim();
+        String val = s.substring(valStart, valEnd+1).trim();
+        if (hasEsc) val = unescape(val);
+        params.set(key, val);
+      }
     }
 
     return params;
@@ -266,6 +286,12 @@ public final class MimeType
     String s = (String)params().get("charset");
     if (s == null) return Charset.utf8;
     return Charset.fromStr(s);
+  }
+
+  public MimeType noParams()
+  {
+    if (params.isEmpty()) return this;
+    return fromStr(mediaType + "/" + subType);
   }
 
 //////////////////////////////////////////////////////////////////////////

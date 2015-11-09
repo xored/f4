@@ -238,9 +238,6 @@ class ClosureVars : CompilerStep
     {
       // use param wrapper variable
       var = var.paramWrapper
-
-      // if not unwrapping, we still need to use different variable
-      if (!local.unwrap) return LocalVarExpr(local.loc, var)
     }
 
     // if not a wrapped variable or we have explictly marked
@@ -271,7 +268,7 @@ class ClosureVars : CompilerStep
     {
       if (var.paramWrapper == null) return
       loc := method.loc
-      initWrap := initWrapper(loc, var.paramWrapper, LocalVarExpr(loc, var))
+      initWrap := initWrapper(loc, var.paramWrapper, LocalVarExpr.makeNoUnwrap(loc, var))
       method.code.stmts.insert(0, initWrap.toStmt)
     }
   }
@@ -325,7 +322,7 @@ class ClosureVars : CompilerStep
     }
 
     loc := closure.loc
-    field := addToClosure(closure, name, LocalVarExpr.makeNoUnwrap(loc, var.shadows))
+    field := addToClosure(closure, name, LocalVarExpr.makeNoUnwrap(loc, var.shadows), "wrapper for $var.name.toCode")
 
     // load from field to local in beginning of doCall
     loadLocal := BinaryExpr.makeAssign(LocalVarExpr.makeNoUnwrap(loc, var), fieldExpr(loc, ThisExpr(loc), field))
@@ -359,14 +356,14 @@ class ClosureVars : CompilerStep
       subArg = ThisExpr(loc, closure.enclosingType)
     }
 
-    return addToClosure(closure, "\$this", subArg)
+    return addToClosure(closure, "\$this", subArg, "implicit this")
   }
 
   **
   ** Common code between addVarToClosure and makeOuterThisField.
   ** Return storage field for closure variable.
   **
-  private static FieldDef addToClosure(ClosureExpr closure, Str name, Expr subtituteArg)
+  private static FieldDef addToClosure(ClosureExpr closure, Str name, Expr subtituteArg, Str info)
   {
     loc      := closure.loc
     thisType := closure.enclosingType
@@ -378,6 +375,7 @@ class ClosureVars : CompilerStep
     field.name  = name
     field.flags = syntheticFieldFlags
     field.fieldType = ctype
+    field.closureInfo = info
     implType.addSlot(field)
 
     // pass variable to subtitute closure constructor in outer scope
@@ -417,8 +415,8 @@ class ClosureVars : CompilerStep
   {
     // build class name key
     suffix := ctype.isNullable ? "\$n" : ""
-    podName := ctype.pod.name != "sys" ? "\$" + ctype.pod.name : ""
-    name := "Wrap" + podName + "\$" + ctype.name + suffix
+    podName := ctype.pod.name != "sys" ? "\$" + toSafe(ctype.pod.name) : ""
+    name := "Wrap" + podName + "\$" + toSafe(ctype.name) + suffix
 
     // reuse existing wrapper
     existing := cs.compiler.wrappers[name]
@@ -457,6 +455,18 @@ class ClosureVars : CompilerStep
     // cache for reuse
     cs.compiler.wrappers[name] = f
     return f
+  }
+
+  private static Str toSafe(Str n)
+  {
+    if (n.isAlphaNum) return n
+    s := StrBuf()
+    n.each |ch|
+    {
+      if (ch.isAlphaNum) s.addChar(ch)
+      else s.addChar('_')
+    }
+    return s.toStr
   }
 
 //////////////////////////////////////////////////////////////////////////

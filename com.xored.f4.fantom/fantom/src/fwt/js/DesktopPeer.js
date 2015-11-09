@@ -16,7 +16,7 @@ fan.fwt.DesktopPeer.platform  = function() { return "browser"; }
 fan.fwt.DesktopPeer.isWindows = function() { return !fan.fwt.DesktopPeer.$isMac; }
 fan.fwt.DesktopPeer.isMac     = function() { return fan.fwt.DesktopPeer.$isMac; }
 
-(function() {
+fan.fwt.DesktopPeer.$initPlatformBools = function() {
   var ua = navigator.userAgent;
   fan.fwt.DesktopPeer.$isMac     = ua.indexOf("Mac OS X") != -1;
   fan.fwt.DesktopPeer.$isWebkit  = ua.indexOf("AppleWebKit/") != -1;
@@ -24,14 +24,16 @@ fan.fwt.DesktopPeer.isMac     = function() { return fan.fwt.DesktopPeer.$isMac; 
   fan.fwt.DesktopPeer.$isSafari  = ua.indexOf("Safari/") != -1 && ua.indexOf("Version/") != -1;
   fan.fwt.DesktopPeer.$isFirefox = ua.indexOf("Firefox/") != -1;
   fan.fwt.DesktopPeer.$isIE      = ua.indexOf("MSIE") != -1;
-}());
+ };
+fan.fwt.DesktopPeer.$initPlatformBools();
 
-fan.fwt.DesktopPeer.clipboard  = function() { return fan.fwt.DesktopPeer.$clipboard; }
-fan.fwt.DesktopPeer.$clipboard = new fan.fwt.Clipboard();
+// see init.js for Desktop.clipboard
 
 // TODO
 //fan.fwt.DesktopPeer.bounds()
-//fan.fwt.DesktopPeer.focus()
+
+fan.fwt.Desktop.m_focus = null;
+fan.fwt.DesktopPeer.focus = function() { return fan.fwt.Desktop.m_focus; }
 
 fan.fwt.DesktopPeer.callAsync = function(f)
 {

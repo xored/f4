@@ -29,6 +29,11 @@ fan.dom.WinPeer.cur = function()
   return fan.dom.WinPeer.$cur;
 }
 
+fan.dom.WinPeer.prototype.userAgent = function(self)
+{
+  return navigator.userAgent;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Secondary Windows
 //////////////////////////////////////////////////////////////////////////
@@ -77,6 +82,16 @@ fan.dom.WinPeer.prototype.doc = function(self)
   return this.$doc;
 }
 
+fan.dom.WinPeer.prototype.addStyleRules = function(self, rules)
+{
+  var doc = this.win.document;
+  var style = doc.createElement("style");
+  style.type = "text/css";
+  if (style.styleSheet) style.styleSheet.cssText = rules;
+  else style.appendChild(doc.createTextNode(rules));
+  doc.getElementsByTagName("head")[0].appendChild(style);
+}
+
 fan.dom.WinPeer.prototype.alert = function(self, obj)
 {
   this.win.alert(obj);
@@ -89,6 +104,35 @@ fan.dom.WinPeer.prototype.viewport = function(self)
     : fan.gfx.Size.make(
         this.win.document.documentElement.clientWidth,
         this.win.document.documentElement.clientHeight);
+}
+
+fan.dom.WinPeer.prototype.screenSize = function(self)
+{
+  if (this.$screenSize == null)
+    this.$screenSize = fan.gfx.Size.make(this.win.screen.width, this.win.screen.height);
+  return this.$screenSize;
+}
+
+fan.dom.WinPeer.prototype.parent = function(self)
+{
+  if (this.win == this.win.parent) return null;
+  if (this.$parent == null)
+  {
+    this.$parent = fan.dom.Win.make();
+    this.$parent.peer.win = this.win.parent;
+  }
+  return this.$parent;
+}
+
+fan.dom.WinPeer.prototype.top = function(self)
+{
+  if (this.win == this.win.top) return self;
+  if (this.$top == null)
+  {
+    this.$top = fan.dom.Win.make();
+    this.$top.peer.win = this.win.top;
+  }
+  return this.$top;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,7 +160,20 @@ fan.dom.WinPeer.prototype.reload  = function(self, force)
 
 fan.dom.WinPeer.prototype.hisBack      = function(self) { this.win.history.back(); }
 fan.dom.WinPeer.prototype.hisForward   = function(self) { this.win.history.forward(); }
+
 fan.dom.WinPeer.prototype.hisPushState = function(self, title, uri, map)
+{
+  var state = fan.dom.WinPeer.mapToState(map);
+  this.win.history.pushState(state, title, uri.encode());
+}
+
+fan.dom.WinPeer.prototype.hisReplaceState = function(self, title, uri, map)
+{
+  var state = fan.dom.WinPeer.mapToState(map);
+  this.win.history.replaceState(state, title, uri.encode());
+}
+
+fan.dom.WinPeer.mapToState = function(map)
 {
   // TODO FIXIT: serializtaion
   var array = [];
@@ -126,8 +183,9 @@ fan.dom.WinPeer.prototype.hisPushState = function(self, title, uri, map)
       new fan.sys.Param("key","sys::Str",false)
     ]),
     fan.sys.Void.$type,
-    function(val,key) { array[key] = val }));
-  this.win.history.pushState(array, title, uri.encode());
+    function(val,key) { array[key] = val })
+  );
+  return array;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,19 +196,19 @@ fan.dom.WinPeer.prototype.onEvent = function(self, type, useCapture, handler)
 {
   var f = function(e)
   {
-    var evt = fan.dom.DomEventPeer.make(e);
+    var evt = fan.dom.EventPeer.make(e);
     if (type == "popstate")
     {
-      // copy state object into Event.meta
+      // copy state object into Event.stash
       // TODO FIXIT: deserializtaion
       var array = e.state;
-      for (var key in array) evt.m_meta.set(key, array[key]);
+      for (var key in array) evt.m_stash.set(key, array[key]);
     }
     handler.call(evt);
 
     if (type == "beforeunload")
     {
-      var msg = evt.m_meta.get("beforeunloadMsg");
+      var msg = evt.m_stash.get("beforeunloadMsg");
       if (msg != null)
       {
         e.returnValue = msg;
@@ -192,10 +250,48 @@ fan.dom.WinPeer.prototype.fakeHashChange = function(self, handler)
     if (oldHash != newHash)
     {
       oldHash = newHash;
-      handler.call(fan.dom.DomEventPeer.make(null));
+      handler.call(fan.dom.EventPeer.make(null));
     }
   }
   setInterval(checkHash, 100);
+}
+
+fan.dom.WinPeer.prototype.callLater = function(self, delay, f)
+{
+  var func = function() { f.call() }
+  this.win.setTimeout(func, delay.toMillis());
+}
+
+fan.dom.WinPeer.prototype.reqAnimationFrame = function(self, f)
+{
+  var func = function() { f.call(self) };
+  this.win.requestAnimationFrame(func);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Storage
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.setTimeout = function(self, delay, f)
+{
+  var func = function() { f.call(self) }
+  return this.win.setTimeout(func, delay.toMillis());
+}
+
+fan.dom.WinPeer.prototype.clearTimeout = function(self, id)
+{
+  this.win.clearTimeout(id);
+}
+
+fan.dom.WinPeer.prototype.setInterval = function(self, delay, f)
+{
+  var func = function() { f.call(self) }
+  return this.win.setInterval(func, delay.toMillis());
+}
+
+fan.dom.WinPeer.prototype.clearInterval = function(self, id)
+{
+  this.win.clearInterval(id);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,3 +318,34 @@ fan.dom.WinPeer.prototype.localStorage = function(self)
   return this.$localStorage;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// Diagnostics
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.diagnostics = function(self)
+{
+  var map = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Obj.$type);
+  map.ordered$(true);
+
+  var dur = function(s, e) {
+    return s && e ? fan.sys.Duration.makeMillis(e-s) : null;
+  }
+
+  // user-agent
+  map.set("ua", window.navigator.userAgent);
+
+  // performance.timing
+  var t = window.performance.timing;
+  map.set("perf.timing.unload",         dur(t.unloadEventStart,      t.unloadEventEnd));
+  map.set("perf.timing.redirect",       dur(t.redirectStart,         t.redirectEnd));
+  map.set("perf.timing.domainLookup",   dur(t.domainLookupStart,     t.domainLookupEnd));
+  map.set("perf.timing.connect",        dur(t.connectStart,          t.connectEnd));
+  map.set("perf.timing.secureConnect",  dur(t.secureConnectionStart, t.connectEnd));
+  map.set("perf.timing.request",        dur(t.requestStart,          t.responseStart));
+  map.set("perf.timing.response",       dur(t.responseStart,         t.responseEnd));
+  map.set("perf.timing.domInteractive", dur(t.domLoading,            t.domInteractive));
+  map.set("perf.timing.domLoaded",      dur(t.domLoading,            t.domComplete));
+  map.set("perf.timing.load",           dur(t.loadEventStart,        t.loadEventEnd));
+
+  return map;
+}

@@ -22,27 +22,21 @@ class Doc
 // Constructors
 //////////////////////////////////////////////////////////////////////////
 
-  **
   ** Private ctor.
-  **
   private new make() {}
 
 //////////////////////////////////////////////////////////////////////////
 // Meta
 //////////////////////////////////////////////////////////////////////////
 
-  **
   ** The title of this document.
-  **
   native Str title
 
 //////////////////////////////////////////////////////////////////////////
 // Elements
 //////////////////////////////////////////////////////////////////////////
 
-  **
   ** Get the body element.
-  **
   native Elem body()
 
   **
@@ -57,6 +51,23 @@ class Doc
   ** to the given values.
   **
   native Elem createElem(Str tagName, [Str:Str]? attrib := null)
+
+  ** Create a document fragment.
+  @NoDoc native Elem createFrag()
+
+  **
+  ** Returns the first element within the document (using depth-first
+  ** pre-order traversal of the document's nodes) that matches the
+  ** specified group of selectors, or null if none found.
+  **
+  native Elem? querySelector(Str selectors)
+
+  **
+  ** Returns a list of the elements within the document (using
+  ** depth-first pre-order traversal of the document's nodes) that
+  ** match the specified group of selectors.
+  **
+  native Elem[] querySelectorAll(Str selectors)
 
 //////////////////////////////////////////////////////////////////////////
 // Writing

@@ -267,19 +267,6 @@ class RegressionTest : CompilerTest
   }
 
 //////////////////////////////////////////////////////////////////////////
-// #861 Obj Void Returns
-//////////////////////////////////////////////////////////////////////////
-
-  Void test861()
-  {
-    verifyErrors(
-     "class Foo { Void foo() { return (Obj)4 } }",
-       [
-         1, 33, "Cannot return 'sys::Obj' as 'sys::Void'",
-       ])
-  }
-
-//////////////////////////////////////////////////////////////////////////
 // #1033 Why is not avilable type "Obj[]?[]"
 //////////////////////////////////////////////////////////////////////////
 
@@ -697,5 +684,35 @@ class RegressionTest : CompilerTest
        ])
   }
 
+//////////////////////////////////////////////////////////////////////////
+// #2139 Can not override method that returns 'This'
+//////////////////////////////////////////////////////////////////////////
+
+  Void test2139()
+  {
+    compile(
+      """class Dog { virtual This poo() { return this } }
+         class Cat : Dog { override This poo() { return super.poo } }""")
+
+    o := pod.types[1].make
+    verifyEq(o.typeof.name, "Cat")
+    verifySame(o->poo, o)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #2121 Map generics
+//////////////////////////////////////////////////////////////////////////
+
+  Void test2121()
+  {
+    compile(
+      """class Foo { Obj test() { list := [[30:1],[20:2],[10:3]];
+           return list.max |Map a, Map b->Int| { a.vals[0] <=> b.vals[0] } } }""")
+
+    o := pod.types.first.make
+    verifyEq(o->test, [10:3])
+  }
+
 
 }
+

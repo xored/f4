@@ -32,7 +32,22 @@ public final class Map
 
   public static Map make(Type type)
   {
-    return new Map((MapType)type, new HashMap());
+    if (type instanceof NullableType)
+    {
+      type = ((NullableType) type).root;
+    }
+
+    MapType t = null;
+    try
+    {
+      t = (MapType)type;
+    }
+    catch (ClassCastException e)
+    {
+      throw ArgErr.make("Non-nullable map type required: " + type);
+    }
+    if (t.k.isNullable()) throw ArgErr.make("Map key type cannot be nullable: " + t.k);
+    return new Map(t, new HashMap());
   }
 
   public Map(Type k, Type v)
@@ -89,6 +104,16 @@ public final class Map
     if (val != null) return val;
     if (def == null) return null;
     return map.containsKey(key) ? null : def;
+  }
+
+  public final Object getChecked(Object key) { return getChecked(key, true); }
+  public final Object getChecked(Object key, boolean checked)
+  {
+    Object val = map.get(key);
+    if (val != null) return val;
+    if (map.containsKey(key)) return null;
+    if (checked) throw UnknownKeyErr.make(String.valueOf(key));
+    return null;
   }
 
   public final Object getOrThrow(Object key)
@@ -647,8 +672,19 @@ public final class Map
     public boolean containsKey(Object key) { return super.containsKey(new CIKey((String)key)); }
     public Object put(Object key, Object val) { return super.put(new CIKey((String)key), val); }
     public Object remove(Object key) { return super.remove(new CIKey((String)key)); }
-    public Set keySet() { throw new UnsupportedOperationException(); }
     public Set pairs() { return new CIPairs(entrySet()); }
+
+    public Set keySet()
+    {
+      java.util.HashSet keys = new java.util.HashSet();
+      Iterator it = pairs().iterator();
+      while (it.hasNext())
+      {
+        CIEntry entry = (CIEntry)it.next();
+        keys.add(entry.key);
+      }
+      return keys;
+    }
 
     public int hashCode()
     {

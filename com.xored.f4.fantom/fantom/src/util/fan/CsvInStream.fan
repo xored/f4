@@ -16,7 +16,7 @@
 **   - quoted cells may contain newlines (always normalized to "\n")
 **   - quoted cells must escape '"' with '""'
 **   - the `trim` flag trims leading/trailing whitespace from non-quoted
-**     cells (note that RFC 4180 specifies that whitespace is signficant)
+**     cells (note that RFC 4180 specifies that whitespace is significant)
 **
 ** Also see `CsvOutStream`.
 **
@@ -79,7 +79,7 @@ class CsvInStream : InStream
   virtual Str[]? readRow()
   {
     // read in next line
-    this.line = readLine
+    this.line = readLine(null)
     if (line == null) return null
 
     // allocate cells based on last width
@@ -160,6 +160,9 @@ class CsvInStream : InStream
       // if its "" then add ", otherwise end of cell
       ch = line.getSafe(pos++)
       if (ch == '"') { s.addChar(ch); continue }
+
+      // skip everything to next delimiter
+      while (ch != delimiter) ch = line.getSafe(pos++, delimiter)
       break
     }
     return s.toStr
@@ -170,4 +173,3 @@ class CsvInStream : InStream
   private Int pos
 
 }
-

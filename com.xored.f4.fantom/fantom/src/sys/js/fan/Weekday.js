@@ -50,16 +50,17 @@ fan.sys.Weekday.prototype.$typeof = function()
   return fan.sys.Weekday.$type;
 }
 
-fan.sys.Weekday.prototype.toLocale = function(pattern)
+fan.sys.Weekday.prototype.toLocale = function(pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
-  if (pattern == null) return this.localeAbbr();
+  if (pattern == null) return this.abbr(locale);
   if (fan.sys.Str.isEveryChar(pattern, 87)) // 'W'
   {
     switch (pattern.length)
     {
-      case 3: return this.localeAbbr();
-      case 4: return this.localeFull();
+      case 3: return this.abbr(locale);
+      case 4: return this.full(locale);
     }
   }
   throw fan.sys.ArgErr.make("Invalid pattern: " + pattern);
@@ -79,10 +80,11 @@ fan.sys.Weekday.prototype.full = function(locale)
   return fan.sys.Env.cur().locale(pod, this.m_localeFullKey, this.$name(), locale);
 }
 
-fan.sys.Weekday.localeStartOfWeek = function()
+fan.sys.Weekday.localeStartOfWeek = function(locale)
 {
+  if (locale === undefined) locale = fan.sys.Locale.cur();
   var pod = fan.sys.Pod.find("sys");
-  return fan.sys.Weekday.fromStr(fan.sys.Env.cur().locale(pod, "weekdayStart", "sun"));
+  return fan.sys.Weekday.fromStr(fan.sys.Env.cur().locale(pod, "weekdayStart", "sun", locale));
 }
 
 fan.sys.Weekday.localeVals = function()

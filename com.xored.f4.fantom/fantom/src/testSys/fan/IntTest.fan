@@ -49,14 +49,14 @@ class IntTest : Test
   {
     Obj x := 3
 
-    verify(Type.of(x) === Int#)
-    verify(Type.of(3) === Int#)
-    verify(x.isImmutable)
-    verify(8.isImmutable)
+    verifyTrue(Type.of(x) === Int#)
+    verifyTrue(Type.of(3) === Int#)
+    verifyTrue(x.isImmutable)
+    verifyTrue(8.isImmutable)
 
-    verify(x is Obj)
-    verify(x is Num)
-    verify(x is Int)
+    verifyTrue(x is Obj)
+    verifyTrue(x is Num)
+    verifyTrue(x is Int)
     verifyFalse(x is Float)
   }
 
@@ -272,10 +272,18 @@ class IntTest : Test
     verifyEq(0x80.shiftr(1), 0x40)
     verifyEq(0x80.shiftr(3), 0x10)
 
+    // shifta
+    verifyEq(0x80.shifta(1), 0x40)
+    verifyEq(0x80.shifta(3), 0x10)
+
     if (Env.cur.runtime != "js")
     {
       verifyEq(0xabcd_0000_1111_0000.shiftr(4), 0x0abc_d000_0111_1000)
       verifyEq(0xabcd_0000_1111_0000->shiftr(4), 0x0abc_d000_0111_1000)
+      verifyEq((-1).shiftr(1), 0x7fff_ffff_ffff_ffff)
+      verifyEq((-1).shiftr(3), 0x1fff_ffff_ffff_ffff)
+      verifyEq((-1).shifta(1), -1)
+      verifyEq((-1).shifta(3), -1)
     }
   }
 
@@ -558,6 +566,21 @@ class IntTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// ToRadix
+//////////////////////////////////////////////////////////////////////////
+
+  Void testToRadix()
+  {
+    verifyEq(255.toRadix(10), "255")
+    verifyEq(255.toRadix(10, 5), "00255")
+    verifyEq(255.toRadix(16), "ff")
+    verifyEq(255.toRadix(16, 4), "00ff")
+    verifyEq(255.toRadix(8), "377")
+    verifyEq(255.toRadix(8, 2), "377")
+    verifyEq(255.toRadix(8, 4), "0377")
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Parse
 //////////////////////////////////////////////////////////////////////////
 
@@ -584,6 +607,8 @@ class IntTest : Test
     verifyErr(ParseErr#) { x := Int.fromStr("3", 2, true) }
     verifyErr(ParseErr#) { x := Int.fromStr("3g", 16, true) }
     verifyErr(ParseErr#) { x := Int.fromStr("-10111", 2) }
+
+    verifyErrMsg(ParseErr#, "Invalid Int: 'ABC'") { x := Int.fromStr("ABC") }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -703,7 +728,11 @@ class IntTest : Test
 
     // default, alternate locale
     verifyToLocale(12345, null, "12,345")
-    Locale("fr-FR").use { verifyEq(12345.toLocale("#,###"), "12\u00a0345") }
+    Locale("fr-FR").use
+    {
+      verifyEq(12345.toLocale("#,###"), "12\u00a0345")
+      verifyEq(12345.toLocale("#,###", Locale.en), "12,345")
+    }
 
     // bytes
     kb := 1024; mb := 1024*1024; gb := 1024*1024*1024;

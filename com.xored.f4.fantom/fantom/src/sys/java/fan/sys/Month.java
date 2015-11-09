@@ -35,6 +35,8 @@ public final class Month
 
   public static final List vals = (List)new List(Sys.MonthType, array).toImmutable();
 
+  public static Month fromOrdinal(int ord) { return array[ord]; }
+
   private Month(int ordinal, String name)
   {
     Enum.make$(this, FanInt.pos[ordinal], name.intern());
@@ -63,18 +65,20 @@ public final class Month
       return DateTime.daysInMon[ord];
   }
 
-  public String toLocale() { return toLocale(null); }
-  public String toLocale(String pattern)
+  public String toLocale() { return toLocale(null, null); }
+  public String toLocale(String pattern) { return toLocale(pattern, null); }
+  public String toLocale(String pattern, Locale locale)
   {
-    if (pattern == null) return localeAbbr();
+    if (locale == null) locale = Locale.cur();
+    if (pattern == null) return abbr(locale);
     if (FanStr.isEveryChar(pattern, 'M'))
     {
       switch (pattern.length())
       {
         case 1: return String.valueOf(ord+1);
         case 2: return ord < 9 ? "0" + (ord+1) : String.valueOf(ord+1);
-        case 3: return localeAbbr();
-        case 4: return localeFull();
+        case 3: return abbr(locale);
+        case 4: return full(locale);
       }
     }
     throw ArgErr.make("Invalid pattern: " + pattern);

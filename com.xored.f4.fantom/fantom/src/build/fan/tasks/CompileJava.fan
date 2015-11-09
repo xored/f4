@@ -25,6 +25,7 @@ class CompileJava : JdkTask
     : super(script)
   {
     cp.add(rtJar)
+    this.params = (script.config("javacParams") ?: "").split.findAll |s| { !s.isEmpty }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ class CompileJava : JdkTask
   ** Extra parameters to pass to javac.  Default is
   ** to target 1.5 classfiles.
   **
-  Str[] params := ["-target", "1.5"]
+  Str[] params
 
 //////////////////////////////////////////////////////////////////////////
 // Add
@@ -76,6 +77,9 @@ class CompileJava : JdkTask
       // build command
       cmd := [javacExe]
 
+      // always assume UTF-8
+      cmd.add("-encoding").add("utf-8")
+
       cmd.addAll(params)
 
       // -d outDir
@@ -89,23 +93,36 @@ class CompileJava : JdkTask
       cmd.add(cp.join(File.pathSep) |File f->Str| { return f.osPath })
 
       // src files/dirs
-      listFiles(cmd, src)
+      cwd := script.scriptDir
+      listFiles(cmd, cwd, src)
       log.debug(cmd.join(" "))
-      r := Process(cmd).run.join
+      r := Process(cmd, cwd).run.join
       if (r != 0) throw Err.make
     }
-    catch (Err err)
+    catch (Err e)
     {
-      throw fatal("CompileJava failed")
+      throw fatal("CompileJava failed", e)
     }
   }
 
-  internal Void listFiles(Str[] list, File[] files)
+  internal Void listFiles(Str[] list, File cwd, File[] files)
   {
     files.each |File f|
     {
-      if (f.isDir) listFiles(list, f.list)
-      else if (f.ext == "java") list.add(f.osPath)
+      // if directory, then recurse
+      if (f.isDir) listFiles(list, cwd, f.list)
+
+      // use dir/*.java on Windows so that command line doesn't
+      // get too long but list every file on other operating systems
+      if (Env.cur.os == "win32")
+      {
+        if (f.isDir && f.list.any |x| { x.ext == "java" })
+          list.add(f.plus(`*.java`).osPath)
+      }
+      else if (f.ext == "java")
+      {
+        list.add(f.osPath)
+      }
     }
   }
 

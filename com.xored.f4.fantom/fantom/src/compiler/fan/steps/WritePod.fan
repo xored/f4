@@ -58,7 +58,13 @@ class WritePod : CompilerStep
 
       // write javascript
       if (compiler.js != null)
+      {
         writeStr(zip, `${podName}.js`, compiler.js)
+        if (compiler.jsSourceMap != null)
+        {
+          writeStr(zip, `${podName}.js.map`, compiler.jsSourceMap)
+        }
+      }
 
       // if explicit locale props
       if (compiler.localeProps != null)
@@ -166,7 +172,7 @@ class WritePod : CompilerStep
 
   private Void writeDocs(Zip zip)
   {
-    writePodDoc(zip)
+    writePodDocs(zip)
     compiler.types.each |type|
     {
       if (type.isDocumented) writeApiDoc(zip, type)
@@ -174,14 +180,16 @@ class WritePod : CompilerStep
   }
 
   **
-  ** If there is a pod.fandoc as peer to build.fan then
-  ** copy it into doc/pod.fandoc
+  ** If there is a *.fandoc as peer to build.fan then
+  ** copy it into doc/
   **
-  private Void writePodDoc(Zip zip)
+  private Void writePodDocs(Zip zip)
   {
-    podDoc := compiler.input.baseDir + `pod.fandoc`
-    if (!podDoc.exists) return
-    writeRes(zip, podDoc, `doc/pod.fandoc`)
+    files := compiler.input.baseDir.list.findAll |f| { f.ext == "fandoc" }
+    files.each |f|
+    {
+      writeRes(zip, f, `doc/${f.name}`)
+    }
   }
 
   **

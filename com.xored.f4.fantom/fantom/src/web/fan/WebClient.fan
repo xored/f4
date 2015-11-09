@@ -3,7 +3,10 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   24 Dec 08  Brian Frank  Almost Christmas!
+//   24 Dec 08  Brian Frank       Almost Christmas!
+//   15 Jan 13  Nicholas Harker   Added SSL Support
+//   21 Jan 13  Nicholas Harker   Added Proxy Exclusion Support
+//   03 Aug 15  Matthew Giannini  RFC6265
 //
 
 using inet
@@ -38,7 +41,11 @@ class WebClient
   new make(Uri? reqUri := null)
   {
     if (reqUri != null) this.reqUri = reqUri
+
+    // default headers
+    reqHeaders["Accept-Encoding"] = "gzip"
   }
+
 
 //////////////////////////////////////////////////////////////////////////
 // Request
@@ -49,7 +56,12 @@ class WebClient
   **
   Uri reqUri := ``
   {
-    set { if (!it.isAbs) throw ArgErr("Request URI not absolute: `$it`"); &reqUri = it }
+    set
+    {
+      if (!it.isAbs) throw ArgErr("Request URI not absolute: `$it`")
+      if (it.scheme != "http" && it.scheme != "https") throw ArgErr("Request URI is not http or https: `$it`")
+      &reqUri = it
+    }
   }
 
   **
@@ -160,15 +172,45 @@ class WebClient
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Cookies
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Cookies to pass for "Cookie" request header.  If set to an empty
+  ** list then the "Cookie" request header is removed.  After a request
+  ** has been completed if the "Set-Cookie" response header specified
+  ** one or more cookies then this field is automatically updated with
+  ** the server specified cookies.
+  **
+  Cookie[] cookies := Cookie#.emptyList
+  {
+    set
+    {
+      // save field
+      &cookies = it
+
+      // set reqHeaders (RFC 6265 § 4.2.1)
+      if (it.isEmpty) { reqHeaders.remove("Cookie"); return }
+      reqHeaders["Cookie"] =
+        it.size == 1 ?
+        it.first.toNameValStr :
+        it.join("; ") |c| { c.toNameValStr }
+    }
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Networking
 //////////////////////////////////////////////////////////////////////////
 
   **
   ** Socket options for the TCP socket used for requests.
+  ** Default is 1min for connectTimeout and receiveTimeout.
   **
-  SocketOptions socketOptions()
+  once SocketOptions socketOptions()
   {
-    if (options == null) options = TcpSocket().options
+    options := TcpSocket().options
+    options.connectTimeout = 1min
+    options.receiveTimeout = 1min
     return options
   }
 
@@ -180,10 +222,16 @@ class WebClient
   **
   Bool followRedirects := true
 
+//////////////////////////////////////////////////////////////////////////
+// Proxy Support
+//////////////////////////////////////////////////////////////////////////
+
   **
   ** If non-null, then all requests are routed through this
   ** proxy address (host and port).  Default is configured
-  ** in "etc/web/config.props" with the key "proxy".
+  ** in "etc/web/config.props" with the key "proxy".  Proxy
+  ** exceptions can be configured with the "proxy.exceptions"
+  ** config key as comma separated list of Regex globs.
   **
   Uri? proxy := proxyDef
 
@@ -194,6 +242,20 @@ class WebClient
     catch (Err e)
       e.trace
     return null
+  }
+
+  private Bool isProxy(Uri uri)
+  {
+    proxy != null && !proxyExceptions.any |re| { re.matches(uri.host.toStr) }
+  }
+
+  private once Regex[] proxyExceptions()
+  {
+    try
+      return WebClient#.pod.config("proxy.exceptions")?.split(',')?.map |tok->Regex| { Regex.glob(tok) } ?: Regex[,]
+    catch (Err e)
+      e.trace
+    return Regex[,]
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -328,20 +390,31 @@ class WebClient
     if (reqHeaders.containsKey("Host")) throw Err("reqHeaders must not define 'Host'")
 
     // connect to the host:port if we aren't already connected
+    isHttps := reqUri.scheme == "https"
+    defPort := isHttps ? 443 : 80
+    usingProxy := isProxy(reqUri)
+    isTunnel := usingProxy && isHttps
     if (!isConnected)
     {
-      socket = TcpSocket()
-      connUri := proxy ?: reqUri
-      if (options != null) socket.options.copyFrom(this.options)
-      socket.connect(IpAddr(connUri.host), connUri.port ?: 80)
+      if (isTunnel) socket = openHttpsTunnel
+      else
+      {
+        // make https or http socket
+        socket = isHttps ? TcpSocket.makeTls : TcpSocket.make
+        socket.options.copyFrom(socketOptions)
+
+        // connect to proxy or directly to request host
+        connUri := usingProxy ? proxy : reqUri
+        socket.connect(IpAddr(connUri.host), connUri.port ?: defPort)
+      }
     }
 
     // request uri is absolute if proxy, relative otherwise
-    reqPath := (proxy != null ? reqUri : reqUri.relToAuth).encode
+    reqPath := (usingProxy ? reqUri : reqUri.relToAuth).encode
 
     // host authority header
     host := reqUri.host
-    if (reqUri.port != null && reqUri.port != 80) host += ":$reqUri.port"
+    if (reqUri.port != null && reqUri.port != defPort) host += ":$reqUri.port"
 
     // figure out if/how we are streaming out content body
     out := socket.out
@@ -351,11 +424,32 @@ class WebClient
     out.print(reqMethod).print(" ").print(reqPath)
        .print(" HTTP/").print(reqVersion).print("\r\n")
     out.print("Host: ").print(host).print("\r\n")
-    reqHeaders.each |Str v, Str k| { out.print(k).print(": ").print(v).print("\r\n") }
+    WebUtil.writeHeaders(out, reqHeaders)
     out.print("\r\n")
     out.flush
 
     return this
+  }
+
+  ** Open an https tunnel through our proxy server.
+  private TcpSocket openHttpsTunnel()
+  {
+    socket = TcpSocket.make
+    socket.options.copyFrom(socketOptions)
+
+    // make CONNECT request to proxy server on http port
+    socket.connect(IpAddr(proxy.host), proxy.port ?: 80)
+    out := socket.out
+    out.print("CONNECT ${reqUri.host}:${reqUri.port ?: 443} HTTP/${reqVersion}").print("\r\n")
+       .print("\r\n")
+    out.flush
+
+    // expect a 200 response code
+    readRes
+    if (resCode != 200) throw IOErr("Could not open tunnel: bad HTTP response $resCode $resPhrase")
+
+    // upgrade to SSL socket now
+    return TcpSocket.makeTls(socket)
   }
 
   **
@@ -371,23 +465,26 @@ class WebClient
     // read response
     if (!isConnected) throw IOErr("Not connected")
     in := socket.in
+    res := ""
     try
     {
       // parse status-line
-      res := in.readLine
+      res = in.readLine
       if (res.startsWith("HTTP/1.1")) resVersion = ver11
       else if (res.startsWith("HTTP/1.0")) resVersion = ver10
-      else throw Err()
+      else throw Err("Not HTTP")
       resCode = res[9..11].toInt
       resPhrase = res[13..-1]
 
       // parse response headers
-      resHeaders = WebUtil.parseHeaders(in)
+      setCookies := Cookie[,]
+      resHeaders = WebUtil.doParseHeaders(in, setCookies)
+      if (!setCookies.isEmpty) cookies = setCookies
     }
-    catch throw IOErr("Invalid HTTP response")
+    catch (Err e) throw IOErr("Invalid HTTP response: $res", e)
 
     // check for redirect
-    checkFollowRedirect
+    if (checkFollowRedirect) return this
 
     // if there is response content, then create wrap the raw socket
     // input stream with the appropiate chunked input stream
@@ -400,29 +497,38 @@ class WebClient
   ** If we have a 3xx statu code with a location header,
   ** then check for an automate redirect.
   **
-  private Void checkFollowRedirect()
+  private Bool checkFollowRedirect()
   {
     // only redirect on 3xx status code
-    if (resCode / 100 != 3) return
+    if (resCode / 100 != 3) return false
 
     // must be explicitly configured for redirects
-    if (!followRedirects) return
+    if (!followRedirects) return false
 
     // only redirect when there is no request content
-    if (reqOutStream != null) return
+    if (reqOutStream != null) return false
 
     // only redirect if a location header was given
     loc := resHeaders["Location"]
-    if (loc == null) return
+    if (loc == null) return false
 
     // redirect
-    close
-    newUri := Uri.decode(loc)
-    if (!newUri.isAbs) newUri = reqUri + newUri
-    if (reqUri == newUri) throw Err("Cyclical redirect: $newUri")
-    reqUri = newUri
-    writeReq
-    readRes
+    try
+    {
+      ++numRedirects
+      close
+      newUri := Uri.decode(loc)
+      if (!newUri.isAbs) newUri = reqUri + newUri
+      if (reqUri == newUri && numRedirects > 20) throw Err("Cyclical redirect: $newUri")
+      reqUri = newUri
+      writeReq
+      readRes
+      return true
+    }
+    finally
+    {
+      --numRedirects
+    }
   }
 
   **
@@ -453,7 +559,7 @@ class WebClient
 
   private InStream? resInStream
   private OutStream? reqOutStream
-  private SocketOptions? options
-  private TcpSocket? socket
+  internal TcpSocket? socket
+  private Int numRedirects := 0
 
 }

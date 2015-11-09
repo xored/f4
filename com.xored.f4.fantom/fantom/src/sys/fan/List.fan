@@ -7,7 +7,7 @@
 //
 
 **
-** List represents an liner sequence of Objects indexed by an Int.
+** List represents an linear sequence of Objects indexed by an Int.
 **
 ** See [examples]`examples::sys-lists`.
 **
@@ -161,6 +161,12 @@ final class List
   Int? index(V item, Int offset := 0)
 
   **
+  ** Reverse index lookup.  This method works just like `index`
+  ** except that it searches backward from the starting offset.
+  **
+  Int? indexr(V item, Int offset := -1)
+
+  **
   ** Return integer index just like `List.index` except
   ** use '===' same operator instead of the '==' equals operator.
   **
@@ -261,6 +267,14 @@ final class List
   L removeRange(Range r)
 
   **
+  ** Remove every item in this list which is found in the 'toRemove' list using
+  ** same semantics as `remove` (compare for equality via the == operator).
+  ** If any value is not found, it is ignored.  Return this.
+  ** Throw ReadonlyErr if readonly.
+  **
+  L removeAll(L list)
+
+  **
   ** Remove all items from the list and set size to 0.  Return this.
   ** Throw ReadonlyErr if readonly.
   **
@@ -294,8 +308,8 @@ final class List
 
   **
   ** Remove the last item and return it, or return null if the list
-  ** is empty.  This method as the same semantics as remove(-1), with
-  ** the exception of has an empty list is handled.  Throw ReadonlyErr
+  ** is empty.  This method as the same semantics as 'removeAt(-1)', with
+  ** the exception that an empty list is handled.  Throw ReadonlyErr
   ** if readonly.
   **
   V? pop()
@@ -369,9 +383,9 @@ final class List
   V? find(|V item, Int index->Bool| c)
 
   **
-  ** Return the first item in the list for which c returns true
-  ** and return the item's index.  If c returns false for every
-  ** item, then return null.  This method is readonly safe.
+  ** Return the index of the first item in the list for which c returns
+  ** true.  If c returns false for every item, then return null.  This
+  ** method is readonly safe.
   **
   ** Example:
   **   list := [5, 6, 7]

@@ -16,6 +16,7 @@ class JsPod : JsNode
   new make(JsCompilerSupport s, PodDef pod, TypeDef[] defs) : super(s)
   {
     this.name  = pod.name
+    this.meta  = pod.meta
     this.types = JsType[,]
     this.props = JsProps[,]
 
@@ -48,6 +49,7 @@ class JsPod : JsNode
     {
       s.compiler.resFiles.each |file|
       {
+        if (file.ext != "props") return
         uri := file.uri.relTo(baseDir.uri)
         props.add(JsProps(pod, file, uri, s))
       }
@@ -73,9 +75,11 @@ class JsPod : JsNode
     // write type info
     writeTypeInfo(out)
 
-    // write locale/en.props
-    p := props.find |p| { p.uri == `locale/en.props` }
-    p?.write(out)
+    // write props resource files
+    props.each |p| { p.write(out) }
+
+    // write closure fields (must be after writeTypeInfo)
+    writeClosureFields(out)
 
     // write static init
     types.each |t| { t.writeStatic(out) }
@@ -87,6 +91,7 @@ class JsPod : JsNode
       out.minify(in)
       in.close
     }
+    out.w("//# sourceMappingURL=/pod/${name}/${name}.js.map").nl
   }
 
   Void writePeer(JsWriter out, JsType t, Bool isPeer)
@@ -147,13 +152,30 @@ class JsPod : JsNode
       out.w(";").nl
     }
 
+    // pod meta
+    out.indent
+    out.w("m_meta = fan.sys.Map.make(fan.sys.Str.\$type, fan.sys.Str.\$type);").nl
+    meta.each |v, k|
+    {
+      out.w("m_meta.set($k.toCode, $v.toCode);").nl
+      if (k == "pod.version") out.w("m_version = fan.sys.Version.fromStr($v.toCode);").nl
+    }
+    out.w("m_meta = m_meta.toImmutable();").nl
+    out.unindent
+
     // end with block
     out.w("}").nl
   }
 
+  ** Write closure function spec fields
+  Void writeClosureFields(JsWriter out)
+  {
+    support.podClosures.write(out)
+  }
+
   Str name           // pod name
+  Str:Str meta       // pod meta
   JsType[] types     // types in this pod
   Str:File natives   // natives
   JsProps[] props    // prop files in this pod
 }
-
