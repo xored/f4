@@ -15,29 +15,20 @@
 @Js
 class HttpReq
 {
-
-  **
   ** Create a new HttpReq instance.
-  **
   new make(|This|? f)
   {
     if (f != null) f(this)
   }
 
-  **
   ** The Uri to send the request.
-  **
   Uri uri := `#`
 
-  **
   ** The request headers to send.
-  **
   Str:Str headers := Str:Str[:]
 
-  **
   ** If true then perform this request asynchronously.
   ** Defaults to 'true'
-  **
   Bool async := true
 
   **
@@ -46,20 +37,16 @@ class HttpReq
   ** the response, call the given closure with the resulting
   ** HttpRes object.
   **
-  native Void send(Str method, Str content, |HttpRes res| c)
+  native Void send(Str method, Obj? content, |HttpRes res| c)
 
-  **
   ** Convenience for 'send("GET", "", c)'.
-  **
   Void get(|HttpRes res| c)
   {
-    send("GET", "", c)
+    send("GET", null, c)
   }
 
-  **
   ** Convenience for 'send("POST", content, c)'.
-  **
-  Void post(Str content, |HttpRes res| c)
+  Void post(Obj content, |HttpRes res| c)
   {
     send("POST", content, c)
   }
@@ -75,9 +62,6 @@ class HttpReq
     send("POST", encodeForm(form), c)
   }
 
-  **
   ** Encode the form map into a value URL-encoded string.
-  **
   private native Str encodeForm(Str:Str form)
-
 }

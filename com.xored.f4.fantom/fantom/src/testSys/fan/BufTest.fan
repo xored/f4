@@ -849,6 +849,7 @@ class BufTest : Test
     verifyBase64("hey!", "aGV5IQ==")
     verifyBase64("123456", "MTIzNDU2")
     verifyBase64("SecretPassword", "U2VjcmV0UGFzc3dvcmQ=")
+    verifyBase64("su?_d=1~~", "c3U/X2Q9MX5+")
     verifyBase64(
       "Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.",
       "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=")
@@ -861,13 +862,22 @@ class BufTest : Test
 
   Void verifyBase64(Str src, Str base64)
   {
+    safe := base64.replace("=", "").replace("+", "-").replace("/", "_")
+
     verifyEq(makeMem.print(src).toBase64, base64)
+    verifyEq(makeMem.print(src).toBase64Uri, safe)
 
     verifyBufEq(Buf.fromBase64(base64), Buf.make.print(src))
+    verifyBufEq(Buf.fromBase64(safe), Buf.make.print(src))
 
     breaks := StrBuf.make
     base64.each |Int ch, Int i| { breaks.addChar(ch); if (i % 3 == 0) breaks.add("\uabcd\r\n") }
     verifyBufEq(Buf.fromBase64(breaks.toStr), ascii(src))
+  }
+
+  Void testBase64Url()
+  {
+
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -970,6 +980,37 @@ class BufTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// PBK
+//////////////////////////////////////////////////////////////////////////
+
+  Void testPbk()
+  {
+    // tests from RFC 6070
+    verifyPbk("PBKDF2WithHmacSHA1", "password", "salt".toBuf, 1, 20,
+      "0c 60 c8 0f 96 1f 0e 71 f3 a9 b5 24 af 60 12 06 2f e0 37 a6")
+    verifyPbk("PBKDF2WithHmacSHA1", "password", "salt".toBuf, 4096, 20,
+      "4b 00 79 01 b7 65 48 9a be ad 49 d9 26 f7 21 d0 65 a4 29 c1")
+
+    // http://stackoverflow.com/questions/5130513/pbkdf2-hmac-sha2-test-vectors/5136918#5136918
+    verifyPbk("PBKDF2WithHmacSHA256", "password", "salt".toBuf, 1, 32,
+      "12 0f b6 cf fc f8 b3 2c 43 e7 22 52 56 c4 f8 37 a8 65 48 c9 2c cc 35 48 08 05 98 7c b7 0b e1 7b")
+    verifyPbk("PBKDF2WithHmacSHA256", "password", "salt".toBuf, 4096, 32,
+      "c5 e4 78 d5 92 88 c8 41 aa 53 0d b6 84 5c 4c 8d 96 28 93 a0 01 ce 4e 11 a4 96 38 73 aa 98 13 4a")
+  }
+
+  Void verifyPbk(Str algorithm, Str pass, Buf salt, Int iterations, Int keyLen, Str expected)
+  {
+    expected = expected.replace(" ", "")
+    actual := Buf.pbk(algorithm, pass, salt, iterations, keyLen).toHex
+    /*
+    echo(">>>> $algorithm $pass $iterations $keyLen")
+    echo("     $actual")
+    echo("     $expected")
+    */
+    verifyEq(actual, expected)
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Utils
 //////////////////////////////////////////////////////////////////////////
 
@@ -1010,6 +1051,18 @@ class BufTest : Test
   Void testRandom()
   {
     24.times |Int i| { verifyEq(Buf.random(i).size, i) }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// CRC
+//////////////////////////////////////////////////////////////////////////
+
+  Void testCRC()
+  {
+    buf := Buf.fromHex("F70302640008")
+    verifyEq(buf.crc("CRC-16"), 0xFD10)
+    verifyEq(buf.crc("CRC-32"), 0x15f9_d197)
+    verifyEq(buf.crc("CRC-32-Adler"), 0x071b_0169)
   }
 
 }

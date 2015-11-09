@@ -21,7 +21,7 @@ internal class WispReq : WebReq
     this.res     = res
   }
 
-  override WebMod mod := WispDefaultMod()
+  override WebMod mod := WispDefaultRootMod()
   override Str method := ""
   override Version version := nullVersion
   override IpAddr remoteAddr() { return socket.remoteAddr }
@@ -43,13 +43,17 @@ internal class WispReq : WebReq
   }
 
   override SocketOptions socketOptions() { socket.options }
+  override TcpSocket socket
 
   static const Version nullVersion := Version("0")
   static const Str:Str nullHeaders := Str:Str[:]
 
   internal WispService service
-  internal TcpSocket socket
   internal InStream? webIn
   private Bool checkContinue := true
   private WispRes res
+
+  internal Bool isUpgrade() { headers["Upgrade"] != null }
+  internal Bool isKeepAlive() { headers.get("Connection", "").indexIgnoreCase("keep-alive") != null }
+
 }

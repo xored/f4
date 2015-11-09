@@ -9,7 +9,8 @@
 **
 ** XmlTest is base class for XML tests
 **
-abstract class XmlTest : Test
+@NoDoc
+@Js abstract class XmlTest : Test
 {
 
   **

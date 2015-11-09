@@ -108,6 +108,13 @@ const final class Date
   **
   Int dayOfYear()
 
+  **
+  ** Return the week number of the year as a number
+  ** between 1 and 53 using the given weekday as the
+  ** start of the week (defaults to current locale).
+  **
+  Int weekOfYear(Weekday startOfWeek := Weekday.localeStartOfWeek)
+
 //////////////////////////////////////////////////////////////////////////
 // Locale
 //////////////////////////////////////////////////////////////////////////
@@ -130,7 +137,7 @@ const final class Date
   **   WWWW   Full weekday               Tuesday
   **   'xyz'  Literal characters
   **
-  Str toLocale(Str? pattern := null)
+  Str toLocale(Str? pattern := null, Locale locale := Locale.cur)
 
   **
   ** Parse a string into a Date using the given pattern.  If

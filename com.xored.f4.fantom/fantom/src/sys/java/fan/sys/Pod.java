@@ -150,7 +150,7 @@ public class Pod
       store = FStore.makeZip(new File(Sys.podsDir, name + ".pod"));
     }
 
-    // otherwise delete to Env.cur to find the pod file
+    // otherwise delegate to Env.cur to find the pod file
     else
     {
       File file = null;
@@ -203,6 +203,60 @@ public class Pod
       }
       return allPodsList;
     }
+  }
+
+  private static Object reloadList()
+  {
+    Log log = Log.get("sys");
+    log.info("Pod reload list");
+
+    // update global data structures
+    synchronized (podsByName)
+    {
+      allPodsList = null;
+    }
+
+    // reload Env data structures
+    Env.cur().onPodReload();
+    return "reloadList";
+  }
+
+  private Object reload()
+  {
+    if (types.length != 0)
+      throw Err.make("Cannot reload pod with types: " + name);
+
+    Log log = Log.get("sys");
+    log.info("Pod reload: " + name);
+
+    // close current zip file
+    try
+    {
+      if (fpod.store != null) fpod.store.close();
+    }
+    catch (Exception e)
+    {
+      log.err("Cannot close pod", Err.make(e));
+    }
+
+    // update global data structures
+    synchronized (podsByName)
+    {
+      podsByName.remove(name);
+      allPodsList = null;
+    }
+
+    // reload Env data structures
+    Env.cur().onPodReload();
+    return this;
+  }
+
+  public Object trap(String name, List args)
+  {
+    if (name.equals("reloadList")) return reloadList();
+    if (name.equals("reload")) return reload();
+    if (name.equals("classLoader")) return classLoader;
+    return super.trap(name, args);
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -400,8 +454,9 @@ public class Pod
     // create a hollow Type for each FType (this requires two steps,
     // because we don't necessary have all the Types created for
     // superclasses until this loop completes)
-    types = new ClassType[fpod.types.length];
-    for (int i=0; i<fpod.types.length; ++i)
+    int numTypes = fpod.types == null ? 0 : fpod.types.length;
+    types = new ClassType[numTypes];
+    for (int i=0; i<numTypes; ++i)
     {
       // create type instance
       ClassType type = new ClassType(this, fpod.types[i]);
@@ -421,7 +476,7 @@ public class Pod
     // now that everthing is mapped, we can fill in the super
     // class fields (unless something is wacked, this will only
     // use Types in my pod or in pods already loaded)
-    for (int i=0; i<fpod.types.length; ++i)
+    for (int i=0; i<numTypes; ++i)
     {
       FType ftype = fpod.types[i];
       ClassType type = types[i];

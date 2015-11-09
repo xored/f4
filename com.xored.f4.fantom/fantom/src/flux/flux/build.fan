@@ -24,7 +24,7 @@ class Build : BuildPod
                "proj.uri":     "http://fantom.org/",
                "license.name": "Academic Free License 3.0",
                "vcs.name":     "Mercurial",
-               "vcs.uri":      "http://hg.fantom.org/fan-1.0/"]
+               "vcs.uri":      "https://bitbucket.org/fantom/fan-1.0/"]
     depends = ["sys 1.0", "concurrent 1.0", "gfx 1.0", "fwt 1.0", "compiler 1.0"]
     srcDirs = [`fan/`, `fan/views/`, `fan/sidebars/`, `test/`]
     resDirs = [`locale/`, `test/files/`, `test/files/sub/`]
@@ -44,8 +44,9 @@ class Build : BuildPod
       // views
       "flux.view.flux::StartResource": "flux::StartView",
       "flux.view.mime.x-directory": "flux::DirView",
-      "flux.view.mime.text/html": "flux::HtmlView",
       "flux.view.mime.image": "flux::ImageView",
+      // crashes 2012-08-12
+      //"flux.view.mime.text/html": "flux::HtmlView",
     ]
   }
 }

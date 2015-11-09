@@ -64,7 +64,7 @@ public class FanClassLoader
   }
 
 //////////////////////////////////////////////////////////////////////////
-// ClassLoader
+// ClassLoader - Classes
 //////////////////////////////////////////////////////////////////////////
 
   public String toString()
@@ -111,8 +111,12 @@ public class FanClassLoader
     catch (NoClassDefFoundError e)
     {
       String s = e.toString();
-      if (s.contains("eclipse") && s.contains("swt"))
-        System.out.println("ERROR: cannot load SWT library - see `http://fantom.org/doc/docTools/Setup.html#swt`");
+      if (s.contains("swt"))
+      {
+        String msg = "cannot load SWT library; see http://fantom.org/doc/docTools/Setup.html#swt";
+        System.out.println("\nERROR: " + msg + "\n");
+        e = new NoClassDefFoundError(e.getMessage() + ": " + msg);
+      }
       throw e;
     }
   }
@@ -126,7 +130,7 @@ public class FanClassLoader
       if (pending != null) pendingClasses.remove(name);
     }
     if (pending == null) return null;
-    // if (name.indexOf("Foo") > 0) dumpToFile(name, pending);
+//if (name.indexOf("Foo") > 0) dumpToFile(name, pending);
     return defineClass(name, pending.buf, 0, pending.len, codeSource);
   }
 
@@ -197,6 +201,16 @@ public class FanClassLoader
       Box precompiled = findPrecompiledClassFile(name);
       if (precompiled == null) return null;
 
+      // definePackage before defineClass
+      int dot = name.lastIndexOf('.');
+      if (dot > 0)
+      {
+        String packageName = name.substring(0, name.lastIndexOf('.'));
+        if (getPackage(packageName) == null)
+          definePackage(packageName, null, null, null, null, null, null, null);
+      }
+
+      // defineClass
       Class cls = defineClass(name, precompiled.buf, 0, precompiled.len, codeSource);
 
       // if the precompiled class is a fan type, then we need
@@ -216,6 +230,18 @@ public class FanClassLoader
       e.printStackTrace();
       return null;
     }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// ClassLoader - Resources
+//////////////////////////////////////////////////////////////////////////
+
+  public URL findResource(String name)
+  {
+    if (!name.startsWith("/")) name = "/" + name;
+    fan.sys.File file = pod.file(Uri.fromStr(name), false);
+    if (file == null) return null;
+    return file.toJavaURL();
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -249,10 +275,20 @@ public class FanClassLoader
     public ExtClassLoader()
     {
       super(new URL[0], FanClassLoader.class.getClassLoader());
+      addFanDir(Sys.homeDir);
+    }
+
+    /**
+     * Given a home or working directory, add the following directories  to the path:
+     *    {fanDir}/lib/java/ext/
+     *    {fanDir}/lib/java/ext/{platform}/
+     */
+    void addFanDir(java.io.File fanDir)
+    {
       try
       {
         String sep = java.io.File.separator;
-        java.io.File extDir = new java.io.File(Sys.homeDir, "lib" + sep + "java" + sep + "ext");
+        java.io.File extDir = new java.io.File(fanDir, "lib" + sep + "java" + sep + "ext");
         java.io.File platDir = new java.io.File(extDir, Sys.platform);
         addExtJars(extDir);
         addExtJars(platDir);

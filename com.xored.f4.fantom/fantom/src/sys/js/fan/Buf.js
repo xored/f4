@@ -157,6 +157,13 @@ fan.sys.Buf.prototype.close = function()
   return true;
 }
 
+fan.sys.Buf.prototype.endian = function() { this.m_out.endian(); }
+fan.sys.Buf.prototype.endian$ = function(endian)
+{
+  this.m_out.endian$(endian);
+  this.m_in.endian$(endian);
+}
+
 fan.sys.Buf.prototype.charset = function()
 {
   return this.m_out.charset();
@@ -328,6 +335,11 @@ fan.sys.Buf.prototype.toBase64 = function()
   throw fan.sys.UnsupportedErr.make(this.$typeof()+".toBase64");
 }
 
+fan.sys.Buf.prototype.toBase64Uri = function()
+{
+  throw fan.sys.UnsupportedErr.make(this.$typeof()+".toBase64Uri");
+}
+
 fan.sys.Buf.fromBase64 = function(s)
 {
   var slen = s.length;
@@ -367,9 +379,19 @@ fan.sys.Buf.base64chars = [
 //0  1  2  3  4  5  6  7  8  9  +  /
   48,49,50,51,52,53,54,55,56,57,43,47];
 
+
+fan.sys.Buf.base64UriChars = [
+//A  B  C  D  E  F  G  H  I  J  K  L  M  N  O  P  Q  R  S  T  U  V  W  X  Y  Z
+  65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
+//a  b  c  d   e   f   g   h   i   j   k   l   m   n   o   p   q   r   s   t   u   v   w   x   y   z
+  97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,
+//0  1  2  3  4  5  6  7  8  9  -  _
+  48,49,50,51,52,53,54,55,56,57,45,95];
+
 fan.sys.Buf.base64inv = [];
 for (var i=0; i<128; ++i) fan.sys.Buf.base64inv[i] = -1;
 for (var i=0; i<fan.sys.Buf.base64chars.length; ++i)
   fan.sys.Buf.base64inv[fan.sys.Buf.base64chars[i]] = i;
-fan.sys.Buf.base64inv[61] = 0; // '='
-
+fan.sys.Buf.base64inv[45] = 62; // '-'
+fan.sys.Buf.base64inv[95] = 63; // '_'
+fan.sys.Buf.base64inv[61] = 0;  // '='

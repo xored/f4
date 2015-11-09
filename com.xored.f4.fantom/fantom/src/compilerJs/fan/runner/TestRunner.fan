@@ -93,6 +93,7 @@ class TestRunner
 
       // locales
       JsProps.writeProps(out, Pod.find("sys"), `locale/fi.props`, 1sec)
+      JsProps.writeProps(out, Pod.find("sys"), `locale/fr.props`, 1sec)
       JsProps.writeProps(out, p, `locale/en-US.props`, 1sec)
       JsProps.writeProps(out, p, `locale/es.props`, 1sec)
       JsProps.writeProps(out, p, `locale/es-MX.props`, 1sec)
@@ -101,6 +102,7 @@ class TestRunner
       JsTimeZone(TimeZone("Phoenix")).write(out)
       JsTimeZone(TimeZone("London")).write(out)
       JsTimeZone(TimeZone("Amsterdam")).write(out)
+      JsTimeZone(TimeZone("Madrid")).write(out)
       JsTimeZone(TimeZone("Kiev")).write(out)
       JsTimeZone(TimeZone("Sao_Paulo")).write(out)
       JsTimeZone(TimeZone("Sydney")).write(out)
@@ -111,6 +113,8 @@ class TestRunner
       JsTimeZone(TimeZone("Taipei")).write(out)
       JsTimeZone(TimeZone("Kolkata")).write(out)
       JsTimeZone(TimeZone("Ho_Chi_Minh")).write(out)
+      JsTimeZone(TimeZone("EST")).write(out)
+      JsTimeZone(TimeZone("Louisville")).write(out)
 
       // unit db
       JsUnitDatabase().write(out)
@@ -161,8 +165,8 @@ class TestRunner
         methodCount++
         totalVerifyCount += verifyCount;
       }
-      testCount++
     }
+    testCount++
   }
 
   Method[] methods(Type type, Str methodName)
@@ -188,22 +192,12 @@ class TestRunner
       workDir := Env.cur.workDir
       tempDir := Env.cur.tempDir
 
-      // TODO - setup/teardown
       js  := "fan.${m.parent.pod}.${m.parent.name}"
       ret := engine.eval(
        "var testRunner = function()
         {
-          try
-          {
-            fan.sys.Env.cur().m_homeDir = fan.sys.File.os($homeDir.osPath.toCode);
-            fan.sys.Env.cur().m_workDir = fan.sys.File.os($workDir.osPath.toCode);
-            fan.sys.Env.cur().m_tempDir = fan.sys.File.os($tempDir.osPath.toCode);
-
-            var test = ${js}.make();
-            test.${m.name}();
-            return test.verifyCount;
-          }
-          catch (err)
+          var test;
+          var doCatchErr = function(err)
           {
             if (err == undefined) println('Undefined error');
             else if (err.trace) err.trace();
@@ -213,7 +207,28 @@ class TestRunner
               var line = err.lineNumber; if (line == null) line = 'Unknown';
               println(err + ' (' + file + ':' + line + ')');
             }
+          }
+
+          try
+          {
+            fan.sys.Env.cur().m_homeDir = fan.sys.File.os($homeDir.osPath.toCode);
+            fan.sys.Env.cur().m_workDir = fan.sys.File.os($workDir.osPath.toCode);
+            fan.sys.Env.cur().m_tempDir = fan.sys.File.os($tempDir.osPath.toCode);
+
+            test = ${js}.make();
+            test.setup();
+            test.${m.name}();
+            return test.verifyCount;
+          }
+          catch (err)
+          {
+            doCatchErr(err);
             return -1;
+          }
+          finally
+          {
+            try { test.teardown(); }
+            catch (err) { doCatchErr(err); }
           }
         }
         testRunner();")

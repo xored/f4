@@ -36,6 +36,11 @@ fan.sys.InStream.prototype.rChar = function()
     return this.m_charset.m_encoder.decode(this);
 }
 
+fan.sys.InStream.prototype.avail = function()
+{
+  return 0;
+}
+
 fan.sys.InStream.prototype.read = function()
 {
   try
@@ -516,7 +521,14 @@ fan.sys.InStream.prototype.readProps = function()
         continue;
       }
 
-      // comment
+      // line comment
+      if (c == 35 && (last == 10 || last == 13))
+      {
+        inEndOfLineComment = true;
+        continue;
+      }
+
+      // end of line comment
       if (c == 47 && fan.sys.Int.isSpace(last))
       {
         var peek = this.rChar();

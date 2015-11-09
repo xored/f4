@@ -59,11 +59,11 @@ class ErrTest : Test
     Err? err
     try { doThrow(30) } catch (Err e) { err = e }
 
-    // default is 20
+    // default is 25
     buf := Buf()
     err.trace(buf.out)
     lines := buf.flip.readAllLines
-    verifyEq(lines.size, 20+2) // toStr + More...
+    verifyEq(lines.size, 25+2) // toStr + More...
     verify(lines.last.contains("More"))
 
     // with maxDepth
@@ -102,6 +102,9 @@ class ErrTest : Test
     verifySame(err.typeof.base, Err#)
     verifySame(err.typeof.base.base, Obj#)
     verifyEq(err.typeof.qname, "sys::CastErr")
+
+    verifyErr(CastErr#) { throw CastErr() }
+    verifyErr(null) { throw CastErr() }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -172,6 +175,10 @@ class ErrTest : Test
     verifyEq(err.msg, "foo")
     verifySame(err.cause, cause)
     verifyEq(err.toStr, "sys::IOErr: foo")
+
+    err = TestCtorErr()
+    verifyEq(err.msg, "")
+    verifyEq(err.cause, null)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -367,3 +374,5 @@ const class TestIOErr : IOErr
 
   const Str s := "memorial day"
 }
+
+const class TestCtorErr : Err { new make() : super.make() {} }

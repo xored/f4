@@ -79,8 +79,13 @@ abstract class DefNode : Node
     if (flags.and(FConst.Public) == 0 && flags.and(FConst.Protected) == 0) return false
     if (this is TypeDef)
     {
+      // check compiler input to override default behavior
+      if (ns.c != null && ns.c.input.docTests) return true
+
+      // don't document test concrete subclasses
       t := (TypeDef)this
-      if (t.base != null && t.base.fits(ns.testType)) return false
+      if (t.base != null && t.base.fits(ns.testType))
+        return t.isAbstract
     }
     else if (this is MethodDef)
     {

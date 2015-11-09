@@ -69,7 +69,7 @@ internal class InlineParser
       child = text
     }
 
-    if (child != null) parent.addChild(child)
+    if (child != null) parent.add(child)
 
     stack.pop
   }
@@ -86,10 +86,16 @@ internal class InlineParser
       case '[':
         return last.isSpace
 
+      // ![
+      case '!':
+        return peek == '[' && last.isSpace
+
       // check for end of emphasis/strong or start of new one
       case '*':
         if (stack.peek.id == DocNodeId.strong)
-          return peek == '*'
+          // if inside a strong, then end of strong, or start of emphasis
+          // ends the current text.
+          return peek == '*' || last.isSpace
         else if (stack.peek.id == DocNodeId.emphasis)
           return true
         else
@@ -125,7 +131,7 @@ internal class InlineParser
     }
     consume
     code := Code.make
-    code.children.add(DocText(buf.toStr))
+    code.add(DocText(buf.toStr))
     return code
   }
 
@@ -164,7 +170,7 @@ internal class InlineParser
   {
     link := Link(uri)
     link.line = this.line
-    link.children.add(DocText(link.uri))
+    link.add(DocText(link.uri))
     return link
   }
 
@@ -177,7 +183,7 @@ internal class InlineParser
     if (cur == '`')
     {
       link := Link(uri)
-      link.children.add(DocText(s))
+      link.add(DocText(s))
       return link
     }
     else if (s.startsWith("#"))
