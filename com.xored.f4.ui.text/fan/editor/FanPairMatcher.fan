@@ -3,8 +3,9 @@ using [java] org.eclipse.jface.text::IDocument
 using [java] org.eclipse.jface.text::IRegion
 using [java] org.eclipse.jface.text.source::DefaultCharacterPairMatcher
 using [java] com.xored.fanide.core::FanConstants
+using [java] com.xored.f4.ui.text::FanJavaPairMatcher
 
-class FanPairMatcher : DefaultCharacterPairMatcher
+class FanPairMatcher : FanJavaPairMatcher
 {
 //  private int fBlockAnchor;
   
@@ -17,10 +18,10 @@ class FanPairMatcher : DefaultCharacterPairMatcher
   new make() : super(brackets, FanConstants.FAN_PARTITIONING) { }
 
   /* @see ICharacterPairMatcher#match(IDocument, int) */
-  override IRegion? match(IDocument? document, Int offset)
+  override IRegion? doMatch(IDocument? document, Int offset)
   {
     return offset < 0 || offset > document.getLength || document == null
-      ? null : super.match(document, offset)
+      ? null : super.doMatch(document, offset)
   }
 
   /*public int getAnchor() {
