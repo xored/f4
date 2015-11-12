@@ -147,6 +147,19 @@ class UtilTest : Test
     verifyEq(in.read, null)
   }
 
+  Void testParseQVals()
+  {
+    verifyEq(WebUtil.parseQVals(""), Str:Float[:])
+    verifyEq(WebUtil.parseQVals("compress"), Str:Float["compress":1.0f])
+    verifyEq(WebUtil.parseQVals("compress,gzip"), Str:Float["compress":1.0f, "gzip": 1.0f])
+    verifyEq(WebUtil.parseQVals("compress;q=0.7,gzip;q=0.0"), Str:Float["compress":0.7f, "gzip": 0f])
+
+    q := WebUtil.parseQVals("foo , compress ; q=0.8 , gzip ; q=0.5 , bar; q=x")
+    verifyEq(q, Str:Float["foo":1.0f, "compress": 0.8f, "gzip": 0.5f, "bar":1.0f])
+    verifyEq(q["compress"], 0.8f)
+    verifyEq(q["def"], 0.0f)
+  }
+
   Void testParseMultiPart()
   {
     // couple empty posts
@@ -231,6 +244,43 @@ class UtilTest : Test
     }
     verifyEq(buf.flip.readAllStr, "hello world")
     verifyEq(numRead, 11)
+
+    // mixed
+    s =
+     """------WebKitFormBoundaryZ7PdCaCUA42JfPxv
+        Content-Disposition: form-data; name="name"
+
+        FooBar
+        ------WebKitFormBoundaryZ7PdCaCUA42JfPxv
+        Content-Disposition: form-data; name="ver"
+
+        1.0.5
+        ------WebKitFormBoundaryZ7PdCaCUA42JfPxv
+        Content-Disposition: form-data; name="file"; filename="temp.txt"
+        Content-Type: application/octet-stream
+
+        Hello,
+        World
+        :)
+        ------WebKitFormBoundaryZ7PdCaCUA42JfPxv--
+        """
+    boundary = "----WebKitFormBoundaryZ7PdCaCUA42JfPxv"
+    numRead = 0
+    WebUtil.parseMultiPart(s.replace("\n", "\r\n").toBuf.in, boundary) |h, in|
+    {
+      numRead++
+      disp := h["Content-Disposition"]
+      verify(disp.startsWith("form-data;"))
+
+      map := MimeType.parseParams(disp["form-data;".size..-1].trim)
+      switch (map["name"])
+      {
+        case "name": verifyEq(in.readAllStr, "FooBar")
+        case "ver":  verifyEq(in.readAllStr, "1.0.5")
+        case "file": verifyEq(in.readAllStr, "Hello,\nWorld\n:)")
+      }
+    }
+    verifyEq(numRead, 3)
   }
 
   // generate test files for testParseMultiPart

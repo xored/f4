@@ -34,7 +34,7 @@ fan.fwt.ComboPeer.prototype.selectedIndex$  = function(self, val)
 {
   this.m_selectedIndex = val;
   if (this.elem != null && this.elem.firstChild != null)
-    this.elem.firstChild.selectedIndex = val;
+    this.elem.firstChild.selectedIndex = val == null ? -1 : val;
 }
 fan.fwt.ComboPeer.prototype.m_selectedIndex = null;
 
@@ -49,12 +49,26 @@ fan.fwt.ComboPeer.prototype.create = function(parentElem)
 
   var select = document.createElement("select");
   select.className = "_fwt_Combo_";
-  select.style.font = fan.fwt.WidgetPeer.fontToCss(fan.fwt.DesktopPeer.$sysFont);
+  select.style.font = fan.fwt.WidgetPeer.fontToCss(this.m_font == null ? fan.fwt.DesktopPeer.$sysFont : this.m_font);
 
   var div = this.emptyDiv();
   div.appendChild(select);
   parentElem.appendChild(div);
   return div;
+}
+
+fan.fwt.ComboPeer.prototype.focus = function(self)
+{
+  if (this.elem == null) return
+  var select = this.elem.firstChild;
+  select.focus();
+}
+
+fan.fwt.ComboPeer.prototype.hasFocus = function(self)
+{
+  if (this.elem == null) return false;
+  var select = this.elem.firstChild;
+  return select === document.activeElement;
 }
 
 fan.fwt.ComboPeer.prototype.needsRebuild = true;

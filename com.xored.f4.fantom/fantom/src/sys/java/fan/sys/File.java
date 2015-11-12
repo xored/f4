@@ -7,6 +7,8 @@
 //
 package fan.sys;
 
+import java.net.*;
+
 /**
  * File represents a file or directory in a file system.
  */
@@ -140,24 +142,35 @@ public abstract class File
 
   public abstract File parent();
 
-  public abstract List list();
+  public List list() { return list(null); }
+  public abstract List list(Regex pattern);
 
-  public List listDirs()
+  public List listDirs() { return listDirs(null); }
+  public List listDirs(Regex pattern)
   {
-    List list = list();
-    for (int i=list.sz()-1; i>=0; --i)
-      if (!((File)list.get(i)).isDir())
-        list.removeAt(i);
-    return list;
+    List list = list(pattern);
+    if (list.isEmpty()) return list;
+    List acc = new List(Sys.FileType, list.sz());
+    for (int i=0; i<list.sz(); ++i)
+    {
+      File file = (File)list.get(i);
+      if (file.isDir()) acc.add(file);
+    }
+    return acc;
   }
 
-  public List listFiles()
+  public List listFiles() { return listFiles(null); }
+  public List listFiles(Regex pattern)
   {
-    List list = list();
-    for (int i=list.sz()-1; i>=0; --i)
-      if (((File)list.get(i)).isDir())
-        list.removeAt(i);
-    return list;
+    List list = list(pattern);
+    if (list.isEmpty()) return list;
+    List acc = new List(Sys.FileType, list.sz());
+    for (int i=0; i<list.sz(); ++i)
+    {
+      File file = (File)list.get(i);
+      if (!file.isDir()) acc.add(file);
+    }
+    return acc;
   }
 
   public void walk(Func c)
@@ -183,6 +196,11 @@ public abstract class File
     String name = x.name();
     if (x.isDir()) name += "/";
     return plus(name);
+  }
+
+  public FileStore store()
+  {
+    throw UnsupportedErr.make(typeof().qname() + ".store");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -258,7 +276,7 @@ public abstract class File
       }
       else if (overwrite instanceof Func)
       {
-        if (!((Func)overwrite).callBool(this)) return;
+        if (!((Func)overwrite).callBool(to)) return;
       }
       else
       {
@@ -421,6 +439,48 @@ public abstract class File
     {
       out.close();
     }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Java URL
+//////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Map a sys::File to Java's twised URL, URLStreamHandler, URLConnection model
+   */
+  public URL toJavaURL()
+  {
+    try
+    {
+      Long port = uri.port();
+      if (port == null) port = Long.valueOf(-1);
+      return new URL(uri.scheme(), uri.host(), port.intValue(), uri.pathStr(), new FileURLStreamHandler(this));
+    }
+    catch (Exception e)
+    {
+      throw Err.make(e);
+    }
+  }
+
+  static class FileURLStreamHandler extends URLStreamHandler
+  {
+    FileURLStreamHandler(File file) { this.file = file; }
+    protected URLConnection openConnection(URL url)
+    {
+      return new FileURLConnection(url, file);
+    }
+    private final File file;
+  }
+
+  static class FileURLConnection extends URLConnection
+  {
+    FileURLConnection(URL url, File file) { super(url); this.file = file; }
+    public void connect() {}
+    public java.io.InputStream getInputStream()
+    {
+      return SysInStream.java(file.in());
+    }
+    private final File file;
   }
 
 //////////////////////////////////////////////////////////////////////////

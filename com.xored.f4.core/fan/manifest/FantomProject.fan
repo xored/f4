@@ -322,6 +322,7 @@ const class FantomProject
   ** By default source code it not included.
   const Bool docSrc := false
   
+  ** This is set / cleared by com.xored.f4.builder::CompileFan.build() after a pod compilation. 
 //////////////////////////////////////////////////////////////////////////
 // Private helper methods
 //////////////////////////////////////////////////////////////////////////

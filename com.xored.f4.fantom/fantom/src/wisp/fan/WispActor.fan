@@ -71,11 +71,18 @@ internal const class WispActor : Actor
     success := false
     try
     {
+      // init thread locals
+      Actor.locals["web.req"] = req
+      Actor.locals["web.res"] = res
+
       // initialize the req and res
       initReqRes(req, res)
 
       // service which runs thru the installed web steps
-      doService(req, res)
+      service.root.onService
+
+      // save session if accessed
+      service.sessionStore.doSave
 
       // assume success which allows us to re-use this connection
       success = true
@@ -90,6 +97,10 @@ internal const class WispActor : Actor
     {
       internalServerErr(req, res, e)
     }
+
+    // cleanup thread locals
+    Actor.locals.remove("web.req")
+    Actor.locals.remove("web.res")
 
     // ensure response is committed and close the response
     // output stream, but don't close the underlying socket
@@ -157,14 +168,8 @@ internal const class WispActor : Actor
   **
   private Void initReqRes(WispReq req, WispRes res)
   {
-    // init request - create content input stream wrapper
-    req.webIn = WebUtil.makeContentInStream(req.headers, req.socket.in)
-
-    // if the WebUtil didn't wrap the stream, then that means no
-    // Content-Length or Transfer-Encoding - which in turn means we don't
-    // consider this a valid request for sending a body in the request
-    // according to 4.4 (since pipeling would be undefined)
-    if (req.webIn === req.socket.in) req.webIn = null
+    // init request input stream to read content
+    req.webIn = initReqInStream(req)
 
     // init response - set predefined headers
     res.headers["Server"] = wispVer
@@ -172,8 +177,7 @@ internal const class WispActor : Actor
 
     // if using HTTP 1.1 and client specified using keep-alives,
     // then setup response to be persistent for pipelining
-    if (req.version === ver11 &&
-        req.headers.get("Connection", "").split(',').any |tok| { tok.equalsIgnoreCase("keep-alive")})
+    if (req.version === ver11 && req.isKeepAlive && !req.isUpgrade)
     {
       res.isPersistent = true
       res.headers["Connection"] = "keep-alive"
@@ -183,28 +187,26 @@ internal const class WispActor : Actor
     Locale.setCur(req.locales.first)
   }
 
-//////////////////////////////////////////////////////////////////////////
-// Service
-//////////////////////////////////////////////////////////////////////////
-
-  private Void doService(WebReq req, WebRes res)
+  **
+  ** Map the raw HTTP input stream to handle the charset and transfer encoding
+  **
+  private InStream? initReqInStream(WispReq req)
   {
-    // init thread locals
-    Actor.locals["web.req"] = req
-    Actor.locals["web.res"] = res
-    try
-    {
-      service.root.onService
-    }
-    finally
-    {
-      // save session if accessed
-      service.sessionStore.doSave
+    // raw socket input stream
+    raw := req.socket.in
 
-      // cleanup thread locals
-      Actor.locals.remove("web.req")
-      Actor.locals.remove("web.res")
-    }
+    // if requesting an upgrade, then leave access to raw socket
+    if (req.isUpgrade) return raw
+
+    // init request - create content input stream wrapper
+    wrap := WebUtil.makeContentInStream(req.headers, raw)
+
+    // if the WebUtil didn't wrap the stream, then that means no
+    // Content-Length or Transfer-Encoding - which in turn means we don't
+    // consider this a valid request for sending a body in the request
+    // according to 4.4 (since pipeling would be undefined)
+    if (wrap === raw) return null
+    return wrap
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -237,12 +239,11 @@ internal const class WispActor : Actor
       {
         res.statusCode = 500
         res.headers.clear
-        res.headers["Content-Type"] = "text/plain"
-        res.out.print("ERROR: $req.uri\n")
-        err.trace(res.out)
+        req.stash["err"] = err
+        service.errMod.onService
       }
     }
-    catch (Err e) { e.trace }
+    catch (Err e) WispService.log.err("internalServiceError res failed", e)
   }
 
 //////////////////////////////////////////////////////////////////////////

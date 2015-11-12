@@ -157,7 +157,7 @@ fan.sys.Float.toStr = function(self)
   if (isNaN(self)) return "NaN";
   if (self == fan.sys.Float.m_posInf) return "INF";
   if (self == fan.sys.Float.m_negInf) return "-INF";
-  return ""+self;
+  return (fan.sys.Float.toInt(self) == self) ? self.toFixed(1) : ""+self;
 }
 
 fan.sys.Float.encode = function(self, out)
@@ -182,21 +182,16 @@ fan.sys.Float.toCode = function(self)
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Float.toLocale = function(self, pattern)
+fan.sys.Float.toLocale = function(self, pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
   try
   {
-    // get current locale
-// TODO FIXIT
-//    Locale locale = Locale.cur();
-//    java.text.DecimalFormatSymbols df = locale.decimal();
-    var df = null;
-
     // handle special values
-    if (isNaN(self)) return "NaN"; /*df.getNaN();*/
-    if (self == fan.sys.Float.m_posInf) return "INF"; /*df.getInfinity();*/
-    if (self == fan.sys.Float.m_negInf) return "-INF"; /*df.getMinusSign() + df.getInfinity()*/
+    if (isNaN(self)) return locale.numSymbols().nan;
+    if (self == fan.sys.Float.m_posInf) return locale.numSymbols().posInf;
+    if (self == fan.sys.Float.m_negInf) return locale.numSymbols().negInf;
 
     // get default pattern if necessary
     if (pattern == null)
@@ -216,7 +211,7 @@ fan.sys.Float.toLocale = function(self, pattern)
     var d = fan.sys.NumDigits.makeStr(string);
 
     // route to common FanNum method
-    return fan.sys.Num.toLocale(p, d, df);
+    return fan.sys.Num.toLocale(p, d, locale);
   }
   catch (err)
   {

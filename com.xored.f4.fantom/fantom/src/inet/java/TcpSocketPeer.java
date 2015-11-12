@@ -24,7 +24,7 @@ public class TcpSocketPeer
     return new TcpSocketPeer(new Socket());
   }
 
-  public static TcpSocket makeSsl(TcpSocket upgrade)
+  public static TcpSocket makeTls(TcpSocket upgrade)
   {
     try
     {
@@ -201,6 +201,30 @@ public class TcpSocketPeer
     socket.close();
     this.in  = null;
     this.out = null;
+  }
+
+  public void shutdownIn(TcpSocket fan)
+  {
+    try
+    {
+      socket.shutdownInput();
+    }
+    catch (IOException e)
+    {
+      throw IOErr.make(e);
+    }
+  }
+
+  public void shutdownOut(TcpSocket fan)
+  {
+    try
+    {
+      socket.shutdownOutput();
+    }
+    catch (IOException e)
+    {
+      throw IOErr.make(e);
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////

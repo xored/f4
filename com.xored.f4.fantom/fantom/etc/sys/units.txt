@@ -10,7 +10,7 @@
 //
 
 -- dimensionless (null)
-percent, %
+percent, %; ; 100
 pixel, px
 decibel, db
 power_factor, pf
@@ -27,7 +27,7 @@ square_meters_per_newton, m²/N
 watts_per_square_meter_degree_kelvin, W/m²K
 ampere_square_meter, Am²
 db_milliVolt, dBmV
-db_microVolt, dBuV
+db_microVolt, dBµV
 parts_per_unit, ppu
 parts_per_million, ppm; ; 1.0E-6
 parts_per_billion, ppb; ; 1.0E-9
@@ -38,14 +38,17 @@ degrees_phase, degPh; ; 0.017453292519943
 steradian, sr
 nephelometric_turbidity_units, ntu
 formazin_nephelometric_unit, fnu
+power_usage_effectiveness, PUE
+data_center_infrastructure_efficiency, DCIE
 
 -- currency (null)
 australian_dollar, AUD
 british_pound, GBP, £
 canadian_dollar, CAD
 chinese_yuan, CNY, 元
+emerati_dirham, AED
 euro, EUR, €
-indian_rupee, INR
+indian_rupee, INR, ₹
 japanese_yen, JPY, ¥
 russian_ruble, RUB, руб
 south_korean_won, KRW, ₩
@@ -53,12 +56,13 @@ swedish_krona, SEK, kr
 swiss_franc, CHF, Fr
 taiwan_dollar, TWD
 us_dollar, USD, $
+new_israeli_shekel, NIS
 
 -- acceleration (m1*sec-2)
-meters_per_second_sqared, m/s²; m1*sec-2
+meters_per_second_squared, m/s²; m1*sec-2
 
 -- angular acceleration (sec-2)
-radians_per_second_sqared, rad/s²; sec-2
+radians_per_second_squared, rad/s²; sec-2
 
 -- angular momentum (kg1*m2*sec-1)
 joule_second, Js; kg1*m2*sec-1
@@ -88,6 +92,7 @@ energy_efficiency_ratio, Btu/Wh, EER; ; 0.2916666667
 
 -- density (kg1*m-3)
 kilograms_per_cubic_meter, kg/m³; kg1*m-3
+micrograms_per_cubic_meter, µg/m³; kg1*m-3; 1.0E-9
 
 -- electric charge (sec1*A1)
 coulomb, C; sec1*A1
@@ -137,7 +142,10 @@ calorie, cal; kg1*m2*sec-2; 4.184
 therm; kg1*m2*sec-2; 1.05506E8
 tons_refrigeration_hour, tonrefh; kg1*m2*sec-2; 1.26606708E7
 megajoule, MJ; kg1*m2*sec-2; 1000000.0
+gigajoule, GJ; kg1*m2*sec-2; 1000000000.0
 newton_meter, Nm; kg1*m2*sec-2
+cubic_meters_natural_gas, m³_gas; kg1*m2*sec-2; 37313432.83582089
+cubic_feet_natural_gas, ft³_gas; kg1*m2*sec-2; 1086498
 
 -- apparent energy (kg1*m2*sec-2)
 volt_ampere_hour, VAh; kg1*m2*sec-2; 3600.0
@@ -151,8 +159,12 @@ megavolt_ampere_reactive_hour, MVARh; kg1*m2*sec-2; 3.6E9
 
 -- energy by area (kg1*sec-2)
 joules_per_square_meter, J/m²; kg1*sec-2
+watt_hours_per_square_meter, Wh/m²; kg1*sec-2; 3600.0
+watt_hours_per_square_foot, Wh/ft²; kg1*sec-2; 3.8750077500155E4
 kilowatt_hours_per_square_meter, kWh/m²; kg1*sec-2; 3600000.0
 kilowatt_hours_per_square_foot, kWh/ft²; kg1*sec-2; 3.8750077500155E7
+megawatt_hours_per_square_meter, MWh/m²; kg1*sec-2; 3.6E9
+megawatt_hours_per_square_foot, MWh/ft²; kg1*sec-2; 3.8750077500155E10
 megajoules_per_square_meter, MJ/m²; kg1*sec-2; 1000000.0
 megajoules_per_square_foot, MJ/ft²; kg1*sec-2; 1.076391041671E7
 kilobtu_per_square_foot, kBTU/ft²; kg1*sec-2; 1.135433731957E7
@@ -215,7 +227,7 @@ watts_per_square_foot_irradiance, W/ft²_irr; kg1*sec-3; 10.76391041671
 
 -- length (m1)
 meter, m; m1
-micrometer, um; m1; 1.0E-5
+micrometer, µm; m1; 1.0E-5
 millimeter, mm; m1; 0.0010
 centimeter, cm; m1; 0.01
 kilometer, km; m1; 1000.0
@@ -246,6 +258,7 @@ milligram, mg; kg1; 1.0E-6
 gram, g; kg1; 0.0010
 ounce, oz; kg1; 0.02835
 pound, lb; kg1; 0.453591
+kilopound, klb; kg1; 453.591
 metric_ton, ton; kg1; 1000.0
 short_ton, t; kg1; 907.18474
 
@@ -256,6 +269,7 @@ kilograms_per_hour, kg/h; kg1*sec-1; 2.777777777777778E-4
 pounds_per_minute, lb/min; kg1*sec-1; 0.007559872833333333
 pounds_per_hour, lb/h; kg1*sec-1; 1.2599788055555556E-4
 pounds_per_second, lb/s; kg1*sec-1; 0.45359237
+kilopounds_per_hour, klb/h; kg1*sec-1; 0.12599788055555556
 grams_per_second, g/s; kg1*sec-1; 0.0010
 grams_per_minute, g/min; kg1*sec-1; 1.6666666666666667E-5
 metric_tons_per_hour, ton/h; kg1*sec-1; 0.2777777777777778
@@ -270,10 +284,15 @@ kilowatt, kW; kg1*m2*sec-3; 1000.0
 megawatt, MW; kg1*m2*sec-3; 1000000.0
 gigawatt, GW; kg1*m2*sec-3; 1.0E9
 btus_per_hour, BTU/h; kg1*m2*sec-3; 0.292875
+therms_per_hour, therm/h; kg1*m2*sec-3; 29287.5
 horsepower, hp; kg1*m2*sec-3; 745.7
 foot_pounds_per_second, ftlbs/sec; kg1*m2*sec-3; 1.355818
 tons_refrigeration, tonref; kg1*m2*sec-3; 3516.853
 kilobtus_per_hour, kBTU/h; kg1*m2*sec-3; 293.07107017222
+megabtus_per_hour, MBTU/h, MMBTU/h; kg1*m2*sec-3; 293071.07017222
+joules_per_hour, J/h; kg1*m2*sec-3; 0.000277777778
+kilojoules_per_hour, kJ/h; kg1*m2*sec-3; 0.277777778
+megajoules_per_hour, MJ/h; kg1*m2*sec-3; 277.777778
 
 -- power by area (kg1*sec-3)
 watts_per_square_meter, W/m²; kg1*sec-3
@@ -333,7 +352,7 @@ watts_per_meter_degree_kelvin, W/m°K; kg1*m1*sec-3*K-1
 
 -- time (sec1)
 nanosecond, ns; sec1; 1.0E-9
-microsecond, us; sec1; 1.0E-6
+microsecond, µs; sec1; 1.0E-6
 millisecond, ms; sec1; 0.0010
 hundredths_second, cs; sec1; 0.01
 tenths_second, ds; sec1; 0.1
@@ -363,28 +382,40 @@ cubic_meter, m³; m3
 cubic_millimeter, mm³; m3; 1.0E-9
 cubic_centimeter, cm³; m3; 1.0E-6
 milliliter, mL; m3; 1.0E-6
+hectoliter, hL; m3; 0.10
 liter, L; m3; 0.0010
 kiloliter, kL; m3
 cubic_inch, in³; m3; 1.6387064E-5
 cubic_foot, ft³; m3; 0.028317
 cubic_yard, yd³; m3; 0.764555
 gallon, gal; m3; 0.003785
+kilogallon, kgal; m3; 3.785
 quart, qt; m3; 9.46E-4
 pint, pt; m3; 4.73E-4
 fluid_ounce, fl_oz; m3; 2.95729E-5
 imperial_gallon, galUK; m3; 0.004546092
+hecto_cubic_foot, hft³; m3; 2.8317
 
 -- volumetric flow (m3*sec-1)
 cubic_meters_per_second, m³/s; m3*sec-1
 milliliters_per_second, mL/s; m3*sec-1; 1.0E-6
+hectoliters_per_second, hL/s; m3*sec-1; 0.10
 liters_per_second, L/s; m3*sec-1; 0.0010
 cubic_feet_per_second, cfs; m3*sec-1; 0.028317
 cubic_feet_per_minute, cfm; m3*sec-1; 4.719474432E-4
+cubic_feet_per_hour, cfh; m3*sec-1; 0.000007866
 kilocubic_feet_per_minute, kcfm; m3*sec-1; 0.4719474432
 imperial_gallons_per_minute, galUK/min; m3*sec-1; 0.004546092
 liters_per_minute, L/min; m3*sec-1; 1.6666666666666667E-5
 gallons_per_minute, gal/min; m3*sec-1; 6.30901964E-5
-cubic_meters_per_hour, m³/h; m3*sec-1; 2.777777777777778E-4
 liters_per_hour, L/h; m3*sec-1; 2.7777777777777776E-7
 cubic_meters_per_minute, m³/min; m3*sec-1; 0.016666666666666666
+cubic_meters_per_hour, m³/h; m3*sec-1; 2.777777777777778E-4
 
+-- bytes (null)
+byte
+kilobyte, kB; ; 1024
+megabyte, MB; ; 1048576
+gigabyte, GB; ; 1073741824
+terabyte, TB; ; 1099511627776
+petabyte, PB; ; 1125899906842624

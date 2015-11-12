@@ -490,6 +490,7 @@ class CheckErrors : CompilerStep
   private Void checkDefiniteAssign(MethodDef? m)
   {
     if (isSys) return
+    if (curType != null && curType.isNative) return
 
     // get fields which:
     //   - instance or static fields based on ctor or static {}
@@ -743,10 +744,16 @@ class CheckErrors : CompilerStep
       if (!ret.isVoid)
         err("Must return a value from non-Void method", stmt.loc)
     }
+    else if (ret.isVoid)
+    {
+      // Void allows returning of anything
+    }
     else if (ret.isThis)
     {
-      if (!stmt.expr.ctype.fits(curType))
+      stmt.expr = coerce(stmt.expr, curType) |->|
+      {
         err("Cannot return '$stmt.expr.toTypeStr' as $curType This", stmt.expr.loc)
+      }
     }
     else
     {
@@ -1257,7 +1264,7 @@ class CheckErrors : CompilerStep
 
     // if this call is not null safe, then verify that it's target isn't
     // a null safe call such as foo?.bar.baz
-    if (!call.isSafe && call.target is CallExpr && ((CallExpr)call.target).isSafe)
+    if (!call.isSafe && call.target is NameExpr && ((NameExpr)call.target).isSafe && call isnot ShortcutExpr)
     {
       err("Non-null safe call chained after null safe call", call.loc)
       return
@@ -1324,6 +1331,14 @@ class CheckErrors : CompilerStep
     // don't allow safe access on non-nullable type
     if (f.isSafe && f.target != null && !f.target.ctype.isNullable)
       err("Cannot use null-safe access on non-nullable type '$f.target.ctype'", f.target.loc)
+
+    // if this call is not null safe, then verify that it's target isn't
+    // a null safe call such as foo?.bar.baz
+    if (!f.isSafe && f.target is NameExpr && ((NameExpr)f.target).isSafe)
+    {
+      err("Non-null safe field access chained after null safe call", f.loc)
+      return
+    }
 
     // if using the field's accessor method
     if (f.useAccessor)
@@ -1671,11 +1686,20 @@ class CheckErrors : CompilerStep
   **
   private Void checkDeprecated(Obj target, Loc loc)
   {
-    // don't check inside of synthetic getter/setter
-    if (curMethod != null && curMethod.isSynthetic && curMethod.isFieldAccessor) return
+    slot := target as CSlot
+
+    // don't check inside:
+    //   - synthetic getter/setter or
+    //   - synthetic method of type itself
+    //   - a deprecated type itself
+    if (curMethod != null && curMethod.isSynthetic)
+    {
+      if (curMethod.isFieldAccessor) return
+      if (slot != null && slot.parent == curType) return
+    }
+    if (curType.facet("sys::Deprecated") != null) return
 
     // check both slot and its parent type
-    slot := target as CSlot
     CFacet? f := null
     if (slot != null)
     {

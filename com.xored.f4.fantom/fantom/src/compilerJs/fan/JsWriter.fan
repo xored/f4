@@ -26,21 +26,49 @@ class JsWriter
     this.out = out
   }
 
+  new makeSourceMap(OutStream out, SourceMap sourcemap)
+  {
+    this.out = out
+    this.sourcemap = sourcemap
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Write and then return this.
+  ** Write and then return this. If loc is not null, the text will be
+  ** added to the generated source map.
   **
-  JsWriter w(Obj o)
+  JsWriter w(Obj o, Loc? loc := null, Str? name := null)
   {
     if (needIndent)
     {
-      out.writeChars(Str.spaces(indentation*2))
+      spaces := indentation * 2
+      out.writeChars(Str.spaces(spaces))
+      col += spaces
       needIndent = false
     }
-    out.writeChars(o.toStr)
+    str := o.toStr
+    if (str.containsChar('\n')) throw Err("w str with newline: ${str}")
+    if (loc != null)
+    {
+      sourcemap?.add(str, Loc(loc.file, line, col), loc, name)
+    }
+    out.writeChars(str)
+    col += str.size
+    return this
+  }
+
+  JsWriter sig(JsMethodParam[] pars)
+  {
+    w("(")
+    pars.each |p,i|
+    {
+      if (i > 0) w(",")
+      p.write(this)
+    }
+    w(")")
     return this
   }
 
@@ -49,7 +77,9 @@ class JsWriter
   **
   public JsWriter nl()
   {
-    w("\n")
+    out.writeChar('\n')
+    ++line
+    col = 0
     needIndent = true
     out.flush
     return this
@@ -113,7 +143,7 @@ class JsWriter
       s = s.trimEnd
       if (inBlock) return
       if (s.size == 0) return
-      out.printLine(s)
+      w(s).nl
     }
   }
 
@@ -122,7 +152,10 @@ class JsWriter
 //////////////////////////////////////////////////////////////////////////
 
   OutStream out
+  SourceMap? sourcemap
   Int indentation := 0
   Bool needIndent := false
+  Int line := 0
+  Int col  := 0
 
 }

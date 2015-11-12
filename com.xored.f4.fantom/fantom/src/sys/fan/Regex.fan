@@ -9,6 +9,7 @@
 **
 ** Regex represents a regular expression.
 **
+@Serializable { simple = true }
 const final class Regex
 {
 
@@ -19,7 +20,7 @@ const final class Regex
   **
   ** Compile a regular expression pattern string.
   **
-  static Regex fromStr(Str pattern)
+  static new fromStr(Str pattern)
 
   **
   ** Make a Regex which will match a glob pattern:
@@ -30,9 +31,20 @@ const final class Regex
   static Regex glob(Str pattern)
 
   **
+  ** Make a Regex that matches the given string exactly.
+  ** All non-alpha numeric characters are escaped.
+  **
+  static Regex quote(Str str)
+
+  **
   ** Private constructor.
   **
   private new make()
+
+  **
+  ** Default value is Regex("").
+  **
+  const static Regex defVal
 
 //////////////////////////////////////////////////////////////////////////
 // Obj Overrides

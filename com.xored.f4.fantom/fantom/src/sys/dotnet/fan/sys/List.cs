@@ -248,6 +248,39 @@ namespace Fan.Sys
       }
     }
 
+    public Long indexr(object val) { return indexr(val, -1); }
+    public Long indexr(object val, long off)
+    {
+      if (m_size == 0) return null;
+      int start = (int)off;
+      if (start < 0) start = m_size + start;
+      if (start >= m_size) throw IndexErr.make(off).val;
+
+      try
+      {
+        if (val == null)
+        {
+          for (int i=start; i>=0; --i)
+            if (m_values[i] == null)
+              return Long.valueOf(i);
+        }
+        else
+        {
+          for (int i=start; i>=0; --i)
+          {
+            object obj = m_values[i];
+            if (obj != null && obj.Equals(val))
+              return Long.valueOf(i);
+          }
+        }
+        return null;
+      }
+      catch (IndexOutOfRangeException)
+      {
+        throw IndexErr.make(off).val;
+      }
+    }
+
     public Long indexSame(object val) { return indexSame(val, 0); }
     public Long indexSame(object val, long off)
     {
@@ -432,6 +465,27 @@ namespace Fan.Sys
       if (shift > 0) Array.Copy(m_values, s+n, m_values, s, shift);
       m_size -= n;
       for (int i=m_size; i<m_size+n; ++i) m_values[i] = null;
+      return this;
+    }
+
+    public List removeAll(List toRemove)
+    {
+      // optimize special cases
+      modify();
+      if (toRemove.sz() == 0) { return this; }
+      if (toRemove.sz() == 1) { remove(toRemove.get(0)); return this; }
+
+      // rebuild the backing store array, implementation
+      // assumes that this list is bigger than toRemove list
+      object[] newValues = new object[m_values.Length];
+      int newSize = 0;
+      for (int i=0; i<m_size; ++i)
+      {
+        object val = m_values[i];
+        if (!toRemove.contains(val)) newValues[newSize++] = val;
+      }
+      this.m_values = newValues;
+      this.m_size = newSize;
       return this;
     }
 
@@ -836,7 +890,7 @@ namespace Fan.Sys
       }
       return -(low + 1);
     }
-    
+
     public List reverse()
     {
       modify();

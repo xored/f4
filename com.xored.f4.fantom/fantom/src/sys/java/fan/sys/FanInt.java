@@ -145,6 +145,8 @@ public final class FanInt
 
   public static long shiftr(long self, long x) { return self >>> x; }
 
+  public static long shifta(long self, long x) { return self >> x; }
+
 //////////////////////////////////////////////////////////////////////////
 // Math
 //////////////////////////////////////////////////////////////////////////
@@ -374,27 +376,27 @@ public final class FanInt
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-  public static String toLocale(long self) { return toLocale(self, null); }
-  public static String toLocale(long self, String pattern)
+  public static String toLocale(long self) { return toLocale(self, null, null); }
+  public static String toLocale(long self, String pattern) { return toLocale(self, pattern, null); }
+  public static String toLocale(long self, String pattern, Locale locale)
   {
+    // get current locale
+    if (locale == null) locale = Locale.cur();
+
     // if pattern is "B" format as bytes
     if (pattern != null && pattern.length() == 1 && pattern.charAt(0) == 'B')
       return toLocaleBytes(self);
 
-    // get current locale
-    Locale locale = Locale.cur();
-    java.text.DecimalFormatSymbols df = locale.decimal();
-
     // get default pattern if necessary
     if (pattern == null)
-      pattern = Env.cur().locale(Sys.sysPod, "int", "#,###");
+      pattern = Env.cur().locale(Sys.sysPod, "int", "#,###", locale);
 
     // parse pattern and get digits
     NumPattern p = NumPattern.parse(pattern);
     NumDigits d = new NumDigits(self);
 
     // route to common FanNum method
-    return FanNum.toLocale(p, d, df);
+    return FanNum.toLocale(p, d, locale);
   }
 
   static String toLocaleBytes(long b)
@@ -447,16 +449,23 @@ public final class FanInt
   public static String toHex(long self) { return toHex(self, null); }
   public static String toHex(long self, Long width)
   {
-    String s = Long.toHexString(self);
-    if (width != null && s.length() < width.intValue())
-    {
-      StringBuilder sb = new StringBuilder(width.intValue());
-      int zeros = width.intValue() - s.length();
-      for (int i=0; i<zeros; ++i) sb.append('0');
-      sb.append(s);
-      s = sb.toString();
-    }
-    return s;
+    return pad(Long.toHexString(self), width);
+  }
+
+  public static String toRadix(long self, long radix) { return toRadix(self, radix, null); }
+  public static String toRadix(long self, long radix, Long width)
+  {
+    return pad(Long.toString(self, (int)radix), width);
+  }
+
+  private static String pad(String s, Long width)
+  {
+    if (width == null || s.length() >= width.intValue()) return s;
+    StringBuilder sb = new StringBuilder(width.intValue());
+    int zeros = width.intValue() - s.length();
+    for (int i=0; i<zeros; ++i) sb.append('0');
+    sb.append(s);
+    return sb.toString();
   }
 
   public static String toStr(long self)

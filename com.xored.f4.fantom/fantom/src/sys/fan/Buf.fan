@@ -194,10 +194,17 @@ class Buf
   Bool close()
 
   **
-  ** If this Buf is backed by a file, then force all changes
-  ** to the storage device.  Throw IOErr on error.  Return this.
+  ** Obsolete call to `sync`.  In the future this method may be
+  ** relaxed to flush only memory buffers, but not force an fsync.
   **
+  @Deprecated { msg = "Use sync" }
   This flush()
+
+  **
+  ** If this Buf is backed by a file, then fsync all changes to
+  ** the storage device.  Throw IOErr on error.  Return this.
+  **
+  This sync()
 
   **
   ** Byte order mode for both OutStream and InStream.
@@ -525,8 +532,8 @@ class Buf
   **
   ** Encode the buffer contents from 0 to size to a Base64
   ** string as defined by MIME RFC 2045.  No line breaks are
-  ** added.  This method is only supported by memory backed
-  ** buffers, file backed buffers will throw UnsupportedErr.
+  ** added.  This method is only supported by memory-backed
+  ** buffers; file-backed buffers will throw UnsupportedErr.
   **
   ** Example:
   **   Buf.make.print("Fan").toBase64    => "RmFu"
@@ -535,9 +542,24 @@ class Buf
   Str toBase64()
 
   **
-  ** Decode the specified Base64 string into its binary contents
-  ** as defined by MIME RFC 2045.  Any characters which are not
-  ** included in the Base64 character set are safely ignored.
+  ** Encode the buffer contents from 0 to size to a
+  ** Uri-safe Base64 string as defined by RFC 4648.
+  ** This means '+' is encoded as '-', and '/' is
+  ** encoded as '_'. Additionally, no padding is applied.
+  ** This method is only supported by memory-backed buffers;
+  ** file-backed buffers will throw UnsupportedErr.
+  **
+  ** Example:
+  **   Buf.make.print("safe base64~~").toBase64    => "c2FmZSBiYXNlNjR+fg=="
+  **   Buf.make.print("safe base64~~").toBase64Uri => "c2FmZSBiYXNlNjR-fg"
+  **
+  Str toBase64Uri()
+
+  **
+  ** Decode the specified Base64 string into its binary contents.
+  ** Both MIME RFC 2045 and URI-safe RFC 4648 encodings are supported.
+  ** Any characters which are not included in the Base64 character
+  ** set are safely ignored.
   **
   ** Example:
   **   Buf.make.print("Fan").toBase64    => "RmFu"
@@ -563,6 +585,19 @@ class Buf
   Buf toDigest(Str algorithm)
 
   **
+  ** Compute a cycle reduancy check code using this buffer's contents
+  ** from 0 to size.  The supported algorithm names:
+  **    - "CRC-16": also known as CRC-16-ANSI, CRC-16-IBM; used by
+  **      USB, ANSI X3.28, and Modbus
+  **    - "CRC-32": used by Ethernet, MPEG-2, PKZIP, Gzip, PNG
+  **    - "CRC-32-Adler": used by Zlib
+  **
+  ** Raise ArgErr is algorithm is not available.  This method is
+  ** only supported for memory based buffers.
+  **
+  Int crc(Str algorithm)
+
+  **
   ** Generate an HMAC message authentication as specified by RFC 2104.
   ** This buffer is the data input, 'algorithm' specifies the hash digest,
   ** and 'key' represents the secret key:
@@ -584,6 +619,21 @@ class Buf
   **
   Buf hmac(Str algorithm, Buf key)
 
+  **
+  ** Generate a password based cryptographic key.  Supported algoriths:
+  **   - "PBKDF2WithHmacSHA1"
+  **   - "PBKDF2WithHmacSHA256"
+  **
+  ** Parameters:
+  **   - password: secret used to generate resulting cryptographic key
+  **   - salt: cryptographic salt
+  **   - iterations: number of iterations (the 'c' term)
+  **   - keyLen: desired length of key in bytes (not bits!)
+  **
+  ** Throw ArgErr if the algorithm is not available.  This method is
+  ** only supported for memory buffers.
+  **
+  static Buf pbk(Str algorithm, Str password, Buf salt, Int iterations, Int keyLen)
 }
 
 **************************************************************************

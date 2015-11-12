@@ -78,6 +78,7 @@ public abstract class Type
     // private undocumented access
     if (name.equals("flags")) return Long.valueOf(flags());
     if (name.equals("toClass")) return toClass();
+    if (name.equals("finish")) { finish(); return this; }
     return super.trap(name, args);
   }
 
@@ -265,7 +266,7 @@ public abstract class Type
 
   public abstract List inheritance();
 
-  public final boolean fits(Type type) { return is(type); }
+  public final boolean fits(Type type) { return toNonNullable().is(type.toNonNullable()); }
   public abstract boolean is(Type type);
 
   /**

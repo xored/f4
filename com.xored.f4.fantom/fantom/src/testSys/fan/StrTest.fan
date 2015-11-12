@@ -993,6 +993,16 @@ class StrTest : Test
     verifyEq("   ".trimEnd, "")
   }
 
+  Void testTrimToNull()
+  {
+    verifyNull("".trimToNull)
+    verifyNull(" ".trimToNull)
+    verifyNull("   ".trimToNull)
+    verifyNull("\u0019\u0000\n\r\t \u0005\n".trimToNull)
+    verifyEq(" x ".trimToNull, "x")
+    verifySame("foo".trimToNull, "foo")
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Split
 //////////////////////////////////////////////////////////////////////////
@@ -1072,6 +1082,7 @@ class StrTest : Test
     verifyEq("xx".replace("x", "-"), "--")
     verifyEq("xbx".replace("x", "-"), "-b-")
     verifyEq("axb".replace("x", "-"), "a-b")
+    verifyEq("axb".replace("", "-"), "axb")
 
     verifyEq("".replace("xy", "-"), "")
     verifyEq("x".replace("xy", "-"), "x")
@@ -1134,6 +1145,8 @@ class StrTest : Test
     verifyErr(ParseErr#) { "5.x".toDecimal }
 
     verifyEq("http://foo/".toUri, `http://foo/`)
+
+    verifyEq("foo".toRegex, Regex.fromStr("foo"))
   }
 
 //////////////////////////////////////////////////////////////////////////

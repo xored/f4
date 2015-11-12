@@ -136,7 +136,7 @@ const final class Time
   ** A symbol immediately preceding a "F" pattern with a no
   ** fraction to print is skipped.
   **
-  Str toLocale(Str? pattern := null)
+  Str toLocale(Str? pattern := null, Locale locale := Locale.cur)
 
   **
   ** Parse a string into a Time using the given pattern.  If
@@ -166,6 +166,27 @@ const final class Time
   ** Also see `fromIso` and `toStr`.
   **
   Str toIso()
+
+//////////////////////////////////////////////////////////////////////////
+// Past/Future
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Add the specified duration to this time. Throw ArgErr if 'dur' is
+  ** not between 0 and 24hr.
+  **
+  ** Example:
+  **   Time(5,0,0) + 30min  =>  05:30:00
+  **
+  @Operator Time plus(Duration dur)
+
+  ** Subtract the specified duration to this time. Throw ArgErr if 'dur' is
+  ** not between 0 and 24hr.
+  **
+  ** Example:
+  **   Time(5,0,0) - 30min  =>  04:30:00
+  **
+  @Operator Time minus(Duration dur)
 
 //////////////////////////////////////////////////////////////////////////
 // Misc

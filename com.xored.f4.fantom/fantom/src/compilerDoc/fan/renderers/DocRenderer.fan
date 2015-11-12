@@ -131,7 +131,7 @@ abstract class DocRenderer
         try
         {
           // route to DocEnv.link
-          link := env.link(this.doc, elem.uri, true)
+          link := resolveFandocLink(elem, true)
 
           // get environment URI for the DocLink
           elem.uri = env.linkUri(link).encode
@@ -140,8 +140,7 @@ abstract class DocRenderer
           // if link text was original URI, then update with DocLink.dis
           if (elem.children.first is DocText && elem.children.first.toStr == orig)
           {
-            elem.children.clear
-            elem.addChild(DocText(link.dis))
+            elem.removeAll.add(DocText(link.dis))
           }
         }
         catch (Err e)
@@ -168,5 +167,12 @@ abstract class DocRenderer
       out.pre.w(doc.text).preEnd
     }
   }
-}
 
+  **
+  ** Hook used to map a fandoc link to a doc link
+  **
+  virtual DocLink? resolveFandocLink(Link elem, Bool checked := true)
+  {
+    env.link(this.doc, elem.uri, true)
+  }
+}

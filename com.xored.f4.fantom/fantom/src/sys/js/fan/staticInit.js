@@ -96,6 +96,11 @@ fan.sys.Uri.m_defVal = fan.sys.Uri.fromStr("");
 fan.sys.UriPodBase = "/pod/"; // TODO
 
 //
+// Locale
+//
+fan.sys.Locale.m_en = fan.sys.Locale.fromStr("en")
+
+//
 // MimeType
 //
 fan.sys.MimeType.m_imagePng  = fan.sys.MimeType.predefined("image", "png");
@@ -213,7 +218,13 @@ fan.sys.TimeZone.m_utc = tz;
 tz = new fan.sys.TimeZone();
 tz.m_name = "Rel";
 tz.m_fullName = "Etc/Rel";
-tz.m_rules = [new fan.sys.TimeZone$Rule()];
+tz.m_rules = [];
+rule = new fan.sys.TimeZone$Rule();
+ rule.startYear = 1995;
+ rule.offset = 0;
+ rule.stdAbbr = "Rel";
+ rule.dstOffset = 0;
+ tz.m_rules.push(rule);
 fan.sys.TimeZone.cache["Rel"] = tz;
 fan.sys.TimeZone.cache["Etc/Rel"] = tz;
 fan.sys.TimeZone.names.push("Rel");
@@ -227,6 +238,11 @@ fan.sys.Time.m_defVal = new fan.sys.Time(0, 0, 0, 0);
 fan.sys.Date.m_defVal = new fan.sys.Date(2000, 0, 1);
 fan.sys.DateTime.m_defVal = fan.sys.DateTime.make(
   2000, fan.sys.Month.m_jan, 1, 0, 0, 0, 0, fan.sys.TimeZone.utc());
+
+//
+// Regex
+//
+fan.sys.Regex.m_defVal = fan.sys.Regex.fromStr("");
 
 //
 // Version
@@ -243,6 +259,3 @@ fan.sys.Unit.m_quantityNames = fan.sys.List.make(fan.sys.Str.$type, []);
 //
 fan.sys.Env.m_configProps   = fan.sys.Uri.fromStr("config.props");
 fan.sys.Env.m_localeEnProps = fan.sys.Uri.fromStr("locale/en.props");
-
-
-

@@ -12,6 +12,7 @@
 **
 ** See [pod doc]`pod-doc#json` for details.
 **
+@Js
 class JsonOutStream : OutStream
 {
 
@@ -70,22 +71,25 @@ class JsonOutStream : OutStream
 
     // serialize as JSON object
     writeChar(JsonToken.objectStart)
+    first := true
     type.fields.each |f, i|
     {
       if (f.isStatic || f.hasFacet(Transient#) == true) return
-      if (i != 0) writeChar(JsonToken.comma).writeChar('\n')
+      if (first) first = false
+      else writeChar(JsonToken.comma)
       writeJsonPair(f.name, f.get(obj))
     }
     writeChar(JsonToken.objectEnd)
   }
 
-  private Void writeJsonMap(Str:Obj? map)
+  private Void writeJsonMap(Map map)
   {
     writeChar(JsonToken.objectStart)
     notFirst := false
     map.each |val, key|
     {
-      if (notFirst) writeChar(JsonToken.comma).writeChar('\n')
+      if (key isnot Str) throw Err("JSON map key is not Str type: $key [$key.typeof]")
+      if (notFirst) writeChar(JsonToken.comma)
       writeJsonPair(key, val)
       notFirst = true
     }

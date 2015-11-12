@@ -46,16 +46,18 @@ public final class Weekday
 
   public Weekday decrement() { return ord == 0 ? array[array.length-1] : array[ord-1]; }
 
-  public String toLocale() { return toLocale(null); }
-  public String toLocale(String pattern)
+  public String toLocale() { return toLocale(null, null); }
+  public String toLocale(String pattern) { return toLocale(pattern, null); }
+  public String toLocale(String pattern, Locale locale)
   {
-    if (pattern == null) return localeAbbr();
+    if (locale == null) locale = Locale.cur();
+    if (pattern == null) return abbr(locale);
     if (FanStr.isEveryChar(pattern, 'W'))
     {
       switch (pattern.length())
       {
-        case 3: return localeAbbr();
-        case 4: return localeFull();
+        case 3: return abbr(locale);
+        case 4: return full(locale);
       }
     }
     throw ArgErr.make("Invalid pattern: " + pattern);
@@ -73,9 +75,10 @@ public final class Weekday
     return Env.cur().locale(Sys.sysPod, localeFullKey, name(), locale);
   }
 
-  public static Weekday localeStartOfWeek()
+  public static Weekday localeStartOfWeek() { return localeStartOfWeek(Locale.cur()); }
+  static Weekday localeStartOfWeek(Locale locale)
   {
-    return fromStr(Env.cur().locale(Sys.sysPod, "weekdayStart", "sun"));
+    return fromStr(Env.cur().locale(Sys.sysPod, "weekdayStart", "sun", locale));
   }
 
   public static List localeVals()

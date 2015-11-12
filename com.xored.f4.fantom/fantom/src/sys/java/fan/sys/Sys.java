@@ -53,6 +53,8 @@ public final class Sys
   public static int JAVA_1_5 = 15;
   public static int JAVA_1_6 = 16;
   public static int JAVA_1_7 = 17;
+  public static int JAVA_1_8 = 18;
+  public static int JAVA_1_9 = 19;
 
   /** Java version 1.5, 1.6, 1.7, etc */
   public static int javaVersion = initJavaVersion();
@@ -117,6 +119,8 @@ public final class Sys
   public static final Type UriType          = initType("Uri");
   public static final Type ZipType          = initType("Zip");
   public static final Type ClassLoaderFileType = initType("ClassLoaderFile");
+  public static final Type FileStoreType       = initType("FileStore");
+  public static final Type LocalFileStoreType  = initType("LocalFileStore");
 
   // utils
   public static final Type DependType       = initType("Depend");
@@ -211,8 +215,11 @@ public final class Sys
   /** {BootEnv.homeDir}/etc/sys/config.props */
   public static final Map sysConfig = initSysConfig();
 
-  /** "fan.debug" env var used to generating debug attributes in bytecode */
+  /** Config prop used to generating debug attributes in bytecode */
   public static final boolean debug = sysConfigBool("debug", false);
+
+  /** Config prop used to determine max stack trace  */
+  public static final int errTraceMaxDepth = sysConfigInt("errTraceMaxDepth", 25);
 
   /** Absolute boot time */
   public static final DateTime bootDateTime = initBootDateTime();
@@ -221,7 +228,11 @@ public final class Sys
   public static final Duration bootDuration = initBootDuration();
 
   /** Current environment - do this after sys fully booted */
-  static { initEnv(); }
+  static
+  {
+    initEnv();
+    initEnvClassPath();
+  }
 
 //////////////////////////////////////////////////////////////////////////
 // Platform Init
@@ -366,6 +377,8 @@ public final class Sys
     try
     {
       String s = System.getProperty("java.version", "1.5.0");
+      if (s.startsWith("1.9.")) return JAVA_1_9;
+      if (s.startsWith("1.8.")) return JAVA_1_8;
       if (s.startsWith("1.7.")) return JAVA_1_7;
       if (s.startsWith("1.6.")) return JAVA_1_6;
       return JAVA_1_5;
@@ -467,6 +480,22 @@ public final class Sys
     }
   }
 
+  private static void initEnvClassPath()
+  {
+    try
+    {
+      // add environment's work dir to classpath
+      LocalFile homeDir = (LocalFile)curEnv.homeDir();
+      LocalFile workDir = (LocalFile)curEnv.workDir();
+      if (!homeDir.equals(workDir))
+        FanClassLoader.extClassLoader.addFanDir(workDir.file);
+    }
+    catch (Exception e)
+    {
+      initWarn("envClassPath", e);
+    }
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Empty Maps
 //////////////////////////////////////////////////////////////////////////
@@ -525,6 +554,17 @@ public final class Sys
     return def;
   }
 
+  static int sysConfigInt(String name, int def)
+  {
+    try
+    {
+      String val = sysConfig(name);
+      if (val != null) return Integer.parseInt(val);
+    }
+    catch (Exception e) {}
+    return def;
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Boot Times
 //////////////////////////////////////////////////////////////////////////
@@ -568,21 +608,6 @@ public final class Sys
     System.out.println("ERROR: cannot init Sys." + field);
     e.printStackTrace();
     throw new RuntimeException("Cannot boot fan: " + e.toString());
-  }
-
-  /**
-   * Make a thread-safe copy of the specified object.
-   * If it is immutable, then just return it; otherwise
-   * we make a serialized copy.
-   */
-  public static Object safe(Object obj)
-  {
-    if (obj == null) return null;
-    if (FanObj.isImmutable(obj)) return obj;
-    Buf buf = new MemBuf(512);
-    buf.out.writeObj(obj);
-    buf.flip();
-    return buf.in.readObj();
   }
 
   /** Force sys class to load */
