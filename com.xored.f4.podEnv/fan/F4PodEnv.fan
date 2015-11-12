@@ -16,6 +16,9 @@ const class F4PodEnv : Env {
 		if (origFanEnv.equalsIgnoreCase("null"))
 			origFanEnv = null
 
+		// for now, lets keep the runtime env the same as the F4 env and not create parent a PathEnv
+		origFanEnv = null
+		
 		curEnv		:= origFanEnv != null ? Type.find(origFanEnv).make : Env.cur
 		return makeInternal(podLocs, curEnv)
 	}
