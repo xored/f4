@@ -85,9 +85,11 @@ class JavaLaunchUtil
 
     // pick up the original FAN_ENV, but let the ENV_VAR tab trump
     processEnv := |Obj? env -> Str?| {
-      env = env?.toStr?.trimToNull
-      if (env == "f4podEnv::F4PodEnv") env = null
-      return env
+      // allow spaces 'cos eclipse *forces* you to provide a value for environment variables
+      // spaces will be trimmed in F4PodEnv anyway
+      envStr := env?.toStr
+      if (envStr?.trimToNull == "f4podEnv::F4PodEnv") envStr = null
+      return envStr
     }
     origFanEnv := (processEnv(configEnv.get("FAN_ENV")) ?: processEnv(System.getenv.get("F4PODENV_FAN_ENV"))) ?: processEnv(System.getenv.get("FAN_ENV"))
     if (origFanEnv != null)

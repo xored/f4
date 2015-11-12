@@ -324,6 +324,7 @@ const class FantomProject
   ** By default source code it not included.
   const Bool docSrc := false
   
+ ** This is set / cleared by com.xored.f4.builder::CompileFan.build() after a pod compilation. 
   private const AtomicBool hasBuildErrsRef := AtomicBool(false)
   Bool hasBuildErrs {
     get { hasBuildErrsRef.val }
