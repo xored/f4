@@ -11,6 +11,11 @@ const class F4PodEnv : Env {
 		// Env.cur defaults to BootEnv until we create ourselves
 		podLocs		:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
 		origFanEnv	:= Env.cur.vars["F4PODENV_FAN_ENV"]?.trimToNull
+
+		// a handy get out of jail card 'cos eclipse *forces* you to provide a value for environment variables
+		if (origFanEnv.equalsIgnoreCase("null"))
+			origFanEnv = null
+
 		curEnv		:= origFanEnv != null ? Type.find(origFanEnv).make : Env.cur
 		return makeInternal(podLocs, curEnv)
 	}
