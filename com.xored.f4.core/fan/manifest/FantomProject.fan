@@ -22,6 +22,8 @@ using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.dltk.launching::LibraryLocation
 using [java]org.eclipse.pde.core.project::IBundleProjectDescription
 using f4model
+using concurrent
+
 **
 ** Models a Fantom project
 **
@@ -322,6 +324,12 @@ const class FantomProject
   ** By default source code it not included.
   const Bool docSrc := false
   
+  private const AtomicBool hasBuildErrsRef := AtomicBool(false)
+  Bool hasBuildErrs {
+    get { hasBuildErrsRef.val }
+    set { hasBuildErrsRef.val = it }
+  }
+	
 //////////////////////////////////////////////////////////////////////////
 // Private helper methods
 //////////////////////////////////////////////////////////////////////////
