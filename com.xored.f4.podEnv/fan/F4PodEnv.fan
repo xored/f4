@@ -30,6 +30,6 @@ const class F4PodEnv : Env {
 	}
 	
 	override Str[] findAllPodNames() {
-		podLocations.keys.addAll(super.findAllPodNames)
+		podLocations.keys.addAll(super.findAllPodNames).unique
 	}
 }
