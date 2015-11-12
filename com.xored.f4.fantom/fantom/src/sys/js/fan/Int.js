@@ -213,7 +213,8 @@ fan.sys.Int.and = function(a, b) { var x = a & b;  if (x<0) x += 0xffffffff+1; r
 fan.sys.Int.or  = function(a, b) { var x = a | b;  if (x<0) x += 0xffffffff+1; return x; }
 fan.sys.Int.xor = function(a, b) { var x = a ^ b;  if (x<0) x += 0xffffffff+1; return x; }
 fan.sys.Int.shiftl = function(a, b) { var x = a << b; if (x<0) x += 0xffffffff+1; return x; }
-fan.sys.Int.shiftr = function(a, b) { var x = a >> b; if (x<0) x += 0xffffffff+1; return x; }
+fan.sys.Int.shiftr = function(a, b) { var x = a >>> b; if (x<0) x += 0xffffffff+1; return x; }
+fan.sys.Int.shifta = function(a, b) { var x = a >> b; return x; }
 
 //////////////////////////////////////////////////////////////////////////
 // Conversion
@@ -253,7 +254,23 @@ fan.sys.Int.toHex = function(self, width)
 
   return s;
 }
-fan.sys.Int.$zeros = null;
+
+fan.sys.Int.toRadix = function(self, radix, width)
+{
+  if (width === undefined) width = null;
+
+  // convert to hex string
+  var s = self.toString(radix);
+
+  // pad width
+  if (width != null && s.length < width)
+  {
+    var zeros = width - s.length;
+    for (var i=0; i<zeros; ++i) s = '0' + s;
+  }
+
+  return s;
+}
 
 fan.sys.Int.toCode = function(self, base)
 {
@@ -310,19 +327,14 @@ for (var i=65; i<=70;  ++i) fan.sys.Int.charMap[i] |= fan.sys.Int.HEX;
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Int.toLocale = function(self, pattern)
+fan.sys.Int.toLocale = function(self, pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
 
   // if pattern is "B" format as bytes
   if (pattern != null && pattern.length == 1 && pattern.charAt(0) == 'B')
     return fan.sys.Int.toLocaleBytes(self);
-
-  // get current locale
-// TODO FIXIT
-//  Locale locale = Locale.cur();
-//  java.text.DecimalFormatSymbols df = locale.decimal();
-   var df = null;
 
   // get default pattern if necessary
   if (pattern == null)
@@ -335,7 +347,7 @@ fan.sys.Int.toLocale = function(self, pattern)
   var d = fan.sys.NumDigits.makeLong(self);
 
   // route to common FanNum method
-  return fan.sys.Num.toLocale(p, d, df);
+  return fan.sys.Num.toLocale(p, d, locale);
 }
 
 fan.sys.Int.toLocaleBytes = function(b)

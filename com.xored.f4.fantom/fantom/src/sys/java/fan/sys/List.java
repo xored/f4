@@ -257,6 +257,39 @@ public final class List
     }
   }
 
+  public final Long indexr(Object value) { return indexr(value, -1L); }
+  public final Long indexr(Object value, long off)
+  {
+    if (size == 0) return null;
+    int start = (int)off;
+    if (start < 0) start = size + start;
+    if (start >= size) throw IndexErr.make(off);
+
+    try
+    {
+      if (value == null)
+      {
+        for (int i=start; i>=0; --i)
+          if (values[i] == null)
+            return Long.valueOf(i);
+      }
+      else
+      {
+        for (int i=start; i>=0; --i)
+        {
+          Object obj = values[i];
+          if (obj != null && obj.equals(value))
+            return Long.valueOf(i);
+        }
+      }
+      return null;
+    }
+    catch (ArrayIndexOutOfBoundsException e)
+    {
+      throw IndexErr.make(off);
+    }
+  }
+
   public final Long indexSame(Object value) { return indexSame(value, 0L); }
   public final Long indexSame(Object value, long off)
   {
@@ -450,6 +483,27 @@ public final class List
     if (shift > 0) System.arraycopy(values, s+n, values, s, shift);
     size -= n;
     for (int i=size; i<size+n; ++i) values[i] = null;
+    return this;
+  }
+
+  public final List removeAll(List toRemove)
+  {
+    // optimize special cases
+    modify();
+    if (toRemove.sz() == 0) { return this; }
+    if (toRemove.sz() == 1) { remove(toRemove.get(0)); return this; }
+
+    // rebuild the backing store array, implementation
+    // assumes that this list is bigger than toRemove list
+    Object[] newValues = newArray(values.length);
+    int newSize = 0;
+    for (int i=0; i<size; ++i)
+    {
+      Object val = values[i];
+      if (!toRemove.contains(val)) newValues[newSize++] = val;
+    }
+    this.values = newValues;
+    this.size = newSize;
     return this;
   }
 

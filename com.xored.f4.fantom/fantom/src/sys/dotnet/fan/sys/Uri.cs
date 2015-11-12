@@ -110,6 +110,8 @@ namespace Fan.Sys
         int c = str[i];
         if (c < 128 && (charMap[c] & QUERY) != 0 && (delimEscMap[c] & QUERY) == 0)
           buf.Append((char)c);
+        else if (c == ' ')
+          buf.Append('+');
         else
           percentEncodeChar(buf, c);
       }
@@ -146,18 +148,23 @@ namespace Fan.Sys
 
       internal void normalize()
       {
-        normalizeHttp();
+        normalizeSchemes();
         normalizePath();
         normalizeQuery();
       }
 
-      private void normalizeHttp()
+      private void normalizeSchemes()
       {
-        if (scheme == null || scheme != "http")
-          return;
+        if (scheme == null) return;
+        if (scheme == "http")  { normalizeScheme(80);  return; }
+        if (scheme == "https") { normalizeScheme(443); return; }
+        if (scheme == "ftp")   { normalizeScheme(21);  return; }
+      }
 
+      private void normalizeScheme(int p)
+      {
         // port 80 -> null
-        if (port != null && port.longValue() == 80) port = null;
+        if (port != null && port.longValue() == p) port = null;
 
         // if path is "" -> "/"
         if (pathStr == null || pathStr.Length == 0)
@@ -1159,7 +1166,7 @@ namespace Fan.Sys
     public Uri plusName(string name, bool asDir)
     {
       int size        = m_path.sz();
-      bool isDir      = this.isDir();
+      bool isDir      = this.isDir() || m_path.isEmpty();
       int newSize     = isDir ? size + 1 : size;
       string[] temp   = (string[])m_path.toArray(new string[newSize]);
       temp[newSize-1] = name;
@@ -1173,7 +1180,7 @@ namespace Fan.Sys
       t.queryStr = null;
       t.frag     = null;
       t.path     = new List(Sys.StrType, temp);
-      t.pathStr  = toPathStr(isPathAbs(), t.path, asDir);
+      t.pathStr  = toPathStr(isAbs() || isPathAbs(), t.path, asDir);
       return new Uri(t);
     }
 

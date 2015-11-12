@@ -423,19 +423,49 @@ fan.sys.DateTime.prototype.dst = function() { return ((this.m_fields >> 31) & 0x
 fan.sys.DateTime.prototype.tzAbbr = function() { return this.dst() ? this.m_tz.dstAbbr(this.year()) : this.m_tz.stdAbbr(this.year()); }
 fan.sys.DateTime.prototype.dayOfYear = function() { return fan.sys.DateTime.dayOfYear(this.year(), this.month().m_ordinal, this.day())+1; }
 
+fan.sys.DateTime.prototype.weekOfYear = function(startOfWeek)
+{
+  if (startOfWeek === undefined) startOfWeek = fan.sys.Weekday.localeStartOfWeek();
+  return fan.sys.DateTime.weekOfYear(this.year(), this.month().m_ordinal, this.day(), startOfWeek);
+}
+
+fan.sys.DateTime.weekOfYear = function(year, month, day, startOfWeek)
+{
+  var firstWeekday = fan.sys.DateTime.firstWeekday(year, 0); // zero based
+  var lastDayInFirstWeek = 7 - (firstWeekday - startOfWeek.m_ordinal);
+
+  // special case for first week
+  if (month == 0 && day <= lastDayInFirstWeek) return 1;
+
+  // compute from dayOfYear - lastDayInFirstWeek
+  var doy = fan.sys.DateTime.dayOfYear(year, month, day) + 1;
+  var woy = Math.floor((doy - lastDayInFirstWeek - 1) / 7);
+  return woy + 2; // add first week and make one based
+}
+
+fan.sys.DateTime.prototype.hoursInDay = function()
+{
+  var year  = this.year();
+  var month = this.month().m_ordinal;
+  var day   = this.day();
+  var rule  = this.tz().rule(year);
+  if (fan.sys.TimeZone.isDstDate(rule, rule.dstStart, year, month, day)) return 23;
+  if (fan.sys.TimeZone.isDstDate(rule, rule.dstEnd, year, month, day))   return 25;
+  return 24;
+}
+
 /////////////////////////////////////////////////////////////////////////
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
 fan.sys.DateTime.prototype.toLocale = function(pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
-  if (locale  === undefined) locale = null;
 
   // locale specific default
   if (pattern == null)
   {
-    if (locale == null) locale = fan.sys.Locale.cur();
     var pod = fan.sys.Pod.find("sys");
     pattern = fan.sys.Env.cur().locale(pod, "dateTime", "D-MMM-YYYY WWW hh:mm:ss zzz", locale);
   }
@@ -603,6 +633,24 @@ fan.sys.DateTime.checkYear = function(year)
 {
   if (year < 1901 || year > 2099)
     throw fan.sys.ArgErr.make("Year out of range " + year);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Java
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.DateTime.prototype.toJava = function()
+{
+  return (this.m_ticks / fan.sys.DateTime.nsPerMilli) + 946684800000;
+}
+
+fan.sys.DateTime.fromJava = function(millis, tz, negIsNull)
+{
+  if (tz === undefined) tz = fan.sys.TimeZone.cur();
+  if (negIsNull === undefined) negIsNull = true;
+  if (millis <= 0 && negIsNull) return null;
+  var ticks = (millis - 946684800000) * fan.sys.DateTime.nsPerMilli;
+  return fan.sys.DateTime.makeTicks(ticks, tz);
 }
 
 //////////////////////////////////////////////////////////////////////////

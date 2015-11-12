@@ -34,6 +34,18 @@ fan.sys.Regex.glob = function(pattern)
   return new fan.sys.Regex(s);
 }
 
+fan.sys.Regex.quote = function(pattern)
+{
+  var s = "";
+  for (var i=0; i<pattern.length; ++i)
+  {
+    var c = pattern.charCodeAt(i);
+    if (fan.sys.Int.isAlphaNum(c)) s += String.fromCharCode(c);
+    else s += '\\' + String.fromCharCode(c);
+  }
+  return new fan.sys.Regex(s);
+}
+
 fan.sys.Regex.prototype.$ctor = function(source)
 {
   this.m_source = source;
@@ -47,7 +59,7 @@ fan.sys.Regex.prototype.$ctor = function(source)
 fan.sys.Regex.prototype.equals = function(obj)
 {
   if (obj instanceof fan.sys.Regex)
-    return obj.m_source == this.m_source;
+    return obj.m_source === this.m_source;
   else
     return false;
 }
@@ -67,18 +79,21 @@ fan.sys.Regex.prototype.matches = function(s)
   return this.m_regexp.test(s);
 }
 
-//fan.sys.Regex.prototype.matcher = function(s)
-//{
-//  return new RegexMatcher(pattern.matcher(s));
-//}
+fan.sys.Regex.prototype.matcher = function(s)
+{
+  return new fan.sys.RegexMatcher(this.m_regexp, this.m_source, s);
+}
 
 fan.sys.Regex.prototype.split = function(s, limit)
 {
   if (limit === undefined) limit = 0;
+  s = fan.sys.Regex.quote(s).m_source;
 
   // TODO FIXIT: limit works very differently in Java
+  if (limit === 1)
+    return fan.sys.List.make(fan.sys.Str.$type, [s]);
+
   var re = this.m_regexp;
   var array = (limit === 0) ? s.split(re) : s.split(re, limit);
   return fan.sys.List.make(fan.sys.Str.$type, array);
 }
-

@@ -343,6 +343,7 @@ class DateTimeTest : Test
     verifyEq(mon.toLocale(null), mmm)
     verifyEq(mon.localeAbbr, mmm)
     verifyEq(mon.localeFull, mmmm)
+    Locale("de").use { verifyEq(mon.toLocale("MMM", Locale.en), mmm) }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -423,6 +424,7 @@ class DateTimeTest : Test
     verifyEq(w.toLocale(null), www)
     verifyEq(w.localeAbbr, www)
     verifyEq(w.localeFull, wwww)
+    Locale("de").use { verifyEq(w.toLocale("WWW", Locale.en), www) }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -956,6 +958,11 @@ class DateTimeTest : Test
     verifyEq(x.toLocale("F, FF, FFF, FFFF, FFFFF"), "1, 12, 123, 123, 123")
     verifyEq(x.toLocale("F, fF, ffF, ffFF, ffffF"), "1, 12, 123, 123, 1230")
     verifyEq(x.toLocale("z, zzz, zzzz"), "-05:00, EST, New_York")
+    Locale("fr").use
+    {
+      verifyEq(x.toLocale("DD-MMM", Locale.en), "05-Feb")
+      verifyEq(x.date.toLocale("DD-MMM", Locale.en), "05-Feb")
+    }
 
     // US locale default pattern (12 hour time)
     verifyEq(x.toLocale(),     "5-Feb-2008 Tue 3:07:20AM EST")
@@ -1254,8 +1261,6 @@ class DateTimeTest : Test
 
   Void testJava()
   {
-    if (Env.cur.runtime != "java") return
-
     x := DateTime.fromJava(1227185341155, ny)
     verifyEq(x.tz, ny)
     verifyEq(x.year, 2008)
@@ -1264,6 +1269,10 @@ class DateTimeTest : Test
     verifyEq(x.hour, 7)
     verifyEq(x.min, 49)
     verifyEq(x.toJava, 1227185341155)
+
+    verifyEq(DateTime.fromJava(0, utc), null)
+    verifyEq(DateTime.fromJava(-1, utc), null)
+    verifyEq(DateTime.fromJava(-86400000, utc, false).toStr, "1969-12-31T00:00:00Z UTC")
  }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1445,6 +1454,35 @@ class DateTimeTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Time plus/minus
+//////////////////////////////////////////////////////////////////////////
+
+  Void testTimeMath()
+  {
+    verifyTimeMath(Time(5,0,0),    Time(5,0,0),     0min)
+    verifyTimeMath(Time(5,0,0),    Time(5,30,0),    30min)
+    verifyTimeMath(Time(5,0,0),    Time(4,30,0),    -30min)
+    verifyTimeMath(Time(2,30,0),   Time(3,30,0),    1hr)
+    verifyTimeMath(Time(2,30,0),   Time(1,30,0),    -1hr)
+    verifyTimeMath(Time(20,12,25), Time(20,13, 3),  38sec)
+    verifyTimeMath(Time(20,12,25), Time(20,11,47),  -38sec)
+    verifyTimeMath(Time(23,59,59), Time(0,0,0),     1sec)
+    verifyTimeMath(Time(0,0,0),    Time(0,0,0),     24hr)
+    verifyTimeMath(Time(22,30,00), Time(3,30,0),    5hr)
+    verifyTimeMath(Time(1,15,00),  Time(23,15,0),   -2hr)
+
+    verifyErr(ArgErr#) { x := Time(3,30,0) + 25hr }
+    verifyErr(ArgErr#) { x := Time(3,30,0) + 2day }
+  }
+
+  Void verifyTimeMath(Time a, Time b, Duration diff)
+  {
+    verifyEq(a + diff, b)
+    verifyEq(b + -diff, a)
+    verifyEq(b - diff, a)
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Date plus/minus
 //////////////////////////////////////////////////////////////////////////
 
@@ -1535,6 +1573,91 @@ class DateTimeTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// WeekOfYear
+//////////////////////////////////////////////////////////////////////////
+
+  Void testWeekOfYear()
+  {
+    verifyWeekOfYear("2013-01-01", 1, 1, 1)
+    verifyWeekOfYear("2013-01-05", 1, 1, 1)
+    verifyWeekOfYear("2013-01-06", 2, 1, 1)
+    verifyWeekOfYear("2013-01-07", 2, 2, 1)
+    verifyWeekOfYear("2013-01-08", 2, 2, 2)
+    verifyWeekOfYear("2013-01-12", 2, 2, 2)
+    verifyWeekOfYear("2013-01-14", 3, 3, 2)
+    verifyWeekOfYear("2013-02-18", 8, 8, 7)
+    verifyWeekOfYear("2013-04-15", 16, 16, 15)
+    verifyWeekOfYear("2013-12-23", 52, 52, 51)
+    verifyWeekOfYear("2013-12-29", 53, 52, 52)
+    verifyWeekOfYear("2013-12-30", 53, 53, 52)
+    verifyWeekOfYear("2013-12-31", 53, 53, 53)
+
+    verifyEq(Date("2013-01-01").dayOfYear, 1)
+    verifyEq(Date("2013-02-01").dayOfYear, 32)
+    verifyEq(Date("2013-12-31").dayOfYear, 365)
+  }
+
+  Void verifyWeekOfYear(Str date, Int us, Int fi, Int tue)
+  {
+    d := Date(date)
+    Locale("en-US").use { doVerifyWeekOfYear(d, us) }
+    Locale("fi").use    { doVerifyWeekOfYear(d, fi) }
+    verifyEq(d.weekOfYear(Weekday.tue), tue)
+    verifyEq(d.toDateTime(Time(23,59)).weekOfYear(Weekday.tue), tue)
+  }
+
+  private Void doVerifyWeekOfYear(Date d, Int woy)
+  {
+    verifyEq(d.weekOfYear, woy)
+    verifyEq(d.toDateTime(Time(12,0)).weekOfYear, woy)
+    verifyEq(d.toLocale("V VV VVV"), weekOfYearPattern(woy))
+    verifyEq(d.toDateTime(Time(0,0)).toLocale("V VV VVV" ), weekOfYearPattern(woy))
+  }
+
+  private Str weekOfYearPattern(Int woy)
+  {
+    switch (woy)
+    {
+      case 1: return "1 01 1st"
+      case 2: return "2 02 2nd"
+      case 3: return "3 03 3rd"
+      case 7: return "7 07 7th"
+      case 8: return "8 08 8th"
+      case 52: return "52 52 52nd"
+      case 53: return "53 53 53rd"
+      default: return "$woy $woy ${woy}th"
+    }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// HoursInDay
+//////////////////////////////////////////////////////////////////////////
+
+  Void testHoursInDay()
+  {
+    verifyHoursInDay("2013-03-09",  "New_York", 24)
+    verifyHoursInDay("2013-03-10", "New_York", 23)
+    verifyHoursInDay("2013-03-11", "New_York", 24)
+    verifyHoursInDay("2013-06-19", "New_York", 24)
+    verifyHoursInDay("2013-11-02", "New_York", 24)
+    verifyHoursInDay("2013-11-03", "New_York", 25)
+    verifyHoursInDay("2013-12-31", "New_York", 24)
+
+    verifyHoursInDay("2015-03-29", "Madrid", 23)
+    verifyHoursInDay("2015-03-30", "Madrid", 24)
+    verifyHoursInDay("2015-10-25", "Madrid", 25)
+    verifyHoursInDay("2015-10-26", "Madrid", 24)
+
+    verifyHoursInDay("2015-10-26", "UTC", 24)
+  }
+
+  private Void verifyHoursInDay(Str d, Str tz, Int expected)
+  {
+    dt := Date(d).toDateTime(Time((0..23).random, 30), TimeZone(tz))
+    verifyEq(dt.hoursInDay, expected)
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Rel Normalization
 //////////////////////////////////////////////////////////////////////////
 
@@ -1592,6 +1715,34 @@ class DateTimeTest : Test
 
     if (cmp < 0) verify(a < b)
     if (cmp > 0) verify(a > b)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// All Locales
+//////////////////////////////////////////////////////////////////////////
+
+  Void testAllLocales()
+  {
+    locales := Pod.find("sys").files.findAll |f| { f.pathStr.startsWith("/locale/") }.map |f| { f.basename }
+    locales.each |locale|
+    {
+      Locale.setCur(Locale(locale))
+      try
+      {
+        ts := DateTime.now
+        verifyNotNull(ts.toLocale)
+        verifyNotNull(ts.time.toLocale)
+        verifyNotNull(ts.date.toLocale)
+        verifyNotNull(ts.month.toLocale)
+        verifyNotNull(ts.weekday.toLocale)
+      }
+      catch (Err e)
+      {
+        echo("Locale has invalid date time defaults: $locale")
+        e.trace
+        fail
+      }
+    }
   }
 
 }

@@ -21,19 +21,20 @@ const final class MimeType
   **
   ** Parse from string format.  If invalid format and
   ** checked is false return null, otherwise throw ParseErr.
-  ** Parenthesis comments are not supported.
+  ** Parenthesis comments are treated as part of the value.
   **
   static new fromStr(Str s, Bool checked := true)
 
   **
-  ** Parse a set of attribute-value parameters where the
-  ** values may be tokens or quoted-strings.  The resulting map
-  ** is case insensitive.  If invalid format and checked is
-  ** false return null, otherwise throw ParseErr.  Parenthesis
-  ** comments are not supported.
+  ** Parse a set of attribute-value parameters where the values may be
+  ** tokens or quoted-strings.  The resulting map is case insensitive.
+  ** If invalid format return null or raise ParseErr based on checked flag.
+  ** Parenthesis comments are not supported.  If a value pair is missing
+  ** "= value", then the value is defaulted to "".
   **
   ** Examples:
-  **   a=b; c="d"  =>  ["a":"b", "c"="d"]
+  **   a=b; c="d"       =>  ["a":"b", "c"="d"]
+  **   foo=bar; secure  =>  ["foo":"bar", "secure":""]
   **
   static [Str:Str]? parseParams(Str s, Bool checked := true)
 
@@ -101,5 +102,11 @@ const final class MimeType
   ** the 'Charset' instance, otherwise return 'Charset.utf8'.
   **
   Charset charset()
+
+  **
+  ** Return an instance with this mediaType and subType,
+  ** but strip any parameters.
+  **
+  MimeType noParams()
 
 }

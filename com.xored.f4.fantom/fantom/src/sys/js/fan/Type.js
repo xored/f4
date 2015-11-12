@@ -364,7 +364,7 @@ fan.sys.Type.addInheritance = function(t, acc, map)
   }
 }
 
-fan.sys.Type.prototype.fits = function(that) { return this.is(that); }
+fan.sys.Type.prototype.fits = function(that) { return this.toNonNullable().is(that.toNonNullable()); }
 fan.sys.Type.prototype.is = function(that)
 {
   // we don't take nullable into account for fits
@@ -455,7 +455,7 @@ fan.sys.Type.prototype.doReflect = function()
 
   for (var i in this.m_slots)
   {
-    slot = this.m_slots[i]
+    var slot = this.m_slots[i]
     slots.push(slot);
     if (slot instanceof fan.sys.Field) fields.push(slot);
     else if (slot instanceof fan.sys.Method) methods.push(slot);
@@ -852,7 +852,8 @@ fan.sys.MapType.prototype.is = function(that)
 
   if (that instanceof fan.sys.MapType)
   {
-    return this.k.is(that.k) && this.v.is(that.v);
+    return ((this.k.qname() == "sys::Obj") || this.k.is(that.k)) &&
+           ((this.v.qname() == "sys::Obj") || this.v.is(that.v));
   }
   if (that instanceof fan.sys.Type)
   {

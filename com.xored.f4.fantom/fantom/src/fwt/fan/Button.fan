@@ -68,6 +68,11 @@ class Button : Widget
   native Str text
 
   **
+  ** The button's tool tip. Defaults to "".
+  **
+  native Str toolTip
+
+  **
   ** Image to display on button. Defaults to null.
   **
   native Image? image
@@ -76,6 +81,11 @@ class Button : Widget
   ** Font for text. Defaults to null (system default).
   **
   native Font? font
+
+  **
+  ** Color used for text. Defaults to null( system default).
+  **
+  @NoDoc Color? fg := null
 
   **
   ** Insets to apply for padding between the button's border

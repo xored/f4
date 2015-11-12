@@ -56,6 +56,20 @@ class Dialog : Window
   ** the result object.
   **
   Command[]? commands
+  {
+    set
+    {
+      &commands = it
+      defCommand = it.first
+    }
+  }
+
+  **
+  ** Optional command to specify as default action. This field must
+  ** be configured *after* `commands` is set.  Use 'null' for no default
+  ** command.
+  **
+  Command? defCommand
 
 //////////////////////////////////////////////////////////////////////////
 // Predefined Commands
@@ -229,6 +243,7 @@ class Dialog : Window
     }
 
     // details
+    if (commands == null) commands = Command[,]
     if (details != null)
     {
       if (details is Err) details = ((Err)details).traceToStr
@@ -245,7 +260,6 @@ class Dialog : Window
     }
 
     // build buttons from commands
-    if (commands == null) commands := Command[,]
     buttons := GridPane
     {
       numCols = commands.size
@@ -261,7 +275,9 @@ class Dialog : Window
       buttons.add(ConstraintPane
       {
         minw = 70
-        Button.makeCommand(c) { insets=Insets(0, 10, 0, 10) },
+        b := Button.makeCommand(c) { insets=Insets(0, 10, 0, 10) }
+        if (c == defCommand) setDefButton(b)
+        it.add(b)
       })
     }
 
@@ -290,9 +306,7 @@ class Dialog : Window
     return this
   }
 
-
-  // to force native peer
-  private native Void dummyDialog()
+  protected native Void setDefButton(Button b)
 }
 
 **************************************************************************

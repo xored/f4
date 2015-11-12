@@ -90,6 +90,21 @@ public class InStream
 // InStream
 //////////////////////////////////////////////////////////////////////////
 
+  public long avail()
+  {
+    try
+    {
+      return in.avail();
+    }
+    catch (NullPointerException e)
+    {
+      if (in == null)
+        throw UnsupportedErr.make(typeof().qname() + " wraps null InStream");
+      else
+        throw e;
+    }
+  }
+
   public Long read()
   {
     try
@@ -478,6 +493,34 @@ public class InStream
     return buf.toString();
   }
 
+  public String readNullTerminatedStr() { return readNullTerminatedStr(FanInt.Chunk); }
+  public String readNullTerminatedStr(Long max)
+  {
+    // max limit
+    int maxChars = (max != null) ? max.intValue() : Integer.MAX_VALUE;
+    if (maxChars <= 0) return "";
+
+    // read first char, if at end of file bail
+    int c = rChar();
+    if (c < 0) return null;
+
+    // loop reading chars until we hit '\0' or max chars
+    StringBuilder buf = new StringBuilder();
+    while (true)
+    {
+      if (c == '\0') break;
+
+      // append to working buffer
+      buf.append((char)c);
+      if (buf.length() >= maxChars) break;
+
+      // read next char
+      c = rChar();
+      if (c < 0) break;
+    }
+    return buf.toString();
+  }
+
   public List readAllLines()
   {
     try
@@ -570,6 +613,7 @@ public class InStream
     try
     {
       Map props = new Map(Sys.StrType, listVals ? Sys.StrType.toListOf() : Sys.StrType);
+      props.ordered(true);
 
       StringBuilder name = new StringBuilder();
       StringBuilder val = null;
@@ -577,16 +621,19 @@ public class InStream
       boolean inEndOfLineComment = false;
       int c =  ' ', last = ' ';
       int lineNum = 1;
+      int colNum = 0;
 
       while (true)
       {
         last = c;
         c = rChar();
+        ++colNum;
         if (c < 0) break;
 
         // end of line
         if (c == '\n' || c == '\r')
         {
+          colNum = 0;
           inEndOfLineComment = false;
           if (last == '\r' && c == '\n') continue;
           String n = FanStr.makeTrim(name);
@@ -620,7 +667,14 @@ public class InStream
           continue;
         }
 
-        // comment
+        // line comment
+        if (c == '#' && colNum == 1) 
+        {
+          inEndOfLineComment = true;
+          continue;
+        }
+
+        // end of line comment
         if (c == '/' && FanInt.isSpace(last))
         {
           int peek = rChar();

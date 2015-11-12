@@ -167,7 +167,7 @@ class Table : Widget
   ** from the view coordinate space to the model coordinate space based
   ** on column visibility and row sort order.
   **
-  internal TableView view := TableView(this) { get { &view.sync } }
+  @NoDoc TableView view := TableView(this) { get { &view.sync } private set }
 }
 
 **************************************************************************
@@ -258,8 +258,9 @@ class TableModel
 ** from the view coordinate space to the model coordinate space based
 ** on column visibility and row sort order.
 **
+@NoDoc
 @Js
-internal class TableView : TableModel
+class TableView : TableModel
 {
   new make(Table table) { this.table = table }
 
@@ -339,8 +340,11 @@ internal class TableView : TableModel
     rows.capacity = model.numRows
     model.numRows.times |i| { rows.add(i) }
 
+    // only keep selection of rows that still exist
+    table.selected = table.selected.findAll |Int selIdx->Bool| { selIdx < model.numRows }
+
     // if sort was in-place, then resort
-    if (sortCol != null) sort(sortCol, sortMode)
+    if (sortCol != null && sortCol < model.numCols) sort(sortCol, sortMode)
   }
 
   private Void syncCols()
@@ -353,16 +357,16 @@ internal class TableView : TableModel
   }
 
   // View -> Model
-  internal Int rowViewToModel(Int i) { rows[i] }
-  internal Int colViewToModel(Int i) { cols[i] }
-  internal Int[] rowsViewToModel(Int[] i) { i.map |x->Int| { rows[x] } }
-  internal Int[] colsViewToModel(Int[] i) { i.map |x->Int| { rows[x] } }
+  Int rowViewToModel(Int i) { rows[i] }
+  Int colViewToModel(Int i) { cols[i] }
+  Int[] rowsViewToModel(Int[] i) { i.map |x->Int| { rows[x] } }
+  Int[] colsViewToModel(Int[] i) { i.map |x->Int| { cols[x] } }
 
   // Model -> View (need to optimize linear scan)
-  internal Int rowModelToView(Int i) { rows.findIndex |x| { x == i } }
-  internal Int colModelToView(Int i) { cols.findIndex |x| { x == i } }
-  internal Int[] rowsModelToView(Int[] i)  { i.map |x->Int| { rowModelToView(x) } }
-  internal Int[] colsModelToView(Int[] i)  { i.map |x->Int| { colModelToView(x) } }
+  Int rowModelToView(Int i) { rows.findIndex |x| { x == i } }
+  Int colModelToView(Int i) { cols.findIndex |x| { x == i } }
+  Int[] rowsModelToView(Int[] i)  { i.map |x->Int| { rowModelToView(x) } }
+  Int[] colsModelToView(Int[] i)  { i.map |x->Int| { colModelToView(x) } }
 
   private Table table
   private Int[] rows := [,]   // view to base row index mapping
@@ -371,4 +375,3 @@ internal class TableView : TableModel
   internal Int? sortCol { private set }  // model based index
   internal SortMode sortMode := SortMode.up { private set }
 }
-

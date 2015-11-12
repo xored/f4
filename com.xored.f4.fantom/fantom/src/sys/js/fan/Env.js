@@ -25,7 +25,7 @@ fan.sys.Env.prototype.$ctor = function()
 {
   this.m_args = fan.sys.List.make(fan.sys.Str.$type).toImmutable();
 
-  this.m_index = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.List.$type);
+  this.m_index = fan.sys.Map.make(fan.sys.Str.$type, new fan.sys.ListType(fan.sys.Str.$type));
   this.m_index = this.m_index.toImmutable();
 
   this.m_vars = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Str.$type)
@@ -87,6 +87,12 @@ fan.sys.Env.prototype.runtime = function() { return "js"; }
 fan.sys.Env.prototype.args = function() { return this.m_args; }
 
 fan.sys.Env.prototype.vars = function() { return this.m_vars; }
+
+fan.sys.Env.prototype.diagnostics = function()
+{
+  var map = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Obj.$type);
+  return map;
+}
 
 fan.sys.Env.prototype.out = function() { return this.m_out; }
 
@@ -160,5 +166,3 @@ fan.sys.Env.prototype.$props = function(key)
   }
   return map;
 }
-
-

@@ -39,6 +39,7 @@ abstract class BuildPod : BuildScript
 
   **
   ** List of dependencies for pod formatted as `sys::Depend`.
+  ** Strings are automatically run through `BuildScript.applyMacros`.
   **
   Str[] depends := Str[,]
 
@@ -84,6 +85,15 @@ abstract class BuildPod : BuildScript
   ** the Java source files to compile for Java native methods.
   **
   Uri[]? javaDirs
+
+  ** List of Uris relative to build script of directories containing
+  ** the JNI C source files to compile.
+  Uri[]? jniDirs
+
+  ** If non-null, whitelist of platforms JNI should be enabled for.
+  ** Platform string may be full platform name ("macosx-x86_64") or OS
+  ** only ("macosx").
+  Str[]? jniPlatforms
 
   **
   ** List of Uris relative to build script of directories containing
@@ -155,6 +165,7 @@ abstract class BuildPod : BuildScript
 
     compileFan
     compileJava
+    compileJni
 // TODO-FACET
 //    compileDotnet
     log.unindent
@@ -174,6 +185,7 @@ abstract class BuildPod : BuildScript
     meta["pod.docApi"] = docApi.toStr
     meta["pod.docSrc"] = docSrc.toStr
     meta["pod.native.java"]   = (javaDirs   != null && !javaDirs.isEmpty).toStr
+    meta["pod.native.jni"]    = (jniDirs    != null && !jniDirs.isEmpty).toStr
     meta["pod.native.dotnet"] = (dotnetDirs != null && !dotnetDirs.isEmpty).toStr
     meta["pod.native.js"]     = (jsDirs     != null && !jsDirs.isEmpty).toStr
 
@@ -189,13 +201,23 @@ abstract class BuildPod : BuildScript
       meta[tuples[0]] = tuples[1]
     }
 
+    // if stripTest config property is set to true then don't
+    // compile any Fantom code under test/ or include any res files
+    srcDirs := this.srcDirs
+    resDirs := this.resDirs
+    if (config("stripTest", "false") == "true")
+    {
+      if (srcDirs != null) srcDirs = srcDirs.dup.findAll |uri| { uri.path.first != "test" }
+      if (resDirs != null) resDirs = resDirs.dup.findAll |uri| { uri.path.first != "test" }
+    }
+
     // map my config to CompilerInput structure
     ci := CompilerInput()
     ci.inputLoc    = Loc.makeFile(scriptFile)
     ci.podName     = podName
     ci.summary     = summary
     ci.version     = version
-    ci.depends     = depends.map |s->Depend| { Depend(s) }
+    ci.depends     = depends.map |s->Depend| { Depend(applyMacros(s)) }
     ci.meta        = meta
     ci.index       = index
     ci.baseDir     = scriptDir
@@ -216,6 +238,9 @@ abstract class BuildPod : BuildScript
       ci.ns = FPodNamespace(f)
     }
 
+    // subclass hook
+    onCompileFan(ci)
+
     try
     {
       Compiler(ci).compile
@@ -232,6 +257,11 @@ abstract class BuildPod : BuildScript
       throw FatalBuildErr.make
     }
   }
+
+  **
+  ** Callback to tune the Fantom compiler input
+  **
+  virtual Void onCompileFan(CompilerInput ci) {}
 
 //////////////////////////////////////////////////////////////////////////
 // Compile Java
@@ -257,7 +287,7 @@ abstract class BuildPod : BuildScript
     sysJar   := devHomeDir + `lib/java/sys.jar`
     libFan   := devHomeDir + `lib/fan/`
     curPod   := outPodDir.toFile + `${podName}.pod`
-    depends  := (Depend[])this.depends.map |s->Depend| { Depend(s) }
+    depends  := depends.map |s->Depend| { Depend(applyMacros(s)) }
 
     // stub the pods fan classes into Java classfiles
     // by calling the JStub tool in the jsys runtime
@@ -291,6 +321,61 @@ abstract class BuildPod : BuildScript
 
     // append files to the pod zip (we use java's jar tool)
     Exec(this, [jarExe, "-fu", curPod.osPath, "-C", jtemp.osPath, "."], jtemp).run
+
+    // cleanup temp
+    Delete(this, jtemp).run
+
+    log.unindent
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// JNI
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Compile JNI bindings if jniDirs configured.
+  **
+  virtual Void compileJni()
+  {
+    if (jniDirs == null) return
+
+    log.info("JNI [$podName]")
+    log.indent
+
+    // check whitelist
+    if (jniPlatforms != null)
+    {
+      if (!jniPlatforms.contains(Env.cur.os) &&
+          !jniPlatforms.contains(Env.cur.platform))
+      {
+        log.info("  Skipping platform $Env.cur.platform")
+        return
+      }
+    }
+
+    // env
+    jtemp := scriptDir + `temp-jni/`
+    jdirs := this->resolveDirs(jniDirs)
+
+    // start with a clean directory
+    Delete(this, jtemp).run
+    CreateDir(this, jtemp).run
+
+    // compile
+    cc := CompileJni(this)
+    cc.src = jdirs
+    cc.out = jtemp
+    cc.lib = podName
+    cc.run
+
+    // override target platform
+    plat := config("jniPlatform") ?: Env.cur.platform
+
+    // move files to /lib/java/ext/<plat>/
+    libSrc := jtemp + cc.platLib
+    libDst := (outPodDir.parent + `java/ext/${plat}/${cc.platLib}`).toFile
+    log.info("Move [$libDst.osPath]")
+    libSrc.copyTo(libDst, ["overwrite":true])
 
     // cleanup temp
     Delete(this, jtemp).run
@@ -367,16 +452,19 @@ abstract class BuildPod : BuildScript
   {
     log.info("clean [$podName]")
     log.indent
-    Delete(this, devHomeDir+`lib/fan/${podName}.pod`).run
-    Delete(this, devHomeDir+`lib/java/${podName}.jar`).run
-    Delete(this, devHomeDir+`lib/dotnet/${podName}.dll`).run
-    Delete(this, devHomeDir+`lib/dotnet/${podName}.pdb`).run
-    Delete(this, devHomeDir+`lib/tmp/${podName}.dll`).run
-    Delete(this, devHomeDir+`lib/tmp/${podName}.pdb`).run
+    dir := isFantomCore ? devHomeDir : Env.cur.workDir
+    Delete(this, dir+`lib/fan/${podName}.pod`).run
+    Delete(this, dir+`lib/java/${podName}.jar`).run
+    Delete(this, dir+`lib/dotnet/${podName}.dll`).run
+    Delete(this, dir+`lib/dotnet/${podName}.pdb`).run
+    Delete(this, dir+`lib/tmp/${podName}.dll`).run
+    Delete(this, dir+`lib/tmp/${podName}.pdb`).run
     Delete(this, scriptDir+`temp-java/`).run
     Delete(this, scriptDir+`temp-dotnet/`).run
     log.unindent
   }
+
+  private Bool isFantomCore() { meta["proj.name"] == "Fantom Core" }
 
 //////////////////////////////////////////////////////////////////////////
 // Test
@@ -411,4 +499,5 @@ abstract class BuildPod : BuildScript
     compile
     test
   }
+
 }

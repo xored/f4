@@ -47,14 +47,18 @@ fi
 
 # Set FAN_CP classpath if not already set
 if [ -z "$FAN_CP" -o ! -d "$FAN_CP" ] ; then
-  # always put sys.jar in classpath
-  FAN_CP="$FAN_HOME/lib/java/sys.jar"
+  # always put sys.jar and jline.jar in classpath
+  FAN_CP="$FAN_HOME/lib/java/sys.jar:$FAN_HOME/lib/java/jline.jar"
 fi
 
 # Set FAN_JAVA if not already set
 if [ -z "$FAN_JAVA" ] ; then
-  FAN_JAVA=`which java`
-  if [ -z "$FAN_JAVA" ] ; then
+  if [ ! -z "$JAVA_HOME" ]; then
+    FAN_JAVA="$JAVA_HOME/bin/java"
+  else
+    FAN_JAVA=`which java`
+  fi
+  if [ ! -x "$FAN_JAVA" ] ; then
     echo "Cannot find java, please either add the java bin directory to"
     echo "the PATH environment variable or set the FAN_JAVA variable to"
     echo "the path of the java binary file"
@@ -85,5 +89,5 @@ fanlaunch()
   FAN_MAIN="fanx.tools.$1"
   shift
   read_prop JAVA_OPTIONS "$FAN_CONFIG_PROPS" java.options
-  "$FAN_JAVA" $osFlags $JAVA_OPTIONS $libPath -cp "$FAN_CLASSPATH" -Dfan.home="$FAN_HOME" "$FAN_MAIN" "$@"
+  exec "$FAN_JAVA" $osFlags $JAVA_OPTIONS $libPath -cp "$FAN_CLASSPATH" -Dfan.home="$FAN_HOME" "$FAN_MAIN" "$@"
 }

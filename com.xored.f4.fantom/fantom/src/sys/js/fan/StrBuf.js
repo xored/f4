@@ -63,6 +63,15 @@ fan.sys.StrBuf.prototype.get = function(i)
   return this.m_str.charCodeAt(i);
 }
 
+fan.sys.StrBuf.prototype.getRange = function(range)
+{
+  var size = this.m_str.length;
+  var s = range.$start(size);
+  var e = range.$end(size);
+  if (e+1 < s) throw fan.sys.IndexErr.make(range);
+  return this.m_str.substr(s, (e-s)+1);
+}
+
 fan.sys.StrBuf.prototype.set = function(i, ch)
 {
   if (i < 0) i = this.m_str.length+i;
@@ -107,6 +116,16 @@ fan.sys.StrBuf.prototype.removeRange = function(r)
   return this;
 }
 
+fan.sys.StrBuf.prototype.replaceRange = function(r, str)
+{
+  var s = r.$start(this.m_str.length);
+  var e = r.$end(this.m_str.length);
+  var n = e - s + 1;
+  if (s < 0 || n < 0) throw fan.sys.IndexErr.make(r);
+  this.m_str = this.m_str.substr(0,s) + str + this.m_str.substr(e+1);
+  return this;
+}
+
 fan.sys.StrBuf.prototype.isEmpty = function()
 {
   return this.m_str.length == 0;
@@ -132,76 +151,3 @@ fan.sys.StrBuf.prototype.out = function()
 //////////////////////////////////////////////////////////////////////////
 
 fan.sys.StrBuf.make = function() { return new fan.sys.StrBuf(); }
-
-/*************************************************************************
- * StrBufOutStream
- ************************************************************************/
-
-fan.sys.StrBufOutStream = fan.sys.Obj.$extend(fan.sys.OutStream);
-fan.sys.StrBufOutStream.prototype.$ctor = function(buf)
-{
-  this.m_buf = buf;
-}
-
-fan.sys.StrBufOutStream.prototype.w = function(v)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.write = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeBuf = function(buf, n)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeI2 = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeI4 = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeI8 = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeF4 = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeF8 = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("binary write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeUtf = function(x)
-{
-  throw fan.sys.UnsupportedErr.make("modified UTF-8 format write on StrBuf output");
-}
-
-fan.sys.StrBufOutStream.prototype.writeChar = function(c)
-{
-  this.m_buf.m_str += String.fromCharCode(c);
-  return this;
-}
-
-fan.sys.StrBufOutStream.prototype.writeChars = function(s, off, len)
-{
-  if (off === undefined) off = 0;
-  if (len === undefined) len = s.length-off;
-  this.m_buf.m_str += s.substr(off, len);
-  return this;
-}
-
-fan.sys.StrBufOutStream.prototype.flush = function() { return this; }
-fan.sys.StrBufOutStream.prototype.close = function() { return true; }
-

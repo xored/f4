@@ -131,13 +131,6 @@ public class Locale
     return javaCollator;
   }
 
-  public java.text.DecimalFormatSymbols decimal()
-  {
-    if (javaDecimal == null)
-      javaDecimal = new java.text.DecimalFormatSymbols(java());
-    return javaDecimal;
-  }
-
   /** Get a month by lowercase abbr or full name for this locale */
   Month monthByName(String name)
   {
@@ -162,22 +155,81 @@ public class Locale
   static final Locale defaultLocale;
   static
   {
-    Locale x;
+    Locale x = null;
+
+    // first check system property, otherwise try to use Java timezone
     try
     {
-      String lang = java.util.Locale.getDefault().getLanguage();
-      String country = java.util.Locale.getDefault().getCountry();
-      if (country == null && country.length() == 0)
-        x = fromStr(lang);
-      else
-        x = fromStr(lang + "-" + country);
+      String sysProp = Sys.sysConfig("locale");
+      if (sysProp != null) x = fromStr(sysProp);
+    }
+    catch (Throwable e)
+    {
+      e.printStackTrace();
+    }
+
+    // fallback to Java's default Locale
+    try
+    {
+      if (x == null)
+      {
+        String lang = java.util.Locale.getDefault().getLanguage();
+        String country = java.util.Locale.getDefault().getCountry();
+        if (country == null && country.length() == 0)
+          x = fromStr(lang);
+        else
+          x = fromStr(lang + "-" + country);
+      }
     }
     catch (Exception e)
     {
       e.printStackTrace();
       x = fromStr("en");
     }
+
     defaultLocale = x;
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// NumSymbols
+//////////////////////////////////////////////////////////////////////////
+
+  public NumSymbols numSymbols()
+  {
+    if (numSymbols == null)
+      numSymbols = new NumSymbols(this);
+    return numSymbols;
+  }
+
+  public static class NumSymbols
+  {
+    NumSymbols(Locale locale)
+    {
+      Env env = Env.cur();
+      this.minus    = init(env, locale, "numMinus",    "-");
+      this.decimal  = init(env, locale, "numDecimal",  ".");
+      this.grouping = init(env, locale, "numGrouping", ",");
+      this.percent  = init(env, locale, "numPercent",  "%");
+      this.posInf   = init(env, locale, "numPosInf",   "+INF");
+      this.negInf   = init(env, locale, "numNegInf",   "-INF");
+      this.nan      = init(env, locale, "numNaN",      "NaN");
+    }
+
+    private static String init(Env env, Locale locale, String key, String def)
+    {
+      String val = env.locale(Sys.sysPod, key, def, locale);
+      if (val.length() == 0) val = " ";
+      // System.out.println("-- " + locale + "::" + key + " = " + val);
+      return val;
+    }
+
+    public final String minus;
+    public final String decimal;
+    public final String grouping;
+    public final String percent;
+    public final String posInf;
+    public final String negInf;
+    public final String nan;
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -193,7 +245,7 @@ public class Locale
   public final Uri langProps;   // `locale/{lang}.props`
   java.util.Locale javaLocale;
   java.text.Collator javaCollator;
-  java.text.DecimalFormatSymbols javaDecimal;
   java.util.HashMap monthsByName;
-
+  private NumSymbols numSymbols;
 }
+

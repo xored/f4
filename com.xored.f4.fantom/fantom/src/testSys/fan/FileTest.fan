@@ -31,6 +31,7 @@ class FileTest : Test
     verify(tempDir.listDirs.size == 0)
     verify(tempDir.listFiles.size == 0)
     verifyEq(tempDir.parent.uri, tempDir.uri.parent)
+    verifyEq((tempDir+`notfoundfoobar/`).isEmpty, true)
   }
 
   Void testWalk()
@@ -280,7 +281,9 @@ class FileTest : Test
     verifyEq((dirX + `dirA/a2`).exists, false)
 
     // copy overwrite=Func
-    dirB.copyTo(dirX, ["overwrite":|File f->Bool|{return f.isDir || f.name=="a1"}])
+    File? copyToFile
+    dirB.copyTo(dirX, ["overwrite":|File f->Bool| { if (copyToFile == null) copyToFile = f; return f.isDir || f.name=="a1"}])
+    verifyEq(copyToFile, dirX)
     verifyEq((dirX + `a1`).readAllStr, "hello world!")
     verifyEq((dirX + `a2`).readAllStr, "bar")
     verifyEq((dirX + `dirA/a1`).readAllStr, "hello world!")
@@ -370,6 +373,21 @@ class FileTest : Test
     props := ["a":"alpha","b":"betal"]
     f.writeProps(props)
     verifyEq(f.readProps, props)
+  }
+
+  Void testAvail()
+  {
+    f := tempDir + `testfile.txt`
+    f.out.print("1234567890").close
+    in := f.in
+    verifyEq(in.avail, 10)
+    in.read
+    verifyEq(in.avail, 9)
+    in.readChar
+    verifyEq(in.avail, 8)
+    in.readLine
+    verifyEq(in.avail, 0)
+    in.close
   }
 
   Void testReadAllLinesNL()
@@ -631,6 +649,59 @@ class FileTest : Test
     out.sync
     verifyEq(f.readAllStr, "hello there!")
     out.close
+  }
+
+  Void testStore()
+  {
+    f := tempDir
+    s := f.store
+    verify(s.totalSpace > 0)
+    verify(s.totalSpace > s.availSpace)
+    verify(s.totalSpace > s.freeSpace)
+    verifyEq(s.typeof.qname, "sys::LocalFileStore")
+  }
+
+  Void testList()
+  {
+    f := tempDir
+    a := (f+`a.txt`).create
+    b := (f+`b.txt`).create
+    c := (f+`c.foo`).create
+    x := (f+`x-dir/`).create
+    y := (f+`y-dir/`).create
+    z := (f+`z/`).create
+
+    reAll := Regex.glob("*")
+
+    verifyList(f.list, [a, b, c, x, y, z])
+    verifyList(f.list(null), [a, b, c, x, y, z])
+    verifyList(f.list(reAll), [a, b, c, x, y, z])
+    verifyList(f.list(Regex.glob("*.txt")), [a, b])
+    verifyList(f.list(Regex.glob("c*")), [c])
+    verifyList(f.list(Regex.glob("?-dir")), [x, y])
+    verifyList(f.list(Regex.glob("none")), File[,])
+
+    verifyList(f.listFiles, [a, b, c])
+    verifyList(f.listFiles(null), [a, b, c])
+    verifyList(f.listFiles(reAll), [a, b, c])
+    verifyList(f.listFiles(Regex.glob("*.txt")), [a, b])
+    verifyList(f.listFiles(Regex.glob("c*")), [c])
+    verifyList(f.listFiles(Regex.glob("?-dir")), File[,])
+    verifyList(f.listFiles(Regex.glob("none")), File[,])
+
+    verifyList(f.listDirs, [x, y, z])
+    verifyList(f.listDirs(null), [x, y, z])
+    verifyList(f.listDirs(reAll), [x, y, z])
+    verifyList(f.listDirs(Regex.glob("*.txt")), File[,])
+    verifyList(f.listDirs(Regex.glob("c*")), File[,])
+    verifyList(f.listDirs(Regex.glob("?-dir")), [x, y])
+    verifyList(f.listDirs(Regex.glob("none")), File[,])
+  }
+
+  Void verifyList(File[] actual, File[] expected)
+  {
+    actual.sort |a, b| { a.name <=> b.name }
+    verifyEq(actual, expected)
   }
 
 }

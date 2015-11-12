@@ -11,7 +11,6 @@ using [java] org.eclipse.debug.core
 using [java] org.eclipse.debug.core.sourcelookup
 using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jdt.launching
-
 using f4launching
 using f4core
 **
@@ -19,6 +18,11 @@ using f4core
 **
 class FanJavaLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig
 {
+
+  override Void launch(ILaunchConfiguration? config, Str? mode, ILaunch? launch, IProgressMonitor? m) {
+    if (JavaLaunchUtil.confirmLaunch(config) == true)
+      super.launch(config, mode, launch, m)
+  }
 
   override Str?[]? getEnvironment(ILaunchConfiguration? config) 
   {

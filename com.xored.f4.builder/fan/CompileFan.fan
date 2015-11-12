@@ -173,6 +173,8 @@ class CompileFan : IScriptBuilder
     }
     writeToLog //append empty line
     if(!hasErrs) refreshPod(fp)
+		
+    fp.hasBuildErrs = hasErrs
     return hasErrs
   }
   

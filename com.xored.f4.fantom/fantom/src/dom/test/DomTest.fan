@@ -41,6 +41,7 @@ class DomTest : Weblet
             print('testBasics');    test.testBasics();
             print('testCreate');    test.testCreate();
             print('testAddRemove'); test.testAddRemove();
+            print('testStyle');     test.testStyle();
             results.style.color = 'green';
             results.innerHTML = 'All tests passed! [' + test.m_verifies + ' verifies]';
           }
@@ -93,66 +94,84 @@ internal class DomTestClient
 
     verifyEq(elem.id,    "testAttrs")
     verifyEq(elem["id"], "testAttrs")
+    verifyEq(elem->id,   "testAttrs")
 
-    verifyEq(elem.className, "hidden")
-    verifyEq(elem["class"],  "hidden")
+    verifyEq(elem.style.classes, ["hidden"])
+    verifyEq(elem["class"],   "hidden")
+    verifyEq(elem->className, "hidden")
+
+    f := elem.firstChild
+    verifyEq(f->name,  "alpha")
+    verifyEq(f.prevSibling, null)
+    verifyEq(f.nextSibling->name, "beta")
+    verifyEq(f.nextSibling.nextSibling.tagName, "input")
+    verifyEq(f.nextSibling.nextSibling.nextSibling.style.classes, ["a"])
+    verifyEq(f.nextSibling.nextSibling.nextSibling.nextSibling.style.classes, ["a", "b"])
+    verifyEq(elem.lastChild.prevSibling.style.classes, ["a", "b"])
+    verifyEq(elem.lastChild.tagName, "div")
+    verifyEq(elem.lastChild.nextSibling, null)
+
+    verifyEq(elem.querySelector("input[name='beta']")->name, "beta")
+    verifyEq(elem.querySelectorAll("input").size, 3)
+
+    verifyEq(Win.cur.doc.querySelector("input[name='beta']")->name, "beta")
+    verifyEq(Win.cur.doc.querySelectorAll("input").size, 3)
 
     a := elem.children[3]
     b := elem.children[4]
     c := elem.children[5]
 
-    verifyEq(a.hasClassName("a"), true)
-    verifyEq(a.hasClassName("b"), false)
-    verifyEq(a.hasClassName("c"), false)
-    verifyEq(b.hasClassName("a"), true)
-    verifyEq(b.hasClassName("b"), true)
-    verifyEq(b.hasClassName("c"), false)
-    verifyEq(c.hasClassName("a"), false)
-    a.addClassName("c")
-    b.addClassName("c")
-    c.addClassName("c")
-    verifyEq(a.hasClassName("c"), true)
-    verifyEq(b.hasClassName("c"), true)
-    verifyEq(c.hasClassName("c"), true)
-    a.removeClassName("a")
-    b.removeClassName("a")
-    verifyEq(a.hasClassName("a"), false)
-    verifyEq(b.hasClassName("a"), false)
-    c.removeClassName("c")
-    verifyEq(c.hasClassName("c"), false)
-    verifyEq(b.className, "b c")
-    b.addClassName("b")
-    verifyEq(b.className, "b c")
-    b.removeClassName("x")
-    verifyEq(b.className, "b c")
+    verifyEq(a.style.hasClass("a"), true)
+    verifyEq(a.style.hasClass("b"), false)
+    verifyEq(a.style.hasClass("c"), false)
+    verifyEq(b.style.hasClass("a"), true)
+    verifyEq(b.style.hasClass("b"), true)
+    verifyEq(b.style.hasClass("c"), false)
+    verifyEq(c.style.hasClass("a"), false)
+    a.style.addClass("c")
+    b.style.addClass("c")
+    c.style.addClass("c")
+    verifyEq(a.style.hasClass("c"), true)
+    verifyEq(b.style.hasClass("c"), true)
+    verifyEq(c.style.hasClass("c"), true)
+    a.style.removeClass("a")
+    b.style.removeClass("a")
+    verifyEq(a.style.hasClass("a"), false)
+    verifyEq(b.style.hasClass("a"), false)
+    c.style.removeClass("c")
+    verifyEq(c.style.hasClass("c"), false)
+    verifyEq(b.style.classes, ["b", "c"])
+    b.style.addClass("b")
+    verifyEq(b.style.classes, ["b", "c"])
+    b.style.removeClass("x")
+    verifyEq(b.style.classes, ["b", "c"])
 
-    /*
-    NOTE: "style.cssText" is not supported in Opera
-
-    verifyEq(elem.style->cssText, "")
-    elem.style->color = "red"
-    str := (elem.style->cssText as Str).lower.trim
-    verify(str.contains("color: red"))
-    */
-
-    verifyEq(elem.val,        null)
+    verifyEq(elem->value,     null)
     verifyEq(elem["value"],   null)
-    verifyEq(elem.checked,    null)
+    verifyEq(elem->checked,   null)
     verifyEq(elem["checked"], null)
-    verifyEq(elem.children[0].name,      "alpha")
+    verifyEq(elem.children[0]->name,     "alpha")
     verifyEq(elem.children[0]["name"],   "alpha")
-    verifyEq(elem.children[0].val,       "foo")
+    verifyEq(elem.children[0]->value,    "foo")
     verifyEq(elem.children[0]["value"],  "foo")
-    verifyEq(elem.children[1].name,       "beta")
+    verifyEq(elem.children[1]->name,      "beta")
     verifyEq(elem.children[1]["name"],    "beta")
-    verifyEq(elem.children[1].checked,    true)
+    verifyEq(elem.children[1]->checked,   true)
     verifyEq(elem.children[1]["checked"], true)
-    verifyEq(elem.children[2].checked,    false)
+    verifyEq(elem.children[2]->checked,   false)
     verifyEq(elem.children[2]["checked"], false)
 
     verifyEq(elem["foo"],     null)
     verifyEq(elem.get("foo"), null)
     verifyEq(elem.get("foo", "bar"), "bar")
+
+    verifyEq(elem->offsetTop, 0)
+    verifyEq(elem->innerHTML.toStr[0..12].trim,  "<input type=")
+
+    input := Win.cur.doc.querySelector("input[name='alpha']")
+    verifyEq(input->value, "foo")
+    input->value = "bar"
+    verifyEq(input->value, "bar")
   }
 
   Void testBasics()
@@ -173,7 +192,7 @@ internal class DomTestClient
 
     elem = Win.cur.doc.createElem("div", ["class":"foo"])
     verifyEq(elem.tagName, "div")
-    verifyEq(elem.className, "foo")
+    verifyEq(elem.style.classes, ["foo"])
 
     elem = Win.cur.doc.createElem("div", ["id":"cool", "name":"yay", "class":"foo"])
     verifyEq(elem.tagName, "div")
@@ -188,25 +207,53 @@ internal class DomTestClient
     elem := doc.createElem("div")
     elem.add(doc.createElem("div", ["class":"a"]))
     verifyEq(elem.children.size, 1)
-    verifyEq(elem.children.first.className, "a")
+    verifyEq(elem.children.first.style.classes, ["a"])
 
     b := doc.createElem("div", ["class":"b"]); elem.add(b)
     c := doc.createElem("div", ["class":"c"]); elem.add(c)
     verifyEq(elem.children.size, 3)
-    verifyEq(elem.children[1].className, "b")
-    verifyEq(elem.children[2].className, "c")
+    verifyEq(elem.children[1].style.classes, ["b"])
+    verifyEq(elem.children[2].style.classes, ["c"])
 
     elem.remove(b)
     verifyEq(elem.children.size, 2)
-    verifyEq(elem.children[0].className, "a")
-    verifyEq(elem.children[1].className, "c")
+    verifyEq(elem.children[0].style.classes, ["a"])
+    verifyEq(elem.children[1].style.classes, ["c"])
 
     elem.remove(c)
     verifyEq(elem.children.size, 1)
-    verifyEq(elem.children[0].className, "a")
+    verifyEq(elem.children[0].style.classes, ["a"])
 
     elem.remove(elem.children.first)
     verifyEq(elem.children.size, 0)
+  }
+
+  Void testStyle()
+  {
+    a := Elem {}
+
+    a.style["padding"] =  "10px"; verifyEq(a.style["padding"], "10px")
+    a.style->padding = "20px";    verifyEq(a.style->padding, "20px")
+
+    a.style["background-color"] = "#f00"; verifyEq(a.style["background-color"], "rgb(255, 0, 0)")
+    a.style->backgroundColor = "#0f0";    verifyEq(a.style->backgroundColor, "rgb(0, 255, 0)")
+
+    a.style["border-bottom-color"] = "#00f"
+    verifyEq(a.style->borderBottomColor, "rgb(0, 0, 255)")
+
+    a.style.setAll([
+      "padding": "3px",
+      "margin":  "6px",
+      "border":  "2px dotted #ff0"
+    ])
+    verifyEq(a.style->padding, "3px")
+    verifyEq(a.style->margin,  "6px")
+    verifyEq(a.style->border,  "2px dotted rgb(255, 255, 0)")
+
+    a.style.setCss("padding: 5px; margin: 10px; border: 1px solid #0f0")
+    verifyEq(a.style->padding, "5px")
+    verifyEq(a.style->margin,  "10px")
+    verifyEq(a.style->border,  "1px solid rgb(0, 255, 0)")
   }
 
   Void verify(Bool v)

@@ -154,8 +154,17 @@ abstract const class Env
   virtual OutStream err()
 
   **
+  ** Prompt the user to enter a command line from standard input.
+  ** See [Setup]`docTools::Setup#jline` for JLine integration.
+  ** Return null if end of stream has been reached.  Default
+  ** implementation delegates to `parent`.
+  **
+  virtual Str? prompt(Str msg := "")
+
+  **
   ** Prompt the user to enter a password from standard input with echo
   ** disabled.  Return null if end of stream has been reached.
+  ** See [Setup]`docTools::Setup#jline` for JLine integration.
   ** Default implementation delegates to `parent`.
   **
   virtual Str? promptPassword(Str msg := "")
@@ -265,9 +274,13 @@ abstract const class Env
   ** Return a merged key/value map of all the prop files found
   ** using the following resolution rules:
   **   1. `Env.findAllFiles`: "etc/{pod}/{uri}"
-  **   2. `Pod.files`: "/{uri}"
+  **   2.  Pods indexed with 'sys.envProps': "/{pod}/uri"
+  **   3. `Pod.files`: "/{uri}"
   **
-  ** The uri must be relative.
+  ** The uri must be relative.  Note that props such as locale files
+  ** can be bundled into a pod for deployment and searched by adding
+  ** an indexed prop with the key "sys.envProps" and the pod name as
+  ** the value.  This feature is not support "config.props".
   **
   ** The files are parsed using `InStream.readProps` and merged according
   ** to their priority order.  If the file is defined as a resource in
@@ -305,6 +318,8 @@ abstract const class Env
   **   4. Fallback to 'pod::key' unless 'def' specified
   **
   ** Where '{locale}' is `Locale.toStr` and '{lang}' is `Locale.lang`.
+  ** The maxAge parameter is set to Duration.maxVal (cached for life of
+  ** the VM).
   **
   ** Also see `Pod.locale` and `docLang::Localization`.
   **
