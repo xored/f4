@@ -17,6 +17,10 @@ using [java] java.util::Map
 using [java] java.util::HashMap
 using [java] java.util::ArrayList
 using [java] fanx.interop::Interop
+using [java] org.eclipse.jface.dialogs::MessageDialog
+using [java] org.eclipse.swt.widgets::Shell
+using [java] org.eclipse.swt.widgets::Display
+using [java] org.eclipse.ui::PlatformUI
 using f4launching
 using f4core
 
@@ -90,8 +94,7 @@ class JavaLaunchUtil
     if (origFanEnv != null)
       configEnv.put("F4PODENV_FAN_ENV", origFanEnv)
 
-    projectList := config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-    configEnv.put("F4PODENV_POD_LOCATIONS", getPodLocations(projectList))
+    configEnv.put("F4PODENV_POD_LOCATIONS", getPodLocations(getProjects(config)))
 
     configEnv.put("FAN_ENV", "f4podEnv::F4PodEnv")
 
@@ -112,10 +115,30 @@ class JavaLaunchUtil
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
 
-  private static Str getPodLocations(Str[] checked) {
-    FantomProjectManager.instance.listProjects
+  static Bool confirmLaunch(ILaunchConfiguration config) {
+    projsInErr := getProjects(config).findAll { it.hasBuildErrs }
+    if (projsInErr.isEmpty)
+      return true
+
+    gogogo := true
+    PlatformUI.getWorkbench.getDisplay.syncExec |->| {
+        shell   := PlatformUI.getWorkbench.getActiveWorkbenchWindow.getShell
+        msg     := "The following projects contain errors and have not been built:\n\n" + projsInErr.map { " - ${it.project.getName}" }.join("\n") + "\n\nOld pod versions will be used until errors are resolved.\n\nDo you wish to continue?"
+        dialog  := MessageDialog(shell, "Project Errors", null, msg, MessageDialog.WARNING, Str[,].add("Yes").add("No"), 0)
+        gogogo  = dialog.open == 0
+    }
+    return gogogo
+  }
+
+  private static FantomProject[] getProjects(ILaunchConfiguration config) {
+    projectList := (Str[]) config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
+    return FantomProjectManager.instance.listProjects
       .exclude { it.isPlugin }
-      .findAll { checked.isEmpty ? true : checked.contains(it.podName) }
+      .findAll { projectList.isEmpty ? true : projectList.contains(it.podName) }
+  }
+
+  private static Str getPodLocations(FantomProject[] projects) {
+    projects
       .findAll { it.outDir.exists }
       .map |FantomProject p -> Str| { p.outDir.uri.plusSlash.plusName("${p.podName}.pod").toFile.normalize.osPath }.join(File.pathSep)
   }
