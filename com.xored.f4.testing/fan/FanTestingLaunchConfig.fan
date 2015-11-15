@@ -21,14 +21,13 @@ class FanTestingLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig
   
   override Void launch(ILaunchConfiguration? conf, Str? mode, ILaunch? launch, IProgressMonitor? m)
   {
-	
     wc := conf.getWorkingCopy
     config(conf, wc, mode)
     DLTKTestingCore.registerTestingProcessor(launch, FanTestProcessor(launch))
     launch.setAttribute(DLTKTestingConstants.ATTR_ENGINE_ID, FanTestingEngine.id)
 
     if (JavaLaunchUtil.confirmLaunch(conf) == true)
-      super.launch(conf, mode, launch, m)
+      super.launch(wc, mode, launch, m)
   }
 
   protected static const Str mainLaunchType := "fanx.tools.Fant"
