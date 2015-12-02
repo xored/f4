@@ -25,12 +25,13 @@ class JavaLaunchUtil
     Str mainLaunchType
     )
   {
-    scriptName := AbstractScriptLaunchConfigurationDelegate.getScriptProjectName(src)
+    scriptName	:= AbstractScriptLaunchConfigurationDelegate.getScriptProjectName(src)
     interpreter := ScriptRuntime.computeInterpreterInstall(src)
-    fanHome := PathUtil.fanHome(interpreter.getInstallLocation.getPath)
+    fanHome 	:= PathUtil.fanHome(interpreter.getInstallLocation.getPath)		
+    projHome	:= PathUtil.resolvePath(AbstractScriptLaunchConfigurationDelegate.getProject(src).getFullPath)
     
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, 
-      src.getAttribute(ScriptLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, fanHome.toFile.osPath))
+      src.getAttribute(ScriptLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, projHome.osPath))
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, scriptName)
     target.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, mainLaunchType)
     
