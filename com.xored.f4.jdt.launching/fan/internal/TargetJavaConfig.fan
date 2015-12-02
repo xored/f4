@@ -11,6 +11,8 @@ using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.dltk.launching::ScriptLaunchConfigurationConstants
 using [java] org.eclipse.dltk.launching::AbstractScriptLaunchConfigurationDelegate
 using [java] org.eclipse.dltk.launching::ScriptRuntime
+using [java] java.lang::System
+using [java] java.net::URL
 using [java] java.util::Map
 using [java] java.util::HashMap
 using [java] java.util::ArrayList
@@ -74,20 +76,48 @@ class JavaLaunchUtil
   
   static Str?[]? environment(ILaunchConfiguration? config, Str?[]? base)
   {
-    copy := config.getWorkingCopy
-    Map configEnv := copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
-    configEnv.put("FAN_ENV", "util::PathEnv")
+    copy       := config.getWorkingCopy
+    configEnv  := (Map) copy.getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, HashMap())
+
+    // pick up the original FAN_ENV, but let the ENV_VAR tab trump
+    processEnv := |Obj? env -> Str?| {
+      // allow spaces 'cos eclipse *forces* you to provide a value for environment variables
+      // spaces will be trimmed in F4PodEnv anyway
+      envStr := env?.toStr
+      if (envStr?.trimToNull == "f4podEnv::F4PodEnv") envStr = null
+      return envStr
+    }
+    origFanEnv := (processEnv(configEnv.get("FAN_ENV")) ?: processEnv(System.getenv.get("F4PODENV_FAN_ENV"))) ?: processEnv(System.getenv.get("FAN_ENV"))
+    if (origFanEnv != null)
+      configEnv.put("F4PODENV_FAN_ENV", origFanEnv)
+
     projectList := config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-    configEnv.put("FAN_ENV_PATH", getFanEnvPath(projectList))
+    configEnv.put("F4PODENV_POD_LOCATIONS", getPodLocations(projectList))
+
+    configEnv.put("FAN_ENV", "f4podEnv::F4PodEnv")
+
     copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
+
+    // copy f4podEnv.pod to FAN_HOME
+	// top tip from http://blog.vogella.com/2010/07/06/reading-resources-from-plugin/
+    interpreter := ScriptRuntime.computeInterpreterInstall(config)
+    fanHome     := PathUtil.fanHome(interpreter.getInstallLocation.getPath)
+    f4EnvPod    := fanHome.plusSlash.plus(`lib/fan/f4podEnv.pod`).toFile
+    if (!f4EnvPod.exists) {
+      url       := URL("platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod")
+      inStream  := (InStream) Interop.toFan(url.openConnection.getInputStream)
+      f4EnvBuf  := inStream.readAllBuf
+      f4EnvPod.out.writeBuf(f4EnvBuf).close
+    }
+
     return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
   }
-  
-  private static Str getFanEnvPath(Str[] checked) {
-    FantomProjectManager.instance.listProjects.exclude { 
-      it.isPlugin 
-    }.findAll { checked.isEmpty ? true : checked.contains(it.podName) }
-    .findAll { it.outDir.exists }
-    .map |FantomProject p -> Str| { p.outDir.parent.parent.osPath }.join(File.pathSep)
+
+  private static Str getPodLocations(Str[] checked) {
+    FantomProjectManager.instance.listProjects
+      .exclude { it.isPlugin }
+      .findAll { checked.isEmpty ? true : checked.contains(it.podName) }
+      .findAll { it.outDir.exists }
+      .map |FantomProject p -> Str| { p.outDir.uri.plusSlash.plusName("${p.podName}.pod").toFile.normalize.osPath }.join(File.pathSep)
   }
 }
