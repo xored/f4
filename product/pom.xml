@@ -9,11 +9,23 @@
 
   <groupId>com.xored.f4</groupId>
   <artifactId>product</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.3-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>${tycho-groupid}</groupId>
+        <artifactId>tycho-p2-repository-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <configuration>
+          <includeAllDependencies>true</includeAllDependencies>
+          <profileProperties>
+            <macosx-bundled>true</macosx-bundled>
+          </profileProperties>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>${tycho-groupid}</groupId>
         <artifactId>tycho-p2-director-plugin</artifactId>
@@ -38,7 +50,11 @@
           <products>
             <product>
               <id>com.xored.f4.ide</id>
-              <rootFolder>f4</rootFolder>
+              <rootFolders>
+                <linux>f4</linux>
+                <win32>f4</win32>
+                <macosx>F4.app</macosx>
+              </rootFolders>
             </product>
           </products>
         </configuration>
