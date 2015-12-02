@@ -13,7 +13,7 @@ using compiler
 **
 abstract class JsSlot : JsNode
 {
-  new make(JsCompilerSupport s, SlotDef def) : super(s)
+  new make(JsCompilerSupport s, SlotDef def) : super(s, def)
   {
     this.parent      = qnameToJs(def.parentDef)
     this.origName    = def.name
@@ -62,6 +62,7 @@ class JsSlotRef : JsNode
 {
   new make(JsCompilerSupport cs, CSlot s) : super(cs)
   {
+    this.loc         = s is Node ? ((Node)s).loc : null
     this.parent      = qnameToJs(s.parent)
     this.name        = vnameToJs(s.name)
     this.flags       = s.flags
@@ -84,7 +85,7 @@ class JsSlotRef : JsNode
 
   override Void write(JsWriter out)
   {
-    out.w(name)
+    out.w(name, loc)
   }
 
   Str parent        // qname of slot parent
@@ -96,5 +97,3 @@ class JsSlotRef : JsNode
   Bool isPrivate    // is slot private
   Bool isInternal   // is slot internal
 }
-
-

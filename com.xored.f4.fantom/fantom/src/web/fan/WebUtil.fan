@@ -98,7 +98,10 @@ class WebUtil
   ** returned as a [case insensitive]`sys::Map.caseInsensitive` map.
   ** Throw ParseErr if headers are malformed.
   **
-  static Str:Str parseHeaders(InStream in)
+  static Str:Str parseHeaders(InStream in) { doParseHeaders(in, null) }
+
+  // handle set-cookie headers individually
+  internal static Str:Str doParseHeaders(InStream in, Cookie[]? cookies)
   {
     headers := Str:Str[:]
     headers.caseInsensitive = true
@@ -125,6 +128,13 @@ class WebUtil
       val := token(in, CR).trim
       if (in.read != LF)
         throw ParseErr("Invalid CRLF line ending")
+
+      // set-cookie
+      if (key.equalsIgnoreCase("Set-Cookie") && cookies != null)
+      {
+        cookie := Cookie.fromStr(val, false)
+        if (cookie != null) cookies.add(cookie)
+      }
 
       // check if key already defined in which case
       // this is an append, otherwise its a new pair
@@ -163,29 +173,103 @@ class WebUtil
     return tok
   }
 
+  **
+  ** Given an HTTP header that uses q values, return a map of
+  ** name/q-value pairs.  This map has a def value of 0.
+  **
+  ** Example:
+  **   compress,gzip              =>  ["compress":1f, "gzip":1f]
+  **   compress;q=0.5,gzip;q=0.0  =>  ["compress":0.5f, "gzip":0.0f]
+  **
+  static Str:Float parseQVals(Str s)
+  {
+    map := Str:Float[:]
+    map.def = 0.0f
+    s.split(',').each |tok|
+    {
+      if (tok.isEmpty) return
+      name := tok
+      q    := 1.0f
+      x := tok.index(";")
+      if (x != null)
+      {
+        name = tok[0..<x].trim
+        attrs := tok[x+1..-1].trim
+        qattr := attrs.index("q=")
+        if (qattr != null)
+          q  = Float.fromStr(attrs[qattr+2..-1], false) ?: 1.0f
+      }
+      map[name] = q
+    }
+    return map
+  }
+
+  ** Write HTTP headers
+  @NoDoc static Void writeHeaders(OutStream out, Str:Str headers)
+  {
+    headers.each |v,k|
+    {
+      if (v.containsChar('\n')) v = v.splitLines.join("\n ")
+      out.print(k).print(": ").print(v).print("\r\n")
+    }
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // IO
 //////////////////////////////////////////////////////////////////////////
 
   **
+  ** Given a set of HTTP headers map Content-Type to its charset
+  ** or default to UTF-8.
+  **
+  static Charset headersToCharset(Str:Str headers)
+  {
+    ct := headers["Content-Type"]
+    if (ct != null)
+    {
+      mime := MimeType(ct, false)
+      if (mime != null) return mime.charset
+    }
+    return Charset.utf8
+  }
+
+  **
   ** Given a set of headers, wrap the specified input stream
   ** to read the content body:
-  **   1. If Content-Length then `makeFixedInStream`
-  **   2. If Transfer-Encoding is chunked then `makeChunkedInStream`
-  **   3. If Content-Type assume non-pipelined connection and
+  **   1. If Content-Encoding is 'gzip' then wrap via `sys::Zip.gzipInStream`
+  **   2. If Content-Length then `makeFixedInStream`
+  **   3. If Transfer-Encoding is chunked then `makeChunkedInStream`
+  **   4. If Content-Type assume non-pipelined connection and
   **      return 'in' directly
-  **   4. Assume no content and return null
   **
   ** If a stream is returned, then it is automatically configured
   ** with the correct content encoding based on the Content-Type.
   **
-  static InStream? makeContentInStream(Str:Str headers, InStream in)
+  static InStream makeContentInStream(Str:Str headers, InStream in)
+  {
+    // handle Content-Length / Transfer-Encoding
+    in = doMakeContentInStream(headers, in)
+
+    // check for content-encoding
+    ce := headers["Content-Encoding"]
+    if (ce != null)
+    {
+      ce = ce.lower
+      switch (ce)
+      {
+        case "gzip":    return Zip.gzipInStream(in)
+        case "deflate": return Zip.deflateInStream(in)
+        default: throw IOErr("Unsupported Content-Encoding: $ce")
+      }
+    }
+    return in
+  }
+
+  private static InStream? doMakeContentInStream(Str:Str headers, InStream in)
   {
     // map the "Content-Type" response header to the
     // appropiate charset or default to UTF-8.
-    Charset cs := Charset.utf8
-    ct := headers["Content-Type"]
-    if (ct != null) cs = MimeType(ct).charset
+    cs := headersToCharset(headers)
 
     // check for fixed content length
     len := headers["Content-Length"]
@@ -196,11 +280,8 @@ class WebUtil
     if (headers.get("Transfer-Encoding", "").lower.contains("chunked"))
       return makeChunkedInStream(in) { charset = cs }
 
-    // if content-type is specified assume open ended content until close
-    if (ct != null) return in
-
-    // no content in response
-    return null
+    // assume open ended content until close
+    return in
   }
 
   **
@@ -218,9 +299,7 @@ class WebUtil
   {
     // map the "Content-Type" response header to the
     // appropiate charset or default to UTF-8.
-    Charset cs := Charset.utf8
-    ct := headers["Content-Type"]
-    if (ct != null) cs = MimeType(ct).charset
+    cs := headersToCharset(headers)
 
     // check for fixed content length
     len := headers["Content-Length"]
@@ -228,6 +307,7 @@ class WebUtil
       return makeFixedOutStream(out, len.toInt) { charset = cs }
 
     // if content-type then assumed chunked output
+    ct := headers["Content-Type"]
     if (ct != null)
     {
       headers["Transfer-Encoding"] = "chunked"
@@ -291,7 +371,7 @@ class WebUtil
   ** stream call the given callback function with the part's headers
   ** and an input stream used to read the part's body.  Each callback
   ** must completely drain the input stream to prepare for the next
-  ** part.
+  ** part.  Also see `WebReq.parseMultiPartForm`.
   **
   static Void parseMultiPart(InStream in, Str boundary, |Str:Str headers, InStream in| cb)
   {
@@ -423,7 +503,7 @@ internal class ChunkInStream : InStream
     }
     if (!checkChunk) return null
     numRead := in.readBuf(buf, chunkRem.min(n))
-    chunkRem -= numRead
+    if (numRead != null) chunkRem -= numRead
     return numRead
   }
 

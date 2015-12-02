@@ -174,6 +174,11 @@ class UriTest : Test
     verifyQueryEncoding(
       "=x;alpha=beta;q=z;foo=bar",
       ["alpha":"beta", "":"x", "q":"z", "foo":"bar"])
+
+    verifyEq(Uri.encodeQuery(["key":"a b c"]), "key=a+b+c")
+    verifyEq(Uri.decodeQuery("key=a+b+c"), ["key":"a b c"])
+    verifyEq(`foo?key=a b c`.encode, "foo?key=a+b+c")
+    verifyEq(Uri.decode("foo?key=a+b+c"), `foo?key=a b c`)
   }
 
   Void verifyQueryEncoding(Str encoded, Str:Str q, Bool exact := true)
@@ -182,6 +187,10 @@ class UriTest : Test
     verifyEq(a, q)
     roundtrip := Uri.decodeQuery(Uri.encodeQuery(q))
     verifyEq(roundtrip, q)
+
+    qci := Str:Str[:] { caseInsensitive = true }
+    q.each |v, k| { qci[k] = v }
+    verifyEq(Uri.encodeQuery(qci), Uri.encodeQuery(q))
 
     uri := Uri.decode("?$encoded")
     if (exact) verify(uri.encode[1..-1].equalsIgnoreCase(encoded))
@@ -633,6 +642,10 @@ class UriTest : Test
     verifyNorm("http://foo/a/..", `http://foo/`)
     verifyNorm("Http://foo:80/a/../..", `http://foo/..`)
     verifyNorm("HTTP://foo/a/b/c/../..", `http://foo/a/`)
+    verifyNorm("https://foo:443", `https://foo/`)
+    verifyNorm("HTTPS://foo:443/x", `https://foo/x`)
+    verifyNorm("FTP://foo:21", `ftp://foo/`)
+    verifyNorm("ftp://foo:21/x", `ftp://foo/x`)
 
     // relative
     verifyNorm("", ``)
@@ -780,6 +793,10 @@ class UriTest : Test
 
   Void testPlusName()
   {
+    verifyPlusName(`http://u/`,          "foo",  `http://u/foo`)
+    verifyPlusName(`http://u`,           "foo",  `http://u/foo`)
+    verifyPlusName(`fan://icons/`,       "foo",  `fan://icons/foo`)
+    verifyPlusName(`fan://icons`,        "foo",  `fan://icons/foo`)
     verifyPlusName(`http://u@h:9/x`,     "foo",  `http://u@h:9/foo`)
     verifyPlusName(`http://u@h:9/x/`,    "foo",  `http://u@h:9/x/foo`)
     verifyPlusName(`http://u@h:9/x?y=z`, "foo",  `http://u@h:9/foo`)
@@ -1060,6 +1077,7 @@ class UriTest : Test
 
     verifyEsc(`&x y/z`, "&x%20y/z", "&x y/z", ["&x y", "z"], null, nq, null)
     verifyEsc(`&x y\/z`, "&x%20y%2Fz", "&x y\\/z", ["&x y\\/z"], null, nq, null)
+    verifyEsc(`x\/`, "x%2F", "x\\/", ["x\\/"], null, nq, null)
 
     verifyEsc(`?\\=4`, "?%5C=4", "", np, "\\\\=4", ["\\":"4"], null)
     verifyEsc(`?\\=\\`, "?%5C=%5C", "", np, "\\\\=\\\\", ["\\":"\\"], null)

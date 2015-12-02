@@ -602,6 +602,12 @@ namespace Fan.Sys
       return self.Substring(0, pos+1);
     }
 
+    public static string trimToNull(string self)
+    {
+      String trimmed = self.Trim(m_trimChars);
+      return trimmed.Length == 0 ? null : trimmed;
+    }
+
     public static List split(string self) { return split(self, null, true); }
     public static List split(string self, Long separator) { return split(self, separator, true); }
     public static List split(string self, Long separator, bool trim)
@@ -854,6 +860,8 @@ namespace Fan.Sys
     public static BigDecimal toDecimal(string self, bool check) { return FanDecimal.fromStr(self, check); }
 
     public static Uri toUri(string self) { return Uri.fromStr(self); }
+
+    public static Regex toRegex(string self) { return Regex.fromStr(self); }
 
     public static string toCode(string self) { return toCode(self, Long.valueOf('"'), false); }
     public static string toCode(string self, Long quote) { return toCode(self, quote, false); }

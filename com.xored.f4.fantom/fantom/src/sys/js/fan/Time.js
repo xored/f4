@@ -104,6 +104,11 @@ fan.sys.Time.prototype.equals = function(that)
   return false;
 }
 
+fan.sys.Time.prototype.hash = function()
+{
+  return (this.m_hour << 28) ^ (this.m_min << 21) ^ (this.m_sec << 14) ^ this.m_ns;
+}
+
 fan.sys.Time.prototype.compare = function(that)
 {
   if (this.m_hour.valueOf() == that.m_hour.valueOf())
@@ -145,15 +150,14 @@ fan.sys.Time.prototype.nanoSec = function() { return this.m_ns; }
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.Time.prototype.toLocale = function(pattern)
+fan.sys.Time.prototype.toLocale = function(pattern, locale)
 {
+  if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
 
   // locale specific default
-  var locale = null;
   if (pattern == null)
   {
-    if (locale == null) locale = fan.sys.Locale.cur();
     var pod = fan.sys.Pod.find("sys");
     pattern = fan.sys.Env.cur().locale(pod, "time", "hh:mm:ss", locale);
   }
@@ -177,6 +181,24 @@ fan.sys.Time.fromIso = function(s, checked)
 {
   if (checked === undefined) checked = true;
   return fan.sys.Time.fromStr(s, checked);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Past/Future
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.Time.prototype.plus = function(d)  { return this.$plus(d.ticks()); }
+fan.sys.Time.prototype.minus = function(d) { return this.$plus(-d.ticks()); }
+fan.sys.Time.prototype.$plus = function(ticks)
+{
+  if (ticks == 0) return this;
+  if (ticks > fan.sys.Duration.nsPerDay)
+      throw fan.sys.ArgErr.make("Duration out of range: " + fan.sys.Duration.make(ticks));
+
+  var newTicks = this.toDuration().m_ticks + ticks;
+  if (newTicks < 0) newTicks = fan.sys.Duration.nsPerDay + newTicks;
+  if (newTicks >= fan.sys.Duration.nsPerDay) newTicks %= fan.sys.Duration.nsPerDay;
+  return fan.sys.Time.fromDuration(fan.sys.Duration.make(newTicks));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,4 +244,3 @@ fan.sys.Time.prototype.isMidnight = function()
 {
   return this.equals(fan.sys.Time.m_defVal);
 }
-

@@ -130,33 +130,32 @@ abstract const class DocEnv
     {
       chapterName := docName[0..<pound]
       headingName := docName[pound+1..-1]
-      chapter := (chapterName.isEmpty ? from : space.doc(chapterName, false)) as DocChapter
-      if (chapter != null)
+      doc := (chapterName.isEmpty ? from : space.doc(chapterName, false))
+      if (doc != null)
       {
-        heading := chapter.heading(headingName, false)
-        if (heading != null) return DocLink(from, chapter, chapter.title, headingName)
+        heading := doc.heading(headingName, false)
+        if (heading != null) return DocLink(from, doc, doc.title, headingName)
       }
     }
 
-    // check for Chapter
+    // check for document
     doc := space.doc(docName, false)
-    if (doc is DocChapter) return DocLink(from, doc, doc.title)
-
-    // assume simple document name in space
-    if (doc != null) return DocLink(from, doc, doc.docName)
+    if (doc != null)
+    {
+      if (doc is DocType) return DocLink(from, doc, doc.docName)
+      return DocLink(from, doc, doc.title)
+    }
 
     // no joy
     if (checked) throw Err("Broken link: $link")
     return null
   }
 
-** TODO
   DocErr err(Str msg, DocLoc loc, Err? cause := null)
   {
     errReport(DocErr(msg, loc, cause))
   }
 
-** TODO
   virtual DocErr errReport(DocErr err)
   {
     echo("$err.loc: $err.msg")

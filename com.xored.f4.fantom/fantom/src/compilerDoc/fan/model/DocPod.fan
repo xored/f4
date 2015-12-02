@@ -14,16 +14,16 @@ const class DocPod : DocSpace
 {
 
   ** Load from a zip file.
-  static DocPod load(File file)
+  static DocPod load(DocEnv env, File file)
   {
-    return DocPod(file)
+    return DocPod(env, file)
   }
 
   ** Private constructor to copy loader fields
-  @NoDoc new make(File file)
+  @NoDoc new make(DocEnv env, File file)
   {
     this.file = file
-    loader := DocPodLoader(file, this)
+    loader := DocPodLoader(env, file, this)
     zip := Zip.open(file)
     try
     {
@@ -92,8 +92,8 @@ const class DocPod : DocSpace
   ** If this pod has an associated pod.fandoc chapter
   const DocChapter? podDoc
 
-  ** A *manual* pod is a pod with only fandoc chapters and no types.
-  Bool isManual() { types.isEmpty && !chapters.isEmpty }
+  ** A *manual* pod is a pod with two or more fandoc chapters and no types.
+  Bool isManual() { types.isEmpty && chapters.size >= 2 }
 
   ** If this is a manual like docLang, return list of chapters.
   const DocChapter[] chapters
@@ -244,8 +244,9 @@ const class DocPodIndex : Doc
 
 internal class DocPodLoader
 {
-  new make(File file, DocPod pod)
-   {
+  new make(DocEnv env, File file, DocPod pod)
+  {
+    this.env = env
     this.file = file
     this.pod  = pod
   }
@@ -373,12 +374,11 @@ internal class DocPodLoader
     list := map.vals.sort |a, b| { a.name <=> b.name }
 
     // if this pod has types, it can't be a manual
-    if (!typeList.isEmpty)
+    if (!typeList.isEmpty || list.size <= 1)
     {
-      if (list.size == 1 && list.first.isPodDoc)
-        this.podDoc = list.first
-      this.chapterMap  = map.toImmutable
-      this.chapterList = list.toImmutable
+      this.podDoc = list.find |x| { x.isPodDoc }
+      this.chapterList = this.podDoc == null ? DocChapter#.emptyList : DocChapter[podDoc]
+      this.chapterMap  = Str:DocChapter[:].setList(this.chapterList) |x| { x.name }
       return
     }
 
@@ -463,11 +463,10 @@ internal class DocPodLoader
 
   Void err(Str msg, DocLoc loc, Err? cause := null)
   {
-    // TODO
-    echo("$loc: $msg")
-    if (cause != null) cause.trace
+    env.err(msg, loc, cause)
   }
 
+  DocEnv env                    // ctor
   File file                     // ctor
   DocPod pod                    // ctor
   [Str:Str]? meta               // load

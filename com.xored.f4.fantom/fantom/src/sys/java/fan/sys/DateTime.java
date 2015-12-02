@@ -63,14 +63,28 @@ public final class DateTime
 
   public static long nowTicks()
   {
-    return fromJavaToTicks(System.currentTimeMillis());
+    long java = System.currentTimeMillis();
+    if (java < diffJava)
+    {
+      // sanity check if clock is set before 1-Jan-2000 UTC
+      if (!badClockErr)
+      {
+        badClockErr = true;
+        System.out.println("###");
+        System.out.println("### System clock is not set correctly!");
+        System.out.println("###");
+      }
+      java = diffJava + System.nanoTime()/1000000L;
+    }
+    return fromJavaToTicks(java);
   }
+  private static boolean badClockErr;
 
   public static long nowUnique()
   {
     synchronized (nowUniqueLock)
     {
-      long now = (System.currentTimeMillis() - diffJava) * nsPerMilli;
+      long now = nowTicks();
       if (now <= nowUniqueLast) now = nowUniqueLast+1;
       return nowUniqueLast = now;
     }
@@ -432,21 +446,46 @@ public final class DateTime
 
   public final long dayOfYear() { return dayOfYear(getYear(), month().ord, getDay())+1; }
 
+  public final long weekOfYear() { return weekOfYear(Weekday.localeStartOfWeek()); }
+  public final long weekOfYear(Weekday startOfWeek) { return weekOfYear(getYear(), month().ord, getDay(), startOfWeek); }
+  static int weekOfYear(int year, int month, int day, Weekday startOfWeek)
+  {
+    int firstWeekday = firstWeekday(year, 0); // zero based
+    int lastDayInFirstWeek = 7 - (firstWeekday - startOfWeek.ord);
+
+    // special case for first week
+    if (month == 0 && day <= lastDayInFirstWeek) return 1;
+
+    // compute from dayOfYear - lastDayInFirstWeek
+    int doy = dayOfYear(year, month, day) + 1;
+    int woy = (doy - lastDayInFirstWeek - 1) / 7;
+    return woy + 2; // add first week and make one based
+  }
+
+  public final long hoursInDay()
+  {
+    int year  = getYear();
+    int month = getMonth();
+    int day   = getDay();
+    TimeZone.Rule rule = tz.rule(year);
+    if (rule.dstStart != null)
+    {
+      if (TimeZone.isDstDate(rule, rule.dstStart, year, month, day)) return 23;
+      if (TimeZone.isDstDate(rule, rule.dstEnd, year, month, day))   return 25;
+    }
+    return 24;
+  }
+
 //////////////////////////////////////////////////////////////////////////
 // Locale
 //////////////////////////////////////////////////////////////////////////
 
-  public String toLocale() { return toLocale((String)null, null); }
+  public String toLocale() { return toLocale(null, null); }
   public String toLocale(String pattern) { return toLocale(pattern, null); }
-  private String toLocale(String pattern, Locale locale)
+  public String toLocale(String pattern, Locale locale)
   {
-    // locale specific default
-    if (pattern == null)
-    {
-      if (locale == null) locale = Locale.cur();
-      pattern = Env.cur().locale(Sys.sysPod, localeKey, "D-MMM-YYYY WWW hh:mm:ss zzz", locale);
-    }
-
+    if (locale == null) locale = Locale.cur();
+    if (pattern == null) pattern = Env.cur().locale(Sys.sysPod, localeKey, "D-MMM-YYYY WWW hh:mm:ss zzz", locale);
     return new DateTimeStr(pattern, locale, this).format();
   }
 
@@ -581,7 +620,7 @@ public final class DateTime
   /**
    * Get the number days in the specified month (0-11).
    */
-  static int numDaysInMonth(int year, int month)
+  public static int numDaysInMonth(int year, int month)
   {
     if (month == 1 && isLeapYear(year))
       return 29;
@@ -675,10 +714,11 @@ public final class DateTime
     return (millis - diffJava) * nsPerMilli;
   }
 
-  public static DateTime fromJava(long millis) { return fromJava(millis, TimeZone.cur); }
-  public static DateTime fromJava(long millis, TimeZone tz)
+  public static DateTime fromJava(long millis) { return fromJava(millis, TimeZone.cur, true); }
+  public static DateTime fromJava(long millis, TimeZone tz) { return fromJava(millis, tz, true); }
+  public static DateTime fromJava(long millis, TimeZone tz, boolean negIsNull)
   {
-    if (millis <= 0) return null;
+    if (millis <= 0 && negIsNull) return null;
     return new DateTime(fromJavaToTicks(millis), tz);
   }
 

@@ -150,11 +150,22 @@ const final class Range
 
   **
   ** Call the specified function for each integer in the range.
+  ** Also see `Int.times`.
   **
   ** Example:
-  **   ('a'..'z').each |Int i| { echo(i) }
+  **   (1..3).each |i| { echo(i) }          =>  1, 2, 3
+  **   (1..<3).each |i| { echo(i) }         => 1, 2
+  **   ('a'..'z').each |Int i| { echo(i) }  => 'a', 'b', ... 'z'
   **
   Void each(|Int i| c)
+
+  **
+  ** Iterate every integer in the range until the function returns
+  ** non-null.  If function returns non-null, then break the iteration
+  ** and return the resulting object.  Return null if the function returns
+  ** null for every integer in the range.
+  **
+  Obj? eachWhile(|Int i->Obj?| c)
 
   **
   ** Create a new list which is the result of calling c for

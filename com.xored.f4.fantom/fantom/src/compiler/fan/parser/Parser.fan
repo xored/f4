@@ -355,13 +355,14 @@ public class Parser : CompilerSupport
 
   **
   ** Enum definition:
-  **   <enumDef>  :=  <id> ["(" <args> ")"]
+  **   <enumDef>  :=  <facets> <id> ["(" <args> ")"]
   **
   private EnumDef enumDef(Int ordinal)
   {
     doc := doc()
+    facets := facets()
 
-    def := EnumDef(cur, doc, consumeId, ordinal)
+    def := EnumDef(cur, doc, facets, consumeId, ordinal)
 
     // optional ctor args
     if (curt === Token.lparen)
@@ -2001,7 +2002,7 @@ public class Parser : CompilerSupport
   **
   private ClosureExpr closure(Loc loc, FuncType funcType)
   {
-    if (curSlot == null) throw err("Unexpected closure")
+    if (curType == null || curSlot == null) throw err("Unexpected closure")
 
     // closure anonymous class name: class$slot$count
     name := "${curType.name}\$${curSlot.name}\$${closureCount++}"
@@ -2197,7 +2198,11 @@ public class Parser : CompilerSupport
     }
 
     // if more then one, first try to exclude those internal to other pods
-    if (types.size > 1) types = types.exclude |t| { t.isInternal && t.pod.name != compiler.pod.name }
+    if (types.size > 1)
+    {
+      publicTypes := types.exclude |t| { t.isInternal && t.pod.name != compiler.pod.name }
+      if (!publicTypes.isEmpty) types = publicTypes
+    }
 
     // if more then one its ambiguous (use errReport to avoid suppression)
     if (types.size > 1)

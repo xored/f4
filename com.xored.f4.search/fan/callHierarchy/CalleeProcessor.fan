@@ -45,7 +45,7 @@ class CalleeProcessor : ICalleeProcessor
   private MethodDef? getMethodNode(CUnit unit) {
     unit.types.find |TypeDef type -> Bool| {
       type.name.text == method.getDeclaringType.getElementName 
-    }?.slots.find |SlotDef slot -> Bool| {
+    }?.slots?.find |SlotDef slot -> Bool| {
       slot is MethodDef && slot->name->text == method.getElementName 
     }
   }

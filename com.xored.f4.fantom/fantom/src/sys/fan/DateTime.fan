@@ -228,6 +228,22 @@ const final class DateTime
   **
   Int dayOfYear()
 
+  **
+  ** Return the week number of the year as a number
+  ** between 1 and 53 using the given weekday as the
+  ** start of the week (defaults to current locale).
+  **
+  Int weekOfYear(Weekday startOfWeek := Weekday.localeStartOfWeek)
+
+  **
+  ** Return the number of hours for this date and this timezone.
+  ** Days which transition to DST will be 23 hours and days which
+  ** transition back to standard time will be 25 hours.  Note there
+  ** one timezone "Lord_Howe" which has a 30min offset which is
+  ** not handled by this method (WTF).
+  **
+  Int hoursInDay()
+
 //////////////////////////////////////////////////////////////////////////
 // Locale
 //////////////////////////////////////////////////////////////////////////
@@ -248,6 +264,9 @@ const final class DateTime
   **   DDD    Day with suffix            1st, 2nd, 3rd, 24th
   **   WWW    Three letter abbr weekday  Tue
   **   WWWW   Full weekday               Tuesday
+  **   V      One/two digit week of year 1,52
+  **   VV     Two digit week of year     01,52
+  **   VVV    Week of year with suffix   1st,52nd
   **   h      One digit 24 hour (0-23)   3, 22
   **   hh     Two digit 24 hour (0-23)   03, 22
   **   k      One digit 12 hour (1-12)   3, 11
@@ -280,7 +299,7 @@ const final class DateTime
   **   k:mma                       =>  9:58a
   **   k:mmAA                      =>  9:58AM
   **
-  Str toLocale(Str? pattern := null)
+  Str toLocale(Str? pattern := null, Locale locale := Locale.cur)
 
   **
   ** Parse a string into a DateTime using the given pattern.  If
@@ -403,9 +422,10 @@ const final class DateTime
   **
   ** Create date for Java milliseconds since the epoch of 1 Jan 1970
   ** using the specified timezone (defaults to current).  If millis
-  ** are less than or equal to zero then return null.
+  ** are less than or equal to zero then return null or a date before
+  ** 1970 depending on the 'negIsNull' flag.
   **
-  static DateTime? fromJava(Int millis, TimeZone tz := TimeZone.cur)
+  static DateTime? fromJava(Int millis, TimeZone tz := TimeZone.cur, Bool negIsNull := true)
 
   **
   ** Get this date in Java milliseconds since the epoch of 1 Jan 1970.

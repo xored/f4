@@ -10,7 +10,7 @@
 ** SqlConn manages a connection to a relational database.
 ** See [pod-doc]`pod-doc#connections`.
 **
-class SqlConn
+mixin SqlConn
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -23,10 +23,10 @@ class SqlConn
   ** if connection cannot be established.
   ** See [pod-doc]`pod-doc#connections`.
   **
-  native static SqlConn open(Str uri, Str? username, Str? password)
-
-  ** Internal constructor
-  internal new make() {}
+  static SqlConn open(Str uri, Str? username, Str? password)
+  {
+    SqlConnImpl.openDefault(uri,username,password)
+  }
 
   **
   ** Close the database connection.  Closing a connection already
@@ -34,12 +34,12 @@ class SqlConn
   ** an exception.  Return true if the connection was closed
   ** successfully or 'false' if closed abnormally.
   **
-  native Bool close()
+  abstract Bool close()
 
   **
   ** Return if `close` has been called.
   **
-  native Bool isClosed()
+  abstract Bool isClosed()
 
 //////////////////////////////////////////////////////////////////////////
 // Data
@@ -48,12 +48,12 @@ class SqlConn
   **
   ** Get the database meta-data
   **
-  native SqlMeta meta()
+  abstract SqlMeta meta()
 
   **
   ** Create a statement for this database.
   **
-  Statement sql(Str sql) { Statement(this, sql) }
+  abstract Statement sql(Str sql)
 
 //////////////////////////////////////////////////////////////////////////
 // Transactions
@@ -64,16 +64,16 @@ class SqlConn
   ** as an individual transaction.  Otherwise statements are grouped into
   ** transaction which must be closed via `commit` or `rollback`.
   **
-  native Bool autoCommit
+  abstract Bool autoCommit
 
   **
   ** Commit all the changes made inside the current transaction.
   **
-  native Void commit()
+  abstract Void commit()
 
   **
   ** Undo any changes made inside the current transaction.
   **
-  native Void rollback()
+  abstract Void rollback()
 
 }

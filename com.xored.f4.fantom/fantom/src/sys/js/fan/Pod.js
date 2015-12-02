@@ -41,6 +41,8 @@ fan.sys.Pod.prototype.$ctor = function(name)
 {
   this.m_name  = name;
   this.m_types = [];
+  this.m_meta = [];
+  this.m_version = fan.sys.Version.m_defVal;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -52,6 +54,16 @@ fan.sys.Pod.prototype.$typeof = function() { return fan.sys.Pod.$type; }
 fan.sys.Pod.prototype.$name = function()
 {
   return this.m_name;
+}
+
+fan.sys.Pod.prototype.meta = function()
+{
+  return this.m_meta;
+}
+
+fan.sys.Pod.prototype.version = function()
+{
+  return this.m_version;
 }
 
 fan.sys.Pod.prototype.uri = function()
@@ -107,9 +119,9 @@ fan.sys.Pod.prototype.$at = function(name, baseQname, mixins, facets, flags)
 }
 
 // addMixin
-fan.sys.Pod.prototype.$am = function(name, baseQname, mixins, flags)
+fan.sys.Pod.prototype.$am = function(name, baseQname, mixins, facets, flags)
 {
-  var t = this.$at(name, baseQname, mixins, flags);
+  var t = this.$at(name, baseQname, mixins, facets, flags);
   t.m_isMixin = true;
   return t;
 }

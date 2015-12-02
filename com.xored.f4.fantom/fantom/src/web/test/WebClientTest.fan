@@ -25,6 +25,19 @@ class WebClientTest : Test
     verifyErr(Err#) { x := WebClient { reqUri = `http://foo/`; reqHeaders["host"] = "bad"; writeReq; readRes } }
   }
 
+  Void testCookies()
+  {
+    a := Cookie.fromStr("alpha=blah; Expires=Tue, 15-Jan-2013 21:47:38 GMT; Path=/; Domain=.example.com; HttpOnly")
+    b := Cookie.fromStr("beta=belch")
+    c := WebClient(`http://foo.com/`)
+    c.cookies = [a]
+    verifyEq(c.reqHeaders["Cookie"], "alpha=blah")
+    c.cookies = [a, b]
+    verifyEq(c.reqHeaders["Cookie"], "alpha=blah; beta=belch")
+    c.cookies = [,]
+    verifyEq(c.reqHeaders["Cookie"], null)
+  }
+
   Void testGetFixed()
   {
     // use skyfoundry.com assuming simple static image page
@@ -59,8 +72,8 @@ class WebClientTest : Test
 
   Void testGetChunked()
   {
-    // at least for now, google home page uses chunked transfer
-    c := WebClient(`http://google.com`)
+    // for now reddit uses chunked transfer
+    c := WebClient(`https://www.reddit.com/r/programming`)
     verify(!c.isConnected)
     try
     {
@@ -71,10 +84,17 @@ class WebClientTest : Test
       verifyEq(c.resCode, 200)
       verifyEq(c.resPhrase, "OK")
       verifyEq(c.resHeaders.caseInsensitive, true)
+      verify(c.cookies.size > 0)
+      verify(c.reqHeaders["Cookie"] != null)
 
       // chunked transfer
       verify(c.resHeader("Transfer-Encoding").lower.contains("chunked"))
       verify(c.resStr.contains("<html"))
+
+      // try again
+      c.close
+      again := c.getStr
+      verify(again.contains("<html"))
     }
     finally c.close
   }
@@ -107,19 +127,19 @@ class WebClientTest : Test
     // always maintained
     map :=
     [
-      `/doc/docIntro/WhyFan.html`: `/doc/docIntro/WhyFantom.html`,
-      `/doc/docLib/Dom.html`:      `/doc/dom/index.html`,
-      `/doc/docLib/Email.html`:    `/doc/email/index.html`,
-      `/doc/docLib/Fandoc.html`:   `/doc/fandoc/index.html`,
-      `/doc/docLib/Flux.html`:     `/doc/flux/index.html`,
-      `/doc/docLib/Fwt.html`:      `/doc/fwt/index.html`,
-      `/doc/docLib/Json.html`:     `/doc/util/index.html#json`,
-      `/doc/docLib/Sql.html` :     `/doc/sql/index.html`,
-      `/doc/docLib/Web.html`:      `/doc/web/index.html`,
-      `/doc/docLib/WebMod.html`:   `/doc/webmod/index.html`,
-      `/doc/docLib/Wisp.html`:     `/doc/wisp/index.html`,
-      `/doc/docLib/Xml.html`:      `/doc/xml/index.html`,
-      `/doc/docLang/TypeDatabase.html`: `/doc/docLang/Env.html#index`,
+      `/doc/docIntro/WhyFan.html`: `/doc/docIntro/WhyFantom`,
+      `/doc/docLib/Dom.html`:      `/doc/dom/index`,
+      `/doc/docLib/Email.html`:    `/doc/email/index`,
+      `/doc/docLib/Fandoc.html`:   `/doc/fandoc/index`,
+      `/doc/docLib/Flux.html`:     `/doc/flux/index`,
+      `/doc/docLib/Fwt.html`:      `/doc/fwt/index`,
+      `/doc/docLib/Json.html`:     `/doc/util/index#json`,
+      `/doc/docLib/Sql.html` :     `/doc/sql/index`,
+      `/doc/docLib/Web.html`:      `/doc/web/index`,
+      `/doc/docLib/WebMod.html`:   `/doc/webmod/index`,
+      `/doc/docLib/Wisp.html`:     `/doc/wisp/index`,
+      `/doc/docLib/Xml.html`:      `/doc/xml/index`,
+      `/doc/docLang/TypeDatabase.html`: `/doc/docLang/Env#index`,
     ]
     uri := map.keys.random
     base := `http://fantom.org/`
