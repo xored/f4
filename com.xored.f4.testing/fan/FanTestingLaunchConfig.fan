@@ -19,14 +19,15 @@ using f4launching
 class FanTestingLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig
 {
   
-  override Void launch(ILaunchConfiguration? conf, Str? mode, ILaunch? launch,
-    IProgressMonitor? m)
+  override Void launch(ILaunchConfiguration? conf, Str? mode, ILaunch? launch, IProgressMonitor? m)
   {
     wc := conf.getWorkingCopy
     config(conf, wc, mode)
     DLTKTestingCore.registerTestingProcessor(launch, FanTestProcessor(launch))
     launch.setAttribute(DLTKTestingConstants.ATTR_ENGINE_ID, FanTestingEngine.id)
-    super.launch(wc, mode, launch, m)
+
+    if (JavaLaunchUtil.confirmLaunch(conf) == true)
+      super.launch(wc, mode, launch, m)
   }
 
   protected static const Str mainLaunchType := "fanx.tools.Fant"
