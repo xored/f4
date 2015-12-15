@@ -192,7 +192,6 @@ class SelectionEngine : ISelectionEngine
     TypeDef? type := path[-2] as TypeDef
     if(type == null)
     {
-      echo(path[-2].typeof.name)
       return IModelElement[,]
     }
     me := ns.currPod.findType(type.name.text, false)?.slot(name, false)?.me

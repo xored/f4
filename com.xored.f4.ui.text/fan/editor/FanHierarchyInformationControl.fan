@@ -47,10 +47,7 @@ class FanHierarchyInformationControl : HierarchyInformationControl
   }
   
   override public Void setInput(Obj? information)
-  {
-    echo(information)
-    echo(((SourceType)information).getElementType)
-    
+  {    
     input := null
     locked := null
     

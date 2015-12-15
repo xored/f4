@@ -236,7 +236,6 @@ class FanSourceViewerConfiguration : ScriptSourceViewerConfiguration
 class InformationControlCreator : IInformationControlCreator 
 {
   override public IInformationControl? createInformationControl(Shell? parent) {
-    echo("hello from FanSourceVievverConfiguration")
     return FanHierarchyInformationControl(parent, SWT.RESIZE, SWT.V_SCROLL.or(SWT.H_SCROLL));
   }
 }
