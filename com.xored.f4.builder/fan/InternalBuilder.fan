@@ -186,13 +186,6 @@ class InternalBuilder : Builder {
 		jtemp.mkdirs
 		jtempPath	:= jtemp.getAbsolutePath
 		podFile		:= File.os(projectPath.append("${fp.podName}.pod").toOSString)
-//		wc := createLaunchConfig(JavaConsts.ID_JAVA_APPLICATION, "Jstub configuration")
-//		wc.setAttribute(JavaConsts.ATTR_MAIN_TYPE_NAME, "fanx.tools.Jstub")
-//		fanHome := PathUtil.fanHome(fp.getInterpreterInstall.getInstallLocation.getPath).toFile.osPath
-//		wc.setAttribute(JavaConsts.ATTR_VM_ARGUMENTS, "-Dfan.home=\"$fanHome\"")
-//		wc.setAttribute(JavaConsts.ATTR_PROGRAM_ARGUMENTS, "-nozip -d $jtempPath $fp.podName")
-//		wc.setAttribute(JavaConsts.ATTR_PROJECT_NAME, fp.project.getName)
-//		launch(wc, consumer)
 		
 		JHashMap jmap := JHashMap()
 		fp.getAllPods.each |File file, Str key| {
