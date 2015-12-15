@@ -31,19 +31,23 @@ const class FantomProject {
 	private static const Str[] disabledDirs := ["CVS"]
 	
 	const Str		podName
-	const Str		summary
-	const Version	version
+	const Str		summary		:= ""
+	const Version	version		:= Version.defVal
+
+	** base directory for script and resource folders
+	const File baseDir 
 
 	** absolute path of output directory
 	const File		outDir 
 	const Uri?		rawOutDir
-	const Uri[]		resDirs
-	const Uri[]		jsDirs
-	const Uri[]		javaDirs
-	const Str:Obj	index
-	const Str:Str	meta
-	const Bool		docApi := true
-	const Bool		docSrc := true
+	const Depend[]	rawDepends	:= Depend#.emptyList
+	const Uri[]		resDirs		:= Uri#.emptyList
+	const Uri[]		jsDirs		:= Uri#.emptyList
+	const Uri[]		javaDirs	:= Uri#.emptyList
+	const Str:Obj	index		:= Str:Obj[:]
+	const Str:Str	meta		:= Str:Str[:]
+	const Bool		docApi 		:= true
+	const Bool		docSrc 		:= true
 	const Bool		isPlugin
 	
 	const ProjectErr[] projectErrs	:= ProjectErr[,]
@@ -72,18 +76,10 @@ const class FantomProject {
 			manifest = Manifest(this)
 		} catch(Err e) {
 			perrs.add(ProjectErr(e.toStr))
-			podName		= "<unknown>"
-			version		= Version.defVal
-			index		= [Str:Obj][:]
-			rawOutDir	= `./`
-			outDir		= baseDir
-			resDirs		= Uri[,]
-			jsDirs		= Uri[,]
-			javaDirs	= Uri[,]
-			summary		= ""
-			rawDepends	= Depend[,]
-			meta		= [Str:Str][:]
 			projectErrs	= perrs
+			podName		= "<unknown>"
+			outDir		= baseDir
+			rawOutDir	= `./`
 			return
 		}
 		
@@ -94,19 +90,17 @@ const class FantomProject {
 			berrs.add(ProjectErr("Pod name is not set"))
 		}
 		
-		version		= manifest.version
-		index		= manifest.index 
-		rawOutDir	= manifest.outDir
-		isPlugin	= project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
 		outDir		= getOutDir(project, manifest)
-		if (!isPlugin && isOutputNotSet) {
-			perrs.add(ProjectErr("Output folder is not set"))
-		}
+		rawOutDir	= manifest.outDir
+		version		= manifest.version
+		summary		= manifest.summary
 		resDirs		= manifest.resDirs						 
 		jsDirs		= manifest.jsDirs
 		javaDirs	= manifest.javaDirs
-		summary		= manifest.summary
 		meta		= manifest.meta.dup
+		index		= manifest.index.dup
+		docApi		= manifest.docApi
+		docSrc		= manifest.docSrc
 		rawDepends	= manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]| {
 			depend := Depend.fromStr(raw, false)
 			if (depend != null)
@@ -114,6 +108,10 @@ const class FantomProject {
 			else
 				berrs.add(ProjectErr("Can't parse depend $raw", manifest.lines["depends"]))
 			return r
+		}
+		isPlugin	= project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
+		if (!isPlugin && isOutputNotSet) {
+			perrs.add(ProjectErr("Output folder is not set"))
 		}
 		projectErrs		= perrs
 		buildfanErrs	= berrs
@@ -159,24 +157,6 @@ const class FantomProject {
 		return null
 	}
 	
-	new makeCopy(FantomProject project, |This|? f) {
-		iProjectHolder		= Unsafe(project.project)
-		this.baseDir		= project.baseDir
-		this.podName		= project.podName
-		this.index			= project.index
-		this.jsDirs			= project.jsDirs
-		this.outDir			= project.outDir
-		this.rawOutDir		= project.rawOutDir
-		this.rawDepends		= project.rawDepends
-		this.resDirs		= project.resDirs
-		this.summary		= project.summary
-		this.version		= project.version
-		this.projectErrs	= project.projectErrs
-		this.buildfanErrs	= project.buildfanErrs
-		this.meta			= project.meta
-		f?.call(this)
-	}
-	
 	Bool hasErrs() { projectErrs.size + buildfanErrs.size > 0 }
 	
 	File[] classpath() {
@@ -193,15 +173,6 @@ const class FantomProject {
 	
 	IJavaProject javaProject() {
 		JavaCore.create(project)
-	}
-	
-	File? javaOutput() {
-		try	{
-			root := baseDir
-			JavaCore.create(project).getOutputLocation.segments[1..-1].each |Str a|{ root += Uri.fromStr(a+"/") }
-			return root
-		} catch (Err e)
-			return null
 	}
 	
 	//////////////////////////////////////////////////////////////////////////
@@ -237,12 +208,7 @@ const class FantomProject {
 			return r
 		}
 	}
-		
-	** base directory for script and resource folders
-	const File baseDir 
 
-	const Depend[] rawDepends
-	
 	Uri[] srcDirs() {
 		unfoldDirs(scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp -> Bool| {
 			bp.getEntryKind == IBuildpathEntry.BPE_SOURCE

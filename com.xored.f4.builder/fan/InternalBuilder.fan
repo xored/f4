@@ -65,11 +65,11 @@ class InternalBuilder : Builder {
 			input.baseDir			= fp.baseDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
-			input.index				= fp.index
 			input.outDir			= File.os(projectPath.toOSString) 
 			input.output			= CompilerOutputMode.podFile
 			input.jsFiles			= fp.jsDirs
 			input.meta				= meta
+			input.index				= fp.index
 
 			errs := compile(input)
             consumer?.call(logBuf.toStr)

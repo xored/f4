@@ -57,6 +57,8 @@ class Manifest {
 	Uri[]		javaDirs()	{ resolveUris(vals["javaDirs"]) }
 	Str:Obj		index()		{ vals["index"] ?: [Str:Obj][:] }
 	Str:Str		meta() 		{ vals["meta"]  ?: [Str:Str][:] }
+	Bool		docApi()	{ vals["docApi"] ?: true }
+	Bool		docSrc()	{ vals["docSrc"] ?: true }
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Helper methods
