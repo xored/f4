@@ -75,7 +75,7 @@ class InternalBuilder : Builder {
             consumer?.call(logBuf.toStr)
 			if (!errs[0].isEmpty) return errs.flatten
 			
-			if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
+			if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer, projectPath))
 			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			podFileName	:= `${fp.podName}.pod` 
@@ -184,8 +184,8 @@ class InternalBuilder : Builder {
 		jtemp		:= projectPath.append("temp-java").toFile
 
 		jtemp.mkdirs
-		jtempPath := jtemp.getAbsolutePath
-		podFile := projectPath.append("${fp.podName}.pod").toOSString
+		jtempPath	:= jtemp.getAbsolutePath
+		podFile		:= File.os(projectPath.append("${fp.podName}.pod").toOSString)
 //		wc := createLaunchConfig(JavaConsts.ID_JAVA_APPLICATION, "Jstub configuration")
 //		wc.setAttribute(JavaConsts.ATTR_MAIN_TYPE_NAME, "fanx.tools.Jstub")
 //		fanHome := PathUtil.fanHome(fp.getInterpreterInstall.getInstallLocation.getPath).toFile.osPath
@@ -199,20 +199,19 @@ class InternalBuilder : Builder {
 			jmap.put(key, file)
 		}
 		
-		JStubGenerator.generateStubs(podFile, jtemp.getAbsolutePath, jmap)
-		
+		JStubGenerator.generateStubs(podFile.osPath, jtemp.getAbsolutePath, jmap)
 		jp := JavaCore.create(fp.project)
+
 		wc := createJdkConfig("Javac configutation", "javac", jp)
 		IRuntimeClasspathEntry[] entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
 		entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
 		classpath := entries.map { getLocation }.add(jtempPath).join(File.pathSep)
-		javaFiles := listFiles(fp.javaDirs).join(" ")
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d $jtempPath -cp \"$classpath\" $javaFiles")
+		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtempPath}\" -cp \"${classpath}\" ${javaFiles}")
 		launch(wc, consumer)
-		
+
 		wc = createJdkConfig("Jar configuration", "jar", jp)
-	 
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-fu $podFile -C $jtempPath \".\"")
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtempPath}\" \".\"")
 		launch(wc, consumer)
 		
 		|JFile file|? delFunc := null
