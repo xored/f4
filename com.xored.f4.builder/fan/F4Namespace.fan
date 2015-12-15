@@ -34,19 +34,8 @@ class F4Namespace : CNamespace
     if(!locs.containsKey(podName)) return null
     loc := locs[podName]
     if(!loc.exists) return null
-    fpod := FPod(this, podName, addZip(Zip.open(loc)))
-    
-    
-    try fpod.read
-    catch(Err e)
-    {
-      if(fpod.in(`/fcode/types.def`) == null && e is NullErr)
-      {
-        // Ivan Inozemtsev: Ignoring err, workaround for internal compiler NPE, 
-        // see http://fantom.org/forum/topic/2386
-      }
-      else throw e
-    }
+    fpod := FPod(this, podName, addZip(Zip.open(loc)))    
+    fpod.read
     return fpod
   }
   
