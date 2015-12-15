@@ -42,11 +42,19 @@ class InternalBuilder : Builder {
 		root.mkdirs
 		root.listFiles.each |JFile? f|{ f?.delete}
 		
-		buf := StrBuf()
-		input := CompilerInput.make
+        logger	:= ConsoleLogger(consumer)
+		input	:= CompilerInput.make
 		Bool podChanged := false
 		try {
-			input.log				= CompilerLog(buf.out)
+			logBuf	:= StrBuf().add("\n")
+			meta	:= fp.meta.dup 
+			meta["pod.docApi"]			= fp.docApi.toStr
+			meta["pod.docSrc"]			= fp.docSrc.toStr
+			meta["pod.native.java"]		= (!fp.javaDirs.isEmpty).toStr
+			meta["pod.native.dotnet"]	= false.toStr
+			meta["pod.native.js"]		= (!fp.jsDirs.isEmpty).toStr
+
+            input.log            	= CompilerLog(logBuf.out)
 			input.podName			= fp.podName
 			input.version			= fp.version
 			input.ns				= F4Namespace(getAllPods(fp), fp.classpath, fp.javaProject)
@@ -61,14 +69,10 @@ class InternalBuilder : Builder {
 			input.outDir			= File.os(projectPath.toOSString) 
 			input.output			= CompilerOutputMode.podFile
 			input.jsFiles			= fp.jsDirs
-			meta := fp.meta.dup 
-			meta["pod.docApi"]		= fp.docApi.toStr
-			meta["pod.docSrc"]		= fp.docSrc.toStr
-			meta["pod.native.java"]	  = (!fp.javaDirs.isEmpty).toStr
-			meta["pod.native.dotnet"] = false.toStr
-			meta["pod.native.js"]	= (!fp.jsDirs.isEmpty).toStr
 			input.meta				= meta
+
 			errs := compile(input)
+            consumer?.call(logBuf.toStr)
 			if (!errs[0].isEmpty) return errs.flatten
 			
 			if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer,projectPath))
@@ -86,6 +90,11 @@ class InternalBuilder : Builder {
 			}
 			
 			return errs.flatten
+			
+		} catch (Err err) {
+			logger.err("Could not compile ${fp.podName}", err)
+			throw err
+
 		} finally {
 			(input.ns as F4Namespace)?.close
 		}
@@ -240,5 +249,18 @@ class InternalBuilder : Builder {
 		wc.setAttribute(ILaunchManager.ATTR_PRIVATE, true)
 		return wc
 	}
+}
+
+
+const class ConsoleLogger : Log {
+    const Unsafe consumer
+
+    new make(|Str|? consumer) : super.make("console", false) {
+        this.consumer = Unsafe(consumer)
+    }
+
+    override Void log(LogRec rec) {
+        ((|Str|?) consumer.val)?.call("[${rec.level.toStr.upper}] ${rec.msg}")
+    }
 }
 
