@@ -70,6 +70,8 @@ class InternalBuilder : Builder {
 			input.jsFiles			= fp.jsDirs
 			input.meta				= meta
 			input.index				= fp.index
+			input.includeDoc		= fp.docApi
+			input.includeSrc		= fp.docSrc
 
 			errs := compile(input)
             consumer?.call(logBuf.toStr)
