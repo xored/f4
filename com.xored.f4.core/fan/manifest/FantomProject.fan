@@ -214,7 +214,7 @@ const class FantomProject {
 			bp.getEntryKind == IBuildpathEntry.BPE_SOURCE
 		}.map |IBuildpathEntry bp -> Uri| {
 			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
-		}, baseDir.uri)
+		}, baseDir.uri).sort
 	}
 	
 	Str:File getAllPods() {
