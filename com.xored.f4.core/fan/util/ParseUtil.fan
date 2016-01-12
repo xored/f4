@@ -17,14 +17,13 @@ using f4model
 **
 class ParseUtil : TypeUtil
 {
-  static Bool inherits(IFanType? t, Str base, IFanNamespace ns)
+  static Bool inherits(IFanType? t, Str qNameBase, IFanNamespace ns)
   {
     t != null && t.inheritance.any |Str baseName -> Bool|
     {
-      baseName == base || 
-      inherits(ns.findType(baseName), base, ns)
+      baseType := ns.findType(baseName)	
+      return baseType.qname == qNameBase || inherits(baseType, qNameBase, ns)
     }
-    
   }
   
   static Str[] typeNames(ISourceModule module)

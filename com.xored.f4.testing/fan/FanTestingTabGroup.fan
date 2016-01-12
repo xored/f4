@@ -115,7 +115,7 @@ class FanTestingMainTab : MainLaunchConfigurationTab
       return false
     }
     
-    if(!ParseUtil.inherits(type, "Test", ns))
+    if(!ParseUtil.inherits(type, "sys::Test", ns))
     {
       setErrorMessage("Class $className does not extend 'sys::Test' class")
       return false
