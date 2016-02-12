@@ -66,7 +66,7 @@ class FanTestingLaunchShortcut : AbstractScriptLaunchShortcut
     ns := ParseUtil.ns(sourceModule)   
     typeName := ParseUtil.typeNames(sourceModule).find  
     {
-      ParseUtil.inherits(ns.findType(it), "Test", ns)  
+      ParseUtil.inherits(ns.findType(it), "sys::Test", ns)  
     } ?: ""
     if (typeName=="") return false   
     return true
@@ -85,7 +85,7 @@ class FanTestingLaunchShortcut : AbstractScriptLaunchShortcut
       ns := ParseUtil.ns(sourceModule)
       typeName = ParseUtil.typeNames(sourceModule).find 
       {
-        ParseUtil.inherits(ns.findType(it), "Test", ns) 
+        ParseUtil.inherits(ns.findType(it), "sys::Test", ns) 
       } ?: ""
     }
     
