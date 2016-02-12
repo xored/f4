@@ -54,8 +54,18 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 			.map |IConfigurationElement element->CompileEnv| {
 				element.createExecutableExtension("class")
 			}
-		envs.add(PathCompileEnv())
-		envs.add(FpmCompileEnv())
+
+		// ensure 'None' is first and 'Path Env' is second
+		envs.sort |e1, e2| {
+			num := |Obj obj->Int| {
+				switch (obj.typeof.pod.name) {
+					case "f4core"		: return 1
+					case "f4pathEnv"	: return 2
+					default				: return 3
+				}
+			}
+			return num(e1) <=> num(e2)
+		}
 
 		// grab some private fields
 		bindManagerField := Interop.toJava(AbstractOptionsBlock#).getDeclaredField("bindManager")
@@ -65,18 +75,17 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 		KeysField := Interop.toJava(AbstractOptionsBlock#).getDeclaredField("keys")
 		KeysField.setAccessible(true)
 		keys := (ArrayList) KeysField.get(this)
-		
-		group := SWTFactory.createGroup(composite, "Fantom Environement", 1, 1, GridData.FILL_HORIZONTAL)
-//		group := SWTFactory.createGroup(composite, "Fantom Environement", 1, 1, GridData.FILL_HORIZONTAL + GridData.VERTICAL_ALIGN_BEGINNING)
-		
-		SWTFactory.createLabel(group, "Select the Fantom environment used to find pods:", 1)
+
+		group := SWTFactory.createGroup(composite, "Fantom Environement", 2, 1, GridData.FILL_HORIZONTAL)
+
+		SWTFactory.createLabel(group, "Select the Fantom environment used to find pods:", 2)
 		envs.each |env| {
-			radio := SWTFactory.createRadioButton(group, env.label + " - " + env.description, 1)
-//			radio.setToolTipText(env.description)
+			radio := SWTFactory.createRadioButton(group, env.label, 1)
+			SWTFactory.createLabel(group, env.description, 1)
 			bindManager.bindRadioControl(radio, compileEnvKey, env.typeof.qname, null)
 		}
 		keys.add(compileEnvKey)
-	
+
 		return composite
 	}
 
@@ -87,14 +96,4 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 	private static PreferenceKey[] allKeys() {
 		[compileEnvKey]
 	}
-}
-
-const class PathCompileEnv : CompileEnv {
-	override const Str label		:= "util::PathEnv"
-	override const Str description	:= "Use pods found in work directories"
-}
-
-const class FpmCompileEnv : CompileEnv {
-	override const Str label		:= "afFpm::FpmEnv"
-	override const Str description	:= "Use Alien-Factory's awesome Fantom Pod Manager"	
 }
