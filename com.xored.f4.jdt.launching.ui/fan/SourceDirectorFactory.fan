@@ -7,10 +7,7 @@
 //
 
 using [java] org.eclipse.debug.core.sourcelookup
-**
-**
-**
-class SourceDirectorFactory
-{
-  static ISourceLookupDirector create() { SourceLookupDirector() }
+
+class SourceDirectorFactory {
+	static ISourceLookupDirector create() { SourceLookupDirector() }
 }

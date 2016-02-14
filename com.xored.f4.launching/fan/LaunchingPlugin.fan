@@ -6,11 +6,6 @@
 //   ivaninozemtsev Apr 29, 2010 - Initial Contribution
 //
 
-
-**
-**
-**
-class LaunchingPlugin
-{
-  static const Str id := "com.xored.f4.launching" 
+class LaunchingPlugin {
+	static const Str id := "com.xored.f4.launching" 
 }
