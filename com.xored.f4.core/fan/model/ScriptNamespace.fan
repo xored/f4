@@ -15,12 +15,13 @@ internal class ScriptNamespace : IFanNamespace {
 	override const IFanPod currPod
 	
 	new make(FantomProject fp,Str source) {
-		project = fp.scriptProject
-		currPodName = "build\$fan"
+		this.project 		= fp.scriptProject
+		this.currPodName	= "build\$fan"
+		
 		vis := CreationVisitor(currPodName)
-		StructureParser(source,vis).parseUnit()
+		StructureParser(source, vis).parseUnit()
 		currPod = vis.pod
-		install := fp.scriptProject.exists ? fp.getInterpreterInstall : null
+		install := project.exists ? fp.interpreterInstall : null
 		
 		if (install != null) {
 			bpes := InterpreterContainer.getBuildpathEntries(install)

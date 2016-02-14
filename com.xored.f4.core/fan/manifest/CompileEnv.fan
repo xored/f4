@@ -5,4 +5,5 @@ const mixin CompileEnv {
 
 	abstract Str description()
 	
+	abstract Str:File	resolvePods(FantomProject fanProj)
 }

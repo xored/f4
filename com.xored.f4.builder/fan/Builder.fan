@@ -31,7 +31,7 @@ abstract class Builder {
 	abstract CompilerErr[] buildPod(|Str|? consumer)
 	
 	protected CompilerErr[] interpreterErrs() {
-		fp.isInterpreterSet ? [,] : [projectErr(ProjectErr("Interpreter is not configured"))]
+		fp.interpreterInstall != null ? CompilerErr[,] : [projectErr(ProjectErr("Interpreter is not configured"))]
 	}
 	
 	protected StrBuf launch(ILaunchConfiguration wc, |Str|? consumer) {

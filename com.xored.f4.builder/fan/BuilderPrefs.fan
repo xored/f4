@@ -8,6 +8,7 @@ using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 class BuilderPrefs {
 	static const Str useExternalBuilder	:= "useExternalBuilder"
 	static const Str buildDependants	:= "buildDependants"
+	static const Str publishPod			:= "publishPod"
 	static const Str compileEnv			:= "compileEnv"
 	
 	private PreferencesLookupDelegate delegate
@@ -30,6 +31,10 @@ class BuilderPrefs {
 	Bool isBuildDependants() {
 		delegate.getBoolean(qualifier, buildDependants)
 	}
+	
+	Bool isPublishPod() {
+		delegate.getBoolean(qualifier, publishPod)
+	}
 
 	Type compileEnvType() {
 		name := delegate.getString(qualifier, compileEnv)
@@ -43,6 +48,7 @@ class BuilderPrefsInitializer : AbstractPreferenceInitializer {
 		store := DefaultScope().getNode(CompileFan.pluginId)
 		store.putBoolean(BuilderPrefs.useExternalBuilder, false)
 		store.putBoolean(BuilderPrefs.buildDependants, true)
+		store.putBoolean(BuilderPrefs.publishPod, false)
 		store.put		(BuilderPrefs.compileEnv, DefaultCompileEnv#.qname)
 	}
 }

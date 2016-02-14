@@ -34,8 +34,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 	
 	override Obj? receive(Obj? msg) {
 		// rewritten to fail fast
-		try
-		{
+		try	{
 			list := (Obj[])msg
 			return ((Method)list[0]).callOn(this, ((Unsafe)list[1]).val)
 		} catch(Err e) {

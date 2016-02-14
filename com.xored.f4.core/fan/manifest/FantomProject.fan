@@ -15,11 +15,11 @@ using [java]org.eclipse.jdt.core.search::SearchEngine
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.jdt.launching::JavaRuntime
 using [java]org.eclipse.dltk.launching::IInterpreterInstall
+using [java]org.eclipse.dltk.launching::ScriptRuntime
 using [java]org.eclipse.dltk.core::DLTKCore
 using [java]org.eclipse.dltk.core::IScriptProject
-using [java]org.eclipse.dltk.launching::ScriptRuntime
+using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 using [java]org.eclipse.dltk.core::IBuildpathEntry
-using [java]org.eclipse.dltk.launching::LibraryLocation
 using [java]org.eclipse.pde.core.project::IBundleProjectDescription
 using f4model
 using concurrent
@@ -30,12 +30,12 @@ using concurrent
 const class FantomProject {
 	private static const Str[] disabledDirs := ["CVS"]
 	
-	const Str		podName
-	const Str		summary		:= ""
-	const Version	version		:= Version.defVal
+	const Str			podName
+	const Str			summary		:= ""
+	const Version		version		:= Version.defVal
 
 	** base directory for script and resource folders
-	const File baseDir 
+	const File		baseDir 
 
 	** absolute path of output directory
 	const File		outDir 
@@ -94,7 +94,7 @@ const class FantomProject {
 		rawOutDir	= manifest.outDir
 		version		= manifest.version
 		summary		= manifest.summary
-		resDirs		= manifest.resDirs						 
+		resDirs		= manifest.resDirs
 		jsDirs		= manifest.jsDirs
 		javaDirs	= manifest.javaDirs
 		meta		= manifest.meta.dup
@@ -117,57 +117,24 @@ const class FantomProject {
 		buildfanErrs	= berrs
 	}
 	
-	private File getOutDir(IProject project, Manifest manifest) {
-		if (isPlugin) {
-			return resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
-		}
-		
-		try {
-			return (File.os(ResourcesPlugin.getWorkspace.getRoot
-								.getFolder(javaProject.getOutputLocation)
-								.getLocation.toFile.getAbsolutePath).uri.plusSlash).toFile
-		} catch (Err e) {
-			return baseDir
-		}
-	}
-	
-	public Bool isOutputNotSet() {
+	Bool isOutputNotSet() {
 		javaProject.getOutputLocation.equals(javaProject.getPath)
 	}
 	
-	public Bool isInterpreterSet() {
-		ScriptRuntime.getInterpreterInstall(scriptProject) != null ? true : false
-	}
-	
-	public IInterpreterInstall? getInterpreterInstall() {
+	IInterpreterInstall? interpreterInstall() {
 		ScriptRuntime.getInterpreterInstall(scriptProject)
-	}
-	
-	private File? resolveOutDir(Uri baseDir, Uri? outDir) {
-		if(outDir != null) {
-			result := outDir.isAbs ? outDir : (baseDir + outDir)
-			return result.toFile
-		}
-		
-		path := ScriptRuntime.getInterpreterInstall(scriptProject)?.getInstallLocation?.getPath
-		
-		if (path != null)
-			return PathUtil.libByInterpreter(path)
-		
-		return null
 	}
 	
 	Bool hasErrs() { projectErrs.size + buildfanErrs.size > 0 }
 	
 	File[] classpath() {
-		jp := JavaCore.create(project)
+		jp := javaProject
 		
 		entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
 		resolved := IRuntimeClasspathEntry[,]
 		entries.each |entry| {
 			resolved.addAll(JavaRuntime.resolveRuntimeClasspathEntry(entry, jp))
 		}
-		
 		return resolved.map { File.os(it.getLocation) }
 	}
 	
@@ -180,6 +147,7 @@ const class FantomProject {
 	//////////////////////////////////////////////////////////////////////////	
 	
 	** Absolute locations of required pods
+	** Used by com.xored.f4.jdt.launching::FanJavaContainer --> Fantom Native Libraries (Java)
 	Str:File depends() {
 		scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
@@ -218,23 +186,14 @@ const class FantomProject {
 	}
 	
 	Str:File getAllPods() {
-		result := [:]
-		
-		//add interpreter libraries
-		libLocs := ScriptRuntime.getLibraryLocations(this.getInterpreterInstall) as LibraryLocation[]
-		libLocs.each {
-			file := PathUtil.resolveLocalPath(it.getLibraryPath())
-			result[file.basename] = file
-		}
-		
-		//add workspace pods
+		podFiles := compileEnv.resolvePods(this).rw
+
+		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
-			result[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
+			if (podFiles.containsKey(p.podName))
+				podFiles[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
 		}
-		
-		//uncomment if necessary 
-		//result.setAll(fp.depends)
-		return result
+		return podFiles
 	}	
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }
@@ -243,10 +202,40 @@ const class FantomProject {
 		DltkNamespace(this)
 	}
 	
+	CompileEnv compileEnv() {
+		// create a new Env everytime so we don't have to hook into preference change listeners
+		prefsDelegate	:= PreferencesLookupDelegate(project)
+		envName 		:= prefsDelegate.getString("com.xored.f4.builder", "compileEnv")
+		envType 		:= Type.find(envName)
+		compileEnv		:= envType.make
+		return compileEnv
+	}
+	
 	//////////////////////////////////////////////////////////////////////////
 	// Private helper methods
 	//////////////////////////////////////////////////////////////////////////
 
+	private File getOutDir(IProject project, Manifest manifest) {
+		if (isPlugin)
+			return resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
+		
+		try	return (File.os(ResourcesPlugin.getWorkspace.getRoot.getFolder(javaProject.getOutputLocation).getLocation.toFile.getAbsolutePath).uri.plusSlash).toFile
+		catch return baseDir
+	}
+
+	private File? resolveOutDir(Uri baseDir, Uri? outDir) {
+		if(outDir != null) {
+			result := outDir.isAbs ? outDir : (baseDir + outDir)
+			return result.toFile
+		}
+		
+		path := interpreterInstall?.getInstallLocation?.getPath
+		if (path != null)
+			return PathUtil.libByInterpreter(path)
+		
+		return null
+	}
+	
 	private Uri[] unfoldDirs(Uri[] dirs, Uri baseDir) {
 		result := Uri[,]
 		result.addAll(dirs)

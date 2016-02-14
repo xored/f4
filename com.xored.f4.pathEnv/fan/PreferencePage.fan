@@ -1,7 +1,3 @@
-using f4builder
-
-using [java]org.eclipse.core.runtime::Platform
-using [java]org.eclipse.core.runtime::IConfigurationElement
 using [java]org.eclipse.core.resources::IProject
 using [java]org.eclipse.ui.preferences::IWorkbenchPreferenceContainer
 
@@ -23,18 +19,15 @@ using [java]java.util::ArrayList
 using [java]org.eclipse.jface.preference::IPreferenceStore
 
 using [java]com.xored.f4.builder.ui::AbstractConfigurationBlockPropertyAndPreferencePageBridge as Base
-using [java]com.xored.fanide.core::FanCore
-using f4core::CompileEnv
 using [java]fanx.interop::Interop
 
-class EnvPreferencePage : Base {
-	
-	override Str? getPropertyPageId		:= "com.xored.f4.builder.ui.propertyPage.env"
-	override Str? getPreferencePageId	:= "com.xored.f4.builder.ui.preferences.env"
+class PreferencePage : Base {	
+	override Str? getPropertyPageId		:= "${PathEnvPlugin.id}.propertyPage"
+	override Str? getPreferencePageId	:= "${PathEnvPlugin.id}.preferencePage"
 	override Str? getHelpId				:= null
 	override Str? getProjectHelpId		:= null
 	
-	override protected Str? getDefaultDescription					:= "Fantom Env preferences"
+	override protected Str? getDefaultDescription					:= "Path_Env preferences"
 	override protected IPreferenceStore? getDefaultPreferenceStore	:= null
 	
 	override protected AbstractOptionsBlock? createOptionsBlock(IStatusChangeListener? context, IProject? project, IWorkbenchPreferenceContainer? container) {
@@ -48,59 +41,46 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 	
 	override protected Control? createOptionsBlock(Composite? parent) {
 		composite := SWTFactory.createComposite(parent, parent.getFont, 1, 1, GridData.FILL_HORIZONTAL)
-		
-		envs := (CompileEnv[]) Platform.getExtensionRegistry
-			.getConfigurationElementsFor("com.xored.fanide.core.compileEnv")
-			.map |IConfigurationElement element->CompileEnv| {
-				element.createExecutableExtension("class")
-			}
 
-		// ensure 'None' is first and 'Path Env' is second
-		envs.sort |e1, e2| {
-			num := |Obj obj->Int| {
-				switch (obj.typeof.pod.name) {
-					case "f4core"		: return 1
-					case "f4pathEnv"	: return 2
-					default				: return 3
-				}
-			}
-			return num(e1) <=> num(e2)
-		}
+		group := SWTFactory.createGroup(composite, "FAN_ENV_PATH value", 4, 1, GridData.FILL_HORIZONTAL)
+		SWTFactory.createLabel(group, "Multiple dirs may be specified using your OS's path separator", 4)
 
-		// grab some private fields
+		radio1 := SWTFactory.createRadioButton(group, "Use FAN_ENV_PATH environment variable", 4)
+		radio2 := SWTFactory.createRadioButton(group, "Use:", 1)
+		text := SWTFactory.createSingleText(group, 3)
+		SWTFactory.createLabel(group, "The 'Work Dir' is always the first path in the list", 4)
+	
+		SWTFactory.createLabel(composite, "", 1)
+		SWTFactory.createLabel(composite, "Note: Pods will be published the 'Work Dir'", 1)
+
+		// stoopid private field
 		bindManagerField := Interop.toJava(AbstractOptionsBlock#).getDeclaredField("bindManager")
 		bindManagerField.setAccessible(true)
 		bindManager := (ControlBindingManager) bindManagerField.get(this)
+		bindManager.bindRadioControl(radio1, useEnvVarKey, "true", null)
+		bindManager.bindRadioControl(radio2, useEnvVarKey, "false", [text])
+		bindManager.bindControl(text, fanEnvPathKey, null)
 
+		// stoopid private field
 		KeysField := Interop.toJava(AbstractOptionsBlock#).getDeclaredField("keys")
 		KeysField.setAccessible(true)
 		keys := (ArrayList) KeysField.get(this)
-
-		group := SWTFactory.createGroup(composite, "Fantom Environment", 2, 1, GridData.FILL_HORIZONTAL)
-		SWTFactory.createLabel(group, "Select the Fantom environment used to find pods:", 2)
-		envs.each |env| {
-			radio := SWTFactory.createRadioButton(group, env.label, 1)
-			SWTFactory.createLabel(group, env.description, 1)
-			bindManager.bindRadioControl(radio, compileEnvKey, env.typeof.qname, null)
-		}
-		keys.add(compileEnvKey)
-
-		SWTFactory.createLabel(composite, "", 1)
-		bindControl(SWTFactory.createCheckButton(composite, "Publish pod on successful build", null, false, 1), publishPodKey, null)
-		SWTFactory.createLabel(composite, "Note: If 'None' then pods will be published to %FAN_HOME%/lib/fan/", 1)
+		allKeys.each { keys.add(it) }
 
 		return composite
 	}
+	
+	static PreferenceKey useEnvVarKey() {
+		PreferenceKey(PathEnvPlugin.id, PathEnvPrefs.useEnvVarName)
+	}
 
-	private static PreferenceKey compileEnvKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.compileEnv)
+	static PreferenceKey fanEnvPathKey() {
+		PreferenceKey(PathEnvPlugin.id, PathEnvPrefs.fanEnvPathName)
 	}
 	
-	private static PreferenceKey publishPodKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.publishPod)
-	}
-	
-	private static PreferenceKey[] allKeys() {
-		[compileEnvKey]
+	static PreferenceKey[] allKeys() {
+		[useEnvVarKey, fanEnvPathKey]
 	}
 }
+
+
