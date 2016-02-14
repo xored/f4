@@ -16,9 +16,11 @@ public class FanModelLabelProvider extends LabelProvider {
 			PodSourcesFolder folder = fragment.getPodSourceFolder();
 			if (folder != null) {
 				try {
-					return folder.getPodName() + ".pod";
-					// + " ("
-					// + folder.getPodVersion() + ")";
+                    String version = "";
+                    try {
+                        version = " (" + folder.getPodVersion() + ")";
+                    } catch (Exception e) { /* meh, so what? */ }
+                    return folder.getPodName() + version;
 				} catch (ModelException e) {
 					FanCore.log(e);
 				}
