@@ -108,7 +108,7 @@ class CompileFan : IScriptBuilder {
 	}
 
 	private Builder createBuilder(FantomProject fp) {
-		BuilderPrefs.get(fp).isUseExternalBuilder ? ExternalBuilder(fp) : InternalBuilder(fp) 
+		fp.prefs.useExternalBuilder ? ExternalBuilder(fp) : InternalBuilder(fp) 
 	}
 
 	private Void refreshPod(FantomProject project) {

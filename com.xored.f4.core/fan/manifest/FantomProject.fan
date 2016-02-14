@@ -202,13 +202,13 @@ const class FantomProject {
 		DltkNamespace(this)
 	}
 	
+	ProjectPrefs prefs() {
+		ProjectPrefs(this)
+	}
+	
 	CompileEnv compileEnv() {
 		// create a new Env everytime so we don't have to hook into preference change listeners
-		prefsDelegate	:= PreferencesLookupDelegate(project)
-		envName 		:= prefsDelegate.getString("com.xored.f4.builder", "compileEnv")
-		envType 		:= Type.find(envName)
-		compileEnv		:= envType.make
-		return compileEnv
+		return prefs.compileEnvType.make
 	}
 	
 	//////////////////////////////////////////////////////////////////////////
