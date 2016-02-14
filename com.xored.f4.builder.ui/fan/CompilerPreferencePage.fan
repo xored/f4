@@ -1,4 +1,4 @@
-using f4builder
+using f4core
 
 using [java]com.xored.f4.builder.ui::AbstractConfigurationBlockPropertyAndPreferencePageBridge as Base
 using [java]org.eclipse.jface.preference::IPreferenceStore
@@ -41,17 +41,19 @@ class CompilerOptionsBlock : AbstractOptionsBlock {
 		composite := SWTFactory.createComposite(parent, parent.getFont, 1, 1, GridData.FILL_HORIZONTAL)
 		
 		bindControl(SWTFactory.createCheckButton(composite, "Use external compiler", null, false, 1), useExternalBuilderKey, null)
-		bindControl(SWTFactory.createCheckButton(composite, "Automatically build dependent projects", null, false, 1), buildDependantsKey, null)
+		
+		// FIXME does not seem to be used anywhere...?
+//		bindControl(SWTFactory.createCheckButton(composite, "Automatically build dependent projects", null, false, 1), buildDependantsKey, null)
 		
 		return composite
 	}
 
 	private static PreferenceKey useExternalBuilderKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.useExternalBuilder)
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.useExternalBuilderName)
 	}
 	
 	private static PreferenceKey buildDependantsKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.buildDependants)
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.buildDependantsName)
 	}
 	
 	private static PreferenceKey[] allKeys() {

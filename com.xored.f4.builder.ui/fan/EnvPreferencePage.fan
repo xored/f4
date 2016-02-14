@@ -1,4 +1,4 @@
-using f4builder
+using f4core
 
 using [java]org.eclipse.core.runtime::Platform
 using [java]org.eclipse.core.runtime::IConfigurationElement
@@ -93,11 +93,11 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 	}
 
 	private static PreferenceKey compileEnvKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.compileEnv)
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.compileEnvName)
 	}
 	
 	private static PreferenceKey publishPodKey() {
-		PreferenceKey(CompileFan.pluginId, BuilderPrefs.publishPod)
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.publishPodName)
 	}
 	
 	private static PreferenceKey[] allKeys() {
