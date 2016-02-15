@@ -35,6 +35,10 @@ class ExternalBuilder : Builder {
 
 		if (newPodFile.exists) {
 			newPodFile.copyTo(podFile, ["overwrite" : true])
+			
+			if (fp.prefs.publishPod)
+				fp.compileEnv.publishPod(newPodFile)
+
 			newPodFile.delete
 			jp := JavaCore.create(fp.project)
 			jp.getJavaModel.refreshExternalArchives([jp], null)

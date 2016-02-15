@@ -30,12 +30,15 @@ using concurrent
 const class FantomProject {
 	private static const Str[] disabledDirs := ["CVS"]
 	
-	const Str			podName
-	const Str			summary		:= ""
-	const Version		version		:= Version.defVal
+	const Str		podName
+	const Str		summary		:= ""
+	const Version	version		:= Version.defVal
 
 	** base directory for script and resource folders
 	const File		baseDir 
+
+	** The interpreter installation dir, also known as '%FAN_HOME%'
+	const File		fanHomeDir
 
 	** absolute path of output directory
 	const File		outDir 
@@ -51,13 +54,18 @@ const class FantomProject {
 	const Bool		isPlugin
 	
 	const ProjectErr[] projectErrs	:= ProjectErr[,]
-	const ProjectErr[] buildfanErrs	:= ProjectErr[,]
 	
 	** This is set / cleared by com.xored.f4.builder::CompileFan.build() after a pod compilation. 
 	private const AtomicBool hasBuildErrsRef := AtomicBool(false)
 	Bool hasBuildErrs {
 		get { hasBuildErrsRef.val }
 		set { hasBuildErrsRef.val = it }
+	}
+
+	private const AtomicRef resolveErrsRef := AtomicRef(Err#.emptyList)
+	Err[] resolveErrs {
+		get { resolveErrsRef.val }
+		set { resolveErrsRef.val = it }
 	}
 
 	private const Unsafe iProjectHolder
@@ -68,15 +76,17 @@ const class FantomProject {
 	new makeFromProject(IProject project) {
 		iProjectHolder	= Unsafe(project)
 		baseDir 		= PathUtil.resolveRes(project)
-		perrs 			:= ProjectErr[,]
-		berrs 			:= ProjectErr[,]
+		projErrs		:= ProjectErr[,]
 
+		fanHomePath		:= interpreterInstall?.getInstallLocation?.getPath
+		fanHomeDir		= fanHomePath != null ? PathUtil.fanHome(fanHomePath).toFile : Env.cur.homeDir
+		
 		Manifest? manifest := null
 		try {
 			manifest = Manifest(this)
 		} catch(Err e) {
-			perrs.add(ProjectErr(e.toStr))
-			projectErrs	= perrs
+			projErrs.add(ProjectErr(e.toStr))
+			projectErrs	= projErrs
 			podName		= "<unknown>"
 			outDir		= baseDir
 			rawOutDir	= `./`
@@ -87,7 +97,7 @@ const class FantomProject {
 			podName = manifest.podName
 		else {
 			podName = "<unknown>"
-			berrs.add(ProjectErr("Pod name is not set"))
+			projErrs.add(ProjectErr("Pod name is not set"))
 		}
 		
 		outDir		= getOutDir(project, manifest)
@@ -106,15 +116,14 @@ const class FantomProject {
 			if (depend != null)
 				r.add(depend)
 			else
-				berrs.add(ProjectErr("Can't parse depend $raw", manifest.lines["depends"]))
+				projErrs.add(ProjectErr("Can't parse depend $raw", manifest.lines["depends"]))
 			return r
 		}
 		isPlugin	= project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
 		if (!isPlugin && isOutputNotSet) {
-			perrs.add(ProjectErr("Output folder is not set"))
+			projErrs.add(ProjectErr("Output folder is not set"))
 		}
-		projectErrs		= perrs
-		buildfanErrs	= berrs
+		projectErrs		= projErrs
 	}
 	
 	Bool isOutputNotSet() {
@@ -125,15 +134,12 @@ const class FantomProject {
 		ScriptRuntime.getInterpreterInstall(scriptProject)
 	}
 	
-	Bool hasErrs() { projectErrs.size + buildfanErrs.size > 0 }
-	
 	File[] classpath() {
-		jp := javaProject
-		
-		entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
-		resolved := IRuntimeClasspathEntry[,]
+		javaProj	:= javaProject
+		entries		:= JavaRuntime.computeUnresolvedRuntimeClasspath(javaProject)
+		resolved	:= IRuntimeClasspathEntry[,]
 		entries.each |entry| {
-			resolved.addAll(JavaRuntime.resolveRuntimeClasspathEntry(entry, jp))
+			resolved.addAll(JavaRuntime.resolveRuntimeClasspathEntry(entry, javaProject))
 		}
 		return resolved.map { File.os(it.getLocation) }
 	}
@@ -159,8 +165,7 @@ const class FantomProject {
 				case IBuildpathEntry.BPE_PROJECT:
 					projectName := bp.getPath.segments.first
 					project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
-					if( project.isAccessible)
-					{
+					if (project.isAccessible) {
 						fp := FantomProjectManager.instance[project]
 						return (fp.outDir.uri + `${fp.podName}.pod`).toFile
 					}
@@ -185,8 +190,10 @@ const class FantomProject {
 		}, baseDir.uri).sort
 	}
 	
-	Str:File getAllPods() {
-		podFiles := compileEnv.resolvePods(this).rw
+	Str:File resolvePods() {
+		compileEnv	:= compileEnv
+		podFiles	:= compileEnv.resolvePods.rw
+		resolveErrs	= compileEnv.resolveErrs.toImmutable
 
 		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
@@ -208,7 +215,7 @@ const class FantomProject {
 	
 	CompileEnv compileEnv() {
 		// create a new Env everytime so we don't have to hook into preference change listeners
-		return prefs.compileEnvType.make
+		return prefs.compileEnvType.method("makeWithProj").call(this)
 	}
 	
 	//////////////////////////////////////////////////////////////////////////

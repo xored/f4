@@ -38,7 +38,12 @@ internal class DltkNamespace : IFanNamespace {
 	}
 	
 	override const Str[] podNames
-	override IFanPod currPod() { findPod(currPodName) }
+	
+	override IFanPod currPod() {
+		// the Err is more informative than an NPE!
+		findPod(currPodName) ?: throw Err("Could not find pod '${currPodName}'")
+	}
+
 	override IFanPod? findPod(Str name) {
 		if (name.startsWith("[java]")) {
 			if( ffiPods.containsKey(name)) {

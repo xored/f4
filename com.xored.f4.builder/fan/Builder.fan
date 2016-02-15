@@ -22,7 +22,6 @@ abstract class Builder {
 	CompilerErr[] build(|Str|? consumer := null) {
 		configErrs := [
 				fp.projectErrs.map { projectErr(it) }, 
-				fp.buildfanErrs.map { projectErr(it) }, 
 				interpreterErrs
 			].flatten
 		return configErrs.isEmpty ? buildPod(consumer) : configErrs
@@ -45,12 +44,8 @@ abstract class Builder {
 		return out
 	}
 
-	protected static Str:File getAllPods(FantomProject fp) {
-		return fp.getAllPods()
-	}
-	
 	private CompilerErr buildFanErr(ProjectErr e) {
-		CompilerErr.make(e.msg, Loc.makeFile(fp.baseDir + `$Manifest.filename`, e.line, 0), null, LogLevel.err)
+		CompilerErr.make(e.msg, Loc.makeFile(fp.baseDir + `build.fan`, e.line, 0), null, LogLevel.err)
 	}
 
 	private CompilerErr projectErr(ProjectErr e) {

@@ -36,15 +36,21 @@ class InternalBuilder : Builder {
 	
 	override CompilerErr[] buildPod(|Str|? consumer) {
 		// Prepare temporary output directory for pod building
-		IPath statePath := FanCore.getDefault.getStateLocation
-		IPath projectPath := statePath.append("compiler").append(fp.podName)
-		JFile root := projectPath.toFile
+		statePath	:= FanCore.getDefault.getStateLocation
+		projectPath	:= statePath.append("compiler").append(fp.podName)
+		root		:= projectPath.toFile
 		root.mkdirs
 		root.listFiles.each |JFile? f|{ f?.delete}
 		
+		resolvedPods := fp.resolvePods
+		
+		bldLoc := Loc(fp.baseDir + `build.fan`)
+		if (fp.resolveErrs.size > 0) {
+			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
+		}
+		
         logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
-		Bool podChanged := false
 		try {
 			logBuf	:= StrBuf().add("\n")
 			meta	:= fp.meta.dup 
@@ -57,7 +63,7 @@ class InternalBuilder : Builder {
             input.log            	= CompilerLog(logBuf.out)
 			input.podName			= fp.podName
 			input.version			= fp.version
-			input.ns				= F4Namespace(getAllPods(fp), fp.classpath, fp.javaProject)
+			input.ns				= F4Namespace(resolvedPods, fp.classpath, fp.javaProject)
 			input.depends			= fp.rawDepends.dup
 			input.includeDoc		= true
 			input.summary			= fp.summary
@@ -75,20 +81,28 @@ class InternalBuilder : Builder {
 
 			errs := compile(input)
             consumer?.call(logBuf.toStr)
-			if (!errs[0].isEmpty) return errs.flatten
+			if (!errs[0].isEmpty)
+				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
+				return errs.flatten.map |CompilerErr err -> CompilerErr| { err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err }
 			
-			if (!fp.javaDirs.isEmpty) errs.add(compileJava(consumer, projectPath))
+			if (!fp.javaDirs.isEmpty)
+				errs.add(compileJava(consumer, projectPath, resolvedPods))
 			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			podFileName	:= `${fp.podName}.pod` 
 			newPodFile	:= input.outDir + podFileName
 			podFile		:= fp.outDir + podFileName
 
-			if(newPodFile.exists && isPodChanged(newPodFile, podFile)) {
+			if (newPodFile.exists && isPodChanged(newPodFile, podFile)) {
 				newPodFile.copyTo(podFile, ["overwrite" : true])
 				jp := JavaCore.create(fp.project)
 				jp.getJavaModel.refreshExternalArchives([jp], null)
 				fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+
+				if (fp.prefs.publishPod)
+					fp.compileEnv.publishPod(newPodFile)
+				
+				newPodFile.delete
 			}
 			
 			return errs.flatten
@@ -175,15 +189,15 @@ class InternalBuilder : Builder {
 		
 		try compiler.compile	
 		catch (CompilerErr e) caughtErrs.add(e) 
-    catch(IOErr e)       caughtErrs.add(CompilerErr(e.msg, null))
+		catch (IOErr e)       caughtErrs.add(CompilerErr(e.msg, null))
 		catch (Err e) {
-      LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
-      caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", null))
+			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
+			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", null))
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
 
-	private CompilerErr[] compileJava(|Str|? consumer, IPath projectPath ) {
+	private CompilerErr[] compileJava(|Str|? consumer, IPath projectPath, Str:File resolvedPods ) {
 		jtemp		:= projectPath.append("temp-java").toFile
 
 		jtemp.mkdirs
@@ -191,7 +205,7 @@ class InternalBuilder : Builder {
 		podFile		:= File.os(projectPath.append("${fp.podName}.pod").toOSString)
 		
 		JHashMap jmap := JHashMap()
-		fp.getAllPods.each |File file, Str key| {
+		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
 		
@@ -258,4 +272,3 @@ const class ConsoleLogger : Log {
         ((|Str|?) consumer.val)?.call("[${rec.level.toStr.upper}] ${rec.msg}")
     }
 }
-

@@ -40,6 +40,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		} catch(Err e) {
 			e.trace //TODO: Add normal error reporting
 			throw e
+//			throw Err(e.msg + " - msg: $msg", e)
 		}
 	}
 	
@@ -76,8 +77,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		}
 		
 		[change.closedProjects, change.openedProjects].flatten.each |IProject p| {
-			dependentProjects(p).each |IProject d|
-			{
+			dependentProjects(p).each |IProject d| {
 				projectsToUpdate[d.getName] = d 
 			}
 		}
