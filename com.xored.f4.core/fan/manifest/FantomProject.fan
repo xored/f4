@@ -215,7 +215,7 @@ const class FantomProject {
 	
 	CompileEnv compileEnv() {
 		// create a new Env everytime so we don't have to hook into preference change listeners
-		return prefs.compileEnvType.method("makeWithProj").call(this)
+		return prefs.compileEnvType.make([this])
 	}
 	
 	//////////////////////////////////////////////////////////////////////////

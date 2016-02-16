@@ -7,16 +7,11 @@ const class PathCompileEnv : CompileEnv {
 	override const Str description	:= "Use pods from work directories"
 	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod`
 
-	const FantomProject? fanProj
-	
-	new make() { }
-	
-	new makeWithProj(FantomProject fantomProject) {
-		this.fanProj = fantomProject
-	}
+	new make(FantomProject? fanProj := null) : super.make(fanProj) { }
 
 	override Str:File resolvePods() {		
 		podFiles	:= Str:File[:]
+		workDirs	:= workDirs
 		workDirs.eachr |workDir| {
 			(workDir + `lib/fan/`).listFiles(Regex.glob("*.pod")).each |podFile| {
 				podFiles[podFile.basename] = podFile		
@@ -26,6 +21,7 @@ const class PathCompileEnv : CompileEnv {
 		// prevent errs such as "Project cannot reference itself: poo"
 		podFiles.remove(fanProj.podName)
 
+		buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
 		return podFiles
 	}
 	
@@ -38,11 +34,21 @@ const class PathCompileEnv : CompileEnv {
 		if (workDirs.first == fanProj.fanHomeDir && (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false))
 			// I could, but it seems wrong to pollute a system runtime
 			// if the user knew what they were doing, they'd have their own Runtime / work dir
-			logWarn("com.xored.fanide.core", "Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
-		else
-			podFile.copyInto(workDirs.first + `lib/fan/`, ["overwrite" : true])
+			buildConsole.warn("PathEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
+		else {
+			dstDir := (workDirs.first + `lib/fan/`).normalize
+			buildConsole.debug("PathEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+			podFile.copyInto(dstDir, ["overwrite" : true])
+		}
 	}
 	
+	private File[] workDirs() {
+		pathPrefs	:= PathEnvPrefs(fanProj)
+		workPath	:= pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath
+		workDirs	:= parsePath(workPath).add(fanProj.fanHomeDir)
+		return workDirs
+	}
+
 	** parsePath() taken from util::PathEnv so we mimic the exact behaviour
 	private File[] parsePath(Str path) {
 		acc := File[,]
@@ -58,12 +64,5 @@ const class PathCompileEnv : CompileEnv {
 		}
 		catch (Err e) logErr(PathEnvPlugin.id, "Cannot parse path: $path", e)
 		return acc
-	}
-	
-	private File[] workDirs() {
-		pathPrefs	:= PathEnvPrefs(fanProj)
-		workPath	:= pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath
-		workDirs	:= parsePath(workPath).add(fanProj.fanHomeDir)
-		return workDirs
 	}
 }

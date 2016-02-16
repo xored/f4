@@ -83,8 +83,11 @@ class InternalBuilder : Builder {
             consumer?.call(logBuf.toStr)
 			if (!errs[0].isEmpty)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
-				return errs.flatten.map |CompilerErr err -> CompilerErr| { err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err }
-			
+				return errs.flatten.map |CompilerErr err -> CompilerErr| {
+					consumer?.call("[ERR  ] ${err.msg}")
+					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
+				}
+
 			if (!fp.javaDirs.isEmpty)
 				errs.add(compileJava(consumer, projectPath, resolvedPods))
 			
@@ -93,14 +96,19 @@ class InternalBuilder : Builder {
 			newPodFile	:= input.outDir + podFileName
 			podFile		:= fp.outDir + podFileName
 
-			if (newPodFile.exists && isPodChanged(newPodFile, podFile)) {
-				newPodFile.copyTo(podFile, ["overwrite" : true])
-				jp := JavaCore.create(fp.project)
-				jp.getJavaModel.refreshExternalArchives([jp], null)
-				fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+			if (newPodFile.exists) {
+				if (isPodChanged(newPodFile, podFile)) {
+					newPodFile.copyTo(podFile, ["overwrite" : true])
+					jp := JavaCore.create(fp.project)
+					jp.getJavaModel.refreshExternalArchives([jp], null)
+					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+				}
 
-				if (fp.prefs.publishPod)
+				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
+				if (fp.prefs.publishPod) {
+					consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
 					fp.compileEnv.publishPod(newPodFile)
+				}
 				
 				newPodFile.delete
 			}
