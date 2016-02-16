@@ -95,13 +95,21 @@ class JavaLaunchUtil {
 			// top tip from http://blog.vogella.com/2010/07/06/reading-resources-from-plugin/
 			interpreter	:= ScriptRuntime.computeInterpreterInstall(config)
 			fanHome		:= PathUtil.fanHome(interpreter.getInstallLocation.getPath)
-			f4EnvPod	:= fanHome.plusSlash.plus(`lib/fan/`).plusName(envPodUrl.name).toFile
-//			if (!f4EnvPod.exists) {
-				url			:= URL(envPodUrl.encode)
-				inStream	:= (InStream) Interop.toFan(url.openConnection.getInputStream)
-				f4EnvBuf	:= inStream.readAllBuf
-				f4EnvPod.out.writeBuf(f4EnvBuf).close
-//			}
+			f4EnvPod	:= fanHome.plusSlash.plus(`lib/fan/`).plusName(envPodUrl.name).toFile.normalize
+
+			// let people (i.e. me!) override / provide their own pods.
+			// example, the official afFpm.pod will always be more up to date than the F4 plugin 
+			// future pod versions should rename themselves, e.g. env.pod, env2.pod, etc...
+			if (!f4EnvPod.exists) {
+				try {
+					url			:= URL(envPodUrl.encode)
+					inStream	:= (InStream) Interop.toFan(url.openConnection.getInputStream)
+					f4EnvBuf	:= inStream.readAllBuf
+					f4EnvPod.out.writeBuf(f4EnvBuf).close
+				} catch (Err err) {
+					compileEnv.buildConsole.warn("Could not copy '${envPodUrl.encode}' to: ${f4EnvPod.osPath}\n" + err.trace)
+				}
+			}
 		}
 
 		return DebugPlugin.getDefault.getLaunchManager.getEnvironment(copy)
