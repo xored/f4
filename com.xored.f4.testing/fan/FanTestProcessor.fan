@@ -51,7 +51,7 @@ class FanTestProcessor : ITestingProcessor {
 			state = STATE_TEST_FAILED
 			client.testFailed(ITestingClient.FAILED, testID, testName)
 			return
-		} else if (line.startsWith("	 Pass: " + testName)) {
+		} else if (line.startsWith("   Pass: " + testName)) {
 			client.testEnded(testID, testName)
 			finishTest
 			return
@@ -90,10 +90,10 @@ class FanTestProcessor : ITestingProcessor {
 	}
 
 	private Void resetState() {
-		state = STATE_NORMAL
-		resultActual = ""
-		resultExpected = ""
-		message = ""
+		state			= STATE_NORMAL
+		resultActual	= ""
+		resultExpected	= ""
+		message			= ""
 	}
 
 	override Void start() {
