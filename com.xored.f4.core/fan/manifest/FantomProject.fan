@@ -155,13 +155,12 @@ const class FantomProject {
 	** Absolute locations of required pods
 	** Used by com.xored.f4.jdt.launching::FanJavaContainer --> Fantom Native Libraries (Java)
 	Str:File depends() {
-		scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
+		
+		buildPathFiles := (Str:File) scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
 		}
 		.map |IBuildpathEntry bp -> File?| {
 			switch(bp.getEntryKind) {
-				case IBuildpathEntry.BPE_LIBRARY: 
-					return PathUtil.resolveLibPath(bp)
 				case IBuildpathEntry.BPE_PROJECT:
 					projectName := bp.getPath.segments.first
 					project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
@@ -170,6 +169,11 @@ const class FantomProject {
 						return (fp.outDir.uri + `${fp.podName}.pod`).toFile
 					}
 					// Return null if project is not accessible
+					return null
+				case IBuildpathEntry.BPE_LIBRARY:
+					// libs are gotten from an older, cached, and workspace wide version of Interpreter libs (Fantom-1.0.68)
+					// whereas we want libs specific to this project, so return null here and add our resolved pods
+					// return PathUtil.resolveLibPath(bp)
 					return null
 				default:
 					return null
@@ -180,6 +184,13 @@ const class FantomProject {
 			r[v.basename] = v
 			return r
 		}
+		
+		echo("~~~~~~~~~~~~~~~~~~~~~~~~~")
+		echo(buildPathFiles)
+		pf:=resolvePods.rw.setAll(buildPathFiles)
+		echo(pf)
+		
+		return pf
 	}
 
 	Uri[] srcDirs() {
