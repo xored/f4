@@ -155,7 +155,6 @@ const class FantomProject {
 	** Absolute locations of required pods
 	** Used by com.xored.f4.jdt.launching::FanJavaContainer --> Fantom Native Libraries (Java)
 	Str:File depends() {
-		
 		buildPathFiles := (Str:File) scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
 		}
@@ -185,12 +184,8 @@ const class FantomProject {
 			return r
 		}
 		
-		echo("~~~~~~~~~~~~~~~~~~~~~~~~~")
-		echo(buildPathFiles)
-		pf:=resolvePods.rw.setAll(buildPathFiles)
-		echo(pf)
-		
-		return pf
+		podFiles := resolvePods.rw.setAll(buildPathFiles)
+		return podFiles
 	}
 
 	Uri[] srcDirs() {

@@ -30,10 +30,14 @@ internal class DltkNamespace : IFanNamespace {
 	
 	private Str podName(Fragment fragment) {
 		switch(fragment.getKind) {
-			case Fragment.K_SOURCE:	//source fragment
+			case Fragment.K_SOURCE:
+				// source fragment
 				return FantomProjectManager.instance[(fragment.getParent as IScriptProject).getProject].podName
 			default:
-				return fragment.getPath.removeFileExtension.lastSegment//Pod fragment
+				// pod fragment
+				fileName := fragment.getPath.removeFileExtension.lastSegment
+				podName	 := fileName.contains("-") ? fileName[0..<fileName.index("-")] : fileName
+				return podName
 		}
 	}
 	
