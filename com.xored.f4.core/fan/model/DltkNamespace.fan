@@ -8,12 +8,10 @@ internal class DltkNamespace : IFanNamespace {
 	private Str:IFanPod pods := [:]
 	public Str:IFanPod ffiPods := [:]
 	private const Str currPodName
-	new make(FantomProject project, Str? podName := null) {
+
+	new make(FantomProject project, Str podName) {
 		this.project = project.scriptProject
-		if( podName == null)
-			this.currPodName = project.podName
-		else
-			this.currPodName = podName
+		this.currPodName = podName
 		groupFragments
 		this.podNames = fragmentsByPod.keys
 	}
@@ -35,6 +33,7 @@ internal class DltkNamespace : IFanNamespace {
 				return FantomProjectManager.instance[(fragment.getParent as IScriptProject).getProject].podName
 			default:
 				// pod fragment
+				// TODO maybe podName resolution should be deferred to the CompileEnv as that provides the pod Files in the first place
 				fileName := fragment.getPath.removeFileExtension.lastSegment
 				podName	 := fileName.contains("-") ? fileName[0..<fileName.index("-")] : fileName
 				return podName

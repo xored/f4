@@ -212,7 +212,7 @@ const class FantomProject {
 	IScriptProject scriptProject() { DLTKCore.create(project) }
 	
 	IFanNamespace ns() {
-		DltkNamespace(this)
+		DltkNamespace(this, podName)
 	}
 	
 	ProjectPrefs prefs() {

@@ -49,8 +49,9 @@ class ParseUtil : TypeUtil
       if(fragment is  PodFragment)
       {
         PodFragment fg := (PodFragment)fragment
-        podFileName := fg.getPath.lastSegment
-        podName := podFileName[0..podFileName.indexr(".")-1]
+        // TODO maybe podName resolution should be deferred to the CompileEnv as that provides the pod Files in the first place
+        fileName := fg.getPath.removeFileExtension.lastSegment
+        podName  := fileName.contains("-") ? fileName[0..<fileName.index("-")] : fileName
         return DltkNamespace(fp, podName)
       }
     }
