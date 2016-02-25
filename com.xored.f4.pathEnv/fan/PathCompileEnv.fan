@@ -1,5 +1,5 @@
 using f4core
-using [java] org.eclipse.dltk.launching::IInterpreterInstall
+using concurrent::AtomicRef
 
 const class PathCompileEnv : CompileEnv {
 
@@ -7,22 +7,27 @@ const class PathCompileEnv : CompileEnv {
 	override const Str description	:= "Use pods from work directories"
 	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod`
 
+	const AtomicRef	podFilesRef		:= AtomicRef()
+
 	new make(FantomProject? fanProj := null) : super.make(fanProj) { }
 
-	override Str:File resolvePods() {		
-		podFiles	:= Str:File[:]
-		workDirs	:= workDirs
-		workDirs.eachr |workDir| {
-			(workDir + `lib/fan/`).listFiles(Regex.glob("*.pod")).each |podFile| {
-				podFiles[podFile.basename] = podFile		
-			}
-		}	
-
-		// prevent errs such as "Project cannot reference itself: poo"
-		podFiles.remove(fanProj.podName)
-
-		buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
-		return podFiles
+	override Str:File resolvePods() {
+		if (podFilesRef.val == null) {
+			podFiles	:= Str:File[:]
+			workDirs	:= workDirs
+			workDirs.eachr |workDir| {
+				(workDir + `lib/fan/`).listFiles(Regex.glob("*.pod")).each |podFile| {
+					podFiles[podFile.basename] = podFile		
+				}
+			}	
+	
+			// prevent errs such as "Project cannot reference itself: poo"
+			podFiles.remove(fanProj.podName)
+	
+			buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
+			podFilesRef.val = podFiles.map { it.uri }.toImmutable	// Files aren't immutable, so map to Uris
+		}
+		return ((Str:Uri) podFilesRef.val).map { it.toFile }
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {

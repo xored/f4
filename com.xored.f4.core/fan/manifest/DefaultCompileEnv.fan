@@ -1,10 +1,11 @@
-using [java] org.eclipse.dltk.launching::LibraryLocation
-using [java] org.eclipse.dltk.launching::ScriptRuntime
+using concurrent::AtomicRef
 
 const class DefaultCompileEnv : CompileEnv {
 	override const Str label		:= "None"
 	override const Str description	:= "Use pods from Fantom Interpreter installation"
 	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod`
+
+	const AtomicRef	podFilesRef		:= AtomicRef()
 
 	new make(FantomProject? fanProj := null) : super.make(fanProj) { }
 	
@@ -15,17 +16,20 @@ const class DefaultCompileEnv : CompileEnv {
 //		podLocs	 := ScriptRuntime.getLibraryLocations(fanProj.interpreterInstall) as LibraryLocation[]
 //		podFiles := podLocs.map { PathUtil.resolveLocalPath(it.getLibraryPath()) }
 	
-		podFiles := Str:File[:]
-		workDir	 := (fanProj.fanHomeDir + `lib/fan/`).normalize
-		workDir.listFiles(Regex.glob("*.pod")).each |podFile| {
-			podFiles[podFile.basename] = podFile		
+		if (podFilesRef.val == null) {
+			podFiles := Str:File[:]
+			workDir	 := (fanProj.fanHomeDir + `lib/fan/`).normalize
+			workDir.listFiles(Regex.glob("*.pod")).each |podFile| {
+				podFiles[podFile.basename] = podFile		
+			}
+	
+			// prevent errs such as "Project cannot reference itself: poo"
+			podFiles.remove(fanProj.podName)
+	
+			buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
+			podFilesRef.val = podFiles.map { it.uri }.toImmutable	// Files aren't immutable, so map to Uris
 		}
-
-		// prevent errs such as "Project cannot reference itself: poo"
-		podFiles.remove(fanProj.podName)
-
-		buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
-		return podFiles
+		return ((Str:Uri) podFilesRef.val).map { it.toFile }
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {

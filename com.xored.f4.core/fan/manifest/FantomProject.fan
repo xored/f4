@@ -219,9 +219,18 @@ const class FantomProject {
 		ProjectPrefs(this)
 	}
 	
+	private const AtomicRef compileEnvRef := AtomicRef(null)
+	private const AtomicRef compileTsRef := AtomicRef(Duration.now)
 	CompileEnv compileEnv() {
-		// create a new Env everytime so we don't have to hook into preference change listeners
-		return prefs.compileEnvType.make([this])
+		// we would like to create a new Env everytime so we don't have to hook into preference change listeners
+		// but sometimes, when opening and closing projects, pod building gets thrashed so we cache it for a second 
+		compileTs := (Duration?) compileTsRef.val
+		compiled  := (Duration.now - (compileTs ?: Duration.now))
+		if (compileEnvRef.val == null || compiled < 1sec) {
+			compileEnvRef.val = prefs.compileEnvType.make([this])
+		}
+		
+		return compileEnvRef.val
 	}
 	
 	//////////////////////////////////////////////////////////////////////////
