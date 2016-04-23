@@ -22,12 +22,9 @@ const class DefaultCompileEnv : CompileEnv {
 			workDir.listFiles(Regex.glob("*.pod")).each |podFile| {
 				podFiles[podFile.basename] = podFile		
 			}
-	
-			// prevent errs such as "Project cannot reference itself: poo"
-			podFiles.remove(fanProj.podName)
-	
+		
 			buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
-			podFilesRef.val = podFiles.toImmutable	// Files aren't immutable, so map to Uris
+			podFilesRef.val = podFiles.toImmutable
 		}
 		return podFilesRef.val
 	}

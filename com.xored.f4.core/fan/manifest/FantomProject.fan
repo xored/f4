@@ -201,13 +201,16 @@ const class FantomProject {
 		podFiles	:= compileEnv.resolvePods.rw
 		resolveErrs	= compileEnv.resolveErrs.toImmutable
 
+		// prevent errs such as "Project cannot reference itself: poo"
+		podFiles.remove(podName)
+		
 		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
 			if (podFiles.containsKey(p.podName))
 				podFiles[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
 		}
 		return podFiles
-	}	
+	}
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }
 	

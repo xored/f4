@@ -21,9 +21,6 @@ const class PathCompileEnv : CompileEnv {
 				}
 			}	
 
-			// prevent errs such as "Project cannot reference itself: poo"
-			podFiles.remove(fanProj.podName)
-	
 			buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
 			podFilesRef.val = podFiles.toImmutable
 		}
