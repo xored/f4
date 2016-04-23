@@ -20,14 +20,14 @@ const class PathCompileEnv : CompileEnv {
 					podFiles[podFile.basename] = podFile		
 				}
 			}	
-	
+
 			// prevent errs such as "Project cannot reference itself: poo"
 			podFiles.remove(fanProj.podName)
 	
 			buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
-			podFilesRef.val = podFiles.map { it.uri }.toImmutable	// Files aren't immutable, so map to Uris
+			podFilesRef.val = podFiles.toImmutable
 		}
-		return ((Str:Uri) podFilesRef.val).map { it.toFile }
+		return podFilesRef.val
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {

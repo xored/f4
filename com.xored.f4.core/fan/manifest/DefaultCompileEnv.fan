@@ -27,9 +27,9 @@ const class DefaultCompileEnv : CompileEnv {
 			podFiles.remove(fanProj.podName)
 	
 			buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
-			podFilesRef.val = podFiles.map { it.uri }.toImmutable	// Files aren't immutable, so map to Uris
+			podFilesRef.val = podFiles.toImmutable	// Files aren't immutable, so map to Uris
 		}
-		return ((Str:Uri) podFilesRef.val).map { it.toFile }
+		return podFilesRef.val
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {
