@@ -5,7 +5,7 @@ const class PathCompileEnv : CompileEnv {
 
 	override const Str label		:= "util::PathEnv"
 	override const Str description	:= "Use pods from work directories"
-	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod`
+	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.launchEnv/f4launchEnv.pod`
 
 	const AtomicRef	podFilesRef		:= AtomicRef()
 
@@ -28,7 +28,7 @@ const class PathCompileEnv : CompileEnv {
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {
-		envVars["FAN_ENV"]			= "f4podEnv::F4PodEnv"
+		envVars["FAN_ENV"]			= "f4launchEnv::F4LaunchEnv"
 		envVars["FAN_ENV_PARENT"]	= "util::PathEnv"
 	}
 

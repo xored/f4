@@ -1,12 +1,11 @@
 
-// FIXME rename to F4LaunchEnv?
 ** An Env for F4 launched applications.
 ** 
 ** All F4 generated pods are passed in via the 'FAN_ENV_PODS' environment variable.
 ** 
 ** Any previously set 'FAN_ENV' is passed in via the 'FAN_ENV_PARENT' environment variable 
 ** and becomes the parent 'Env'. This preserves any 'PATH_ENV' that has been set on the system.
-const class F4PodEnv : Env {
+const class F4LaunchEnv : Env {
 
 	static new make() {
 		// Env.cur defaults to BootEnv until we create ourselves

@@ -89,7 +89,7 @@ class JavaLaunchUtil {
 		envVars.each |val, key| { configEnv.put(key, val) }
 		copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
 
-		// copy f4podEnv.pod to FAN_HOME
+		// copy f4launchEnv.pod to FAN_HOME
 		envPodUrl := compileEnv.envPodUrl
 		if (envPodUrl != null) {
 			// top tip from http://blog.vogella.com/2010/07/06/reading-resources-from-plugin/

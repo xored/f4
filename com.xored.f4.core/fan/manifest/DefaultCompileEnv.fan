@@ -3,7 +3,7 @@ using concurrent::AtomicRef
 const class DefaultCompileEnv : CompileEnv {
 	override const Str label		:= "None"
 	override const Str description	:= "Use pods from Fantom Interpreter installation"
-	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.podEnv/f4podEnv.pod`
+	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.launchEnv/f4launchEnv.pod`
 
 	const AtomicRef	podFilesRef		:= AtomicRef()
 
@@ -33,10 +33,10 @@ const class DefaultCompileEnv : CompileEnv {
 		envVars.remove("FAN_ENV_PARENT")
 
 		fanEnv := envVars["FAN_ENV"]
-		if (fanEnv != null && fanEnv != "f4podEnv::F4PodEnv")
+		if (fanEnv != null && fanEnv != "f4launchEnv::F4LaunchEnv")
 			envVars["FAN_ENV_PARENT"] = fanEnv
 
-		envVars["FAN_ENV"] = "f4podEnv::F4PodEnv"
+		envVars["FAN_ENV"] = "f4launchEnv::F4LaunchEnv"
 	}
 	
 	override Void publishPod(File podFile) {
