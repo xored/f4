@@ -1,9 +1,9 @@
 //
-// Copyright (c) 2008, Brian Frank and Andy Frank
+// Copyright (c) 2015, Brian Frank and Andy Frank
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   23 Feb 08  Brian Frank  Split out from Buf
+//   30 Nov 15  Brian Frank  Creation
 //
 package fan.sys;
 
@@ -11,9 +11,9 @@ import java.io.*;
 import java.nio.*;
 
 /**
- * MemBuf
+ * ConstBuf
  */
-public final class MemBuf
+public final class ConstBuf
   extends Buf
 {
 
@@ -21,43 +21,32 @@ public final class MemBuf
 // Constructor
 //////////////////////////////////////////////////////////////////////////
 
-  public MemBuf(int capacity)
-  {
-    this(new byte[capacity], 0);
-  }
-
-  public MemBuf(byte[] bytes)
-  {
-    this(bytes, bytes.length);
-  }
-
-  public MemBuf(byte[] bytes, int size)
+  public ConstBuf(byte[] bytes, int size)
   {
     this.buf  = bytes;
-    this.pos  = 0;
     this.size = size;
-    this.out  = new MemBufOutStream();
-    this.in   = new MemBufInStream();
+    this.in   = errInStream;
+    this.out  = errOutStream;
   }
 
 //////////////////////////////////////////////////////////////////////////
 // Obj
 //////////////////////////////////////////////////////////////////////////
 
-  public Type typeof() { return Sys.MemBufType; }
+  public final Type typeof() { return Sys.ConstBufType; }
 
-  public final Object toImmutable()
-  {
-    byte[] buf = this.buf;
-    int size = this.size;
-    this.buf = emptyBytes;
-    this.size = 0;
-    return new ConstBuf(buf, size);
-  }
+  public final boolean isImmutable() { return true; }
+
+  public final Object toImmutable() { return this; }
 
 //////////////////////////////////////////////////////////////////////////
 // Buf Support
 //////////////////////////////////////////////////////////////////////////
+
+  public InStream in()
+  {
+    return new ConstBufInStream();
+  }
 
   public final long size()
   {
@@ -66,24 +55,17 @@ public final class MemBuf
 
   public final void size(long x)
   {
-    int newSize = (int)x;
-    if (newSize > buf.length)
-    {
-      byte[] temp = new byte[newSize];
-      System.arraycopy(buf, 0, temp, 0, buf.length);
-      buf  = temp;
-    }
-    size = newSize;
+    throw err();
   }
 
   public final long pos()
   {
-    return pos;
+    return 0;
   }
 
   final void pos(long x)
   {
-    this.pos = (int)x;
+    throw err();
   }
 
   public final int getByte(long pos)
@@ -93,7 +75,7 @@ public final class MemBuf
 
   public final void setByte(long pos, int x)
   {
-    buf[(int)pos] = (byte)x;
+    throw err();
   }
 
   public final void getBytes(long pos, byte[] dest, int off, int len)
@@ -103,103 +85,65 @@ public final class MemBuf
 
   public final void pipeTo(byte[] dst, int dstPos, int len)
   {
-    if (pos + len > size) throw IOErr.make("Not enough bytes to write");
-    System.arraycopy(buf, pos, dst, dstPos, len);
-    pos += len;
+    if (len > size) throw IOErr.make("Not enough bytes to write");
+    System.arraycopy(buf, 0, dst, dstPos, len);
   }
 
   public final void pipeTo(OutputStream dst, long lenLong)
     throws IOException
   {
     int len = (int)lenLong;
-    if (pos + len > size) throw IOErr.make("Not enough bytes to write");
-    dst.write(buf, pos, len);
-    pos += len;
+    if (len > size) throw IOErr.make("Not enough bytes to write");
+    dst.write(buf, 0, len);
   }
 
   public final void pipeTo(RandomAccessFile dst, long lenLong)
     throws IOException
   {
     int len = (int)lenLong;
-    if (pos + len > size) throw IOErr.make("Not enough bytes to write");
-    dst.write(buf, pos, len);
-    pos += len;
+    if (len > size) throw IOErr.make("Not enough bytes to write");
+    dst.write(buf, 0, len);
   }
 
   public final void pipeTo(ByteBuffer dst, int len)
   {
-    if (pos + len > size) throw IOErr.make("Not enough bytes to write");
-    dst.put(buf, pos, len);
-    pos += len;
+    if (len > size) throw IOErr.make("Not enough bytes to write");
+    dst.put(buf, 0, len);
   }
 
   public final void pipeFrom(byte[] src, int srcPos, int len)
   {
-    grow(pos+len);
-    System.arraycopy(src, srcPos, buf, pos, len);
-    pos += len;
-    size = pos;
+    throw err();
   }
 
   public final long pipeFrom(InputStream src, long lenLong)
     throws IOException
   {
-    int len = (int)lenLong;
-    grow(pos+len);
-    int read = src.read(buf, pos, len);
-    if (read < 0) return -1;
-    pos  += read;
-    size = pos;
-    return read;
+    throw err();
   }
 
   public final long pipeFrom(RandomAccessFile src, long lenLong)
     throws IOException
   {
-    int len = (int)lenLong;
-    grow(pos+len);
-    int read = src.read(buf, pos, len);
-    if (read < 0) return -1;
-    pos += read;
-    size = pos;
-    return read;
+    throw err();
   }
 
   public final int pipeFrom(ByteBuffer src, int len)
   {
-    grow(pos+len);
-    src.get(buf, pos, len);
-    pos += len;
-    size = pos;
-    return len;
+    throw err();
   }
 
 //////////////////////////////////////////////////////////////////////////
 // Buf API
 //////////////////////////////////////////////////////////////////////////
 
-  public final long capacity()
-  {
-    return buf.length;
-  }
+  public final long capacity() { throw err(); }
 
-  public final void capacity(long c)
-  {
-    int newCapacity = (int)c;
-    if (newCapacity < size) throw ArgErr.make("capacity < size");
-    byte[] temp = new byte[newCapacity];
-    System.arraycopy(buf, 0, temp, 0, Math.min(size, newCapacity));
-    buf = temp;
-  }
+  public final void capacity(long c) { throw err(); }
 
-  public Buf trim()
-  {
-    if (size == buf.length) return this;
-    byte[] temp = new byte[size];
-    System.arraycopy(buf, 0, temp, 0, size);
-    this.buf = temp;
-    return this;
-  }
+  public final Buf sync() { throw err(); }
+
+  public final Buf trim() { throw err(); }
 
 //////////////////////////////////////////////////////////////////////////
 // Utils
@@ -212,72 +156,65 @@ public final class MemBuf
     return r;
   }
 
-  public final void grow(int capacity)
+  public byte[] unsafeArray()
   {
-    if (buf.length >= capacity) return;
-    byte[] temp = new byte[Math.max(capacity, size*2)];
-    System.arraycopy(buf, 0, temp, 0, size);
-    buf = temp;
+    return buf;
   }
 
-  public final int sz()
+  public int sz()
   {
     return this.size;
   }
 
-  public final byte[] unsafeArray()
-  {
-    return this.buf;
-  }
-
   public ByteBuffer toByteBuffer()
   {
-    return ByteBuffer.wrap(buf, pos, size-pos);
+    return ByteBuffer.wrap(bytes());
   }
 
-//////////////////////////////////////////////////////////////////////////
-// MemBufOutStream
-//////////////////////////////////////////////////////////////////////////
-
-  class MemBufOutStream extends OutStream
+  public Err err()
   {
-    public final OutStream write(long v) { return w((int)v); }
-    public final OutStream w(int v)
-    {
-      if (pos+1 >= buf.length) grow(pos+1);
-      buf[pos++] = (byte)v;
-      if (pos > size) size = pos;
-      return this;
-    }
-
-    public OutStream writeBuf(Buf other, long n)
-    {
-      int len = (int)n;
-      grow(pos+len);
-      other.pipeTo(buf, pos, len);
-      pos += len;
-      if (pos > size) size = pos;
-      return this;
-    }
-
-    public OutStream writeChar(long c)
-    {
-      charsetEncoder.encode((char)c, this);
-      return this;
-    }
-
-    public OutStream writeChar(char c)
-    {
-      charsetEncoder.encode(c, this);
-      return this;
-    }
+    return ReadonlyErr.make("Buf is immutable");
   }
 
 //////////////////////////////////////////////////////////////////////////
-// MemBufInStream
+// ErrOutStream
 //////////////////////////////////////////////////////////////////////////
 
-  class MemBufInStream extends InStream
+  static final ErrOutStream errOutStream = new ErrOutStream();
+  static class ErrOutStream extends OutStream
+  {
+    public final OutStream write(long v) { throw err(); }
+    public final OutStream w(int v) { throw err(); }
+    public OutStream writeBuf(Buf other, long n) { throw err(); }
+    public OutStream writeChar(long c)  { throw err(); }
+    public OutStream writeChar(char c)  { throw err(); }
+    public void endian(Endian endian) { throw err(); }
+    public void charset(Charset charset) { throw err(); }
+    Err err() { return ReadonlyErr.make("Buf is immutable"); }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// ErrInStream
+//////////////////////////////////////////////////////////////////////////
+
+  static final ErrInStream errInStream = new ErrInStream();
+  static class ErrInStream extends InStream
+  {
+    public Long read() { throw err(); }
+    public int r() { throw err(); }
+    public Long readBuf(Buf other, long n) { throw err(); }
+    public InStream unread(long n) { throw err(); }
+    public InStream unread(int n) { throw err(); }
+    public void endian(Endian endian) { throw err(); }
+    public void charset(Charset charset) { throw err(); }
+    Err err() { return ReadonlyErr.make("Buf is immutable; use Buf.in()"); }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// ConstBufInStream
+//////////////////////////////////////////////////////////////////////////
+
+  class ConstBufInStream extends InStream
   {
     public Long read() { int n = r(); return n < 0 ? null : FanInt.pos[n]; }
     public int r()
@@ -309,17 +246,9 @@ public final class MemBuf
       }
       else
       {
-        if (size+1 >= buf.length) grow(size+1);
-        System.arraycopy(buf, pos, buf, pos+1, size);
-        buf[pos] = (byte)n;
-        size++;
+        throw err();
       }
       return this;
-    }
-
-    public long avail()
-    {
-      return MemBuf.this.remaining();
     }
 
     public Long peek()
@@ -337,16 +266,14 @@ public final class MemBuf
       return pos-oldPos;
     }
 
+    int pos;
   }
 
 //////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
-  private static byte[] emptyBytes = new byte[0];
-
-  public byte[] buf;
-  public int pos;
-  public int size;
+  byte[] buf;
+  int size;
 
 }

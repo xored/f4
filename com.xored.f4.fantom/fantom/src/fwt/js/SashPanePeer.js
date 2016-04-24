@@ -55,10 +55,9 @@ fan.fwt.SashPanePeer.prototype.sync = function(self)
 
 fan.fwt.SashPanePeer.prototype.doVert = function(self)
 {
-  var w   = this.m_size.m_w;
-  var h   = this.m_size.m_h;
-  var wt  = this.m_weights;
-  var sum = wt==null ? null : wt.m_values.reduce(function(a, b) { return a + b }, 0);
+  var w  = this.m_size.m_w;
+  var h  = this.m_size.m_h;
+  var wt = this.m_weights;
 
   var dy = 0;
   var dh = Math.floor(h /self.m_kids.size());
@@ -66,7 +65,7 @@ fan.fwt.SashPanePeer.prototype.doVert = function(self)
   for (var i=0; i<self.m_kids.size(); i++)
   {
     var cw = w;
-    var ch = wt==null ? dh : Math.floor(h * (wt.get(i).valueOf() / sum));
+    var ch = wt==null ? dh : Math.floor(h * (wt.get(i).valueOf() / 100));
 
     // if last widget, force to fill remaining space
     if (i == self.m_kids.size()-1) ch = h-dy;
@@ -80,17 +79,16 @@ fan.fwt.SashPanePeer.prototype.doVert = function(self)
 
 fan.fwt.SashPanePeer.prototype.doHoriz = function(self)
 {
-  var w   = this.m_size.m_w;
-  var h   = this.m_size.m_h;
-  var wt  = this.m_weights;
-  var sum = wt==null ? null : wt.m_values.reduce(function(a, b) { return a + b }, 0);
+  var w  = this.m_size.m_w;
+  var h  = this.m_size.m_h;
+  var wt = this.m_weights;
 
   var dx = 0;
   var dw = Math.floor(w / self.m_kids.size());
 
   for (var i=0; i<self.m_kids.size(); i++)
   {
-    var cw = wt==null ? dw : Math.floor(w * (wt.get(i).valueOf() / sum));
+    var cw = wt==null ? dw : Math.floor(w * (wt.get(i).valueOf() / 100));
     var ch = h;
 
     // if last widget, force to fill remaining space

@@ -38,7 +38,6 @@ class Build : BuildScript
     writeFanx(out)
     writeTypeInfo(out)
     writeSysSupport(out)
-    writeTimezones(out)
     writeSysProps(out)
     writePodMeta(out)
     out.close
@@ -144,36 +143,16 @@ class Build : BuildScript
   {
     log.debug("  fan/ [support]")
     append(sys + `FConst.js`, out)
+    append(sys + `Crypto.js`, out)
     append(sys + `MemBufStream.js`, out)
     append(sys + `Md5.js`, out)
     append(sys + `ObjUtil.js`, out)
     append(sys + `Sha1.js`, out)
+    append(sys + `Sha256.js`, out)
     append(sys + `StrInStream.js`, out)
     append(sys + `StrBufOutStream.js`, out)
     append(sys + `DateTimeStr.js`, out)
     append(sys + `staticInit.js`, out)
-  }
-
-  private Void writeTimezones(OutStream out)
-  {
-    log.debug("  TimeZones")
-
-    // UTC, Rel defined in staticInit.js
-
-    // default zones
-    ["New_York", "Chicago", "Denver", "Los_Angeles"].each |n|
-    {
-      log.debug("    $n")
-      JsTimeZone(TimeZone(n)).write(out)
-    }
-
-    // include GMT zones
-    TimeZone.listNames.each |n|
-    {
-      if (!n.contains("GMT")) return
-      log.debug("    $n")
-      JsTimeZone(TimeZone(n)).write(out)
-    }
   }
 
   private Void writeFanx(OutStream out)

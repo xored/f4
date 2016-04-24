@@ -208,6 +208,22 @@ class InStream
   **
   Str readUtf()
 
+  **
+  ** Read between 0 and 64 bits from the input stream.  Bits which
+  ** are partial bytes are consumed from the input stream one byte
+  ** at a time.  Throw IOErr on error or if end of stream is reached
+  ** before given number of bits can be read.
+  **
+  Int readBits(Int num)
+
+  **
+  ** Get number of bits left in current byte which have not been
+  ** read by `readBits` yet.  For example if three bits are read, then
+  ** return 5 to indicate number of bits left to sync up up to byte
+  ** boundaries.  Not part of public API!
+  **
+  @NoDoc Int numPendingBits()
+
 //////////////////////////////////////////////////////////////////////////
 // Text Data
 //////////////////////////////////////////////////////////////////////////
@@ -299,7 +315,8 @@ class InStream
   **
   ** Read the entire stream into a list of Str lines based on the
   ** configured charset encoding.  Each Str in the list maps
-  ** to a line terminated by \n, \r\n, \r, or EOF.  The Str lines
+  ** to a line terminated by \n, \r\n, \r, or EOF using the same
+  ** semantics as `readLine` with default max line length.  The Str lines
   ** themselves do not contain a trailing newline.  Empty lines
   ** are returned as the empty Str "".  Return an empty list if
   ** currently at end of stream (not null).  Throw IOErr if there
@@ -312,9 +329,10 @@ class InStream
   **
   ** Read the entire stream into Str lines based on the current
   ** encoding.  Call the specified function for each line read.
-  ** Each line is terminated by \n, \r\n, \r, or EOF.  The Str
-  ** lines themselves do not contain a trailing newline.  Empty
-  ** lines are returned as the empty Str "".  This InStream is
+  ** Each line is terminated by \n, \r\n, \r, or EOF using the same
+  ** semantics are `readLine` with the default max line length.
+  ** The Str lines themselves do not contain a trailing newline.
+  ** Empty lines are returned as the empty Str "".  This InStream is
   ** guaranteed to be closed upon return.
   **
   Void eachLine(|Str line| f)
@@ -376,6 +394,11 @@ class InStream
   ** Also see `Env.props`.
   **
   Str:Str readProps()
+
+  **
+  ** Read props but map values to a list of strings which include duplicates.
+  **
+  @NoDoc Str:Str[] readPropsListVals()
 
   **
   ** Pipe bytes from this input stream to the specified output stream.

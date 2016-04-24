@@ -84,6 +84,7 @@ class ScriptRunner
     {
       // TODO - pull in other pods
       engine.eval(Pod.find("sys").file(`/sys.js`).readAllStr)
+      engine.eval((Env.cur.homeDir + `etc/sys/tz.js`).readAllStr)
     }
     catch (Err err)
     {
@@ -97,8 +98,7 @@ class ScriptRunner
       $js
       fan.temp.Main.make().main();
       }
-      catch (err) { println('ERROR: ' + err); }
+      catch (err) { print('ERROR: ' + err + '\\n'); }
       ")
   }
 }
-

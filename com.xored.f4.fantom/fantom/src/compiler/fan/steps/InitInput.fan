@@ -176,7 +176,7 @@ class InitInput : CompilerStep
     uris?.each |uri|
     {
       f := base + uri
-      if (!f.exists) throw err("Invalid file or directory: ${f.normalize.osPath}", Loc.makeFile(File(`build.fan`)))
+      if (!f.exists) throw err("Invalid file or directory", Loc.makeFile(f))
       if (f.isDir)
       {
         f.list.each |kid|

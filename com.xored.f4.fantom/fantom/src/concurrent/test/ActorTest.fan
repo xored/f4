@@ -61,8 +61,7 @@ class ActorTest : Test
     {
       verifyType(f, Future#)
       verifyEq(f.get, i+1)
-      verify(f.isDone)
-      verify(!f.isCancelled)
+      verifySame(f.state, FutureState.ok)
       verifyEq(f.get, i+1)
     }
   }
@@ -117,14 +116,14 @@ class ActorTest : Test
     f := a.send("const")
     verifySame(f.get, constObj)
     verifySame(f.get, constObj)
-    verify(f.isDone)
+    verifySame(f.state, FutureState.ok)
 
     // serializable
     f = a.send("serial")
     verifyEq(f.get, SerMsg { i = 123_321 })
     verifyEq(f.get, SerMsg { i = 123_321 })
     verifyNotSame(f.get, f.get)
-    verify(f.isDone)
+    verifySame(f.state, FutureState.ok)
 
     // non-serializable mutables
     verifyErr(IOErr#) { a.send(this) }
@@ -134,7 +133,7 @@ class ActorTest : Test
     f = a.send("throw")
     verifyErr(UnknownServiceErr#) { f.get }
     verifyErr(UnknownServiceErr#) { f.get }
-    verify(f.isDone)
+    verifySame(f.state, FutureState.err)
   }
 
   static Obj? messaging(Str msg)
@@ -171,8 +170,7 @@ class ActorTest : Test
     // block on future until canceled
     verifyErr(CancelledErr#) { f.get }
     verifyErr(CancelledErr#) { f.get }
-    verify(f.isDone)
-    verify(f.isCancelled)
+    verifySame(f.state, FutureState.cancelled)
   }
 
   static Obj? sleep(Obj? msg)
@@ -248,7 +246,7 @@ class ActorTest : Test
     verifyEq(pool.isDone, true)
 
     // verify all futures have completed
-    futures.each |Future f| { verify(f.isDone) }
+    futures.each |Future f| { verify(f.state.isComplete) }
     futures.each |Future f, Int i| { verifyEq(f.get, durs[i]) }
 
     // verify all scheduled messages were canceled
@@ -259,8 +257,7 @@ class ActorTest : Test
   {
     futures.each |Future f|
     {
-      verify(f.isDone)
-      verify(f.isCancelled)
+      verifySame(f.state, FutureState.cancelled)
       verifyErr(CancelledErr#) { f.get }
       verifyErr(CancelledErr#) { f.get(200ms) }
     }
@@ -314,11 +311,11 @@ class ActorTest : Test
     //  1) completed successfully
     //  2) were interrupted (if running during kill)
     //  3) were cancelled (if pending)
-    futures.each |Future f, Int i| { verify(f.isDone, "$i ${durs[i]}") }
+    futures.each |Future f, Int i| { verify(f.state.isComplete, "$i ${durs[i]}") }
     futures.each |Future f, Int i|
     {
       // each future either
-      if (f.isCancelled)
+      if (f.state == FutureState.cancelled)
       {
         verifyErr(CancelledErr#) { f.get }
       }
@@ -409,8 +406,7 @@ class ActorTest : Test
   {
     if (expected == null)
     {
-      verify(f.isCancelled)
-      verify(f.isDone)
+      verifySame(f.state, FutureState.cancelled)
       verifyErr(CancelledErr#) { f.get }
     }
     else
@@ -425,14 +421,14 @@ class ActorTest : Test
   static Obj? returnNow(Obj? msg) { Duration.now }
 
 //////////////////////////////////////////////////////////////////////////
-// When Done
+// When Complete
 //////////////////////////////////////////////////////////////////////////
 
-  Void testWhenDone()
+  Void testWhenComplete()
   {
-    a := Actor(pool, #whenDoneA.func)
-    b := Actor(pool, #whenDoneB.func)
-    c := Actor(pool, #whenDoneB.func)
+    a := Actor(pool, #whenCompleteA.func)
+    b := Actor(pool, #whenCompleteB.func)
+    c := Actor(pool, #whenCompleteB.func)
 
     // send/complete normal,error,cancel on a
     a.send(50ms)
@@ -445,9 +441,9 @@ class ActorTest : Test
     verifyErr(CancelledErr#) { a2.get }
 
     // send some messages with futures already done
-    b0 := b.sendWhenDone(a0, a0); c0 := c.sendWhenDone(a0, a0)
-    b1 := b.sendWhenDone(a1, a1); c1 := c.sendWhenDone(a1, a1)
-    b2 := b.sendWhenDone(a2, a2); c2 := c.sendWhenDone(a2, a2)
+    b0 := b.sendWhenComplete(a0, a0); c0 := c.sendWhenComplete(a0, a0)
+    b1 := b.sendWhenComplete(a1, a1); c1 := c.sendWhenComplete(a1, a1)
+    b2 := b.sendWhenComplete(a2, a2); c2 := c.sendWhenComplete(a2, a2)
 
     // get some pending messages sent to a
     a.send(50ms)
@@ -458,44 +454,44 @@ class ActorTest : Test
     a6 := a.send("baz")
 
     // send some messages with futures not done yet
-    b3 := b.sendWhenDone(a3, a3); c3 := c.sendWhenDone(a3, a3)
-    b4 := b.sendWhenDone(a4, a4); c4 := c.sendWhenDone(a4, a4)
-    b5 := b.sendWhenDone(a5, a5); c5 := c.sendWhenDone(a5, a5)
-    bx := b.sendWhenDone(ax, ax); cx := c.sendWhenDone(ax, ax)
-    b6 := b.sendWhenDone(a6, a6); c6 := c.sendWhenDone(a6, a6)
+    b3 := b.sendWhenComplete(a3, a3); c3 := c.sendWhenComplete(a3, a3)
+    b4 := b.sendWhenComplete(a4, a4); c4 := c.sendWhenComplete(a4, a4)
+    b5 := b.sendWhenComplete(a5, a5); c5 := c.sendWhenComplete(a5, a5)
+    bx := b.sendWhenComplete(ax, ax); cx := c.sendWhenComplete(ax, ax)
+    b6 := b.sendWhenComplete(a6, a6); c6 := c.sendWhenComplete(a6, a6)
 
     // cancel ax (this should happen before a3, a4, etc)
     ax.cancel
 
     // verify
-    verifyWhenDone(b0, c0, "start")
-    verifyWhenDone(b1, c1, "start,IndexErr")
-    verifyWhenDone(b2, c2, "start,IndexErr,CancelledErr")
-    verifyWhenDone(bx, cx, "start,IndexErr,CancelledErr,CancelledErr")
-    verifyWhenDone(b3, c3, "start,IndexErr,CancelledErr,CancelledErr,foo")
-    verifyWhenDone(b4, c4, "start,IndexErr,CancelledErr,CancelledErr,foo,bar")
-    verifyWhenDone(b5, c5, "start,IndexErr,CancelledErr,CancelledErr,foo,bar,IndexErr")
-    verifyWhenDone(b6, c6, "start,IndexErr,CancelledErr,CancelledErr,foo,bar,IndexErr,baz")
+    verifyWhenComplete(b0, c0, "start")
+    verifyWhenComplete(b1, c1, "start,IndexErr")
+    verifyWhenComplete(b2, c2, "start,IndexErr,CancelledErr")
+    verifyWhenComplete(bx, cx, "start,IndexErr,CancelledErr,CancelledErr")
+    verifyWhenComplete(b3, c3, "start,IndexErr,CancelledErr,CancelledErr,foo")
+    verifyWhenComplete(b4, c4, "start,IndexErr,CancelledErr,CancelledErr,foo,bar")
+    verifyWhenComplete(b5, c5, "start,IndexErr,CancelledErr,CancelledErr,foo,bar,IndexErr")
+    verifyWhenComplete(b6, c6, "start,IndexErr,CancelledErr,CancelledErr,foo,bar,IndexErr,baz")
   }
 
-  Void verifyWhenDone(Future b, Future c, Str expected)
+  Void verifyWhenComplete(Future b, Future c, Str expected)
   {
     verifyEq(b.get(2sec), expected)
     verifyEq(c.get(2sec), expected)
   }
 
-  static Obj? whenDoneA(Obj? msg)
+  static Obj? whenCompleteA(Obj? msg)
   {
     if (msg == "throw") throw IndexErr()
     if (msg is Duration) Actor.sleep(msg)
     return msg
   }
 
-  static Obj? whenDoneB(Future msg)
+  static Obj? whenCompleteB(Future msg)
   {
     Str x := Actor.locals.get("x", "")
     if (!x.isEmpty) x += ","
-    if (!msg.isDone) throw Err("not done yet!")
+    if (!msg.state.isComplete) throw Err("not done yet!")
     try
       x += msg.get.toStr
     catch (Err e)
@@ -549,11 +545,11 @@ class ActorTest : Test
     verifyAllSame(ferr)
     verifyAllSame(fcancel)
 
-    f1s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["one"]) }
-    f2s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["one", "two"]) }
-    f3s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["one", "two", "three"]) }
-    f4s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["one", "two", "three", "four"]) }
-    ferr.each |Future f| { verify(f.isDone); verifyErr(IndexErr#) { f.get } }
+    f1s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["one"]) }
+    f2s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["one", "two"]) }
+    f3s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["one", "two", "three"]) }
+    f4s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["one", "two", "three", "four"]) }
+    ferr.each |Future f| { verify(f.state.isComplete); verifyErr(IndexErr#) { f.get } }
     verifyAllCancelled(fcancel)
   }
 
@@ -615,10 +611,10 @@ class ActorTest : Test
     verifyAllSame(ferr)
     verifyAllSame(fcancel)
 
-    f1s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["1", 1, 2]) }
-    f2s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["2", 10, 20, 30]) }
-    f3s.each |Future f| { verify(f.isDone); verifyEq(f.get, ["3", 100, 200]) }
-    ferr.each |Future f| { verify(f.isDone); verifyErr(IndexErr#) { f.get } }
+    f1s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["1", 1, 2]) }
+    f2s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["2", 10, 20, 30]) }
+    f3s.each |Future f| { verify(f.state.isComplete); verifyEq(f.get, ["3", 100, 200]) }
+    ferr.each |Future f| { verify(f.state.isComplete); verifyErr(IndexErr#) { f.get } }
     verifyAllCancelled(fcancel)
   }
 
@@ -673,6 +669,54 @@ class ActorTest : Test
     }
 
     return Actor.locals["testLocal"].toStr + " " + Locale.cur
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Futures
+//////////////////////////////////////////////////////////////////////////
+
+  Void testFuture()
+  {
+    f := Future()
+    verifyEq(f.state, FutureState.pending)
+    verifySame(f.typeof, Future#)
+
+    // can only complete with immutable value
+    verifyErr(IOErr#) { f.complete(this) }  // TODO: NotImmutableErr
+    verifySame(f.state, FutureState.pending)
+
+    // verify complete
+    f.complete("done!")
+    verifySame(f.state, FutureState.ok)
+    verifyEq(f.get, "done!")
+
+    // can only complete once
+    verifyErr(Err#) { f.complete("no!") }
+    verifyErr(Err#) { f.completeErr(Err()) }
+    verifySame(f.state, FutureState.ok)
+    verifyEq(f.get, "done!")
+
+    // verify completeErr
+    f = Future()
+    verifyEq(f.state, FutureState.pending)
+    err := CastErr()
+    f.completeErr(err)
+    verifySame(f.state, FutureState.err)
+    verifyErr(CastErr#) { f.get }
+    verifyErr(Err#) { f.complete("no!") }
+    verifyErr(Err#) { f.completeErr(Err()) }
+    verifySame(f.state, FutureState.err)
+    verifyErr(CastErr#) { f.get }
+
+    // verify cancel;
+    f = Future()
+    f.cancel
+    verifySame(f.state, FutureState.cancelled)
+    verifyErr(CancelledErr#) { f.get }
+    f.complete("no!")
+    f.completeErr(IOErr())
+    verifySame(f.state, FutureState.cancelled)
+    verifyErr(CancelledErr#) { f.get }
   }
 
 }
