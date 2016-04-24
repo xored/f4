@@ -229,10 +229,10 @@ const class FantomProject {
 		// but sometimes, when opening and closing projects, pod building gets thrashed so we cache it for a second 
 		compileTs := (Duration?) compileTsRef.val
 		compiled  := (Duration.now - (compileTs ?: Duration.now))
-		if (compileEnvRef.val == null || compiled < 1sec) {
+		if (compileEnvRef.val == null || compiled > 1sec) {
 			compileEnvRef.val = prefs.compileEnvType.make([this])
 		}
-		
+
 		return compileEnvRef.val
 	}
 	
