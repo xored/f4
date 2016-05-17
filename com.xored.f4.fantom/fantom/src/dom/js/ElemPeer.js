@@ -245,6 +245,11 @@ fan.dom.ElemPeer.prototype.nextSibling = function(self)
   return fan.dom.ElemPeer.wrap(sib);
 }
 
+fan.dom.ElemPeer.prototype.containsChild = function(self, test)
+{
+  return this.elem.contains(test.peer.elem);
+}
+
 fan.dom.ElemPeer.prototype.querySelector = function(self, selectors)
 {
   var elem = this.elem.querySelector(selectors);
@@ -266,6 +271,11 @@ fan.dom.ElemPeer.prototype.addChild = function(self, child)
   this.elem.appendChild(child.peer.elem);
 }
 
+fan.dom.ElemPeer.prototype.insertChildBefore = function(self, child, ref)
+{
+  this.elem.insertBefore(child.peer.elem, ref.peer.elem);
+}
+
 fan.dom.ElemPeer.prototype.replaceChild = function(self, oldChild, newChild)
 {
   this.elem.replaceChild(newChild.peer.elem, oldChild.peer.elem);
@@ -276,12 +286,22 @@ fan.dom.ElemPeer.prototype.removeChild = function(self, child)
   this.elem.removeChild(child.peer.elem);
 }
 
+fan.dom.ElemPeer.prototype.hasFocus = function(self)
+{
+  return this.elem === document.activeElement;
+}
+
 fan.dom.ElemPeer.prototype.focus = function(self)
 {
   // IE throws err if element is not visible, so we need
   // to wrap in a try block
   try { this.elem.focus(); }
   catch (err) {} // ignore
+}
+
+fan.dom.ElemPeer.prototype.blur = function(self)
+{
+  this.elem.blur();
 }
 
 fan.dom.ElemPeer.prototype.find = function(self, f)

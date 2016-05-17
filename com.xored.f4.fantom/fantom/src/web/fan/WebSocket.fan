@@ -20,8 +20,10 @@ class WebSocket
 
   **
   ** Open a client connection.  The URI must have a "ws" or "wss" scheme.
+  ** The 'headers' parameter defines additional HTTP headers to include
+  ** in the connection request.
   **
-  static WebSocket openClient(Uri uri)
+  static WebSocket openClient(Uri uri, [Str:Str]? headers := null)
   {
     // check scheme
     scheme := uri.scheme
@@ -35,6 +37,7 @@ class WebSocket
     c.reqHeaders["Upgrade"] = "websocket"
     c.reqHeaders["Connection"] = "Upgrade"
     c.reqHeaders["Sec-WebSocket-Key"] = key
+    if (headers != null) c.reqHeaders.addAll(headers)
     c.writeReq
 
     // read handshake response
@@ -97,25 +100,33 @@ class WebSocket
 
   **
   ** Receive a message which is returned as either a Str or Buf.
-  ** Return null if socket is closed.
+  ** Raise IOErr if socket is closed.
   **
   Obj? receive()
   {
+    receiveBuf(null)
+  }
+
+  **
+  ** Receive Buf message into given buffer.
+  ** Raise IOErr if socket is closed.
+  **
+  @NoDoc Obj? receiveBuf(Buf? buf)
+  {
     while (true)
     {
-      msg := doReceive
+      msg := doReceive(buf)
       if (msg === receiveAgain) continue
       return msg
     }
     throw Err()
   }
 
-  private Obj? doReceive()
+  private Obj? doReceive(Buf? payload)
   {
     // check if we have a frame or at end of stream
     in := socket.in
-    firstByte := in.read
-    if (firstByte == null) return null
+    firstByte := in.readU1
 
     // first byte indicates final frag, and opcode
     byte := firstByte
@@ -135,7 +146,7 @@ class WebSocket
     maskKey := masked ? in.readBufFully(null, 4) : null
 
     // read payload data
-    payload := in.readBufFully(null, len)
+    payload = in.readBufFully(payload, len)
 
     // if masked, then unmask it
     if (masked)
@@ -223,11 +234,10 @@ class WebSocket
   **
   ** Close the web socket
   **
-  Void close()
+  Bool close()
   {
     socket.close
   }
-
 
   private static Err err(Str msg)
   {

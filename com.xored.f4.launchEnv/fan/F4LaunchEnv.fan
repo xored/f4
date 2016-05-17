@@ -1,24 +1,21 @@
 
 ** An Env for F4 launched applications.
 ** 
-** All F4 generated pods are passed in via the 'F4PODENV_POD_LOCATIONS' environment variable.
+** All F4 generated pods are passed in via the 'FAN_ENV_PODS' environment variable.
 ** 
-** Any previously set 'FAN_ENV' is passed in via the 'F4PODENV_FAN_ENV' environment variable 
+** Any previously set 'FAN_ENV' is passed in via the 'FAN_ENV_PARENT' environment variable 
 ** and becomes the parent 'Env'. This preserves any 'PATH_ENV' that has been set on the system.
-const class F4PodEnv : Env {
+const class F4LaunchEnv : Env {
 
 	static new make() {
 		// Env.cur defaults to BootEnv until we create ourselves
-		podLocs		:= Env.cur.vars["F4PODENV_POD_LOCATIONS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
-		origFanEnv	:= Env.cur.vars["F4PODENV_FAN_ENV"]?.trimToNull
+		podLocs		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
+		origFanEnv	:= Env.cur.vars["FAN_ENV_PARENT"]?.trimToNull
 
 		// a handy get out of jail card 'cos eclipse *forces* you to provide a value for environment variables
-		if (origFanEnv.equalsIgnoreCase("null"))
+		if (origFanEnv != null && origFanEnv.equalsIgnoreCase("null"))
 			origFanEnv = null
 
-		// for now, lets keep the runtime env the same as the F4 env and not create parent a PathEnv
-		origFanEnv = null
-		
 		curEnv		:= origFanEnv != null ? Type.find(origFanEnv).make : Env.cur
 		return makeInternal(podLocs, curEnv)
 	}

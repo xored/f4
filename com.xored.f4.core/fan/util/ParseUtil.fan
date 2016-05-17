@@ -17,14 +17,13 @@ using f4model
 **
 class ParseUtil : TypeUtil
 {
-  static Bool inherits(IFanType? t, Str base, IFanNamespace ns)
+  static Bool inherits(IFanType? t, Str qNameBase, IFanNamespace ns)
   {
     t != null && t.inheritance.any |Str baseName -> Bool|
     {
-      baseName == base || 
-      inherits(ns.findType(baseName), base, ns)
+      baseType := ns.findType(baseName)	
+      return baseType.qname == qNameBase || inherits(baseType, qNameBase, ns)
     }
-    
   }
   
   static Str[] typeNames(ISourceModule module)
@@ -50,8 +49,9 @@ class ParseUtil : TypeUtil
       if(fragment is  PodFragment)
       {
         PodFragment fg := (PodFragment)fragment
-        podFileName := fg.getPath.lastSegment
-        podName := podFileName[0..podFileName.indexr(".")-1]
+        // TODO maybe podName resolution should be deferred to the CompileEnv as that provides the pod Files in the first place
+        fileName := fg.getPath.removeFileExtension.lastSegment
+        podName  := fileName.contains("-") ? fileName[0..<fileName.index("-")] : fileName
         return DltkNamespace(fp, podName)
       }
     }

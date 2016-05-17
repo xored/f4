@@ -32,11 +32,6 @@ public final class Map
 
   public static Map make(Type type)
   {
-    if (type instanceof NullableType)
-    {
-      type = ((NullableType) type).root;
-    }
-
     MapType t = null;
     try
     {

@@ -73,6 +73,8 @@ const class WispService : Service
   **
   const WebMod errMod := initErrMod
 
+  @NoDoc const Obj? keystore := null
+
   private static WebMod initErrMod()
   {
     try
@@ -203,7 +205,7 @@ const class WispService : Service
       if (secure)
       {
         ref = httpsListenerRef
-        listener = TcpListener.makeTls
+        listener = TcpListener.makeTls(keystore)
       }
       ref.val = Unsafe(listener)
       return listener
@@ -224,6 +226,23 @@ const class WispService : Service
   {
     WispService { httpPort = 8080 }.start
     Actor.sleep(Duration.maxVal)
+  }
+
+  ** Create instance for Test.setup easy to use via reflection (service is not started automatically)
+  @NoDoc static WispService testSetup(WebMod root)
+  {
+    log.level = LogLevel.err
+    return WispService
+    {
+      it.root = root
+      it.httpPort = (10_000..60_000).random
+    }
+  }
+
+  ** Teardown instance from tesetSetup
+  @NoDoc static Void testTeardown(WispService service)
+  {
+    service.stop
   }
 }
 

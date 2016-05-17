@@ -3,16 +3,12 @@
 // Licensed under Eclipse Public License version 1.0
 //
 // History:
-//   Ivan Inozemtsev May 25, 2010 - Initial Contribution
+//	 Ivan Inozemtsev May 25, 2010 - Initial Contribution
 //
 
 using [java] org.eclipse.debug.core.model
 using [java] org.eclipse.debug.core
-**
-**
-**
-mixin TargetLaunchConfig : ILaunchConfigurationDelegate
-{
-  abstract Void config(ILaunchConfiguration? source,
-    ILaunchConfigurationWorkingCopy? target, Str mode)
+
+mixin TargetLaunchConfig : ILaunchConfigurationDelegate {
+	abstract Void config(ILaunchConfiguration? source, ILaunchConfigurationWorkingCopy? target, Str mode)
 }

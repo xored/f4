@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="com.xored.fanide.core.compileEnv" name="CompileEnv" schema="schema/com.xored.fanide.core.compileEnv.exsd"/>
 
 <extension
       point="org.fantom.pod">
@@ -55,5 +56,17 @@
             nature="com.xored.fanide.core.nature"
             priority="0">
       </selectionEngine>
+   </extension>
+   <extension
+         point="com.xored.fanide.core.compileEnv">
+      <compileEnv
+            class="org.fantom.FanExtension:f4core::DefaultCompileEnv">
+      </compileEnv>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.fantom.FanExtension:f4core::ProjectPrefsInitializer">
+      </initializer>
    </extension>  
 </plugin>

@@ -3,18 +3,13 @@
 // Licensed under Eclipse Public License version 1.0
 //
 // History:
-//   Ivan Inozemtsev May 25, 2010 - Initial Contribution
+//	 Ivan Inozemtsev May 25, 2010 - Initial Contribution
 //
 
+class JavaLaunchConsts  {
 
-**
-**
-**
-class JavaLaunchConsts
-{
-  //TODO: rename to F4 launching later
-  static const Str fanJavaContainer := "com.xored.fanide.jdt.launching.FANJAVA_CONTAINER"
+	//TODO: rename to F4 launching later
+	static const Str fanJavaContainer := "com.xored.fanide.jdt.launching.FANJAVA_CONTAINER"
 
-  //static const Str fanJavaLaunchType := "com.xored.f4.jdt.launching.FanJavaLaunchConfigurationType"
-  
+	//static const Str fanJavaLaunchType := "com.xored.f4.jdt.launching.FanJavaLaunchConfigurationType"
 }

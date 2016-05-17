@@ -122,6 +122,10 @@ class Elem
   ** this is the last element under its parent.
   native Elem? nextSibling()
 
+  ** Return 'true' if given element is a descendant of this
+  ** node, or 'false' if not.
+  native Bool containsChild(Elem elem)
+
   ** Returns the first element that is a descendant of this
   ** element on which it is invoked that matches the specified
   ** group of selectors.
@@ -136,6 +140,17 @@ class Elem
   @Operator virtual This add(Elem child)
   {
     addChild(child)
+    onAdd(child)
+    child.onParent(this)
+    return this
+  }
+
+  ** Insert a new element as a child to this element before the
+  ** specified reference element.  The reference element must
+  ** be a child of this element. Returns this.
+  virtual This insertBefore(Elem child, Elem ref)
+  {
+    insertChildBefore(child, ref)
     onAdd(child)
     child.onParent(this)
     return this
@@ -178,6 +193,9 @@ class Elem
   ** Add a new element as a child to this element.
   @NoDoc protected native Void addChild(Elem child)
 
+  ** Insert a new element as a child to this element before given node.
+  @NoDoc protected native Void insertChildBefore(Elem child, Elem ref)
+
   ** Replace an existing child element with new element.
   @NoDoc protected native Void replaceChild(Elem oldChild, Elem newChild)
 
@@ -200,8 +218,14 @@ class Elem
 // Events
 //////////////////////////////////////////////////////////////////////////
 
+  ** Return true if this elem has focus.
+  virtual native Bool hasFocus()
+
   ** Request keyboard focus on this elem.
   virtual native Void focus()
+
+  ** Remove focus from this elem.
+  virtual native Void blur()
 
   ** Attach an event handler to the given event on this element.
   native Void onEvent(Str type, Bool useCapture, |Event e| handler)

@@ -1477,7 +1477,7 @@ public abstract class FanNewTypeWizardPage extends NewContainerWizardPage {
 		buf.append(superclass);
 		buf.append(writeSuperInterfaces(superclass.length() > 0));
 
-		buf.append(lineDelimiter).append("{").append(lineDelimiter);
+		buf.append(" {").append(lineDelimiter);
 		String typeBody = getTypeBody(getTypeName(), lineDelimiter);
 		if (typeBody != null) {
 			buf.append(typeBody);

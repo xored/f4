@@ -92,6 +92,8 @@ public class Actor
 
   public final Future sendLater(Duration d, Object msg) { return _send(msg, d, null); }
 
+  public final Future sendWhenComplete(Future f, Object msg) { return _send(msg, null, f); }
+
   public final Future sendWhenDone(Future f, Object msg) { return _send(msg, null, f); }
 
   protected Object receive(Object msg)
@@ -225,15 +227,15 @@ public class Actor
     {
       if (future.isCancelled()) return;
       if (pool.killed) { future.cancel(); return; }
-      future.set(receive(future.msg));
+      future.complete(receive(future.msg));
     }
     catch (Err e)
     {
-      future.err(e);
+      future.completeErr(e);
     }
     catch (Throwable e)
     {
-      future.err(Err.make(e));
+      future.completeErr(Err.make(e));
     }
   }
 

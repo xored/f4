@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.fantom.pod">
+      <pod
+            location="/f4pathEnv.pod"
+            name="f4pathEnv">
+      </pod>
+   </extension>
+   <extension
+         point="com.xored.fanide.core.compileEnv">
+      <compileEnv
+            class="org.fantom.FanExtension:f4pathEnv::PathCompileEnv">
+      </compileEnv>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.xored.f4.builder.ui.preferences.env"
+            class="org.fantom.FanExtension:f4pathEnv::PreferencePage"
+            id="com.xored.f4.pathEnv.preferencePage"
+            name="Path Env">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            category="com.xored.f4.builder.ui.propertyPage.env"
+            class="org.fantom.FanExtension:f4pathEnv::PreferencePage"
+            id="com.xored.f4.pathEnv.propertyPage"
+            name="Path Env">
+         <enabledWhen>
+            <adapt
+                  type="org.eclipse.core.resources.IProject">
+               <test
+                     property="org.eclipse.core.resources.projectNature"
+                     value="com.xored.fanide.core.nature">
+               </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.fantom.FanExtension:f4pathEnv::PathEnvPrefsInitializer">
+      </initializer>
+   </extension>
+
+</plugin>

@@ -9,7 +9,7 @@
 /**
  * MenuPeer.
  */
-fan.fwt.MenuPeer = fan.sys.Obj.$extend(fan.fwt.MenuItemPeer);
+fan.fwt.MenuPeer = fan.sys.Obj.$extend(fan.fwt.WidgetPeer);
 fan.fwt.MenuPeer.prototype.$ctor = function(self)
 {
   this.hasKeyBinding = false;
@@ -182,8 +182,8 @@ fan.fwt.MenuPeer.prototype.relayout = function(self)
     ph += mh;
   }
 
-  var pp = self.posOnDisplay();
-  var ps = self.size();
+  var pp = this.$parent.posOnDisplay();
+  var ps = this.$parent.size();
   var x = pp.m_x + this.$point.m_x;
   var y = pp.m_y + this.$point.m_y;
   var w = pw;
