@@ -37,9 +37,6 @@ const class FantomProject {
 	** base directory for script and resource folders
 	const File		baseDir 
 
-	** The interpreter installation dir, also known as '%FAN_HOME%'
-	const File		fanHomeDir
-
 	** absolute path of output directory
 	const File		outDir 
 	const Uri?		rawOutDir
@@ -77,9 +74,6 @@ const class FantomProject {
 		iProjectHolder	= Unsafe(project)
 		baseDir 		= PathUtil.resolveRes(project)
 		projErrs		:= ProjectErr[,]
-
-		fanHomePath		:= interpreterInstall?.getInstallLocation?.getPath
-		fanHomeDir		= fanHomePath != null ? PathUtil.fanHome(fanHomePath).toFile : Env.cur.homeDir
 		
 		Manifest? manifest := null
 		try {
@@ -124,6 +118,14 @@ const class FantomProject {
 			projErrs.add(ProjectErr("Output folder is not set"))
 		}
 		projectErrs		= projErrs
+	}
+	
+	** The interpreter installation dir, also known as '%FAN_HOME%'.
+	File fanHomeDir() {
+		// this is calculated dynamically so it picks up changes to the Interpreter Library location
+		fanHomePath	:= interpreterInstall?.getInstallLocation?.getPath
+		fanHomeDir	:= fanHomePath != null ? PathUtil.fanHome(fanHomePath).toFile : Env.cur.homeDir
+		return fanHomeDir
 	}
 	
 	Bool isOutputNotSet() {
@@ -223,14 +225,18 @@ const class FantomProject {
 	}
 	
 	private const AtomicRef compileEnvRef := AtomicRef(null)
-	private const AtomicRef compileTsRef := AtomicRef(Duration.now)
+	private const AtomicRef compileTsRef  := AtomicRef(null)
 	CompileEnv compileEnv() {
 		// we would like to create a new Env everytime so we don't have to hook into preference change listeners
-		// but sometimes, when opening and closing projects, pod building gets thrashed so we cache it for a second 
+		// but sometimes, when opening and closing projects, pod building gets thrashed, which causes more 
+		// thrashing, which causes more... etc... so we cache it for a second or two
+		// in the unlikely event this ever causes a problem, the first thing people do is refresh / rebuild the 
+		// project - so it's a non-issue.
 		compileTs := (Duration?) compileTsRef.val
 		compiled  := (Duration.now - (compileTs ?: Duration.now))
-		if (compileEnvRef.val == null || compiled > 1sec) {
+		if (compileEnvRef.val == null || compiled > 3sec) {
 			compileEnvRef.val = prefs.compileEnvType.make([this])
+			compileTsRef.val  = Duration.now
 		}
 
 		return compileEnvRef.val
