@@ -57,8 +57,8 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 		bindManagerField := Interop.toJava(AbstractOptionsBlock#).getDeclaredField("bindManager")
 		bindManagerField.setAccessible(true)
 		bindManager := (ControlBindingManager) bindManagerField.get(this)
-		bindManager.bindRadioControl(radio1, useEnvVarKey, "true", null)
-		bindManager.bindRadioControl(radio2, useEnvVarKey, "false", [text])
+		bindManager.bindRadioControl(radio1, useEnvVarKey.getQualifier, "true", null)
+		bindManager.bindRadioControl(radio2, useEnvVarKey.getQualifier, "false", [text])
 		bindManager.bindControl(text, fanEnvPathKey, null)
 
 		// stoopid private field

@@ -6,7 +6,7 @@ using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.dltk.core::IScriptProject 
 using [java]java.util::List as JList
 using [java]org.eclipse.core.runtime
-using [java]org.fantom
+//using [java]org.fantom
 using [java]org.osgi.framework
 using [java]java.net::URL
 

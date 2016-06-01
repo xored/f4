@@ -81,7 +81,7 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 		envs.each |env| {
 			radio := SWTFactory.createRadioButton(group, env.label, 1)
 			SWTFactory.createLabel(group, env.description, 1)
-			bindManager.bindRadioControl(radio, compileEnvKey, env.typeof.qname, null)
+			bindManager.bindRadioControl(radio, compileEnvKey.getQualifier, (Obj)(env.typeof.qname), null)
 		}
 		keys.add(compileEnvKey)
 

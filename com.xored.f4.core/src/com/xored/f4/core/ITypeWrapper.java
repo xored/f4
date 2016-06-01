@@ -313,9 +313,7 @@ public class ITypeWrapper implements IType {
 		return null;
 	}
 
-	@Override
-	public <E extends IModelElement> E getAncestor(Class<E> clazz) {
-		// TODO Auto-generated method stub
+	public IModelElement getAncestor(Class clazz) {
 		return null;
 	}
 }
