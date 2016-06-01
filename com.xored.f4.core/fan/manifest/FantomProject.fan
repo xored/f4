@@ -167,6 +167,12 @@ const class FantomProject {
 					project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
 					if (project.isAccessible) {
 						fp := FantomProjectManager.instance[project]
+            if( fp.rawOutDir != null ) {
+              f := fp.baseDir + fp.rawOutDir + `${fp.podName}.pod`
+              if( f.exists) {
+                return f
+              }
+            }
 						return (fp.outDir.uri + `${fp.podName}.pod`).toFile
 					}
 					// Return null if project is not accessible
@@ -197,6 +203,16 @@ const class FantomProject {
 			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
 		}, baseDir.uri).sort
 	}
+  
+  File resolvePodName(FantomProject p) {
+     if( p.rawOutDir != null ) {
+        f := p.baseDir + p.rawOutDir + `${p.podName}.pod`
+        if( f.exists) {
+          return f
+        }
+      }
+     return (p.outDir.uri + `${p.podName}.pod`).toFile
+  }
 	
 	Str:File resolvePods() {
 		compileEnv	:= compileEnv
@@ -208,8 +224,9 @@ const class FantomProject {
 		
 		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
-			if (podFiles.containsKey(p.podName))
-				podFiles[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
+		  if (podFiles.containsKey(p.podName)) {
+				podFiles[p.podName] = resolvePodName(p)
+		  }
 		}
 		return podFiles
 	}

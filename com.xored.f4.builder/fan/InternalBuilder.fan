@@ -43,13 +43,25 @@ class InternalBuilder : Builder {
 		root.listFiles.each |JFile? f|{ f?.delete}
 		
 		resolvedPods := fp.resolvePods
+    
+    FantomProjectManager.instance.listProjects.each |FantomProject p|
+    {
+       if( p.rawOutDir != null ) {
+        f := p.baseDir + p.rawOutDir + `${p.podName}.pod`
+        if( f.exists) {
+          resolvedPods[p.podName] = f
+          return
+        }
+      }
+      resolvedPods[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
+    }
 		
 		bldLoc := Loc(fp.baseDir + `build.fan`)
 		if (fp.resolveErrs.size > 0) {
 			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
 		}
 		
-        logger	:= ConsoleLogger(consumer)
+    logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
 		try {
 			logBuf	:= StrBuf().add("\n")
