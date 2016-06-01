@@ -47,6 +47,9 @@ const class PathCompileEnv : CompileEnv {
 	private File[] workDirs() {
 		pathPrefs	:= PathEnvPrefs(fanProj)
 		workPath	:= pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath
+    if(workPath == null) {
+      workPath = "";
+    }
 		workDirs	:= parsePath(workPath).add(fanProj.fanHomeDir)
 		return workDirs
 	}

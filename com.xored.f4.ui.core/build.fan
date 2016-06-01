@@ -5,7 +5,7 @@ class Build : build::BuildPod
   {
     podName = "f4uiCore"
     summary = ""
-    srcDirs = [`fan/`, `fan/wizards/`, `fan/templates/`]
+    srcDirs = [`fan/`, `fan/templates/`, `fan/wizards/`]
     depends = ["sys 1.0", "f4core 1.0"]
     outPodDir = `./`
   }

@@ -32,6 +32,10 @@ class PathEnvPrefsInitializer : AbstractPreferenceInitializer {
 		store := DefaultScope().getNode(PathEnvPlugin.id)
 
 		store.putBoolean(PathEnvPrefs.useEnvVarName, true)
-		store.put		(PathEnvPrefs.fanEnvPathName, Env.cur.vars["FAN_ENV_PATH"])
+    fanEnvPath := Env.cur.vars["FAN_ENV_PATH"]
+    if( fanEnvPath == null) {
+      fanEnvPath = "";
+    }
+		store.put		(PathEnvPrefs.fanEnvPathName, fanEnvPath )
 	}
 }

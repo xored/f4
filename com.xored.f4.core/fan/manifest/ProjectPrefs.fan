@@ -5,7 +5,7 @@ using [java]com.xored.fanide.core::FanCore
 using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 
 class ProjectPrefs {
-	static const Str qualifier				:= "com.xored.f4.builder"	// from com.xored.f4.builder::CompileFan.pluginId
+	static const Str qualifier				:= "com.xored.f4.core"	// from com.xored.f4.builder::CompileFan.pluginId
 	static const Str useExternalBuilderName	:= "useExternalBuilder"
 	static const Str buildDependantsName	:= "buildDependants"
 	static const Str publishPodName			:= "publishPod"
