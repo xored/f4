@@ -7,6 +7,6 @@ class Build : build::BuildPod
     summary = ""
     depends = ["sys 1.0", "compiler 1.0"]
     srcDirs = [`fan/`, `fan/model/`]
-    outPodDir = `./`
-  }
+    outPodDir = `./`  
+  } 
 }
