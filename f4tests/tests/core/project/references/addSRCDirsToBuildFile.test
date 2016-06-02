@@ -1,18 +1,18 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_1ljj0NRlEeCKlPPbNL0FHw
 Element-Name: addSRCDirsToBuildFile
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_1ljj0NRlEeCKlPPbNL0FHw
-Save-Time: 8/10/12 12:29 AM
+External-Reference: 
 Id: _8SWbYNgoEeCWXvk8UUBU4Q
+Runtime-Version: 2.1.0.201606011750
+Save-Time: 6/2/16 12:30 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Open Fantom Project
 2. Add Fantom Source Folder
@@ -20,8 +20,8 @@ Content-Type: text/plain
 4. Make sure that link to this folder is added in srcDir
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-menu "Customize View..." | click
 with [get-window "Available Customizations"] {
@@ -48,7 +48,16 @@ with [get-view "Fantom Explorer" | get-tree] {
     select "fantest/Interpreter Libraries.*"
 }
 get-view "Fantom Explorer" | get-tree | select "fantest/build.fan" | double-click -nowait
-get-editor "build.fan" | get-editbox | get-property value 
-    | contains "srcDirs = [`test/`, `fan/`]" 
-    | verify-true
+
+get-editor "build.fan" | get-text-viewer | get-property text | equals "using build\n"
+    + "class Build : build::BuildPod\n{\n"
+    + "  new make()\n"
+    + "  {\n"
+    + "    podName = \"fantest\"\n"
+    + "    summary = \"\"\n"
+    + "    outPodDir = `./`\n"
+    + "    srcDirs = [`fan/`, `test/`]\n"
+    + "    depends = [\"sys 1.0\"]\n"
+    + "  }\n"
+    + "}" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

@@ -1,18 +1,18 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
 Element-Name: basicSelectionTest
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
-Save-Time: 8/9/12 11:32 PM
+External-Reference: 
 Id: _LSmqoNRcEeCKlPPbNL0FHw
+Runtime-Version: 2.1.0.201606011750
+Save-Time: 6/2/16 12:41 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select "fantest/fan/RectangleBase.fan" | double-click -nowait
 with [get-editor "RectangleBase.fan"] {
@@ -58,7 +58,5 @@ with [get-editor "Int.fcode" | get-editbox] {
     set-text-offset 24 32
     key-type F3
 }
-with [get-tab-folder] {
-    get-property tabCount | equals 8 | verify-true
-}
+get-eclipse-window | get-property "getData().getActivePage().getEditorReferences().length" | equals 8 | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

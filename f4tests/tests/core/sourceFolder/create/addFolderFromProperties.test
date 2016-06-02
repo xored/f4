@@ -1,19 +1,19 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_7rWIAdnkEeCZ-u3bYoGPTQ
 Element-Name: addFolderFromProperties
-Tags: core/sourcefolder/create
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_7rWIAdnkEeCZ-u3bYoGPTQ
-Save-Time: 8/13/12 12:38 PM
+External-Reference: 
 Id: _mfxEMdzbEeCCLtazA1JmEg
+Runtime-Version: 2.1.0.201606011750
+Save-Time: 6/2/16 12:24 PM
+Tags: core/sourcefolder/create
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Select project in Fantom Explorer
 2. Open Properties via context menu
@@ -22,8 +22,8 @@ Content-Type: text/plain
 5. Make sure that folder is displayed in Fantom Explorer and is added in build.fan file
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select TestProject | get-menu Properties | click
 with [get-window "Properties for TestProject"] {
@@ -48,7 +48,7 @@ with [get-window "New Source Folder"] {
 }
 with [get-window "Properties for TestProject" | get-window "Source Folder Selection" | get-tree] {
     get-property itemCount | equals 1 | verify-true
-    get-item TestProject | get-property childCount | equals 3 | verify-true
+    get-item TestProject | get-property childCount | equals 2 | verify-true
 }
 get-window "Properties for TestProject" | get-window "Source Folder Selection" | get-button OK | click
 with [get-window "Properties for TestProject" | get-tree -after [get-label "Source folders on build path:"]] {
@@ -66,8 +66,16 @@ exec-with-options -allowStatusDialog -command {
         | equals testFolder | verify-true
     get-view "Fantom Explorer" | get-tree | get-item "TestProject/fan" | get-property caption | equals fan | verify-true
     get-view "Fantom Explorer" | get-tree | select "TestProject/build.fan" | double-click -nowait
-    get-editor "build.fan" | get-editbox | get-property value 
-        | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"TestProject\"    summary = \"\"    srcDirs = [`testFolder/`, `fan/`]    depends = [\"sys 1.0\", \"fantest 1.0\"]  }}" 
-        | verify-true
+    
 }
+get-editor "build.fan" | get-text-viewer | get-property text | equals "using build\n"
+    + "class Build : build::BuildPod\n{\n"
+    + "  new make()\n"
+    + "  {\n"
+    + "    podName = \"TestProject\"\n"
+    + "    summary = \"\"\n"
+    + "    srcDirs = [`fan/`, `testFolder/`]\n"
+    + "    depends = [\"sys 1.0\", \"fantest 1.0\"]\n"
+    + "  }\n"
+    + "}" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

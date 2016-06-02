@@ -1,19 +1,19 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q,_jipc4Aj7EeGAGeL_TGYM9g
 Element-Name: addNewTemplate
-Tags: preferences/fantom/editor/templates
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _mh78QPrIEeCCQPvyyXR3Tw,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q,_jipc4Aj7EeGAGeL_TGYM9g
-Save-Time: 8/13/12 12:43 PM
+External-Reference: 
 Id: _QcF_kAj3EeGAGeL_TGYM9g
+Runtime-Version: 2.1.0.201606011750
+Save-Time: 6/2/16 12:28 PM
+Tags: preferences/fantom/editor/templates
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Open "Preferences" 
 2. Switch to "Fantom->Editor->Templates" tab
@@ -22,12 +22,12 @@ Content-Type: text/plain
 5. Make sure that template is added and completion works in the editor
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-preferences-menu | click
 get-window Preferences | get-tree | select "Fantom/Editor/Templates"
-get-window Preferences | get-table | get-property itemCount | equals 19 | verify-true
+get-window Preferences | get-table | get-property itemCount | equals 21 | verify-true
 get-window Preferences | get-button "New..." | click
 with [get-window Preferences | get-window "New Template"] {
     get-editbox -after [get-label "Name:"] | get-property text | equals "" | verify-true
@@ -61,7 +61,7 @@ get-window Preferences | get-editbox -after [get-label "Preview:"] | get-propert
     + "body\n"
     + "}" | verify-true
 get-window Preferences | get-table | select main
-get-window Preferences | get-table | get-property itemCount | equals 20 | verify-true
+get-window Preferences | get-table | get-property itemCount | equals 22 | verify-true
 get-window Preferences | get-button OK | click
 get-view "Fantom Explorer" | get-tree | select "fantest/fan/A.fan" | double-click -nowait
 with [get-editor "A.fan" | get-editbox] {
@@ -73,12 +73,12 @@ with [get-editor "A.fan" | get-editbox] {
     type-text "{"
     key-type CR
     type-text test
-    key-type "Ctrl+SPACE"
+    show-content-assist
 }
 get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "test - " | click -nowait 
     -default
-get-editor "A.fan" | get-editbox | get-property text | equals "\n"
-    + "class A\n{\n"
+
+get-editor "A.fan" | get-text-viewer | get-property text | equals "class A\n{\n"
     + "  public Int alfa := 20\n"
     + "  public Str beta := \"String value\"\n"
     + "  \n"
@@ -90,12 +90,13 @@ get-editor "A.fan" | get-editbox | get-property text | equals "\n"
     + "  {\n"
     + "    return beta + \" Postfix\"\n"
     + "  }\n"
-    + "  \n"
-    + "  Void main()\n"
-    + "  {\n"
-    + "    test\n"
-    + "    {\n"
-    + "    body\n"
-    + "    }\n"
-    + "  }\n}\n" | verify-true
+    + "\t\n"
+    + "\tVoid main()\n"
+    + "\t{\n"
+    + "\t\ttest\n"
+    + "\t\t{\n"
+    + "\t\tbody\n"
+    + "\t\t}\n"
+    + "\t}\n"
+    + "}" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

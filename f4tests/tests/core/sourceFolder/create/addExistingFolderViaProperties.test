@@ -1,19 +1,19 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_2spO4NkfEeCWXvk8UUBU4Q
 Element-Name: addExistingFolderViaProperties
-Tags: core/sourcefolder/create
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_2spO4NkfEeCWXvk8UUBU4Q
-Save-Time: 8/13/12 12:36 PM
+External-Reference: 
 Id: _M-YZIN3iEeC824MXpzkxKA
+Runtime-Version: 2.1.0.201606011750
+Save-Time: 6/2/16 12:05 PM
+Tags: core/sourcefolder/create
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Create folder in project
 2. Open properties for this project
@@ -21,8 +21,8 @@ Content-Type: text/plain
 4. Make sure that this folder is added in build.fan
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select fantest | get-menu "New/Folder" | click
 with [get-window "New Folder"] {
@@ -71,7 +71,15 @@ with [get-window "Properties for fantest" | get-tree -after [get-label "Source f
 }
 get-window "Properties for fantest" | get-button OK | click
 get-view "Fantom Explorer" | get-tree | get-item fantest | get-property childCount | equals 7 | verify-true
-get-editor "build.fan" | get-editbox | get-property value 
-    | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"fantest\"    summary = \"\"    srcDirs = [`testFolder/`, `inheritance/`, `fan/`]    depends = [\"sys 1.0\"]  }}" 
-    | verify-true
+
+get-editor "build.fan" | get-text-viewer | get-property text | equals "using build\n"
+    + "class Build : build::BuildPod\n{\n"
+    + "  new make()\n"
+    + "  {\n"
+    + "    podName = \"fantest\"\n"
+    + "    summary = \"\"\n"
+    + "    srcDirs = [`fan/`, `inheritance/`, `testFolder/`]\n"
+    + "    depends = [\"sys 1.0\"]\n"
+    + "  }\n"
+    + "}" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
