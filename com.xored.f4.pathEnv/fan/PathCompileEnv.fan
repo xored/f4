@@ -33,23 +33,27 @@ const class PathCompileEnv : CompileEnv {
 	}
 
 	override Void publishPod(File podFile) {
-		if (workDirs.first == fanProj.fanHomeDir && (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false))
-			// I could, but it seems wrong to pollute a system runtime
-			// if the user knew what they were doing, they'd have their own Runtime / work dir
-			buildConsole.warn("PathEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
-		else {
-			dstDir := (workDirs.first + `lib/fan/`).normalize
-			buildConsole.debug("PathEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-			podFile.copyInto(dstDir, ["overwrite" : true])
+		dstDir := null as File
+		
+		if (fanProj.publishDir != null) {
+			dstDir = (workDirs.first + fanProj.publishDir).normalize
+			
+		} else {
+			if (workDirs.first == fanProj.fanHomeDir && (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false))
+				// I could, but it seems wrong to pollute a system runtime
+				// if the user knew what they were doing, they'd have their own Runtime / work dir
+				buildConsole.warn("PathEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
+			else
+				dstDir = (workDirs.first + `lib/fan/`).normalize
 		}
+		
+		buildConsole.debug("PathEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+		podFile.copyInto(dstDir, ["overwrite" : true])
 	}
 	
 	private File[] workDirs() {
 		pathPrefs	:= PathEnvPrefs(fanProj)
-		workPath	:= pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath
-    if(workPath == null) {
-      workPath = "";
-    }
+		workPath	:= (pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath) ?: ""
 		workDirs	:= parsePath(workPath).add(fanProj.fanHomeDir)
 		return workDirs
 	}

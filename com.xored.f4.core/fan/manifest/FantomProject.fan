@@ -34,12 +34,11 @@ const class FantomProject {
 	const Str		summary		:= ""
 	const Version	version		:= Version.defVal
 
-	** base directory for script and resource folders
-	const File		baseDir 
-
-	** absolute path of output directory
-	const File		outDir 
-	const Uri?		rawOutDir
+	const File		projectDir
+	
+	** 'podOutDir' from 'build.fan'.
+	const Uri?		publishDir
+		
 	const Depend[]	rawDepends	:= Depend#.emptyList
 	const Uri[]		resDirs		:= Uri#.emptyList
 	const Uri[]		jsDirs		:= Uri#.emptyList
@@ -72,9 +71,9 @@ const class FantomProject {
 
 	new makeFromProject(IProject project) {
 		iProjectHolder	= Unsafe(project)
-		baseDir 		= PathUtil.resolveRes(project)
-		projErrs		:= ProjectErr[,]
+		projectDir 		= PathUtil.resolveRes(project)
 		
+		projErrs		:= ProjectErr[,]
 		Manifest? manifest := null
 		try {
 			manifest = Manifest(this)
@@ -82,8 +81,6 @@ const class FantomProject {
 			projErrs.add(ProjectErr(e.toStr))
 			projectErrs	= projErrs
 			podName		= "<unknown>"
-			outDir		= baseDir
-			rawOutDir	= `./`
 			return
 		}
 		
@@ -94,18 +91,17 @@ const class FantomProject {
 			projErrs.add(ProjectErr("Pod name is not set"))
 		}
 		
-		outDir		= getOutDir(project, manifest)
-		rawOutDir	= manifest.outDir
-		version		= manifest.version
-		summary		= manifest.summary
-		resDirs		= manifest.resDirs
-		jsDirs		= manifest.jsDirs
-		javaDirs	= manifest.javaDirs
-		meta		= manifest.meta.dup
-		index		= manifest.index.dup
-		docApi		= manifest.docApi
-		docSrc		= manifest.docSrc
-		rawDepends	= manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]| {
+		version			= manifest.version
+		summary			= manifest.summary
+		publishDir		= manifest.outPodDir
+		resDirs			= manifest.resDirs
+		jsDirs			= manifest.jsDirs
+		javaDirs		= manifest.javaDirs
+		meta			= manifest.meta.dup
+		index			= manifest.index.dup
+		docApi			= manifest.docApi
+		docSrc			= manifest.docSrc
+		rawDepends		= manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]| {
 			depend := Depend.fromStr(raw, false)
 			if (depend != null)
 				r.add(depend)
@@ -113,10 +109,7 @@ const class FantomProject {
 				projErrs.add(ProjectErr("Can't parse depend $raw", manifest.lines["depends"]))
 			return r
 		}
-		isPlugin	= project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
-		if (!isPlugin && isOutputNotSet) {
-			projErrs.add(ProjectErr("Output folder is not set"))
-		}
+		isPlugin		= project.getNature(IBundleProjectDescription.PLUGIN_NATURE) != null
 		projectErrs		= projErrs
 	}
 	
@@ -128,10 +121,16 @@ const class FantomProject {
 		return fanHomeDir
 	}
 	
-	Bool isOutputNotSet() {
-		javaProject.getOutputLocation.equals(javaProject.getPath)
+	** The pod output file that gets built.
+	File podOutFile() {
+		(prefs.podOutputDir + `${podName}.pod`).normalize		
 	}
 	
+	** The 'build.fan' file.
+	File buildFile() {
+		(projectDir + `build.fan`).normalize
+	}
+
 	IInterpreterInstall? interpreterInstall() {
 		ScriptRuntime.getInterpreterInstall(scriptProject)
 	}
@@ -154,9 +153,10 @@ const class FantomProject {
 	// Build info
 	//////////////////////////////////////////////////////////////////////////	
 	
-	** Absolute locations of required pods
+	** (Steve : 7 Jun 16) - not really sure what this returns.
+	** Seems to be absolute locations of required pods
 	** Used by com.xored.f4.jdt.launching::FanJavaContainer --> Fantom Native Libraries (Java)
-	Str:File depends() {
+	Str:File classpathDepends() {
 		buildPathFiles := (Str:File) scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
 		}
@@ -167,13 +167,7 @@ const class FantomProject {
 					project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
 					if (project.isAccessible) {
 						fp := FantomProjectManager.instance[project]
-            if( fp.rawOutDir != null ) {
-              f := fp.baseDir + fp.rawOutDir + `${fp.podName}.pod`
-              if( f.exists) {
-                return f
-              }
-            }
-						return (fp.outDir.uri + `${fp.podName}.pod`).toFile
+						return fp.podOutFile
 					}
 					// Return null if project is not accessible
 					return null
@@ -201,33 +195,24 @@ const class FantomProject {
 			bp.getEntryKind == IBuildpathEntry.BPE_SOURCE
 		}.map |IBuildpathEntry bp -> Uri| {
 			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
-		}, baseDir.uri).sort
+		}, projectDir.uri).sort
 	}
   
-  File resolvePodName(FantomProject p) {
-     if( p.rawOutDir != null ) {
-        f := p.baseDir + p.rawOutDir + `${p.podName}.pod`
-        if( f.exists) {
-          return f
-        }
-      }
-     return (p.outDir.uri + `${p.podName}.pod`).toFile
-  }
-	
+	** Returns a map of pod names to pod files.
 	Str:File resolvePods() {
 		compileEnv	:= compileEnv
 		podFiles	:= compileEnv.resolvePods.rw
 		resolveErrs	= compileEnv.resolveErrs.toImmutable
 
-		// prevent errs such as "Project cannot reference itself: poo"
-		podFiles.remove(podName)
-		
 		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
-		  if (podFiles.containsKey(p.podName)) {
-				podFiles[p.podName] = resolvePodName(p)
-		  }
-		}
+			if (podFiles.containsKey(p.podName) || rawDepends.any { it.name == p.podName })
+				podFiles[p.podName] = p.podOutFile
+		}		
+
+		// prevent errs such as "Project cannot reference itself: poo"
+		podFiles.remove(podName)
+
 		return podFiles
 	}
 	
@@ -258,32 +243,11 @@ const class FantomProject {
 
 		return compileEnvRef.val
 	}
-	
-	//////////////////////////////////////////////////////////////////////////
-	// Private helper methods
-	//////////////////////////////////////////////////////////////////////////
 
-	private File getOutDir(IProject project, Manifest manifest) {
-		if (isPlugin)
-			return resolveOutDir(baseDir.uri, manifest.outDir) ?: baseDir
-		
-		try	return (File.os(ResourcesPlugin.getWorkspace.getRoot.getFolder(javaProject.getOutputLocation).getLocation.toFile.getAbsolutePath).uri.plusSlash).toFile
-		catch return baseDir
-	}
-
-	private File? resolveOutDir(Uri baseDir, Uri? outDir) {
-		if(outDir != null) {
-			result := outDir.isAbs ? outDir : (baseDir + outDir)
-			return result.toFile
-		}
-		
-		path := interpreterInstall?.getInstallLocation?.getPath
-		if (path != null)
-			return PathUtil.libByInterpreter(path)
-		
-		return null
-	}
 	
+	
+	// ---- Private helper methods ----
+
 	private Uri[] unfoldDirs(Uri[] dirs, Uri baseDir) {
 		result := Uri[,]
 		result.addAll(dirs)

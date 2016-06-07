@@ -44,19 +44,7 @@ class InternalBuilder : Builder {
 		
 		resolvedPods := fp.resolvePods
     
-    FantomProjectManager.instance.listProjects.each |FantomProject p|
-    {
-       if( p.rawOutDir != null ) {
-        f := p.baseDir + p.rawOutDir + `${p.podName}.pod`
-        if( f.exists) {
-          resolvedPods[p.podName] = f
-          return
-        }
-      }
-      resolvedPods[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
-    }
-		
-		bldLoc := Loc(fp.baseDir + `build.fan`)
+		bldLoc := Loc(fp.buildFile)
 		if (fp.resolveErrs.size > 0) {
 			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
 		}
@@ -80,7 +68,7 @@ class InternalBuilder : Builder {
 			input.includeDoc		= true
 			input.summary			= fp.summary
 			input.mode				= CompilerInputMode.file
-			input.baseDir			= fp.baseDir
+			input.baseDir			= fp.projectDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
 			input.outDir			= File.os(projectPath.toOSString) 
@@ -106,10 +94,11 @@ class InternalBuilder : Builder {
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			podFileName	:= `${fp.podName}.pod` 
 			newPodFile	:= input.outDir + podFileName
-			podFile		:= fp.outDir + podFileName
+			podFile		:= fp.podOutFile
 
 			if (newPodFile.exists) {
 				if (isPodChanged(newPodFile, podFile)) {
+					consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
 					newPodFile.copyTo(podFile, ["overwrite" : true])
 					jp := JavaCore.create(fp.project)
 					jp.getJavaModel.refreshExternalArchives([jp], null)
@@ -266,7 +255,7 @@ class InternalBuilder : Builder {
 	private Str[] listFiles(Uri[] uris)	{
 		list := Str[,]
 		uris.each{
-			(fp.baseDir+it).walk {
+			(fp.projectDir + it).walk {
 				if (ext == "java") list.add(osPath)
 			}
 		}

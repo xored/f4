@@ -139,9 +139,9 @@ class JavaLaunchUtil {
 	
 	private static Str getPodLocations(FantomProject[] projects) {
 		projects
-			.findAll { it.outDir.exists }
+			.findAll { it.podOutFile.exists }
 			.map |FantomProject proj -> Str| {
-				proj.outDir.uri.plusSlash.plusName("${proj.podName}.pod").toFile.normalize.osPath
+				proj.podOutFile.osPath
 			}.join(File.pathSep)
 	}
 }

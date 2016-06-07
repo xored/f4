@@ -43,11 +43,11 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 		composite := SWTFactory.createComposite(parent, parent.getFont, 1, 1, GridData.FILL_HORIZONTAL)
 
 		group := SWTFactory.createGroup(composite, "FAN_ENV_PATH value", 4, 1, GridData.FILL_HORIZONTAL)
-		SWTFactory.createLabel(group, "Multiple dirs may be specified using your OS's path separator", 4)
 
 		radio1 := SWTFactory.createRadioButton(group, "Use FAN_ENV_PATH environment variable", 4)
 		radio2 := SWTFactory.createRadioButton(group, "Use:", 1)
 		text := SWTFactory.createSingleText(group, 3)
+		SWTFactory.createLabel(group, "Multiple dirs may be specified using your OS's path separator", 4)
 		SWTFactory.createLabel(group, "The 'Work Dir' is always the first path in the list", 4)
 	
 		SWTFactory.createLabel(composite, "", 1)

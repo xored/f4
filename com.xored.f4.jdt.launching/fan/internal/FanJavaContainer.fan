@@ -18,6 +18,7 @@ class FanJavaContainer : IClasspathContainer {
 	private IPath path
 	private IInterpreterInstall install
 	private IScriptProject project
+
 	new make(IInterpreterInstall fan, IPath path, IScriptProject project) {
 		this.install = fan
 		this.path = path
@@ -38,7 +39,7 @@ class FanJavaContainer : IClasspathContainer {
 		
 		try {
 			FantomProject fp := FantomProjectManager.instance[project.getProject]
-			fp.depends.each |loc, name| {
+			fp.classpathDepends.each |loc, name| {
 				podFP := FantomProjectManager.instance.getByPod(name)
 				if (podFP != null) {
 					IProject prj := podFP.project
@@ -50,17 +51,12 @@ class FanJavaContainer : IClasspathContainer {
 				
 				if(isJavaPod(loc))
 					cpEntries.add(createLibrary(loc,name))
-				
 			}
-			if (!fp.javaDirs.isEmpty ) {
-				podFile := fp.outDir + `${fp.podName}.pod`
-//				if( podFile.exists)
-//				{
-					cpEntries.add(createLibrary(podFile,fp.podName))
-//				}
-			}
+
+			if (!fp.javaDirs.isEmpty)
+				cpEntries.add(createLibrary(fp.podOutFile, fp.podName))
 		}
-		catch(Err e) {
+		catch (Err e) {
 			// TODO: This should not happen
 //			e.trace
 		}
@@ -78,7 +74,7 @@ class FanJavaContainer : IClasspathContainer {
 	}
 	
 	private static Bool isJavaPod(File f) {
-		if (!f.exists) return false;
+		if (!f.exists) return false
 		zip := Zip.open(f)
 		try {
 			return zip.contents.keys.any { ext == "class" }

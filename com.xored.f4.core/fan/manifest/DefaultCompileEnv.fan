@@ -40,19 +40,21 @@ const class DefaultCompileEnv : CompileEnv {
 	}
 	
 	override Void publishPod(File podFile) {
-    if( fanProj.rawOutDir != null) {
-      dstDir := (fanProj.baseDir + fanProj.rawOutDir).normalize
-      buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-      podFile.copyInto(dstDir, ["overwrite" : true])
-    }
-		if (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false)
-			// I could, but it seems wrong to pollute a system runtime
-			// if the user knew what they were doing, they'd have their own Runtime / work dir
-			buildConsole.warn("DefaultEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
-		else {
-			dstDir := (fanProj.fanHomeDir + `lib/fan/`).normalize
-			buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-			podFile.copyInto(dstDir, ["overwrite" : true])
+		dstDir := null as File
+		
+		if (fanProj.publishDir != null) {
+			dstDir = (fanProj.projectDir + fanProj.publishDir).normalize
+			
+		} else {
+			if (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false)
+				// I could, but it seems wrong to pollute a system runtime
+				// if the user knew what they were doing, they'd have their own Runtime / work dir
+				buildConsole.warn("DefaultEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
+			else
+				dstDir = (fanProj.fanHomeDir + `lib/fan/`).normalize
 		}
+		
+		buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+		podFile.copyInto(dstDir, ["overwrite" : true])
 	}
 }

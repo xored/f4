@@ -29,13 +29,15 @@ class ExternalBuilder : Builder {
 			return interpreterErrs
 		out := launch(wc, consumer)
 		
-		podFileName	:= `${fp.podName}.pod` 
-		newPodFile	:= fp.baseDir + podFileName
-		podFile		:= fp.outDir + podFileName
+		newPodFile	:= fp.projectDir + `${fp.podName}.pod`
+		podFile		:= fp.podOutFile
 
 		if (newPodFile.exists) {
-			newPodFile.copyTo(podFile, ["overwrite" : true])
-			
+			if (newPodFile.uri != podFile.uri) {
+				consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
+				newPodFile.copyTo(podFile, ["overwrite" : true])
+			}
+
 			if (fp.prefs.publishPod) {
 				consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
 				fp.compileEnv.publishPod(newPodFile)
@@ -62,7 +64,7 @@ class ExternalBuilder : Builder {
 		}
 
 		// assume that err/warn line always starts with base directory
-		if (!line.startsWith(fp.baseDir.osPath))
+		if (!line.startsWith(fp.projectDir.osPath))
 			return null
 
 		m := loc.matcher(line)
