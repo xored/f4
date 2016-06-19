@@ -49,7 +49,16 @@ class InternalBuilder : Builder {
 			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
 		}
 		
-    logger	:= ConsoleLogger(consumer)
+		// Blindly add all workspace pods - seems to be the only way to get F4 to compile itself (...!?)
+		// Without this, we get compilation errors similar to "pod not found: f4parser".
+		// These aren't actual dependencies and don't seem to be transitive dependencies.
+		// Note that adding them as actual project dependencies also solves the issue,
+		// Though I don't know why I'm loath to do so - hence these 3 little lines.
+		FantomProjectManager.instance.listProjects.each |p| {
+			resolvedPods[p.podName] = p.podOutFile
+		}
+		
+		logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
 		try {
 			logBuf	:= StrBuf().add("\n")
@@ -84,7 +93,7 @@ class InternalBuilder : Builder {
 			if (!errs[0].isEmpty)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
 				return errs.flatten.map |CompilerErr err -> CompilerErr| {
-					consumer?.call("[ERR  ] ${err.msg}")
+					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
