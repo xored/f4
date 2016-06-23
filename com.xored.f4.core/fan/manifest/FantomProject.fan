@@ -64,13 +64,13 @@ const class FantomProject {
 		set { resolveErrsRef.val = it }
 	}
 
-	private const Unsafe iProjectHolder
+	private const Unsafe iProjectRef
 	IProject project() {
-		iProjectHolder.val
+		iProjectRef.val
 	}
 
 	new makeFromProject(IProject project) {
-		iProjectHolder	= Unsafe(project)
+		iProjectRef		= Unsafe(project)
 		projectDir 		= PathUtil.resolveRes(project)
 		
 		projErrs		:= ProjectErr[,]
@@ -226,22 +226,14 @@ const class FantomProject {
 		ProjectPrefs(this)
 	}
 	
-	private const AtomicRef compileEnvRef := AtomicRef(null)
-	private const AtomicRef compileTsRef  := AtomicRef(null)
+	private const QuickCash compileEnvRef := QuickCash(3sec) |->Obj?| { prefs.compileEnvType.make([this]) }
 	CompileEnv compileEnv() {
 		// we would like to create a new Env everytime so we don't have to hook into preference change listeners
 		// but sometimes, when opening and closing projects, pod building gets thrashed, which causes more 
 		// thrashing, which causes more... etc... so we cache it for a second or two
 		// in the unlikely event this ever causes a problem, the first thing people do is refresh / rebuild the 
-		// project - so it's a non-issue.
-		compileTs := (Duration?) compileTsRef.val
-		compiled  := (Duration.now - (compileTs ?: Duration.now))
-		if (compileEnvRef.val == null || compiled > 3sec) {
-			compileEnvRef.val = prefs.compileEnvType.make([this])
-			compileTsRef.val  = Duration.now
-		}
-
-		return compileEnvRef.val
+		// project - so it's really a non-issue.
+		compileEnvRef.get
 	}
 
 	
