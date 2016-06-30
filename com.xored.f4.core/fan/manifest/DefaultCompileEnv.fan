@@ -53,8 +53,9 @@ const class DefaultCompileEnv : CompileEnv {
 			else
 				dstDir = (fanProj.fanHomeDir + `lib/fan/`).normalize
 		}
-		
-		buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-		podFile.copyInto(dstDir, ["overwrite" : true])
+		if( dstDir != null) {
+			buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+			podFile.copyInto(dstDir, ["overwrite" : true])
+		}
 	}
 }
