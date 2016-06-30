@@ -44,24 +44,21 @@ class InternalBuilder : Builder {
 		
 		resolvedPods := fp.resolvePods
     
-    FantomProjectManager.instance.listProjects.each |FantomProject p|
-    {
-       if( p.rawOutDir != null ) {
-        f := p.baseDir + p.rawOutDir + `${p.podName}.pod`
-        if( f.exists) {
-          resolvedPods[p.podName] = f
-          return
-        }
-      }
-      resolvedPods[p.podName] = (p.outDir.uri + `${p.podName}.pod`).toFile
-    }
-		
-		bldLoc := Loc(fp.baseDir + `build.fan`)
+		bldLoc := Loc(fp.buildFile)
 		if (fp.resolveErrs.size > 0) {
 			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
 		}
 		
-    logger	:= ConsoleLogger(consumer)
+		// Blindly add all workspace pods - seems to be the only way to get F4 to compile itself (...!?)
+		// Without this, we get compilation errors similar to "pod not found: f4parser".
+		// These aren't actual dependencies and don't seem to be transitive dependencies.
+		// Note that adding them as actual project dependencies also solves the issue,
+		// Though I don't know why I'm loath to do so - hence these 3 little lines.
+		FantomProjectManager.instance.listProjects.each |p| {
+			resolvedPods[p.podName] = p.podOutFile
+		}
+		
+		logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
 		try {
 			logBuf	:= StrBuf().add("\n")
@@ -80,7 +77,7 @@ class InternalBuilder : Builder {
 			input.includeDoc		= true
 			input.summary			= fp.summary
 			input.mode				= CompilerInputMode.file
-			input.baseDir			= fp.baseDir
+			input.baseDir			= fp.projectDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
 			input.outDir			= File.os(projectPath.toOSString) 
@@ -96,7 +93,7 @@ class InternalBuilder : Builder {
 			if (!errs[0].isEmpty)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
 				return errs.flatten.map |CompilerErr err -> CompilerErr| {
-					consumer?.call("[ERR  ] ${err.msg}")
+					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
@@ -106,10 +103,11 @@ class InternalBuilder : Builder {
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			podFileName	:= `${fp.podName}.pod` 
 			newPodFile	:= input.outDir + podFileName
-			podFile		:= fp.outDir + podFileName
+			podFile		:= fp.podOutFile
 
 			if (newPodFile.exists) {
 				if (isPodChanged(newPodFile, podFile)) {
+					consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
 					newPodFile.copyTo(podFile, ["overwrite" : true])
 					jp := JavaCore.create(fp.project)
 					jp.getJavaModel.refreshExternalArchives([jp], null)
@@ -266,7 +264,7 @@ class InternalBuilder : Builder {
 	private Str[] listFiles(Uri[] uris)	{
 		list := Str[,]
 		uris.each{
-			(fp.baseDir+it).walk {
+			(fp.projectDir + it).walk {
 				if (ext == "java") list.add(osPath)
 			}
 		}

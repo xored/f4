@@ -6,27 +6,31 @@ using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 
 class ProjectPrefs {
 	static const Str qualifier				:= "com.xored.f4.core"	// from com.xored.f4.builder::CompileFan.pluginId
+	static const Str podOutputDirName		:= "podOutputDir"
 	static const Str useExternalBuilderName	:= "useExternalBuilder"
 	static const Str buildDependantsName	:= "buildDependants"
 	static const Str publishPodName			:= "publishPod"
 	static const Str compileEnvName			:= "compileEnv"
 	
 	private PreferencesLookupDelegate	delegate
-	private IProject					project
+	private FantomProject				project
 	
 	new make(FantomProject project) { 
-		this.project	= project.project
-		this.delegate	= PreferencesLookupDelegate(this.project)
+		this.project	= project
+		this.delegate	= PreferencesLookupDelegate(project.project)
+	}
+	
+	File podOutputDir() { 
+		dirStr := delegate.getString(qualifier, podOutputDirName)
+		dirUri := dirStr.contains("\\") ? File.os(dirStr).uri : dirStr.toUri
+		if (dirUri.isAbs || dirUri.isPathAbs)
+			return dirUri.plusSlash.toFile
+		return project.projectDir.plus(dirUri.plusSlash, true)
 	}
 	
 	Bool useExternalBuilder() { 
 		delegate.getBoolean(qualifier, useExternalBuilderName)
 	}
-
-	// FIXME not used...!?
-//	Bool buildDependants() {
-//		delegate.getBoolean(qualifier, buildDependantsName)
-//	}
 	
 	Bool publishPod() {
 		delegate.getBoolean(qualifier, publishPodName)
@@ -42,6 +46,7 @@ class ProjectPrefs {
 class ProjectPrefsInitializer : AbstractPreferenceInitializer {
 	override Void initializeDefaultPreferences() {
 		store := DefaultScope().getNode(ProjectPrefs.qualifier)
+		store.put		(ProjectPrefs.podOutputDirName,			"bin/")
 		store.putBoolean(ProjectPrefs.useExternalBuilderName,	false)
 		store.putBoolean(ProjectPrefs.buildDependantsName,		true)
 		store.putBoolean(ProjectPrefs.publishPodName,			false)

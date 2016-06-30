@@ -50,7 +50,7 @@ class Manifest {
 	Str? 		podName()	{ vals["podName"] }
 	Version		version()	{ vals["version"] ?: Version("1.0") }
 	Str 		summary()	{ vals["summary"] ?: "" }
-	Uri?		outDir()	{ vals["outPodDir"] != null ? Uri.fromStr(vals["outPodDir"]) : null }
+	Uri?		outPodDir()	{ vals["outPodDir"] != null ? Uri.fromStr(vals["outPodDir"]) : null }
 	Str[]		depends()	{ vals["depends"] ?: Str[,] }
 	Uri[]		resDirs()	{ resolveUris(vals["resDirs"]) }
 	Uri[]		jsDirs()	{ resolveUris(vals["jsDirs"]) }

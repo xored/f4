@@ -1,18 +1,18 @@
 using f4core
-using concurrent::AtomicRef
 
 const class PathCompileEnv : CompileEnv {
-
 	override const Str label		:= "util::PathEnv"
 	override const Str description	:= "Use pods from work directories"
 	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.launchEnv/f4launchEnv.pod`
 
-	const AtomicRef	podFilesRef		:= AtomicRef()
+	// pod files may change if the user updates the /lib/fan/ dirs
+	// no real need for this, as CompileEnv are quick cached themselves
+	private const QuickCash	podFilesRef := QuickCash(3sec)
 
 	new make(FantomProject? fanProj := null) : super.make(fanProj) { }
 
 	override Str:File resolvePods() {
-		if (podFilesRef.val == null) {
+		podFilesRef.get |->Obj?| {
 			podFiles	:= Str:File[:]
 			workDirs	:= workDirs
 			workDirs.eachr |workDir| {
@@ -22,9 +22,8 @@ const class PathCompileEnv : CompileEnv {
 			}	
 
 			buildConsole.debug("PathEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: " + workDirs.join(File.pathSep) { it.osPath })
-			podFilesRef.val = podFiles.toImmutable
+			return podFiles.toImmutable
 		}
-		return podFilesRef.val
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {
@@ -33,23 +32,27 @@ const class PathCompileEnv : CompileEnv {
 	}
 
 	override Void publishPod(File podFile) {
-		if (workDirs.first == fanProj.fanHomeDir && (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false))
-			// I could, but it seems wrong to pollute a system runtime
-			// if the user knew what they were doing, they'd have their own Runtime / work dir
-			buildConsole.warn("PathEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
-		else {
-			dstDir := (workDirs.first + `lib/fan/`).normalize
-			buildConsole.debug("PathEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-			podFile.copyInto(dstDir, ["overwrite" : true])
+		dstDir := null as File
+		
+		if (fanProj.publishDir != null) {
+			dstDir = (workDirs.first + fanProj.publishDir).normalize
+			
+		} else {
+			if (workDirs.first == fanProj.fanHomeDir && (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false))
+				// I could, but it seems wrong to pollute a system runtime
+				// if the user knew what they were doing, they'd have their own Runtime / work dir
+				buildConsole.warn("PathEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
+			else
+				dstDir = (workDirs.first + `lib/fan/`).normalize
 		}
+		
+		buildConsole.debug("PathEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+		podFile.copyInto(dstDir, ["overwrite" : true])
 	}
 	
 	private File[] workDirs() {
 		pathPrefs	:= PathEnvPrefs(fanProj)
-		workPath	:= pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath
-    if(workPath == null) {
-      workPath = "";
-    }
+		workPath	:= (pathPrefs.useEnvVar ? Env.cur.vars["FAN_ENV_PATH"] : pathPrefs.fanEnvPath) ?: ""
 		workDirs	:= parsePath(workPath).add(fanProj.fanHomeDir)
 		return workDirs
 	}

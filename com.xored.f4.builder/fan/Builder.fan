@@ -45,11 +45,11 @@ abstract class Builder {
 	}
 
 	private CompilerErr buildFanErr(ProjectErr e) {
-		CompilerErr.make(e.msg, Loc.makeFile(fp.baseDir + `build.fan`, e.line, 0), null, LogLevel.err)
+		CompilerErr.make(e.msg, Loc.makeFile(fp.buildFile, e.line, 0), null, LogLevel.err)
 	}
 
 	private CompilerErr projectErr(ProjectErr e) {
-		CompilerErr.make(e.msg, Loc.makeFile(fp.baseDir , e.line, 0), null, LogLevel.err)
+		CompilerErr.make(e.msg, Loc.makeFile(fp.projectDir , e.line, 0), null, LogLevel.err)
 	}
 	
 	private static Void report(|Str|? consumer, StrBuf out, Str txt) {

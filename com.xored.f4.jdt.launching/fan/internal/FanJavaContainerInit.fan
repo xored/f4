@@ -21,9 +21,7 @@ class FanJavaContainerInit : ClasspathContainerInitializer {
 			echo("\tProj: $project.getProject.getName")
 		}
 		
-		size := containerPath.segmentCount
-		
-		if (size == 0) {
+		if (containerPath == null || containerPath.segmentCount == 0) {
 			if(debug) echo("\t*** NO SEGMENTS IN CONTAINER PATH")
 			return
 		}

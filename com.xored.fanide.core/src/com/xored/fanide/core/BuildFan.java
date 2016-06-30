@@ -247,7 +247,7 @@ public class BuildFan {
 		sb.add("\tnew make() {");
 		sb.add("\t\tpodName = \"" + fromProjectName(projName) + "\"");
 		sb.add("\t\tsummary = \"My Awesome " + projName + " Project\"");
-		sb.add("\t\tversion = Version(\"0.0.1\")");
+		sb.add("\t\tversion = Version(\"1.0\")");
 		sb.add("");
 		sb.add("\t\tmeta = [");
 		sb.add("\t\t\t\"proj.name\" : \"" + projName + "\"");

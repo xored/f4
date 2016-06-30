@@ -1,11 +1,12 @@
-using concurrent::AtomicRef
 
 const class DefaultCompileEnv : CompileEnv {
-	override const Str label		:= "None"
-	override const Str description	:= "Use pods from Fantom Interpreter installation"
-	override const Uri? envPodUrl	:= `platform:/plugin/com.xored.f4.launchEnv/f4launchEnv.pod`
-
-	const AtomicRef	podFilesRef		:= AtomicRef()
+	override const Str		label		:= "None"
+	override const Str		description	:= "Use pods from Fantom Interpreter installation"
+	override const Uri?		envPodUrl	:= `platform:/plugin/com.xored.f4.launchEnv/f4launchEnv.pod`
+	
+	// pod files may change if the user updates the Fantom lib/fan/ dir
+	// no real need for this, as CompileEnv are quick cached themselves
+	private const QuickCash	podFilesRef := QuickCash(3sec)
 
 	new make(FantomProject? fanProj := null) : super.make(fanProj) { }
 	
@@ -16,7 +17,7 @@ const class DefaultCompileEnv : CompileEnv {
 //		podLocs	 := ScriptRuntime.getLibraryLocations(fanProj.interpreterInstall) as LibraryLocation[]
 //		podFiles := podLocs.map { PathUtil.resolveLocalPath(it.getLibraryPath()) }
 	
-		if (podFilesRef.val == null) {
+		podFilesRef.get |->Obj?| {
 			podFiles := Str:File[:]
 			workDir	 := (fanProj.fanHomeDir + `lib/fan/`).normalize
 			workDir.listFiles(Regex.glob("*.pod")).each |podFile| {
@@ -24,9 +25,8 @@ const class DefaultCompileEnv : CompileEnv {
 			}
 		
 			buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
-			podFilesRef.val = podFiles.toImmutable
+			return podFiles.toImmutable
 		}
-		return podFilesRef.val
 	}
 	
 	override Void tweakLaunchEnv(Str:Str envVars) {
@@ -40,19 +40,21 @@ const class DefaultCompileEnv : CompileEnv {
 	}
 	
 	override Void publishPod(File podFile) {
-    if( fanProj.rawOutDir != null) {
-      dstDir := (fanProj.baseDir + fanProj.rawOutDir).normalize
-      buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-      podFile.copyInto(dstDir, ["overwrite" : true])
-    }
-		if (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false)
-			// I could, but it seems wrong to pollute a system runtime
-			// if the user knew what they were doing, they'd have their own Runtime / work dir
-			buildConsole.warn("DefaultEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
-		else {
-			dstDir := (fanProj.fanHomeDir + `lib/fan/`).normalize
-			buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
-			podFile.copyInto(dstDir, ["overwrite" : true])
+		dstDir := null as File
+		
+		if (fanProj.publishDir != null) {
+			dstDir = (fanProj.projectDir + fanProj.publishDir).normalize
+			
+		} else {
+			if (fanProj.interpreterInstall?.getName?.endsWith("embedded") ?: false)
+				// I could, but it seems wrong to pollute a system runtime
+				// if the user knew what they were doing, they'd have their own Runtime / work dir
+				buildConsole.warn("DefaultEnv - Will not copy ${podFile.name} to an embedded Fantom Runtime - create a Work Dir instead")
+			else
+				dstDir = (fanProj.fanHomeDir + `lib/fan/`).normalize
 		}
+		
+		buildConsole.debug("DefaultEnv - Copying ${podFile.name} to ${dstDir.osPath}")
+		podFile.copyInto(dstDir, ["overwrite" : true])
 	}
 }

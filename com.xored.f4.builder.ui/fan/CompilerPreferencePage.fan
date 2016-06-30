@@ -38,25 +38,30 @@ class CompilerOptionsBlock : AbstractOptionsBlock {
 	new make(IStatusChangeListener? context, IProject? project,	IWorkbenchPreferenceContainer? container) : super(context, project, allKeys, container) { }
 	
 	override protected Control? createOptionsBlock(Composite? parent) {
-		composite := SWTFactory.createComposite(parent, parent.getFont, 1, 1, GridData.FILL_HORIZONTAL)
+		composite := SWTFactory.createComposite(parent, parent.getFont, 2, 1, GridData.FILL_HORIZONTAL)
+
+		SWTFactory.createLabel(composite, "Pod output dir", 1)
+		bindControl(SWTFactory.createSingleText(composite, 1), podOutputDir, null)
+		SWTFactory.createLabel(composite, "Directory should be relative to the project directory", 2)
+
+		SWTFactory.createLabel(composite, "", 2)
+		bindControl(SWTFactory.createCheckButton(composite, "Use external compiler", null, false, 2), useExternalBuilderKey, null)
 		
-		bindControl(SWTFactory.createCheckButton(composite, "Use external compiler", null, false, 1), useExternalBuilderKey, null)
-		
-		// FIXME does not seem to be used anywhere...?
-//		bindControl(SWTFactory.createCheckButton(composite, "Automatically build dependent projects", null, false, 1), buildDependantsKey, null)
-		
+		SWTFactory.createLabel(composite, "", 2)
+		SWTFactory.createLabel(composite, "Note: Projects need to be re-built to make use of changes made above", 2)
+
 		return composite
 	}
 
+	private static PreferenceKey podOutputDir() {
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.podOutputDirName)
+	}
+	
 	private static PreferenceKey useExternalBuilderKey() {
 		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.useExternalBuilderName)
 	}
 	
-	private static PreferenceKey buildDependantsKey() {
-		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.buildDependantsName)
-	}
-	
 	private static PreferenceKey[] allKeys() {
-		[useExternalBuilderKey, buildDependantsKey]
+		[podOutputDir, useExternalBuilderKey]
 	}
 }

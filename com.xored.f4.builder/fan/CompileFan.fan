@@ -96,7 +96,8 @@ class CompileFan : IScriptBuilder {
 			hasErrs = hasErrs || err.isErr
 		}
 
-		writeToLog //append empty line
+		writeToLog // append empty line
+		
 		if (!hasErrs) refreshPod(fp)
 		
 		fp.hasBuildErrs = hasErrs
@@ -112,39 +113,15 @@ class CompileFan : IScriptBuilder {
 	}
 
 	private Void refreshPod(FantomProject project) {
-		if (project.rawOutDir == null || project.rawOutDir.isAbs) return
-
-		path	:= Path("${project.rawOutDir.toStr}${project.podName}.pod")
-		podFile	:= project.project.getFile(path) 
+		podUri := project.podOutFile.normalize.uri.relTo(project.projectDir.normalize.uri)
+		if (podUri.isAbs || podUri.toStr.startsWith(".."))
+			return
+		
+		podFile	:= project.project.getFile(Path(podUri.toStr)) 
 		try {
 			podFile.refreshLocal(IResource.DEPTH_ZERO, null)
 		} catch(Err e) { 
 			LogUtil.logWarn(pluginId, "Internal err refreshing pod file", e);
-		}
-	}
-
-	private Void clearOutFolder(FantomProject project) {
-		// When we write Eclipse plugins on Fantom,
-		// we have to put a pod file in project root
-		// and store in VCS.
-		//
-		// Compiled pods are being compared with previous
-		// version (see InternalBuilder#isPodChanged) to
-		// avoid unnecessary changes in pods, so we want to
-		// keep an old version
-		if(project.isPlugin) return
-		
-		if(project.isOutputNotSet) return
-
-		try {
-			loc := project.javaProject.getOutputLocation
-			f := ResourcesPlugin.getWorkspace.getRoot.getFolder(loc)
-			f.refreshLocal(IResource.DEPTH_INFINITE, null);
-			if (f.exists)
-				f.members.each |IResource r|{ r.delete(true, null) }
-			
-		} catch(Err e) {
-			LogUtil.logErr(pluginId, "Internal err clearing output folder", e)
 		}
 	}
 	
@@ -154,16 +131,6 @@ class CompileFan : IScriptBuilder {
 
 	private FantomProject fantomProject(IScriptProject project) {
 		FantomProjectManager.instance[project.getProject]
-	}
-
-	private Bool buildRequired(FantomProject project, IFile[] resources) {
-		resources.any |res| {
-			res.getName == Manifest.filename ||	project.resDirs.any |rd| {
-				resDir := rd.path.join("/")
-				resParent := res.getParent.getProjectRelativePath.toStr
-				return resDir == resParent
-			}
-		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////
