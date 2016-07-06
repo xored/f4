@@ -1,13 +1,13 @@
---- Q7 testcase ---
+--- RCPTT testcase ---
 Format-Version: 1.0
-Q7-vendor: www.xored.com/q7
 Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_2spO4NkfEeCWXvk8UUBU4Q
 Element-Name: createClassWithInheritanceSuperClass
 Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _hINcwNzzEeCCLtazA1JmEg
-Save-Time: 9/17/12 7:05 PM
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 1:16 PM
 Tags: core/class/create, skipExecution
 Testcase-Type: ecl
 
@@ -31,19 +31,15 @@ with [get-window "New Fantom Class"] {
     get-button "Browse..." -after [get-label "Superclass:"] | click
     with [get-window "Extended Classes Selection"] {
         get-editbox -after [get-label "Choose superclass:"] | set-text c
-        get-table | select CancelledErr
+        get-table | get-property itemCount | equals 8
+        get-table | select ClassB
+        get-button OK | click
     }
 }
-get-window "New Fantom Class" | get-window "Extended Classes Selection" | get-table | get-property itemCount | equals 8 
-    | verify-true
-get-window "New Fantom Class" | get-window "Extended Classes Selection" | get-table | select ClassB
-get-window "New Fantom Class" | get-window "Extended Classes Selection" | get-label "ClassB - fantest/inheritance" 
-    | get-property caption | equals "ClassB - fantest/inheritance" | verify-true
-get-window "New Fantom Class" | get-window "Extended Classes Selection" | get-button OK | click
 get-window "New Fantom Class" | get-editbox -after [get-label "Superclass:"] | get-property value | equals ClassB 
     | verify-true
 get-window "New Fantom Class" | get-button Finish | click
-get-editor "ClassWithSuperClass.fan" | get-editbox | get-property value | equals "class ClassWithSuperClass : ClassB{}" 
+get-editor "ClassWithSuperClass.fan" | get-text-viewer | get-property text | equals "\nclass ClassWithSuperClass : ClassB {\n}\n" 
     | verify-true
 get-view "Fantom Explorer" | get-tree | select "fantest/fan" | get-menu "New/Fantom Class" | click
 with [get-window "New Fantom Class"] {
@@ -51,6 +47,6 @@ with [get-window "New Fantom Class"] {
     get-editbox -after [get-label "Superclass:"] | set-text ClassA
     get-button Finish | click
 }
-get-editor "ClassWithSuperClass2.fan" | get-editbox | get-property value 
-    | equals "class ClassWithSuperClass2 : ClassA{}" | verify-true
+get-editor "ClassWithSuperClass2.fan" | get-text-viewer | get-property text 
+    | equals "\nclass ClassWithSuperClass2 : ClassA {\n}\n" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

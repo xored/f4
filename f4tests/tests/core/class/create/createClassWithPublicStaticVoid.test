@@ -1,13 +1,13 @@
---- Q7 testcase ---
+--- RCPTT testcase ---
 Format-Version: 1.0
-Q7-vendor: www.xored.com/q7
 Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_yyGwwMyOEeCqoItsrYQC5Q
 Element-Name: createClassWithPublicStaticVoid
 Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _r9UlINzzEeCCLtazA1JmEg
-Save-Time: 9/17/12 7:05 PM
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 1:27 PM
 Tags: core/class/create, skipExecution
 Testcase-Type: ecl
 
@@ -52,10 +52,10 @@ with [get-view Outline | get-tree] {
         | verify-true
     get-item "ClassWithVoid/main\\(Str\\[\\]\\) : Void" | get-property childCount | equals 0 | verify-true
 }
-with [get-tab-folder] {
+with [get-tab-folder -index 1] {
     get-property pages -index 0 | equals "ClassWithVoid.fan" | verify-true
     get-property tabCount | equals 1 | verify-true
 }
-get-editor "ClassWithVoid.fan" | get-editbox | get-property value 
-    | equals "class ClassWithVoid{ static Void main(Str[] args) { }}" | verify-true
+get-editor "ClassWithVoid.fan" | get-text-viewer | get-property text 
+    | equals "\nclass ClassWithVoid {\n\tstatic Void main(Str[] args)\n\t{\n\n\t}\n}" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

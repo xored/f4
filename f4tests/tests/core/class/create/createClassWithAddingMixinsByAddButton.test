@@ -1,13 +1,13 @@
---- Q7 testcase ---
+--- RCPTT testcase ---
 Format-Version: 1.0
-Q7-vendor: www.xored.com/q7
 Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_2spO4NkfEeCWXvk8UUBU4Q
 Element-Name: createClassWithAddingMixinsByAddButton
 Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _FAgnoN22EeCCLtazA1JmEg
-Save-Time: 9/17/12 7:06 PM
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 1:02 PM
 Tags: core/class/create, skipExecution
 Testcase-Type: ecl
 
@@ -92,7 +92,7 @@ with [get-window "New Fantom Class" | get-table] {
     get-item MixinB | get-property caption | equals MixinB | verify-true
 }
 get-window "New Fantom Class" | get-button Finish | click
-get-editor "ClassWithMixins.fan" | get-editbox | get-property value | equals "class ClassWithMixins : MixinB{}" 
+get-editor "ClassWithMixins.fan" | get-text-viewer | get-property text | equals "class ClassWithMixins : MixinB {\n}\n" 
     | verify-true
 with [get-view "Fantom Explorer" | get-tree] {
     get-item "fantest/fan" | get-property childCount | equals 5 | verify-true

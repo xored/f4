@@ -1,10 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<com.xored.q7.scenario:Scenario xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:com.xored.q7.scenario="http://com/xored/q7/scenario.ecore" xmlns:org.eclipse.ecl.core="http://www.eclipse.org/ecl/core.ecore" name="createFProjectWithJavaSourceFolder" version="3.0" id="_tOd1UO75EeCo8LZBmdU2EA" description="1. In the Fantom Explorer view select &quot;New->Fantom Project&quot; from context menu&#xD;&#xA;2. Set &quot;Create java source folder&quot; check-box in &quot;Create Fantom Project&quot; window&#xD;&#xA;3. Press &quot;Finish&quot; button&#xD;&#xA;4. Make sure that fantom project is created with java source folder" tags="core/fantomproject/create" type="ecl">
-  <contexts>_g4UEsMyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_bsb1scyOEeCqoItsrYQC5Q</contexts>
-  <contexts>_ex81IMyOEeCqoItsrYQC5Q</contexts>
-  <content xsi:type="org.eclipse.ecl.core:Script">
-    <content><![CDATA[get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
+--- RCPTT testcase ---
+Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_bsb1scyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q
+Element-Name: createFProjectWithJavaSourceFolder
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _tOd1UO75EeCo8LZBmdU2EA
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 2:40 PM
+Tags: core/fantomproject/create
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+1. In the Fantom Explorer view select "New->Fantom Project" from context menu
+2. Set "Create java source folder" check-box in "Create Fantom Project" window
+3. Press "Finish" button
+4. Make sure that fantom project is created with java source folder
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+get-view "Fantom Explorer" | get-tree | get-menu "New/Fantom Project" | click
 with [get-window "Create Fantom project"] {
     get-editbox -after [get-label "Project name:"] | set-text TestProject
     get-group "Fantom Java Options" | get-button "Create java source folder" | click
@@ -18,8 +38,21 @@ with [get-view "Fantom Explorer" | get-tree] {
     get-item "TestProject/build.fan" | get-property caption | equals "build.fan" | verify-true
 }
 get-view "Fantom Explorer" | get-tree | select "TestProject/build.fan" | double-click -nowait
-get-editor "build.fan" | get-editbox | get-property value 
-    | equals "using buildclass Build : build::BuildPod{  new make()  {    podName = \"TestProject\"    summary = \"\"    srcDirs = [`fan/`]    javaDirs = [`java/`]    depends = [\"sys 1.0\"]  }}" 
+get-editor "build.fan" | get-text-viewer | get-property text 
+    | equals "using build\n\n" +
+    		 "class Build : BuildPod {\n\n" +
+    		 "\tnew make() {\n" +
+    		 "\t\tpodName = \"testProject\"\n" +
+    		 "\t\tsummary = \"My Awesome TestProject Project\"\n" +
+    		 "\t\tversion = Version(\"1.0\")\n\n" +
+    		 "\t\tmeta = [\n\t\t\t\"proj.name\" : \"TestProject\"\n\t\t]\n\n" +
+    		 "\t\tdepends = [\n\t\t\t\"sys 1.0\"\n\t\t]\n\n" +
+    		 "\t\tsrcDirs = [`fan/`]\n" +
+    		 "\t\tresDirs = [,]\n" +
+    		 "\t\tjavaDirs = [`java/`]\n\n" +
+    		 "\t\tdocApi = true\n" +
+    		 "\t\tdocSrc = true\n" +
+    		 "\t}\n}\n" 
     | verify-true
 get-view "Fantom Explorer" | get-tree | select TestProject | get-menu Properties | click
 with [get-window "Properties for TestProject"] {
@@ -38,6 +71,5 @@ with [get-window "Properties for TestProject" | get-tree -after [get-label "Sour
     get-property itemCount | equals 1 | verify-true
     get-item "TestProject\\/java" | get-property caption | equals "TestProject/java" | verify-true
 }
-get-window "Properties for TestProject" | get-button Cancel | click]]></content>
-  </content>
-</com.xored.q7.scenario:Scenario>
+get-window "Properties for TestProject" | get-button Cancel | click
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

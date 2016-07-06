@@ -1,18 +1,18 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
 Element-Name: completionForMethodWithDefaultParams
-External-Reference: http://bugs.xored.com/browse/FAN-395
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
-Save-Time: 8/13/12 12:55 PM
+External-Reference: http://bugs.xored.com/browse/FAN-395
 Id: _b88IkNrAEeCxzq4gq9uuPw
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 3:03 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 // declaration
 Void func(Int reqired, Int? default1 := null, Int? default2 := null) { }
@@ -24,8 +24,8 @@ func(reqired, default1, default2)
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select "fantest/fan/A.fan" | double-click
 with [get-editor "A.fan" | get-editbox] {
@@ -56,7 +56,7 @@ with [get-window -from "CompletionProposalPopup.createProposalSelector()" | get-
 }
 get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table 
     | select "func\\(Int vv1\\) : Int - fantest::A" | click -default
-get-editor "A.fan" | get-editbox | get-property value 
-    | equals "class A{  public Int alfa := 20  public Str beta := \"String value\"    public Int intMethod()  {    return this.alfa + 20  }  public Str strMethod()  {    return beta + \" Postfix\"  }    Int func(Int vv1, Int? v1 := null, Int? v2 := null) {    return 15 + vv1  }    Void main() {    Int ll := func(vv1)  }}" 
+get-editor "A.fan" | get-text-viewer | get-property text 
+    | equals "\nclass A\n{\n  public Int alfa := 20\n  public Str beta := \"String value\"\n  \n  public Int intMethod()\n  {\n    return this.alfa + 20\n  }\n  public Str strMethod()\n  {\n    return beta + \" Postfix\"\n  }\n\t\n\tInt func(Int vv1, Int? v1 := null, Int? v2 := null) {\n\t\treturn 15 + vv1\n\t}\n\n\t\n\tVoid main() {\n\t\tInt ll := func(vv1)\n\t}\n}\n" 
     | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
