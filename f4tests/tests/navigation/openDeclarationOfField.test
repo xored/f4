@@ -1,25 +1,27 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
-Element-Name: openDeclarationOfField
-Tags: functionality/navigation/declaration
-External-Reference: 
-Element-Version: 3.0
 Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_7rWIAdnkEeCZ-u3bYoGPTQ
-Save-Time: 10/28/11 12:27 PM
+Element-Name: openDeclarationOfField
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
 Id: _CIy60PhpEeCcK6ApSJRZuQ
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 5:12 PM
+Tags: functionality/navigation/declaration
+Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
-Entry-Name: .description
 Content-Type: text/plain
+Entry-Name: .description
 
 1. Open file with field, which is declared in the another class
 2. Select this field and press F3 (select "Open Declaration" in context menu, select "Navigate->Open Declaration" in main menu)
 3. Make sure that file is opened and this field is selected
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select "fantest/inheritance/ClassB.fan" | double-click -nowait
 with [get-editor "ClassB.fan" | get-editbox] {
@@ -41,11 +43,11 @@ get-editor "ClassB.fan" | close
 with [get-editor "ClassC.fan"] {
     click -nowait
     with [get-editbox] {
-        set-text-offset 14 3
+        set-text-offset 12 3
         key-type F3
     }
 }
-with [get-tab-folder] {
+with [get-tab-folder -index 1] {
     get-property activePage | equals "ClassB.fan" | verify-true
     get-property tabCount | equals 2 | verify-true
 }
@@ -61,11 +63,11 @@ get-editor "ClassB.fan" | close
 with [get-editor "ClassC.fan"] {
     click -nowait
     with [get-editbox] {
-        set-text-offset 13 3
+        set-text-offset 12 3
         get-menu "Open Declaration" | click
     }
 }
-with [get-tab-folder] {
+with [get-tab-folder -index 1] {
     get-property activePage | equals "ClassB.fan" | verify-true
     get-property tabCount | equals 2 | verify-true
 }
@@ -80,10 +82,10 @@ with [get-view Outline | get-tree] {
 get-editor "ClassB.fan" | close
 with [get-editor "ClassC.fan"] {
     click -nowait
-    get-editbox | set-text-offset 13 3
+    get-editbox | set-text-offset 12 3
 }
 get-menu "Navigate/Open Declaration" | click
-with [get-tab-folder] {
+with [get-tab-folder -index 1] {
     get-property activePage | equals "ClassB.fan" | verify-true
     get-property tabCount | equals 2 | verify-true
 }
@@ -96,86 +98,3 @@ with [get-view Outline | get-tree] {
     get-item "ClassB/testMethod\\(\\) : Str" | get-property selected | equals false | verify-true
 }
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
-------=_.q7.content-3d2e0690-ce48-3609-83e0-c704d49f1eaf
-Content-Type: q7/binary
-Entry-Name: .q7.content
-
-UEsDBBQACAAIAAAAIQAAAAAAAAAAAAAAAAAIAAAALmNvbnRlbnSVkdFOwjAUhu9NfIem97QgCmRhEIJo
-piGAaBRuSO3KaNza0XZse3vPiIxojIl37fm/fqc97Q+LJEYHYazUysct0sRIKK5DqSIfZ27b6OHh4PKi
-z3VCCm1ESPZdYrlQzEjtLb8WqEikV1uuKgt4lfWg7uOdc6lHaZ7nRCcR0Saib9PghPxqrg9BSo8p3Xfp
-KSWCQwkjxRLhY50KdSt4zAxz0H+2vZMiDvH5Ve3qPjL08WYclJ3mfJdOxJg/dkbp8uFpnS0wciyyPt5m
-ilcGFktXUsUOMjoaaXi2A1um0BQqGOaCEExGOVE4O9hE1y8TOy1nYN/rwFmzWoxvFn1aEz94UfRawT/4
-rnkNRqH6AH7dyNrvK30/f/7OV5u/PgqQT1BLBwj4nmK2HwEAAPMBAABQSwECFAAUAAgACAAAACEA+J5i
-th8BAADzAQAACAAAAAAAAAAAAAAAAAAAAAAALmNvbnRlbnRQSwUGAAAAAAEAAQA2AAAAVQEAAAAA
-------=_.q7.content-3d2e0690-ce48-3609-83e0-c704d49f1eaf--
-------=_.content.raw-c2dfba28-ebef-3afe-bd39-76376d333cc9
-Content-Type: q7/binary
-Entry-Name: .content.raw
-
-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
-------=_.content.raw-c2dfba28-ebef-3afe-bd39-76376d333cc9--
