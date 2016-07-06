@@ -1,18 +1,18 @@
---- Q7 testcase ---
-Q7-vendor: www.xored.com/q7
+--- RCPTT testcase ---
 Format-Version: 1.0
+Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
 Element-Name: SysCompletionTests
-External-Reference: 
 Element-Type: testcase
 Element-Version: 3.0
-Contexts: _g4UEsMyOEeCqoItsrYQC5Q,_ex81IMyOEeCqoItsrYQC5Q,_8-OxEMyPEeCqoItsrYQC5Q
-Save-Time: 8/10/12 10:47 AM
+External-Reference: 
 Id: _sftvEd85EeClD-7pSedPgg
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/6/16 8:02 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
-Entry-Name: .content
 Content-Type: text/ecl
+Entry-Name: .content
 
 with [get-view "Fantom Explorer" | get-tree] {
     select "fantest/fan/A.fan" | double-click -nowait
@@ -47,21 +47,21 @@ with [get-editor "A.fan" | get-text-viewer] {
     key-type Enter
     type-text " i := "
 }
-get-editor "A.fan" | get-editbox | get-property rawValue | equals "\\n"
-    + "class A\\n"
-    + "{\\n"
-    + "  public Int alfa := 20\\n"
-    + "  public Str beta := \"String value\"\\n"
-    + "  \\n"
-    + "  public Int intMethod()\\n"
-    + "  {\\n"
-    + "    Str s := \"qwe\"\\n"
-    + "    Int i := Int.maxVal\\n"
-    + "    return this.alfa + 20\\n"
-    + "  }\\n"
-    + "  public Str strMethod()\\n"
-    + "  {\\n"
-    + "    return beta + \" Postfix\"\\n"
-    + "  }\\n"
-    + "}\\n" | verify-true
+get-editor "A.fan" | get-editbox | get-property text | equals "\n"
+    + "class A\n"
+    + "{\n"
+    + "  public Int alfa := 20\n"
+    + "  public Str beta := \"String value\"\n"
+    + "  \n"
+    + "  public Int intMethod()\n"
+    + "  {\n"
+    + "    Str s := \"qwe\"\n"
+    + "\tInt i := \tInt.maxVal\n"
+    + "\t\treturn this.alfa + 20\n"
+    + "  }\n"
+    + "  public Str strMethod()\n"
+    + "  {\n"
+    + "    return beta + \" Postfix\"\n"
+    + "  }\n"
+    + "}\n" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
