@@ -6,8 +6,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _s6DcECt0EeG037ClDGfagQ
-Runtime-Version: 1.5.5.201503042102
-Save-Time: 3/19/15 9:16 PM
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/7/16 12:51 PM
 Tags: feature\editor\coloringsyntax
 Testcase-Type: ecl
 
@@ -56,12 +56,12 @@ with [get-editor "A.fan" | get-editbox] {
         + "    Void main()\n"
         + "  { \n"
         + "    echo(\"Hello world\")\n"
-        + "    Str line := testLine()\n"
+        + "\t\tStr line := testLine()\n"
         + "  } \n"
-        + "  \n"
-        + "  Str testLine(){\n"
-        + "    return \"test line\"\n"
-        + "  }\n"
+        + "\t\n"
+        + "\tStr testLine(){\n"
+        + "\t\treturn \"test line\"\n"
+        + "\t}\n"
         + "}" | verify-true
     get-property "styles.text" -index 24 | equals ":=" | verify-true
     get-property "styles.fontStyle" -index 24 | equals normal | verify-true
@@ -77,8 +77,7 @@ with [get-editor "A.fan" | get-editbox] {
     get-property "styles.foregroundColor" -index 33 | equals "#000000" | verify-true
 }
 with [get-editor "A.fan" | get-text-viewer] {
-    hover-text 10 2
-    set-caret-pos 10 3
+    set-text-offset 1 9
     type-text "static "
     key-type "M1+s"
 }
@@ -88,12 +87,12 @@ with [get-editor "A.fan" | get-editbox] {
         + "    Void main()\n"
         + "  { \n"
         + "    echo(\"Hello world\")\n"
-        + "    Str line := testLine()\n"
+        + "\t\tStr line := testLine()\n"
         + "  } \n"
-        + "  \n"
-        + "  static Str testLine(){\n"
-        + "    return \"test line\"\n"
-        + "  }\n"
+        + "\t\n"
+        + "\tstatic Str testLine(){\n"
+        + "\t\treturn \"test line\"\n"
+        + "\t}\n"
         + "}" | verify-true
     get-property "styles.text" -index 24 | equals ":=" | verify-true
     get-property "styles.fontStyle" -index 24 | equals normal | verify-true

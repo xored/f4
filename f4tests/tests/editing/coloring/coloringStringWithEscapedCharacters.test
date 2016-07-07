@@ -6,8 +6,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: http://jira4.xored.com/browse/IDE-80
 Id: _zloA0CrzEeG037ClDGfagQ
-Runtime-Version: 1.5.5.201503042102
-Save-Time: 3/19/15 9:17 PM
+Runtime-Version: 2.1.0.201606221726
+Save-Time: 7/7/16 12:33 PM
 Tags: bug\editor\coloringsyntax, feature\editor\coloringsyntax
 Testcase-Type: ecl
 
@@ -48,8 +48,8 @@ with [get-editor "A.fan" | get-editbox] {
         + "    Void main()\n"
         + "  { \n"
         + "    echo(\"Hello world\")\n"
-        + "    var := \"test\"\n"
-        + "    s := \"\\n"
+        + "\tvar := \"test\"\n"
+        + "\t\ts := \"\\n"
         + "var=$var\"\n"
         + "  } \n"
         + "}" | verify-true
@@ -71,7 +71,7 @@ with [get-editor "A.fan" | get-editbox] {
     get-property "styles.foregroundColor" -index 35 | equals "#2A00FF" | verify-true
 }
 with [get-editor "A.fan" | get-text-viewer] {
-    set-caret-pos 8 22
+    set-caret-pos 8 26
     key-type Enter
     type-text "echo(\"test$var"
     key-type "M1+s"
@@ -82,10 +82,10 @@ with [get-editor "A.fan" | get-editbox] {
         + "    Void main()\n"
         + "  { \n"
         + "    echo(\"Hello world\")\n"
-        + "    var := \"test\"\n"
-        + "    s := \"\\n"
+        + "\tvar := \"test\"\n"
+        + "\t\ts := \"\\n"
         + "var=$var\"\n"
-        + "    echo(\"test$var\")\n"
+        + "\t\techo(\"test$var\")\n"
         + "  } \n"
         + "}" | verify-true
     get-property "styles.text" -index 39 | equals "\"test" | verify-true
