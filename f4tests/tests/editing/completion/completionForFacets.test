@@ -7,7 +7,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _IE6JkOKUEeC1mskq8T5RyQ
 Runtime-Version: 2.1.0.201606221726
-Save-Time: 7/6/16 6:37 PM
+Save-Time: 7/16/16 9:08 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -31,7 +31,7 @@ with [get-editor "TestFacet.fan" | get-editbox] {
     key-type CR
     type-text "@"
     key-type "Ctrl+SPACE"
-    type-text Se
+    type-text Seriali
 }
 with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
     with [get-table] {
@@ -48,10 +48,13 @@ with [get-window -from "CompletionProposalPopup.createProposalSelector()"] {
 get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select Serializable | click -nowait 
     -default
 get-eclipse-window | key-type "M1+s"
-with [get-tab-folder] {
+with [get-tab-folder -index 1] {
     get-property pages -index 0 | equals "TestFacet.fan" | verify-true
     get-property activePage | equals "TestFacet.fan" | verify-true
     get-property tabCount | equals 1 | verify-true
 }
-get-editor "TestFacet.fan" | get-editbox | get-property value | equals "@Js@Serializableclass TestFacet{}" | verify-true
+get-editor "TestFacet.fan" | get-editbox | get-property text | equals "@Js\n"+
+        "@Serializable\n"+
+        "class TestFacet {\n"+
+        "}\n" | verify-true
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
