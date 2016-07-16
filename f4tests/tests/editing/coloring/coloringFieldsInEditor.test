@@ -7,7 +7,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _usitYCt0EeG037ClDGfagQ
 Runtime-Version: 2.1.0.201606221726
-Save-Time: 7/7/16 12:54 PM
+Save-Time: 7/16/16 1:46 PM
 Tags: feature\editor\coloringsyntax
 Testcase-Type: ecl
 
@@ -65,20 +65,14 @@ with [get-editor "A.fan" | get-text-viewer] {
     type-text "static "
     key-type "M1+s"
 }
+wait 2000
 with [get-editor "A.fan" | get-editbox] {
     get-property "styles.text" -index 38 | equals line | verify-true
-    get-property "styles.fontStyle" -index 38 | equals italic | verify-true
-    get-property "styles.foregroundColor" -index 38 | equals "#0000FA" | verify-true
-}
-with [get-editor "A.fan" | get-text-viewer] {
-    set-caret-pos 8 18
-    key-type Del -times 3
-    key-type "M1+s"
-}
-with [get-editor "A.fan" | get-editbox] {
+    get-property "styles.fontStyle" -index 38 | equals normal | verify-true
+    get-property "styles.foregroundColor" -index 38 | equals "#0000C8" | verify-true
     get-property "styles.text" -index 38 | equals line | verify-true
-    get-property "styles.fontStyle" -index 38 | equals italic | verify-true
-    get-property "styles.foregroundColor" -index 38 | equals "#0000FA" | verify-true
+    get-property "styles.fontStyle" -index 38 | equals normal | verify-true
+    get-property "styles.foregroundColor" -index 38 | equals "#0000C8" | verify-true
 //    get-property "styles.text" -index 39 | equals "}" | verify-true
 //   get-property "styles.fontStyle" -index 39 | equals normal | verify-true
 //    get-property "styles.foregroundColor" -index 39 | equals "#000000" | verify-true

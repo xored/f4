@@ -7,7 +7,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _45ksoCt1EeG037ClDGfagQ
 Runtime-Version: 2.1.0.201606221726
-Save-Time: 7/7/16 12:15 PM
+Save-Time: 7/16/16 1:31 PM
 Tags: feature\editor\coloringsyntax
 Testcase-Type: ecl
 
@@ -34,11 +34,9 @@ Entry-Name: .content
 
 get-view "Fantom Explorer" | get-tree | select "TestProject/fan/A.fan" | double-click -nowait
 with [get-editor "A.fan" | get-text-viewer] {
-    set-caret-pos 3 2
+    set-text-offset 1 2
     key-type Enter
-    type-text "// test commi"
-    key-type BackSpace
-    type-text ent
+    type-text "// test comment"
     key-type "M1+s"
     set-caret-pos 7 11
     type-text "//"
@@ -60,11 +58,7 @@ with [get-editor "A.fan" | get-text-viewer] {
     type-text comments
     key-type "M1+s"
 }
-with [get-editor "A.fan" | get-text-viewer] {
-    set-caret-pos 12 9
-    key-type Del -times 3
-    key-type "M1+s"
-}
+wait 2000
 with [get-editor "A.fan" | get-editbox] {
     get-property "styles.text" -index 5 | equals "{" | verify-true
     get-property "styles.fontStyle" -index 5 | equals normal | verify-true
@@ -76,17 +70,17 @@ with [get-editor "A.fan" | get-editbox] {
     get-property "styles.fontStyle" -index 9 | equals normal | verify-true
     get-property "styles.foregroundColor" -index 9 | equals "#000000" | verify-true
     get-property "styles.text" -index 22 | equals ")" | verify-true
-    get-property "styles.fontStyle" -index 21 | equals normal | verify-true
-    get-property "styles.foregroundColor" -index 21 | equals "#000000" | verify-true
-    get-property "styles.text" -index 23 | equals "//Hello world\")\n" | verify-true
-    get-property "styles.fontStyle" -index 23 | equals normal | verify-true
-    get-property "styles.foregroundColor" -index 23 | equals "#3F7F5F" | verify-true
-    get-property "styles.text" -index 25 | equals "/* \n"
-        + "    **\n"
-        + "    ** comments\n"
-        + "    * */" | verify-true
-    get-property "styles.fontStyle" -index 25 | equals normal | verify-true
-    get-property "styles.foregroundColor" -index 25 | equals "#3F7F5F" | verify-true
+    get-property "styles.fontStyle" -index 22 | equals normal | verify-true
+    get-property "styles.foregroundColor" -index 22 | equals "#000000" | verify-true
+    get-property "styles.text" -index 24 | equals "//Hello world\")\n" | verify-true
+    get-property "styles.fontStyle" -index 24 | equals normal | verify-true
+    get-property "styles.foregroundColor" -index 24 | equals "#3F7F5F" | verify-true
+    get-property "styles.text" -index 26 | equals "/* \n"
+        + "\t\t**\n"
+        + "\t\t** comments\n"
+        + "\t\t* */" | verify-true
+    get-property "styles.fontStyle" -index 26 | equals normal | verify-true
+    get-property "styles.foregroundColor" -index 26 | equals "#3F7F5F" | verify-true
 //    get-property "styles.text" -index 27 | equals "}" | verify-true
 //    get-property "styles.fontStyle" -index 27 | equals normal | verify-true
 //    get-property "styles.foregroundColor" -index 27 | equals "#000000" | verify-true
