@@ -9,8 +9,13 @@ const class F4LaunchEnv : Env {
 
 	static new make() {
 		// Env.cur defaults to BootEnv until we create ourselves
-		podLocs		:= Env.cur.vars["FAN_ENV_PODS"]?.trimToNull?.split(File.pathSep.chars.first, true) ?: Str#.emptyList
-		origFanEnv	:= Env.cur.vars["FAN_ENV_PARENT"]?.trimToNull
+		podLocs		:= Env.cur.vars["FAN_ENV_PODS"]?.trim?.split(File.pathSep.chars.first, true)
+		if (podLocs != null && podLocs.size == 0)
+			podLocs = null
+		
+		origFanEnv	:= Env.cur.vars["FAN_ENV_PARENT"]?.trim
+		if (origFanEnv != null && origFanEnv.size == 0)
+			origFanEnv = null
 
 		// a handy get out of jail card 'cos eclipse *forces* you to provide a value for environment variables
 		if (origFanEnv != null && origFanEnv.equalsIgnoreCase("null"))
