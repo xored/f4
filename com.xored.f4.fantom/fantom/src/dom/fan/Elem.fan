@@ -227,10 +227,13 @@ class Elem
   ** Remove focus from this elem.
   virtual native Void blur()
 
-  ** Attach an event handler to the given event on this element.
-  native Void onEvent(Str type, Bool useCapture, |Event e| handler)
+  ** Attach an event handler for the given event on this element.
+  ** Returns callback function instance.
+  native Func onEvent(Str type, Bool useCapture, |Event e| handler)
 
-  // TODO: removeEvent
+  ** Remove the given event handler from this element.  If this
+  ** handler was not registered, this method does nothing.
+  native Void removeEvent(Str type, Bool useCapture, Func handler)
 
 //////////////////////////////////////////////////////////////////////////
 // Animation

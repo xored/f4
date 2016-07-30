@@ -30,7 +30,16 @@ class WebUtil
   static Bool isToken(Str s)
   {
     if (s.isEmpty) return false
-    return s.all |Int c->Bool| { return c < 127 && tokenChars[c] }
+    return s.all |Int c->Bool| { isTokenChar(c) }
+  }
+
+  **
+  ** Return if given char unicode point is allowable within the
+  ** HTTP token production.  See `isToken`.
+  **
+  static Bool isTokenChar(Int c)
+  {
+    c < 127 && tokenChars[c]
   }
 
   private static const Bool[] tokenChars
@@ -202,6 +211,38 @@ class WebUtil
       map[name] = q
     }
     return map
+  }
+
+  ** Parse a list of 'auth-param' as defined in
+  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
+  static Str:Str parseAuthParams(Str s)
+  {
+    AuthParser(s).authParams
+  }
+
+  ** Parse a Str according to the 'challenge' syntax as defined in
+  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
+  static WebAuthScheme[] parseChallenge(Str s)
+  {
+    challenge := WebAuthScheme[,]
+    parser    := AuthParser(s)
+    next      := (WebAuthScheme?)null
+    while ((next = parser.nextScheme) != null)
+    {
+      challenge.add(next)
+    }
+    if (challenge.isEmpty || !parser.eof) throw ParseErr("Invalid challenge: '${s}'")
+    return challenge
+  }
+
+  ** Parse a Str according to the 'credentials' syntax as defined in
+  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
+  static WebAuthScheme parseCredentials(Str s)
+  {
+    parser := AuthParser(s)
+    creds  := parser.nextScheme
+    if (creds == null || !parser.eof) throw ParseErr("Invalid credentials: '${s}'")
+    return creds
   }
 
   ** Write HTTP headers

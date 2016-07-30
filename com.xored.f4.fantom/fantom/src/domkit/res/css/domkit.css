@@ -1,0 +1,598 @@
+div.domkit-AccordionBox {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html {
+  height: 100%;
+}
+body {
+  font: 14px Helvetica Neue;
+  line-height: 14px;
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  overflow: hidden;
+  height: 100%;
+}
+a {
+  color: #2980b9;
+}
+.domkit-fill {
+  width: 100%;
+  height: 100%;
+}
+.domkit-border { border: 1px solid #bbb; }
+.domkit-border-top    { border-top:    1px solid #bbb; }
+.domkit-border-right  { border-right:  1px solid #bbb; }
+.domkit-border-bottom { border-bottom: 1px solid #bbb; }
+.domkit-border-left   { border-left:   1px solid #bbb; }
+.domkit-sel {
+  background-color: #dcdcdc !important;
+}
+:focus .domkit-sel {
+  background-color: #3498db !important;
+  color: #fff !important;
+}
+:focus .domkit-sel a {
+  color: #fff !important;
+}
+.domkit-font-mono {
+  font: 11px Menlo;
+}
+
+div.domkit-Box {
+  display: block;
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+div.domkit-Button {
+  box-sizing: border-box;
+  display: inline-block;
+  cursor: default;
+  color: #555;
+  background: #fff;
+  /*
+  background: -webkit-linear-gradient(top, #fff, #eee);
+  background:    -moz-linear-gradient(top, #fff, #eee);
+  background:         linear-gradient(top, #fff, #eee);
+  */
+  box-shadow: rgba(0, 0, 0, 0.05) 0 1px 1px;
+  padding: 0 10px;
+  border: 1px solid #c8c8c8;
+  border-bottom-color: #aaa;
+  border-radius: 3px;
+  vertical-align: top;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  outline: none;
+  text-align: center;
+  height: 23px;
+  line-height: 22px;
+}
+div.domkit-Button:focus {
+  z-index: 2;
+  position: relative;  /* needed to make z-index work */
+}
+div.domkit-Button.down {
+  background: #ddd;
+  box-shadow: none;
+}
+div.domkit-Button.disabled {
+  opacity: 0.3;
+}
+div.domkit-Button.domkit-def {
+  background: #3498db;
+  color: #fff;
+  border-color: #1d7fbf;
+  border-bottom-color: #0d5c91;
+}
+div.domkit-Button.domkit-def.down {
+  background: #1d7fbf;
+}
+div.domkit-Button.domkit-group-left {
+  border-radius: 3px 0 0 3px;
+}
+div.domkit-Button.domkit-group-middle {
+  border-radius: 0;
+  border-left: none;
+}
+div.domkit-Button.domkit-group-right {
+  border-radius: 0 3px 3px 0;
+  border-left: none;
+}
+div.domkit-Button.domkit-group-textfield {
+  border-color: #bbb;
+  box-shadow: none;
+}
+
+div.domkit-CardBox {
+}
+
+input.domkit-Checkbox {
+}
+span.domkit-Checkbox-label {
+  padding-left: 4px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+input.domkit-Checkbox[disabled] + span.domkit-Checkbox-label {
+  opacity: 0.3;
+}
+
+div.domkit-Combo {
+  box-sizing: border-box;
+  display: inline-block;
+}
+div.domkit-Combo input.domkit-TextField {
+  width: calc(100% - 23px);
+}
+div.domkit-Combo div.domkit-Button {
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  width: 23px;
+  padding: 0;
+}
+div.domkit-Combo div.domkit-ListButton:before { right: 8px; }
+div.domkit-Combo div.domkit-ListButton:after  { right: 8px; }
+
+div.domkit-Dialog {
+  outline: none;
+}
+div.domkit-Dialog-frame {
+  background: #ececec;
+  border: 1px solid #aaa;
+  border-radius: 4px 4px 0 0 ;
+  box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.4);
+  max-width:  calc(100% - 24px);
+  max-height: calc(100% - 24px);
+}
+div.domkit-Dialog-title {
+  text-align: center;
+  height: 25px;
+  line-height: 25px;
+  border-bottom: 1px solid #aaa;
+  border-radius: 4px 4px 0 0;
+  background: -webkit-linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
+  background:    -moz-linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
+  background:         linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
+  cursor: default;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+div.domkit-Dialog-mask {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.25);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  display: -webkit-flex;
+          align-items: center;
+  -webkit-align-items: center;
+          justify-content: center;
+  -webkit-justify-content: center;
+}
+
+.domkit-dnd-over::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #2ecc71;
+  opacity: 0.3;
+}
+
+div.domkit-FlexBox {
+  display: -webkit-flex;
+  display:    -moz-flex;
+  display:     -ms-flex;
+  display: flex;
+}
+
+div.domkit-FlipBox {
+  -webkit-perspective: 800px;
+     -moz-perspective: 800px;
+          perspective: 800px;
+}
+.domkit-FlipBox-card {
+  width:  100%;
+  height: 100%;
+  position: relative;
+  -webkit-transition: -webkit-transform .5s;
+     -moz-transition: -moz-transform .5s;
+          transition: transform .5s;
+  -webkit-transform-style: preserve-3d;
+     -moz-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+}
+.domkit-FlipBox-card.flip {
+  -webkit-transform: rotateY(-180deg);
+     -moz-transform: rotateY(-180deg);
+          transform: rotateY(-180deg);
+}
+.domkit-FlipBox-front,
+.domkit-FlipBox-back {
+  z-index: 1;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  -webkit-backface-visibility: hidden;
+     -moz-backface-visibility: hidden;
+          backface-visibility: hidden;
+}
+.domkit-FlipBox-back {
+  -webkit-transform: rotateY(180deg);
+     -moz-transform: rotateY(180deg);
+          transform: rotateY(180deg);
+}
+
+div.domkit-FlowBox {
+}
+
+div.domkit-GridBox {
+}
+div.domkit-GridBox table {
+  border-collapse: collapse;
+}
+div.domkit-GridBox table td {
+  padding: 0;
+}
+
+span.domkit-Label {
+  height: 23px;
+  line-height: 23px;
+}
+
+div.domkit-ListButton {
+  position: relative;
+  text-align: left;
+  padding-right: 20px;
+  overflow: hidden;
+}
+div.domkit-ListButton > div {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+div.domkit-ListButton:before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 4px solid #555;
+}
+div.domkit-ListButton:after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid #555;
+}
+div.domkit-ListButton-MenuItem.domkit-MenuItem {
+  white-space: nowrap;
+  padding-left: 22px;
+}
+div.domkit-ListButton-MenuItem.domkit-MenuItem.sel {
+  padding-left: 6px;
+}
+div.domkit-ListButton-MenuItem.domkit-MenuItem.sel:before {
+  content: "\2713";
+  width: 16px;
+  float: left;
+}
+
+div.domkit-Menu {
+  background: #fff !important;
+  border-radius: 5px;
+  overflow: auto;
+  outline: none;
+}
+div.domkit-MenuItem {
+  padding: 4px 20px 4px 10px;
+  min-width: 100px;
+  cursor: default;
+}
+div.domkit-MenuItem:first-child { border-radius: 4px 4px 0 0; }
+div.domkit-MenuItem:last-child  { border-radius: 0 0 4px 4px; }
+
+div.domkit-Popup {
+  position: absolute;
+  background: #ececec;
+  border: 1px solid #ddd;
+  box-shadow: 0px 9px 18px rgba(0, 0, 0, 0.25);
+}
+div.domkit-Popup-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+div.domkit-ProgressBar {
+  box-sizing: border-box;
+  display: inline-block;
+  background: #fff;
+  box-shadow: rgba(0, 0, 0, 0.05) 0 1px 1px;
+  border: 1px solid #c8c8c8;
+  border-bottom-color: #aaa;
+  border-radius: 3px;
+  vertical-align: top;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  outline: none;
+  text-align: center;
+  width: 200px;
+  height: 23px;
+  line-height: 22px;
+}
+
+input.domkit-RadioButton {
+}
+span.domkit-RadioButton-label {
+  padding-left: 4px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+input.domkit-RadioButton[disabled] + span.domkit-RadioButton-label {
+  opacity: 0.3;
+}
+
+div.domkit-SashBox {
+  overflow: hidden;  /* required for dir=right */
+  position: relative;
+}
+div.domkit-SashBox-splitter {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+div.domkit-ScrollBox {
+  overflow: auto;
+}
+
+div.domkit-Sheet {
+  position: absolute;
+  overflow: hidden;
+  outline: none;
+}
+div.domkit-Sheet-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+div.domkit-Table {
+  position: relative;
+  background: #fff;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: default;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  box-sizing: border-box;
+}
+div.domkit-Table:focus {
+  outline: none;
+}
+div.domkit-Table-scrollbar {
+  position: absolute;
+  box-sizing: border-box;
+  background: transparent;
+  border: 0px solid transparent;
+  overflow: hidden;
+  -webkit-transition: background 200ms 1s, border-color 1s 1s;
+     -moz-transition: background 200ms 1s, border-color 1s 1s;
+          transition: background 200ms 1s, border-color 1s 1s;
+}
+div.domkit-Table-scrollbar > div {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  -webkit-transition: background 500ms 1s;
+     -moz-transition: background 500ms 1s;
+          transition: background 500ms 1s;
+}
+div.domkit-Table-scrollbar:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #ccc;
+  -webkit-transition: background 100ms, border-color 500ms;
+     -moz-transition: background 100ms, border-color 500ms;
+          transition: background 100ms, border-color 500ms;
+}
+div.domkit-Table-scrollbar.active > div,
+div.domkit-Table-scrollbar:hover > div {
+  background: #777;
+  -webkit-transition: background 250ms;
+     -moz-transition: background 250ms;
+          transition: background 250ms;
+}
+div.domkit-Table-thead {
+  /* required */
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  /* style */
+  box-sizing: border-box;
+  background: #eee;
+  background: -webkit-linear-gradient(top, #f0f0f0, #e2e2e2);
+  background:    -moz-linear-gradient(top, #f0f0f0, #e2e2e2);
+  background:         linear-gradient(top, #f0f0f0, #e2e2e2);
+  border-bottom: 1px solid #999;
+}
+div.domkit-Table-header-sort:before {
+  content: "\25bc";
+  color: #999;
+  font-size: 10px;
+  float: right;
+}
+div.domkit-Table-header-sort.up:before {
+  -webkit-transform: rotate(180deg);
+     -moz-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+div.domkit-Table-tbody {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  overflow: hidden;
+}
+div.domkit-Table-header {
+  position: absolute;
+  box-sizing: border-box;
+  border-right: 1px solid #999;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+div.domkit-Table-header.last { border-right: none; }
+div.domkit-Table-cell {
+  position: absolute;
+  box-sizing: border-box;
+  border-right: 1px solid #d9d9d9;
+  padding: 0 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+div.domkit-Table-cell.last { border-right: none; }
+div.domkit-Table-cell.odd  { background: #fff; }
+div.domkit-Table-cell.even { background: #f9f9f9; }
+
+textarea.domkit-TextArea {
+  box-sizing: border-box;
+  font: 11px Menlo;
+  padding: 4px;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+textarea.domkit-TextArea[disabled] {
+  opacity: 0.3;
+}
+textarea.domkit-TextArea[readonly] {
+  background: #f8f8f8;
+}
+textarea.domkit-TextArea:focus {
+  outline: none;
+  /*
+  box-shadow: 0 0 2px 2px #7baddc !important;
+  z-index: 2;
+  position: relative;  /* needed to make z-index work *-/
+  */
+}
+
+input.domkit-TextField {
+  box-sizing: border-box;
+  font: 11px Menlo;
+  padding: 4px;
+  margin: 0;
+  height: 23px;
+}
+input.domkit-TextField[disabled] {
+  opacity: 0.3;
+}
+input.domkit-TextField[readonly] {
+  background: #f8f8f8;
+}
+input.domkit-TextField:focus {
+  outline: none;
+  /*
+  box-shadow: 0 0 2px 2px #7baddc !important;
+  z-index: 2;
+  position: relative;  /* needed to make z-index work *-/
+  */
+}
+.domkit-nofocus input.domkit-TextField:focus,
+input.domkit-TextField.domkit-nofocus:focus {
+  /*box-shadow: none !important;*/
+}
+input.domkit-TextField.domkit-group-left {
+  margin-right: 0;
+}
+input.domkit-TextField.domkit-group-middle {
+  margin-left: 0;
+  margin-right: 0;
+  border-left: none;
+}
+input.domkit-TextField.domkit-group-right {
+  margin-left: 0;
+  border-left: none;
+}
+
+div.domkit-Tree {
+  overflow: auto;
+  background: #fff;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+div.domkit-Tree:focus {
+  outline: none;
+}
+div.domkit-Tree-node {
+  cursor: default;
+  white-space: nowrap;
+  padding: 0px 4px;
+  height: 20px;
+  line-height: 20px;
+}
+div.domkit-Tree-node-expander {
+  float: left;
+  font-size: 80%;
+  width: 16px;
+  height: 20px;
+  line-height: 19px;
+  box-sizing: border-box;
+  padding-left: 5px;
+  color: #888;
+}
+:focus div.domkit-sel div.domkit-Tree-node-expander { color: #fff }
+div.domkit-Tree-node-block.expanded > div.domkit-Tree-node div.domkit-Tree-node-expander {
+  -webkit-transform: rotate(90deg);
+  padding-left: 4px;
+}
+div.domkit-Tree-node div:nth-child(2) {
+  display: inline-block;
+  width: calc(100% - 20px);
+}
+

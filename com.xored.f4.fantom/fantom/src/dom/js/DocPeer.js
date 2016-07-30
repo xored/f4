@@ -64,6 +64,19 @@ fan.dom.DocPeer.prototype.querySelectorAll = function(self, selectors)
   return list;
 }
 
+fan.dom.DocPeer.prototype.onEvent = function(self, type, useCapture, handler)
+{
+  handler.$func = function(e) { handler.call(fan.dom.EventPeer.make(e)); }
+  this.doc.addEventListener(type, handler.$func, useCapture);
+  return handler;
+}
+
+fan.dom.DocPeer.prototype.removeEvent = function(self, type, useCapture, handler)
+{
+  if (handler.$func)
+    this.doc.removeEventListener(type, handler.$func, useCapture);
+}
+
 fan.dom.DocPeer.prototype.out = function(self)
 {
   return fan.web.WebOutStream.make(new fan.dom.DocOutStream(this.doc));

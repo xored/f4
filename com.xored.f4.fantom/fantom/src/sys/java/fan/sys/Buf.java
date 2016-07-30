@@ -359,6 +359,15 @@ public abstract class Buf
   public final Object readObj(Map opt) { return in.readObj(opt); }
 
 //////////////////////////////////////////////////////////////////////////
+// File
+//////////////////////////////////////////////////////////////////////////
+
+  public File toFile(Uri uri)
+  {
+    throw UnsupportedErr.make("Only supported on memory buffers");
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Hex
 //////////////////////////////////////////////////////////////////////////
 
@@ -588,9 +597,8 @@ public abstract class Buf
     try
     {
       // get key bytes
-      MemBuf keyMemBuf = (MemBuf)keyBuf;
-      keyBytes = keyMemBuf.buf;
-      keySize  = keyMemBuf.size;
+      keyBytes = keyBuf.safeArray();
+      keySize  = keyBytes.length;
 
       // key is greater than block size we hash it first
       if (keySize > blockSize)
