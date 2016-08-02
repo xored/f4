@@ -21,6 +21,15 @@ class UtilTest : Test
     verifyEq(WebUtil.isToken("5a-3dd_33*&^%22!~"), true)
     verifyEq(WebUtil.isToken("(foo)"), false)
     verifyEq(WebUtil.isToken("foo;bar"), false)
+
+    // test https://tools.ietf.org/html/rfc7230#section-3.2.6
+    chars := Int:Bool[:] { def = false }
+    ('0'..'9').each |c| { chars[c] = true }
+    ('a'..'z').each |c| { chars[c] = true }
+    ('A'..'Z').each |c| { chars[c] = true }
+    "!#\$%&'*+-.^_`|~".each |c| { chars[c] = true }
+    for (c:=0; c<130; ++c)
+      verifyEq(WebUtil.isTokenChar(c), chars[c])
   }
 
   Void testToQuotedStr()
@@ -76,6 +85,24 @@ class UtilTest : Test
         "Cont":     "one two three four",
         "Coalesce": "a,b,c,d",
        ])
+  }
+
+  Void testAuthParser()
+  {
+    s := AuthParser("FOO").nextScheme
+    verifyNotNull(s)
+    verify(s.isScheme("foo"))
+    verifyFalse(s.isToken68)
+
+    s = AuthParser("Hello username=\"abcd==\"").nextScheme
+    verifyNotNull(s)
+    verify(s.isScheme("hello"))
+    verifyFalse(s.isToken68)
+    verifyEq("abcd==", s["username"])
+
+    verifyErr(ParseErr#) { AuthParser("FOO=").nextScheme }
+    verifyErr(ParseErr#) { AuthParser("FOO =").nextScheme }
+    verifyErr(ParseErr#) { AuthParser("FOO a%").nextScheme}
   }
 
   Void testChunkInStream()
