@@ -18,7 +18,7 @@ public class FanCompletionProposalCollector :
         image, displayString, i, isInDoc)
   }
 
-  override ScriptCompletionProposal? createOverrideCompletionProposal(
+  override ScriptCompletionProposal? createScriptCompletionProposal2(
       IScriptProject? scriptProject, ISourceModule? compilationUnit,
       Str? name, Str?[]? paramTypes, Int start, Int length,
       Str? displayName, Str? completionProposal)
