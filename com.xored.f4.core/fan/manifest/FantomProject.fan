@@ -1,11 +1,3 @@
-//
-// Copyright (c) 2009 xored software, Inc.
-// Licensed under Eclipse Public License version 1.0
-//
-// History:
-//	 ivaninozemtsev Apr 19, 2010 - Initial Contribution
-//
-
 using [java]org.eclipse.core.resources::IProject
 using [java]org.eclipse.core.resources::ResourcesPlugin
 using [java]org.eclipse.jdt.core::JavaCore
@@ -22,7 +14,11 @@ using [java]org.eclipse.dltk.core::PreferencesLookupDelegate
 using [java]org.eclipse.dltk.core::IBuildpathEntry
 using [java]org.eclipse.pde.core.project::IBundleProjectDescription
 using f4model
-using concurrent
+using concurrent::AtomicBool
+using concurrent::AtomicRef
+using concurrent::Actor
+using concurrent::ActorPool
+using concurrent::Future
 
 **
 ** Models a Fantom project
@@ -30,7 +26,7 @@ using concurrent
 const class FantomProject {
 	private static const Str[] disabledDirs := ["CVS"]
 	
-	const Str		podName
+	const Str		podName 
 	const Str		summary		:= ""
 	const Version	version		:= Version.defVal
 
@@ -196,24 +192,50 @@ const class FantomProject {
 		}.map |IBuildpathEntry bp -> Uri| {
 			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
 		}, projectDir.uri).sort
-	}
-  
+	}  
+	
 	** Returns a map of pod names to pod files.
 	Str:File resolvePods() {
-		compileEnv	:= compileEnv
-		podFiles	:= compileEnv.resolvePods.rw
+		podFiles	:= doResolvePods.rw
 		resolveErrs	= compileEnv.resolveErrs.toImmutable
 
 		// overwrite entries with workspace pods
 		FantomProjectManager.instance.listProjects.each |FantomProject p| {
 			if (podFiles.containsKey(p.podName) || rawDepends.any { it.name == p.podName })
 				podFiles[p.podName] = p.podOutFile
-		}		
+		}
 
 		// prevent errs such as "Project cannot reference itself: poo"
 		podFiles.remove(podName)
 
 		return podFiles
+	}
+	
+	private const AtomicRef	dependsStrRef		:= AtomicRef()
+	private const AtomicRef	resolvePodsRef		:= AtomicRef()
+	private const AtomicRef	resolveFutureRef	:= AtomicRef()
+	private Str:File doResolvePods() {
+		// cache the resolved pods until the dependencies change
+		// this MASSIVELY reduces the F4 build churn
+		dependsStr := rawDepends.rw.sort |p1, p2| { p1.name <=> p2.name }.join("; ")
+		if (dependsStr == dependsStrRef.val)
+			return resolvePodsRef.val
+		
+		// coalesce multiple calls into one
+		future := resolveFutureRef.val as Future
+		if (future == null) {		
+			future = Synchronized(ActorPool()).async |->Obj?| {
+				pods := compileEnv.resolvePods
+				resolvePodsRef.val	= pods
+				dependsStrRef.val	= dependsStr
+				return pods
+			}
+			resolveFutureRef.val = future
+		}
+		pods := future.get
+		resolveFutureRef.val = null
+
+		return pods
 	}
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }
@@ -226,14 +248,13 @@ const class FantomProject {
 		ProjectPrefs(this)
 	}
 	
-	private const QuickCash compileEnvRef := QuickCash(3sec) |->Obj?| { prefs.compileEnvType.make([this]) }
+	private const AtomicRef	compileEnvRef := AtomicRef()
 	CompileEnv compileEnv() {
-		// we would like to create a new Env everytime so we don't have to hook into preference change listeners
-		// but sometimes, when opening and closing projects, pod building gets thrashed, which causes more 
-		// thrashing, which causes more... etc... so we cache it for a second or two
-		// in the unlikely event this ever causes a problem, the first thing people do is refresh / rebuild the 
-		// project - so it's really a non-issue.
-		compileEnvRef.get
+		// only bother making a new one if the type / preferences change
+		// this may make a difference for FpmEnv which reads file config
+		if (compileEnvRef.val?.typeof != prefs.compileEnvType)
+			compileEnvRef.val = prefs.compileEnvType.make([this])
+		return compileEnvRef.val
 	}
 
 	
