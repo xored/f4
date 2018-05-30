@@ -31,9 +31,6 @@ const class WispService : Service
   **
   const IpAddr? addr := null
 
-  @NoDoc @Deprecated { msg = "Use httpPort" }
-  const Int port := 0
-
   **
   ** Well known TCP port for HTTP traffic. The port is enabled if non-null
   ** and disabled if null.
@@ -56,7 +53,7 @@ const class WispService : Service
   ** Pluggable interface for managing web session state.
   ** Default implementation stores sessions in main memory.
   **
-  const WispSessionStore sessionStore := MemWispSessionStore()
+  const WispSessionStore sessionStore := MemWispSessionStore(this)
 
   **
   ** Max number of threads which are used for concurrent
@@ -74,6 +71,10 @@ const class WispService : Service
   const WebMod errMod := initErrMod
 
   @NoDoc const Obj? keystore := null
+
+  ** Return 'true' if service is successfully listening on registered port.
+  @NoDoc Bool isListening() { isListeningRef.val }
+  private const AtomicBool isListeningRef := AtomicBool(false)
 
   private static WebMod initErrMod()
   {
@@ -111,13 +112,19 @@ const class WispService : Service
   }
 
   **
+  ** Cookie name to use for built-in session management.
+  ** Initialized from etc/web/config.props with the key "sessionCookieName"
+  ** otherwise defaults to "fanws"
+  **
+  const Str sessionCookieName := Pod.find("web").config("sessionCookieName", "fanws")
+
+  **
   ** Constructor with it-block
   **
   new make(|This|? f := null)
   {
     if (f != null) f(this)
 
-    if (httpPort == null && port > 0) httpPort = port
     if (httpPort == null && httpsPort == null) throw ArgErr("httpPort and httpsPort are both null. At least one port must be configured.")
     if (httpPort == httpsPort) throw ArgErr("httpPort '${httpPort}' cannot be the same as httpsPort '${httpsPort}'")
     if (httpPort != null && httpsPort != null) root = WispHttpsRedirectMod(this, root)
@@ -171,7 +178,9 @@ const class WispService : Service
         Actor.sleep(10sec)
       }
     }
+
     log.info("${portType} started on port ${port}")
+    isListeningRef.val = true
 
     // loop until stopped accepting incoming TCP connections
     while (!listenerPool.isStopped && !listener.isClosed)
@@ -192,6 +201,7 @@ const class WispService : Service
     }
 
     // socket should be closed by onStop, but do it again to be really sure
+    isListeningRef.val = false
     try { listener.close } catch {}
     log.info("${portType} stopped on port ${port}")
   }
@@ -206,6 +216,11 @@ const class WispService : Service
       {
         ref = httpsListenerRef
         listener = TcpListener.makeTls(keystore)
+
+        // This is important so that if there are a lot of short-lived
+        // connections (esp for HTTPS), the OS doesn't hit a limit
+        // on the number of sockets/ports in TIME_WAIT
+        listener.options.reuseAddr = true
       }
       ref.val = Unsafe(listener)
       return listener

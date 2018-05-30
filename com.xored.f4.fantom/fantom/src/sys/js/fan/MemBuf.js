@@ -24,6 +24,13 @@ fan.sys.MemBuf.prototype.$ctor = function(buf, size)
   this.m_in   = new fan.sys.MemBufInStream(this);
 }
 
+fan.sys.MemBuf.makeCapacity = function(capacity)
+{
+  var buf = new fan.sys.MemBuf();
+  buf.capacity$(capacity);
+  return buf;
+}
+
 fan.sys.MemBuf.makeBytes = function(bytes)
 {
   var buf = new fan.sys.MemBuf();
@@ -38,12 +45,28 @@ fan.sys.MemBuf.makeBytes = function(bytes)
 
 fan.sys.MemBuf.prototype.$typeof = function() { return fan.sys.MemBuf.$type; }
 
+fan.sys.MemBuf.prototype.toImmutable = function()
+{
+  var buf  = this.m_buf;
+  var size = this.m_size;
+  this.m_buf = fan.sys.MemBuf.$emptyBytes
+  this.m_size = 0;
+  return new fan.sys.ConstBuf(buf, size, this.endian(), this.charset());
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Buf Support
 //////////////////////////////////////////////////////////////////////////
 
 fan.sys.MemBuf.prototype.size = function() { return this.m_size; }
-fan.sys.MemBuf.prototype.size$ = function(x) { this.m_size = x; }
+fan.sys.MemBuf.prototype.size$ = function(x)
+{
+  if (x > this.m_buf.length)
+  {
+    this.m_buf.length = x;
+  }
+  this.m_size = x;
+}
 
 fan.sys.MemBuf.prototype.pos = function() { return this.m_pos; }
 fan.sys.MemBuf.prototype.pos$ = function(x) { this.m_pos = x; }
@@ -58,10 +81,8 @@ fan.sys.MemBuf.prototype.setByte = function(pos, x)
   this.m_buf[pos] = x & 0xFF;
 }
 
-fan.sys.MemBuf.prototype.getBytes = function(pos, dest, off, len)
+fan.sys.MemBuf.prototype.getBytes = function(pos, len)
 {
-  // TODO FIXIT
-  //System.arraycopy(this.buf, (int)pos, dest, off, len);
   return this.m_buf.slice(pos, pos+len);
 }
 
@@ -79,6 +100,7 @@ fan.sys.MemBuf.prototype.pipeTo = function(dst, len)
 
 fan.sys.MemBuf.prototype.pipeFrom = function(src, len)
 {
+  this.grow(this.m_pos + len);
   var byteArray = new java.lang.reflect.Array.newInstance(java.lang.Byte.TYPE, len);
   var read = src.read(byteArray, 0, len);
    if (read < 0) return -1;
@@ -115,16 +137,14 @@ fan.sys.MemBuf.prototype.capacity = function()
   return this.m_buf.length;
 }
 
-/*
-fan.sys.MemBuf.prototype.capacity(long c)
+fan.sys.MemBuf.prototype.capacity$ = function(c)
 {
-  int newCapacity = (int)c;
-  if (newCapacity < size) throw ArgErr.make("capacity < size").val;
-  byte[] temp = new byte[newCapacity];
-  System.arraycopy(buf, 0, temp, 0, Math.min(size, newCapacity));
-  buf = temp;
+  // does this help or hurt performance? seems like js runtime
+  // woudl already be good at expanding native Array object...
+
+  if (c < this.m_size) throw fan.sys.ArgErr.make("capacity < size");
+  this.m_buf.length = c;
 }
-*/
 
 fan.sys.MemBuf.prototype.trim = function()
 {
@@ -133,95 +153,19 @@ fan.sys.MemBuf.prototype.trim = function()
   return this;
 }
 
-fan.sys.MemBuf.prototype.toHex = function()
+//////////////////////////////////////////////////////////////////////////
+// Internal Support
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.MemBuf.prototype.grow = function(capacity)
 {
-  var buf = this.m_buf;
-  var size = this.m_size;
-  var hexChars = fan.sys.Buf.hexChars;
-  var s = '';
-  for (var i=0; i<size; ++i)
-  {
-    var b = buf[i] & 0xff;
-    s += String.fromCharCode(hexChars[b>>4])
-    s += String.fromCharCode(hexChars[b&0xf]);
-  }
-  return s;
+  if (this.m_buf.length >= capacity) return;
+  this.capacity$(Math.max(capacity, this.m_size*2));
 }
 
-fan.sys.MemBuf.prototype.toBase64 = function()
+fan.sys.MemBuf.prototype.unsafeArray = function()
 {
-  return this.$doBase64(fan.sys.Buf.base64chars, true);
+  return this.m_buf;
 }
 
-fan.sys.MemBuf.prototype.toBase64Uri = function()
-{
-  return this.$doBase64(fan.sys.Buf.base64UriChars, false);
-}
-
-fan.sys.MemBuf.prototype.$doBase64 = function(table, pad)
-{
-  var buf = this.m_buf;
-  var size = this.m_size;
-  var s = '';
-  var i = 0;
-
-  // append full 24-bit chunks
-  var end = size-2;
-  for (; i<end; i += 3)
-  {
-    var n = ((buf[i] & 0xff) << 16) + ((buf[i+1] & 0xff) << 8) + (buf[i+2] & 0xff);
-    s += String.fromCharCode(table[(n >>> 18) & 0x3f]);
-    s += String.fromCharCode(table[(n >>> 12) & 0x3f]);
-    s += String.fromCharCode(table[(n >>> 6) & 0x3f]);
-    s += String.fromCharCode(table[n & 0x3f]);
-  }
-
-  // pad and encode remaining bits
-  var rem = size - i;
-  if (rem > 0)
-  {
-    var n = ((buf[i] & 0xff) << 10) | (rem == 2 ? ((buf[size-1] & 0xff) << 2) : 0);
-    s += String.fromCharCode(table[(n >>> 12) & 0x3f]);
-    s += String.fromCharCode(table[(n >>> 6) & 0x3f]);
-    s += rem == 2 ? String.fromCharCode(table[n & 0x3f]) : (pad ? '=' : "");
-    if (pad) s += '=';
-  }
-
-  return s;
-}
-
-fan.sys.MemBuf.prototype.toDigest = function(algorithm)
-{
-  var digest = null;
-  switch (algorithm)
-  {
-    case "MD5":
-      digest = fan.sys.Buf_Md5(this.m_buf);  break;
-    case "SHA1":
-    case "SHA-1":
-      // fall-through
-      digest = fan.sys.buf_sha1.digest(this.m_buf); break;
-    case "SHA-256":
-      digest = fan.sys.buf_sha256.digest(this.m_buf); break;
-    default: throw fan.sys.ArgErr.make("Unknown digest algorithm " + algorithm);
-  }
-  return fan.sys.MemBuf.makeBytes(digest);
-}
-
-fan.sys.MemBuf.prototype.hmac = function(algorithm, keyBuf)
-{
-  var digest = null;
-  switch (algorithm)
-  {
-    case "MD5":
-      digest = fan.sys.Buf_Md5(this.m_buf, keyBuf.m_buf);  break;
-    case "SHA1":
-    case "SHA-1":
-      // fall thru
-      digest = fan.sys.buf_sha1.digest(this.m_buf, keyBuf.m_buf); break;
-    case "SHA-256":
-      digest = fan.sys.buf_sha256.digest(this.m_buf, keyBuf.m_buf); break;
-    default: throw fan.sys.ArgErr.make("Unknown digest algorithm " + algorithm);
-  }
-  return fan.sys.MemBuf.makeBytes(digest);
-}
+fan.sys.MemBuf.$emptyBytes = [];

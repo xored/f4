@@ -787,6 +787,60 @@ class RegressionTest : CompilerTest
     o->r = ""; o->c2(true);  verifyEq(o->r, "c2-catch c2-finally")
   }
 
+//////////////////////////////////////////////////////////////////////////
+// Check += implicit casting
+//////////////////////////////////////////////////////////////////////////
+
+  Void testAssignCast()
+  {
+    verifyErrors(
+     Str<|class Foo { Void foo() { x := 3; x += 10f } }|>,
+       [
+         1, 34, "'sys::Float' is not assignable to 'sys::Int'",
+       ])
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #2540 With block on value type
+//////////////////////////////////////////////////////////////////////////
+
+  Void test2540()
+  {
+    verifyErrors(
+      """class Foo
+         {
+           Void foo() { [,].map |f| { 10 {echo(f)} } }
+         }""",
+       [
+         3, 30, "Cannot call 'Obj.with' on value type",
+       ])
+
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// #2684 Verification error with generic cast to Map
+//////////////////////////////////////////////////////////////////////////
+
+  Void test2684()
+  {
+    compile(
+      """class Foo
+         {
+            [Str:Obj]? map1
+             Obj? foo() { Str:Obj?["a":"b"] }
+             Obj? bar()
+             {
+               map2 := map1 ?: Str:Obj?[:]
+               map3 := foo
+               map2.setAll(map3)
+               return map2
+            }
+         }
+         """)
+    o := pod.types.first.make
+    verifyEq(o->bar, Str:Obj?["a":"b"])
+  }
+
 
 }
 

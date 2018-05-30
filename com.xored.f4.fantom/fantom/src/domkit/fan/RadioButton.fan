@@ -9,11 +9,11 @@
 using dom
 
 **
-** RadioButton displays a radio button.  RadioButtons must belong to
-** a RadioButtonGroup, where only one button in the group can be
-** selected at a time.
+** RadioButton displays a radio button.  RadioButtons should be belong to
+** a `ButtonGroup`, where only one button in the group can be selected at
+** a time.
 **
-** See also: [pod doc]`pod-doc#radio`
+** See also: [docDomkit]`docDomkit::Controls#radioButton`
 **
 @Js class RadioButton : Elem
 {
@@ -21,7 +21,7 @@ using dom
   {
     this.set("type", "radio")
     this.style.addClass("domkit-RadioButton")
-    // this.onEvent("change", false) |e| { fireAction(e) }
+    this.onEvent("change", false) |e| { fireAction(e) }
   }
 
   ** Wrap this checkbox with content that can also be
@@ -31,23 +31,31 @@ using dom
     Elem("label")
     {
       this,
-      content is Elem
-        ? content
-        : Elem("span") { it.style.addClass("domkit-RadioButton-label"); it.text=content.toStr },
+      content is Elem ? content : Label { it.text=content.toStr },
     }
   }
 
   ** Value of checked.
-  // TODO
-  // Bool checked
-  // {
-  //   get { this->checked }
-  //   set { this->checked = it }
-  // }
+  Bool checked
+  {
+    get { this->checked }
+    set { this->checked = it }
+  }
 
-  // ** Callback when state is toggled.
-  // Void onAction(|This| f) { this.cbAction = f }
-  //
-  // private Void fireAction(Event e) { cbAction?.call(this) }
-  // private Func? cbAction := null
+  ** Callback when state is toggled.
+  Void onAction(|This| f) { this.cbAction = f }
+
+  private Func? cbAction := null
+  private Void fireAction(Event e)
+  {
+    if (group != null)
+    {
+      group._event = e
+      group.select(this)
+    }
+    cbAction?.call(this)
+  }
+
+  // internal use only
+  internal ButtonGroup? group := null
 }

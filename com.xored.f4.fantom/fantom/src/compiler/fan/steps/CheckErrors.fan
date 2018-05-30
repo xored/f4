@@ -608,9 +608,19 @@ class CheckErrors : CompilerStep
       // check if facet field is deprecated
       checkDeprecated(field, val.loc)
 
-      // check field type
-      if (!val.ctype.fits(field.fieldType.inferredAs))
-        err("Invalid type for facet field '$name': expected '$field.fieldType' not '$val.ctype'", val.loc)
+      // if null literal
+      if (val.id == ExprId.nullLiteral)
+      {
+        if (!field.fieldType.isNullable)
+          err("Cannot assign null to non-nullable facet field '$name': '$field.fieldType'", val.loc)
+      }
+
+      // otherwise check field type (no coersion allowed)
+      else
+      {
+        if (!val.ctype.fits(field.fieldType.inferredAs))
+          err("Invalid type for facet field '$name': expected '$field.fieldType' not '$val.ctype'", val.loc)
+      }
     }
   }
 
@@ -794,6 +804,7 @@ class CheckErrors : CompilerStep
     {
       CType? errType := c.errType
       if (errType == null) errType = ns.errType
+      checkTypeProtection(errType, c.loc)
       if (!errType.fits(ns.errType))
         err("Must catch Err, not '$c.errType'", c.errType.loc)
       else if (errType.fitsAny(caught))
@@ -937,12 +948,14 @@ class CheckErrors : CompilerStep
     t := expr.operand.ctype
     if (t.isNullable) return
 
-    // check if operand is inside it-block ctor
+    // check if operand is inside it-block ctor; we allow null checks
+    // on non-nullable fields (like Str) during construction, but not
+    // value types (like Int)
     if (curMethod != null && curMethod.isItBlockCtor)
     {
       // check that operand is this.{field} access
       field := expr.operand as FieldExpr
-      if (field != null && field.target != null && field.target.id == ExprId.thisExpr)
+      if (field != null && field.target != null && field.target.id == ExprId.thisExpr && !field.ctype.isVal)
         return
     }
 
@@ -1044,16 +1057,23 @@ class CheckErrors : CompilerStep
     // if assignment
     if (shortcut.isAssign)
     {
+      lhs := shortcut.target
+      ret := shortcut.method.returnType
+
       // check that lhs is assignable
-      if (!shortcut.target.isAssignable)
-        err("Target is not assignable", shortcut.target.loc)
+      if (!lhs.isAssignable)
+        err("Target is not assignable", lhs.loc)
+
+      // if the expression fits to type (no coercion supported)
+      if (!ret.isThis && !lhs.ctype.fits(ret))
+        err("'$ret' is not assignable to '$lhs.ctype'", lhs.loc)
 
       // check left hand side field (common code with checkAssign)
-      if (shortcut.target.id === ExprId.field)
-        checkAssignField((FieldExpr)shortcut.target, shortcut.args.first)
+      if (lhs.id === ExprId.field)
+        checkAssignField((FieldExpr)lhs, shortcut.args.first)
 
       // check that no safe calls used on entire left hand side
-      checkNoNullSafes(shortcut.target)
+      checkNoNullSafes(lhs)
     }
 
     // take this oppotunity to generate a temp local variable if needed
@@ -1264,7 +1284,7 @@ class CheckErrors : CompilerStep
 
     // if this call is not null safe, then verify that it's target isn't
     // a null safe call such as foo?.bar.baz
-    if (!call.isSafe && call.target is NameExpr && ((NameExpr)call.target).isSafe && call isnot ShortcutExpr)
+    if (!call.isSafe && call.target is NameExpr && ((NameExpr)call.target).isSafe)
     {
       err("Non-null safe call chained after null safe call", call.loc)
       return
@@ -1277,6 +1297,7 @@ class CheckErrors : CompilerStep
     {
       if (call.target.ctype.isVal || call.method.parent.isVal)
       {
+        if (name == "with") return err("Cannot call 'Obj.with' on value type", call.target.loc)
         call.target = coerce(call.target, call.method.parent) |->|
         {
           err("Cannot coerce '$call.target.ctype' to '$call.method.parent'", call.target.loc)

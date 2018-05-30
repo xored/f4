@@ -97,7 +97,16 @@ class HtmlDocWriter : DocWriter
         if (onImage != null) onImage(img)
         out.print(" src='$img.uri.toXml' alt='")
         safeAttr(img.alt)
-        out.print("'/>")
+        out.print("'")
+        if (img.size != null)
+        {
+          toks := img.size.split('x')
+          w := toks.getSafe(0)
+          h := toks.getSafe(1)
+          if (w != null) out.print(" width='").print(w).print("'")
+          if (h != null) out.print(" height='").print(h).print("'")
+        }
+        out.print("/>")
         return
       case DocNodeId.para:
         para := elem as Para
@@ -110,6 +119,9 @@ class HtmlDocWriter : DocWriter
       case DocNodeId.orderedList:
         ol := elem as OrderedList
         out.print(" style='list-style-type:$ol.style.htmlType'")
+      case DocNodeId.hr:
+        out.printLine("/>")
+        return
     }
     out.writeChar('>')
   }
@@ -117,6 +129,7 @@ class HtmlDocWriter : DocWriter
   override Void elemEnd(DocElem elem)
   {
     if (elem.id == DocNodeId.image) return
+    if (elem.id == DocNodeId.hr) return
     out.writeChar('<').writeChar('/').print(elem.htmlName).writeChar('>')
 
     // if hyperlink to code, then wrap in code element

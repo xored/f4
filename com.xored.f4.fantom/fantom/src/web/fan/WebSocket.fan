@@ -43,9 +43,9 @@ class WebSocket
     // read handshake response
     c.readRes
     if (c.resCode != 101) throw err("Bad HTTP response $c.resCode $c.resPhrase")
-    if (c.resHeaders["Upgrade"] != "websocket") throw err("Invalid Upgrade header")
-    if (c.resHeaders["Connection"] != "Upgrade") throw err("Invalid Connection header")
-    digest := c.resHeaders["Sec-WebSocket-Accept"] ?: throw err("Missing Sec-WebSocket-Accept header")
+    checkHeader(c.resHeaders, "Upgrade", "websocket")
+    checkHeader(c.resHeaders, "Connection", "upgrade")
+    digest := checkHeader(c.resHeaders, "Sec-WebSocket-Accept", null)
     if (secDigest(key) != digest) throw err("Mismatch Sec-WebSocket-Accept")
 
     // we are connected!
@@ -57,29 +57,35 @@ class WebSocket
   ** problems during the handshake in which case the calling WebMod should
   ** return a 400 response.
   **
+  ** Note: once this method completes, the socket is now owned by the
+  ** WebSocket instance and not the web server (wisp); it must be explicitly
+  ** closed to prevent a file handle leak.
+  **
   static WebSocket openServer(WebReq req, WebRes res)
   {
     // validate request
     if (req.method != "GET") throw err("Invalid method")
-    checkHeader(req, "Upgrade", "websocket")
-    checkHeader(req, "Connection", "upgrade")
-    key := checkHeader(req, "Sec-WebSocket-Key", null)
+    checkHeader(req.headers, "Upgrade", "websocket")
+    checkHeader(req.headers, "Connection", "upgrade")
+    key := checkHeader(req.headers, "Sec-WebSocket-Key", null)
 
     // send upgrade response
     res.headers["Upgrade"] = "websocket"
     res.headers["Connection"] = "Upgrade"
     res.headers["Sec-WebSocket-Accept"] = secDigest(key)
-    res.statusCode = 101
-    res.out.flush
+
+    // take ownership of the underlying socket
+    socket := res.upgrade(101)
 
     // connected, return WebSocket
-    return make(req.socket, false)
+    return make(socket, false)
   }
 
-  private static Str checkHeader(WebReq req, Str name, Str? expected)
+  private static Str checkHeader(Str:Str headers, Str name, Str? expected)
   {
-    val := req.headers[name] ?: throw err("Missing $name header")
-    if (expected != null && val.indexIgnoreCase(expected) == null) throw err("Invalid $name header: $val")
+    val := headers[name] ?: throw err("Missing $name header")
+    if (expected != null && val.indexIgnoreCase(expected) == null)
+      throw err("Invalid $name header: $val")
     return val
   }
 

@@ -147,7 +147,7 @@ class JavaType : CType
   ** Classfile to use for loading
   const File? classfile
 
-  protected Void load()
+  private Void load()
   {
     if (loaded) return
     slots := Str:CSlot[:]

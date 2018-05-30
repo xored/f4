@@ -121,6 +121,9 @@ class WritePod : CompilerStep
       path = path.relTo(input.baseDir.uri)
     }
 
+    // ignore stupid OS X .DS_Store
+    if (file.name == ".DS_Store") return
+
     // if locale/en.props and we have explicit definition
     // from LocaleProps then skip it
     if (path == `locale/en.props` && compiler.localeProps != null)
@@ -137,7 +140,8 @@ class WritePod : CompilerStep
     }
     catch (Err e)
     {
-      throw errReport(CompilerErr("Cannot write resource file '$path': $e", loc, e))
+      if (!file.isDir)
+        throw errReport(CompilerErr("Cannot write resource file '$path': $e", loc, e))
     }
   }
 

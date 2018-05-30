@@ -8,6 +8,7 @@
 
 using concurrent
 using dom
+using graphics
 
 **************************************************************************
 ** DragTarget
@@ -17,7 +18,7 @@ using dom
 ** DragTarget converts an Elem into a drag target for
 ** a drag-and-drop events.
 **
-** See also: [pod doc]`pod-doc#dnd`
+** See also: [docDomkit]`docDomkit::Dnd`
 **
 @Js class DragTarget
 {
@@ -27,20 +28,28 @@ using dom
   ** Private ctor.
   private new make(Elem elem)
   {
-    elem.draggable = true
-    elem.onEvent(EventType.dragStart, false) |e|
+    elem->draggable = true
+    elem.onEvent("dragstart", false) |e|
     {
       if (cbDrag == null) return
       data := cbDrag.call(elem)
       DndUtil.map[data.hash] = data
       e.dataTransfer.setData("text/plain", data.hash.toStr)
     }
+    elem.onEvent("dragend", false) |e|
+    {
+      if (cbEnd != null) cbEnd(elem)
+    }
   }
 
   ** Callback to get data payload for drag event.
   Void onDrag(|Elem->Obj| f) { cbDrag = f }
 
+  ** Callback when the drag event has ended.
+  Void onEnd(|Elem| f) { cbEnd = f }
+
   private Func? cbDrag
+  private Func? cbEnd
 }
 
 **************************************************************************
@@ -53,7 +62,7 @@ using dom
 ** dropped on this target.  The 'onDrop' callback is invoked when a
 ** drop event completes.
 **
-** See also: [pod doc]`pod-doc#dnd`
+** See also: [docDomkit]`docDomkit::Dnd`
 **
 @Js class DropTarget
 {
@@ -68,19 +77,29 @@ using dom
     if (pos != "relative" || pos != "absolute") elem.style["position"] = "relative"
 
     // setup events
-    elem.onEvent(EventType.dragEnter, false) |e|
+    elem.onEvent("dragenter", false) |e|
     {
       e.stop
       data := DndUtil.getData(e.dataTransfer)
       if (_canDrop(data)) elem.style.addClass("domkit-dnd-over")
     }
-    elem.onEvent(EventType.dragOver,  false) |e| { e.stop }
-    elem.onEvent(EventType.dragLeave, false) |e|
+    elem.onEvent("dragover",  false) |e|
+    {
+      e.stop
+      if (cbOver != null)
+      {
+        // TODO: need to translate these to pageX,pageY
+        Int x := e->clientX
+        Int y := e->clientY
+        cbOver(Point(x,y))
+      }
+    }
+    elem.onEvent("dragleave", false) |e|
     {
       if (e.target == elem)
         elem.style.removeClass("domkit-dnd-over")
     }
-    elem.onEvent(EventType.drop, false) |e|
+    elem.onEvent("drop", false) |e|
     {
       e.stop
       elem.style.removeClass("domkit-dnd-over")
@@ -95,6 +114,10 @@ using dom
   ** Callback when 'data' is dropped on this target.
   Void onDrop(|Obj data| f) { this.cbDrop = f }
 
+  ** Callback when drag target is over this drop target, where
+  ** 'pagePos' is the current drag node.
+  Void onOver(|Point pagePos| f) { this.cbOver = f }
+
   private Bool _canDrop(Obj data)
   {
     cbCanDrop == null ? true : cbCanDrop.call(data)
@@ -102,6 +125,7 @@ using dom
 
   private Func? cbCanDrop
   private Func? cbDrop
+  private Func? cbOver
   private Int depth
 }
 

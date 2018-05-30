@@ -11,12 +11,14 @@ using dom
 **
 ** Multi-line text input element
 **
+** See also: [docDomkit]`docDomkit::Controls#textArea`
+**
 @Js class TextArea : Elem
 {
   new make() : super("textarea")
   {
-    this.style.addClass("domkit-TextArea").addClass("domkit-border")
-    this.onEvent(EventType.input, false) |e| { fireModify(e) }
+    this.style.addClass("domkit-control domkit-control-text domkit-TextArea") //.addClass("domkit-border")
+    this.onEvent("input", false) |e| { fireModify(e) }
   }
 
   ** Preferred width of text area in columns, or 'null' for default.
@@ -45,8 +47,8 @@ using dom
   ** Set to 'true' to set text area to readonly mode.
   Bool ro
   {
-    get { this.get("readonly") }
-    set { this.set("readonly", it) }
+    get { this.prop("readOnly") }
+    set { this.setProp("readOnly", it) }
   }
 
   ** Value of text area.

@@ -7,9 +7,12 @@
 //
 
 using dom
+using graphics
 
 **
 ** Table displays a grid of rows and columns.
+**
+** See also: [docDomkit]`docDomkit::Controls#table`
 **
 @Js class Table : Elem
 {
@@ -20,17 +23,29 @@ using dom
     this.view = TableView(this)
     this.sel  = TableSelection(view)
     this.style.addClass("domkit-Table").addClass("domkit-border")
-    this.onEvent("wheel",                    false) |e| { onScroll(e.delta); e.stop }
-    this.onEvent(EventType.mouseDown,        false) |e| { onMouseEvent(e) }
-    this.onEvent(EventType.mouseUp,          false) |e| { onMouseEvent(e) }
-    this.onEvent(EventType.mouseDoubleClick, false) |e| { onMouseEvent(e) }
-    this.onEvent(EventType.keyDown,          false) |e| { onKeyEvent(e) }
+    this.onEvent("wheel", false) |e|
+    {
+      // don't consume vertical scroll if not required; this
+      // allows the parent container to scroll the table within
+      // its own viewport; this is a little tricky without
+      // consume horiz events, so for now just assume it was a
+      // "vertical" event if y-delta is greater than x-delta
+      if (!hasScrolly && e.delta != null && e.delta.y.abs > e.delta.x.abs) return
+
+      onScroll(e.delta)
+      e.stop
+    }
+    this.onEvent("mousedown", false) |e| { onMouseEvent(e) }
+    this.onEvent("mouseup",   false) |e| { onMouseEvent(e) }
+    this.onEvent("mousemove", false) |e| { onMouseEvent(e) }
+    this.onEvent("dblclick",  false) |e| { onMouseEvent(e) }
+    this.onEvent("keydown",   false) |e| { onKeyEvent(e) }
 
     // manually track focus so we can detect when
     // the browser window becomes unactive while
     // maintaining focus internally in document
-    this.onEvent(EventType.focus, false) |e| { manFocus=true;  refresh }
-    this.onEvent(EventType.blur,  false) |e| { manFocus=false; refresh }
+    this.onEvent("focus", false) |e| { manFocus=true;  refresh }
+    this.onEvent("blur",  false) |e| { manFocus=false; refresh }
 
     // rebuild if size changes
     DomListener.cur.onResize(this) { rebuild }
@@ -47,6 +62,11 @@ using dom
 
   ** List of CSS classes applied to rows in sequence, looping as required.
   Str[] stripeClasses := ["even", "odd"]
+
+  ** Callback to display header popup.  When non-null, a button will be
+  ** placed on the right-hand side of the table header to indicate the
+  ** popup is available.
+  Void onHeaderPopup(|Table->Popup| f) { this.cbHeaderPopup = f }
 
   ** The view wraps the table model to implement the row/col mapping
   ** from the view coordinate space to the model coordinate space based
@@ -68,7 +88,9 @@ using dom
   ** automatically refreshed.
   Void sort(Int? col, Dir dir := Dir.up)
   {
+    pivot = null
     view.sort(col, dir)
+    model.onSort(col, dir)
     refresh
   }
 
@@ -143,7 +165,7 @@ using dom
   ** Rebuild table layout.
   Void rebuild()
   {
-    if (this.size.w > 0) doRebuild
+    if (this.size.w > 0f) doRebuild
     else Win.cur.setTimeout(16ms) |->| { rebuild }
   }
 
@@ -181,18 +203,19 @@ using dom
     if (col == numCols-1) header.style.addClass("last")
 
     // update sort icon
-    if (col == view.sortCol)
+    if (col < numCols && view.colViewToModel(col) == view.sortCol)
     {
       header.style
         .addClass("domkit-Table-header-sort")
-        .removeClass("down").removeClass("up")
+        .removeClass("down up popup")
         .addClass(sortDir == Dir.up ? "up" : "down")
+      if (col == numCols-1 && hasHpbut) header.style.addClass("popup")
     }
     else
     {
       header.style
         .removeClass("domkit-Table-header-sort")
-        .removeClass("down").removeClass("up")
+        .removeClass("down up popup")
     }
 
     // update model content
@@ -208,10 +231,10 @@ using dom
     numVisCols.times |c|
     {
       col  := firstVisCol + c
-      pos  := Pos(col, row)
+      pos  := TablePos(col, row)
       cell := cells[pos]
       if (cell == null) return
-      refreshCell(cell, pos.x, pos.y)
+      refreshCell(cell, pos.col, pos.row)
     }
   }
 
@@ -219,7 +242,7 @@ using dom
   private Void refreshCell(Elem? cell, Int col, Int row)
   {
     // get cell
-    cell = cell ?: cells[Pos(col, row)]
+    cell = cell ?: cells[TablePos(col, row)]
     if (cell == null) throw Err("Cell not found: $col,$row")
 
     // update static view style
@@ -263,9 +286,9 @@ using dom
 
     // get container dims
     tbodysz := this.size
-    this.theadh = showHeader ? 20 : 0
-    this.tbodyw = tbodysz.w
-    this.tbodyh = tbodysz.h - theadh
+    this.theadh  = showHeader ? view.headerHeight : 0
+    this.tbodyw  = tbodysz.w.toInt
+    this.tbodyh  = tbodysz.h.toInt - theadh
 
     // cache layout vars
     cx := 0
@@ -273,7 +296,8 @@ using dom
     this.colw.clear
     this.numCols.times |c|
     {
-      cw := view.colWidth(c)
+      cw := ucolw[c] ?: view.colWidth(c)
+      if (c == numCols-1 && hasHpbut) cw += hpbutw + 4
       this.colx.add(cx)
       this.colw.add(cw)
       cx += cw
@@ -329,6 +353,7 @@ using dom
     {
       it.style.addClass("domkit-Table-thead")
       it.style->height = "${theadh}px"
+      if (theadh == 0) it.style->display = "none"
     }
     numVisCols.times |c|
     {
@@ -336,12 +361,32 @@ using dom
       {
         it.style.addClass("domkit-Table-header")
         it.style->width  = "${colwSafe(c)}px"
-        it.style->lineHeight = "${theadh}px"
+        it.style->lineHeight = "${theadh+1}px"
         if (c == numCols-1) it.style.addClass("last")
       }
       headers[c] = header
       refreshHeader(header, c)
       thead.add(header)
+    }
+
+    // setup header popup
+    if (cbHeaderPopup == null)
+    {
+      this.hpbut = null
+      this.hasHpbut = false
+    }
+    else
+    {
+      this.hpbut = Elem
+      {
+        it.style.addClass("domkit-Table-header-popup")
+        it.style->height = "${theadh}px"
+        it.add(Elem {})
+        it.add(Elem {})
+        it.add(Elem {})
+      }
+      this.hasHpbut = true
+      thead.add(hpbut)
     }
 
     // setup tbody
@@ -354,6 +399,9 @@ using dom
     {
       numVisCols.times |c|
       {
+        // TODO FIXIT: seems like an awful lot of overlap of
+        // refreshCell - should look at collapsing behavoir here
+        rowSel := false
         cell := Elem
         {
           it.style.addClass("domkit-Table-cell")
@@ -363,14 +411,22 @@ using dom
           if (c < numCols && r < numRows)
           {
             if (sel.indexes.binarySearch(view.rowViewToModel(r)) >= 0)
+            {
               it.style.addClass("domkit-sel")
+              rowSel = true
+            }
           }
           it.style->width = "${colwSafe(c)}px"
           it.style->height = "${rowh}px"
           it.style->lineHeight = "${rowh+1}px"
         }
-        cells[Pos(c, r)] = cell
-        if (c < numCols && r < numRows) view.onCell(cell, c, r, TableFlags {})
+        flags := TableFlags
+        {
+          it.focused  = manFocus
+          it.selected = rowSel
+        }
+        cells[TablePos(c, r)] = cell
+        if (c < numCols && r < numRows) view.onCell(cell, c, r, flags)
         tbody.add(cell)
       }
     }
@@ -402,15 +458,15 @@ using dom
         it.style->width  = "${htrackw}px"
         it.style->height = "${sbarsz}px"
         it.style->borderTopWidth = "1px"
-        it.onEvent(EventType.mouseDoubleClick, false) |e| { e.stop }
-        it.onEvent(EventType.mouseUp,   false) |e| { hbarPageId = stopScrollPage(hbarPageId) }
-        it.onEvent(EventType.mouseOut,  false) |e| { hbarPageId = stopScrollPage(hbarPageId) }
-        it.onEvent(EventType.mouseDown, false) |e| {
+        it.onEvent("dblclick",  false) |e| { e.stop }
+        it.onEvent("mouseup",   false) |e| { hbarPageId = stopScrollPage(hbarPageId) }
+        it.onEvent("mouseout",  false) |e| { hbarPageId = stopScrollPage(hbarPageId) }
+        it.onEvent("mousedown", false) |e| {
           e.stop
-          p := e.pagePos.rel(e.target)
+          p := e.target.relPos(e.pagePos)
           thumb := e.target.firstChild
-          if (p.x < thumb.pos.x) hbarPageId = startScrollPage(Pos(-tbodyw, 0))
-          else if (p.x > thumb.pos.x + thumb.size.w) hbarPageId = startScrollPage(Pos(tbodyw, 0))
+          if (p.x < thumb.pos.x) hbarPageId = startScrollPage(Point(-tbodyw, 0))
+          else if (p.x > thumb.pos.x + thumb.size.w.toInt) hbarPageId = startScrollPage(Point(tbodyw, 0))
         }
 
         Elem {
@@ -419,26 +475,26 @@ using dom
           it.style->left   = "0px"
           it.style->width  = "${hthumbw}px"
           it.style->height = "${xsz}px"
-          it.onEvent(EventType.mouseDoubleClick, false) |e| { e.stop }
-          it.onEvent(EventType.mouseDown, false) |e| {
+          it.onEvent("dblclick",  false) |e| { e.stop }
+          it.onEvent("mousedown", false) |e| {
             e.stop
-            hthumbDragOff = e.pagePos.rel(hbar.firstChild).x
+            hthumbDragOff = hbar.firstChild.relPos(e.pagePos).x.toInt
 
             doc := Win.cur.doc
             Obj? fmove
             Obj? fup
 
-            fmove = doc.onEvent(EventType.mouseMove, true) |de| {
-              dx := de.pagePos.rel(hbar).x - hthumbDragOff
+            fmove = doc.onEvent("mousemove", true) |de| {
+              dx := hbar.relPos(de.pagePos).x - hthumbDragOff
               sx := (dx.toFloat / htrackw.toFloat * maxScrollx).toInt
-              onScroll(Pos(sx - scrollx, 0))
+              onScroll(Point.makeInt(sx - scrollx, 0))
             }
 
-            fup = doc.onEvent(EventType.mouseUp, true) |de| {
+            fup = doc.onEvent("mouseup", true) |de| {
               de.stop
               hthumbDragOff = null
-              doc.removeEvent(EventType.mouseMove, true, fmove)
-              doc.removeEvent(EventType.mouseUp,   true, fup)
+              doc.removeEvent("mousemove", true, fmove)
+              doc.removeEvent("mouseup",   true, fup)
             }
           }
         },
@@ -454,15 +510,15 @@ using dom
         it.style->width  = "${sbarsz}px"
         it.style->height = "${vtrackh}px"
         it.style->borderLeftWidth = "1px"
-        it.onEvent(EventType.mouseDoubleClick, false) |e| { e.stop }
-        it.onEvent(EventType.mouseUp,   false) |e| { vbarPageId = stopScrollPage(vbarPageId) }
-        it.onEvent(EventType.mouseOut,  false) |e| { vbarPageId = stopScrollPage(vbarPageId) }
-        it.onEvent(EventType.mouseDown, false) |e| {
+        it.onEvent("dblclick",  false) |e| { e.stop }
+        it.onEvent("mouseup",   false) |e| { vbarPageId = stopScrollPage(vbarPageId) }
+        it.onEvent("mouseout",  false) |e| { vbarPageId = stopScrollPage(vbarPageId) }
+        it.onEvent("mousedown", false) |e| {
           e.stop
-          p := e.pagePos.rel(e.target)
+          p := e.target.relPos(e.pagePos)
           thumb := e.target.firstChild
-          if (p.y < thumb.pos.y) vbarPageId = startScrollPage(Pos(0, -tbodyh))
-          else if (p.y > thumb.pos.y + thumb.size.h) vbarPageId = startScrollPage(Pos(0, tbodyh))
+          if (p.y < thumb.pos.y) vbarPageId = startScrollPage(Point(0, -tbodyh))
+          else if (p.y > thumb.pos.y + thumb.size.h.toInt) vbarPageId = startScrollPage(Point(0, tbodyh))
         }
 
         Elem {
@@ -471,26 +527,26 @@ using dom
           it.style->left   = "0px"
           it.style->width  = "${xsz}px"
           it.style->height = "${vthumbh}px"
-          it.onEvent(EventType.mouseDoubleClick, false) |e| { e.stop }
-          it.onEvent(EventType.mouseDown, false) |e| {
+          it.onEvent("dblclick",  false) |e| { e.stop }
+          it.onEvent("mousedown", false) |e| {
             e.stop
-            vthumbDragOff = e.pagePos.rel(vbar.firstChild).y
+            vthumbDragOff = vbar.firstChild.relPos(e.pagePos).y.toInt
 
             doc := Win.cur.doc
             Obj? fmove
             Obj? fup
 
-            fmove = doc.onEvent(EventType.mouseMove, true) |de| {
-              dy := de.pagePos.rel(vbar).y - vthumbDragOff
+            fmove = doc.onEvent("mousemove", true) |de| {
+              dy := vbar.relPos(de.pagePos).y - vthumbDragOff
               sy := (dy.toFloat / vtrackh.toFloat * maxScrolly).toInt
-              onScroll(Pos(0, sy - scrolly))
+              onScroll(Point.makeInt(0, sy - scrolly))
             }
 
-            fup = doc.onEvent(EventType.mouseUp, true) |de| {
+            fup = doc.onEvent("mouseup", true) |de| {
               de.stop
               vthumbDragOff = null
-              doc.removeEvent(EventType.mouseMove, true, fmove)
-              doc.removeEvent(EventType.mouseUp,   true, fup)
+              doc.removeEvent("mousemove", true, fmove)
+              doc.removeEvent("mouseup",   true, fup)
             }
           }
         },
@@ -499,7 +555,7 @@ using dom
   }
 
   ** Start scroll page event.
-  private Int? startScrollPage(Pos delta)
+  private Int? startScrollPage(Point delta)
   {
     onScroll(delta)
     return Win.cur.setInterval(scrollPageFreq) { onScroll(delta) }
@@ -581,8 +637,8 @@ using dom
       h.style->transform = "translate(${tx}px, 0)"
     }
     cells.each |c,p| {
-      tx := colxSafe(p.x) - scrollx
-      ty := (p.y * rowh) - scrolly
+      tx := colxSafe(p.col) - scrollx
+      ty := (p.row * rowh) - scrolly
       c.style->transform = "translate(${tx}px, ${ty}px)"
     }
   }
@@ -622,10 +678,10 @@ using dom
       numVisRows.times |r|
       {
         row  := r + firstVisRow
-        op   := Pos(oldCol, row)
+        op   := TablePos(oldCol, row)
         cell := cells.remove(op)
         cell.style->width = newColw
-        cells[Pos(newCol, row)] = cell
+        cells[TablePos(newCol, row)] = cell
         refreshCell(cell, newCol, row)
       }
     }
@@ -662,9 +718,9 @@ using dom
       numVisCols.times |c|
       {
         col  := c + firstVisCol
-        op   := Pos(col, oldRow)
+        op   := TablePos(col, oldRow)
         cell := cells.remove(op)
-        cells[Pos(col, newRow)] = cell
+        cells[TablePos(col, newRow)] = cell
         refreshCell(cell, col, newRow)
       }
     }
@@ -690,8 +746,25 @@ using dom
 // Events
 //////////////////////////////////////////////////////////////////////////
 
+  ** Callback to display header popup.
+  private Void openHeaderPopup(Elem button, Popup popup)
+  {
+    x := button.pagePos.x
+    y := button.pagePos.y + button.size.h.toInt
+    w := button.size.w.toInt
+
+    // // adjust popup origin if haligned
+    // switch (popup.halign)
+    // {
+    //   case Align.center: x += w / 2
+    //   case Align.right:  x += w
+    // }
+
+    popup.open(x, y)
+  }
+
   ** Callback to handle scroll event.
-  private Void onScroll(Pos? delta)
+  private Void onScroll(Point? delta)
   {
     // short-circuit if no data
     if (delta == null) return
@@ -706,8 +779,8 @@ using dom
     }
 
     // update scroll offset
-    scrollx = (scrollx + delta.x).min(scrollBoundx).max(0)
-    scrolly = (scrolly + delta.y).min(scrollBoundy).max(0)
+    scrollx = (scrollx + delta.x.toInt).min(scrollBoundx).max(0)
+    scrolly = (scrolly + delta.y.toInt).min(scrollBoundy).max(0)
 
     // update content
     col := (colx.binarySearch(scrollx).not - 1).max(0).min(numCols - numVisCols).max(0)
@@ -721,19 +794,79 @@ using dom
   {
     if (numCols == 0) return
 
-    p  := e.pagePos.rel(this)
-    mx := p.x + scrollx
-    my := p.y + scrolly - theadh
+    p  := this.relPos(e.pagePos)
+    mx := p.x.toInt + scrollx
+    my := p.y.toInt + scrolly - theadh
+    this.style->cursor = null
 
     if (mx > colx.last + colw.last) return
     col := colx.binarySearch(mx)
     if (col < 0) col = col.not - 1
 
-    if (p.y < theadh)
+    cx := mx - colx[col]
+    canResize := (col > 0 && cx < 5) || (col < numCols-1 && colw[col]-cx < 5)
+
+    if (p.y.toInt < theadh)
     {
-      // sort column
-      if (e.type == EventType.mouseDown)
-        sort(col, sortCol==col ? (sortDir==Dir.up ? Dir.down : Dir.up) : Dir.up)
+      if (e.type == "mousemove")
+      {
+        if (canResize) this.style->cursor = "col-resize"
+      }
+      else if (e.type == "mousedown")
+      {
+        if (canResize)
+        {
+          this.resizeCol = cx < 5 ? col-1 : col
+          this.style->cursor = "col-resize"
+          this.add(resizeElem = Elem { it.style.addClass("domkit-resize-splitter") }
+          {
+            it.style->left = "${p.x-2}px"
+            it.style->width  = "5px"
+            it.style->height = "100%"
+          })
+
+          doc := Win.cur.doc
+          Obj? fmove
+          Obj? fup
+
+          fmove = doc.onEvent("mousemove", true) |de| {
+            de.stop
+            dex := this.relPos(de.pagePos).x.toInt
+            resizeElem.style->left = "${dex-2}px"
+          }
+
+          fup = doc.onEvent("mouseup", true) |de| {
+            // register user colw and cache scroll pos
+            demx := this.relPos(de.pagePos).x.toInt + scrollx
+            ucolw[resizeCol] = 20.max(demx - colx[resizeCol])
+            oldscroll := Point(scrollx, scrolly)
+
+            // remove splitter
+            this.remove(resizeElem)
+            resizeElem = null
+
+            // rebuild table and restore scrollpos
+            doRebuild
+            onScroll(oldscroll)
+
+            de.stop
+            doc.removeEvent("mousemove", true, fmove)
+            doc.removeEvent("mouseup",   true, fup)
+          }
+        }
+        else if (hasHpbut && p.x.toInt > tbodyw-hpbutw)
+        {
+          // header popup
+          Popup hp := cbHeaderPopup.call(this)
+          openHeaderPopup(hpbut, hp)
+        }
+        else
+        {
+          // sort column
+          col = view.colViewToModel(col)
+          sort(col, sortCol==col ? (sortDir==Dir.up ? Dir.down : Dir.up) : Dir.up)
+        }
+      }
     }
     else
     {
@@ -741,15 +874,20 @@ using dom
       row := my / rowh
       if (row >= numRows) return
 
-      // find pos relative to cell
-      cx := mx - colx[col]
+      // find pos relative to cell (cx calc above)
       cy := my - (row * rowh)
 
+      // map to model rows
+      vcol := col
+      vrow := row
+      col = view.colViewToModel(col)
+      row = view.rowViewToModel(row)
+
       // check selection
-      if (e.type == EventType.mouseDown) onMouseEventSelect(e, row)
+      if (e.type == "mousedown") onMouseEventSelect(e, row, vrow)
 
       // check action
-      if (e.type == EventType.mouseDoubleClick) cbAction?.call(this)
+      if (e.type == "dblclick") cbAction?.call(this)
 
       // delegate to cell handlers
       cb := cbTableEvent[e.type]
@@ -760,33 +898,31 @@ using dom
           it.col     = col
           it.row     = row
           it.pagePos = e.pagePos
-          it.cellPos = Pos(cx, cy)
-          it.size    = Size(colw[col], rowh)
+          it.cellPos = Point(cx, cy)
+          it.size    = Size(colw[vcol], rowh)
+          it._event  = e
         })
       }
     }
   }
 
   ** Callback to handle selection changes from a mouse event.
-  private Void onMouseEventSelect(Event e, Int row)
+  private Void onMouseEventSelect(Event e, Int row, Int vrow)
   {
     cur := sel.indexes
     newsel := cur.dup
 
-    // map to model rows
-    row = view.rowViewToModel(row)
-
     // check multi-selection
-    if (e.shift)
+    if (e.shift && pivot != null)
     {
-      if (row < pivot)
+      if (vrow < pivot)
       {
-        (row..pivot).each |i| { newsel.add(i) }
+        (vrow..pivot).each |i| { newsel.add(view.rowViewToModel(i)) }
         newsel = newsel.unique.sort
       }
-      else if (row > pivot)
+      else if (vrow > pivot)
       {
-        (pivot..row).each |i| { newsel.add(i) }
+        (pivot..vrow).each |i| { newsel.add(view.rowViewToModel(i)) }
         newsel = newsel.unique.sort
       }
     }
@@ -794,12 +930,12 @@ using dom
     {
       if (cur.contains(row)) newsel.remove(row)
       else newsel.add(row).sort
-      pivot = row
+      pivot = view.rowModelToView(row)
     }
     else
     {
       newsel = [row]
-      pivot = row
+      pivot = view.rowModelToView(row)
     }
 
     updateSel(newsel)
@@ -809,24 +945,44 @@ using dom
   private Void onKeyEvent(Event e)
   {
     // just handle keydown for now
-    if (e.type != EventType.keyDown) return
+    if (e.type != "keydown") return
 
     // short-circuit if no cells
     if (numCols==0 || numRows==0) return
 
+    // updateSel takes model rows; but scrollTo takes view rows, so
+    // pre-map some of the selection indexs here to simplify things
+    selTop      := view.rowViewToModel(0)
+    selBottom   := view.rowViewToModel(numRows-1)
+    selFirstVis := view.rowViewToModel(firstVisRow)
+    pivot       := view.rowModelToView(sel.indexes.first ?: selTop)
+
     // page commands
     if (e.meta)
     {
-      if (e.key == Key.up)    { e.stop; updateSel([0]);            scrollTo(null, 0); return }
-      if (e.key == Key.down)  { e.stop; updateSel([numRows-1]);    scrollTo(null, numRows-1); return }
+      if (e.key == Key.up)    { e.stop; updateSel([selTop]);    scrollTo(null, 0); return }
+      if (e.key == Key.down)  { e.stop; updateSel([selBottom]); scrollTo(null, numRows-1); return }
       if (e.key == Key.left)  { e.stop; scrollTo(0,         null); return }
       if (e.key == Key.right) { e.stop; scrollTo(numCols-1, null); return }
     }
 
     // page up/down
-    oi := sel.indexes.first ?: 0
-    if (e.key == Key.pageUp)   { e.stop; ni:=(oi - (numVisRows-3)).max(0); updateSel([ni]); scrollTo(null, ni); return }
-    if (e.key == Key.pageDown) { e.stop; ni:=(oi + (numVisRows-3)).max(0).min(numRows-1); updateSel([ni]); scrollTo(null, ni); return }
+    if (e.key == Key.pageUp)
+    {
+      e.stop
+      prev := (pivot - (numVisRows-3)).max(0)
+      updateSel([view.rowViewToModel(prev)])
+      scrollTo(null, prev)
+      return
+    }
+    if (e.key == Key.pageDown)
+    {
+      e.stop
+      next := (pivot + (numVisRows-3)).max(0).min(numRows-1)
+      updateSel([view.rowViewToModel(next)])
+      scrollTo(null, next)
+      return
+    }
 
     // selection commands
     switch (e.key)
@@ -845,28 +1001,28 @@ using dom
       case Key.up:
         if (sel.indexes.isEmpty)
         {
-          updateSel([firstVisRow])
-          scrollTo(null, sel.indexes.first)
+          updateSel([selFirstVis])
+          scrollTo(null, firstVisRow)
         }
         else
         {
-          if (sel.indexes.first == 0) return scrollTo(null, 0)
-          prev := sel.indexes.first - 1
-          updateSel([prev])
+          if (pivot == 0) return scrollTo(null, 0)
+          prev := pivot - 1
+          updateSel([view.rowViewToModel(prev)])
           scrollTo(null, prev)
         }
 
       case Key.down:
         if (sel.indexes.isEmpty)
         {
-          updateSel([firstVisRow])
-          scrollTo(null, sel.indexes.first)
+          updateSel([selFirstVis])
+          scrollTo(null, firstVisRow)
         }
         else
         {
-          if (sel.indexes.first == numRows-1) return scrollTo(null, numRows-1)
-          next := sel.indexes.first + 1
-          updateSel([next])
+          if (pivot == numRows-1) return scrollTo(null, numRows-1)
+          next := pivot + 1
+          updateSel([view.rowViewToModel(next)])
           scrollTo(null, next)
         }
     }
@@ -879,7 +1035,7 @@ using dom
     }
   }
 
-  private Void updateSel(Int[] newsel)
+  @NoDoc Void updateSel(Int[] newsel)
   {
     if (!sel.enabled) return
     if (sel.indexes == newsel) return
@@ -897,20 +1053,21 @@ using dom
 //////////////////////////////////////////////////////////////////////////
 
   private static const Str[] cellEvents := [
-    EventType.mouseDown,
-    EventType.mouseUp,
-    EventType.mouseClick,
-    EventType.mouseDoubleClick,
+    "mousedown",
+    "mouseup",
+    "click",
+    "dblclick",
 
     // TODO: opt into these events?
-    // EventType.mouseMove,
-    // EventType.mouseOver,
-    // EventType.mouseOut,
+    // "mousemove",
+    // "mouseover",
+    // "mouseout",
   ]
 
   private Func? cbSelect
   private Func? cbAction
   private Str:Func cbTableEvent := [:]
+  private Func? cbHeaderPopup
 
   // scrollbars
   private const Int sbarsz := 15
@@ -925,45 +1082,73 @@ using dom
   private Elem? hbar
   private Elem? vbar
   private Int:Elem headers := [:]
-  private Pos:Elem cells   := [:]
-  private Int theadh         // thead height
-  private Int tbodyw         // tbody width
-  private Int tbodyh         // tbody height
-  private Int numCols        // num cols in model
-  private Int numRows        // num rows in model
-  private Int[] colx := [,]  // col x offsets
-  private Int[] colw := [,]  // col widths
-  private Int rowh           // row height
-  private Int numVisCols     // num of visible cols
-  private Int numVisRows     // num of visible rows
-  private Int maxScrollx     // max scroll x value
-  private Int maxScrolly     // max scroll y value
-  private Bool hasScrollx    // is horiz scolling
-  private Bool hasScrolly    // is vert scolling
-  private Int htrackw        // hbar track width
-  private Int hthumbw        // hbar thumb width
-  private Int vtrackh        // vbar track height
-  private Int vthumbh        // vbar thumb height
+  private TablePos:Elem cells := [:]
+  private Int theadh            // thead height
+  private Int tbodyw            // tbody width
+  private Int tbodyh            // tbody height
+  private Int numCols           // num cols in model
+  private Int numRows           // num rows in model
+  private Int[] colx := [,]     // col x offsets
+  private Int[] colw := [,]     // col widths
+  private Int:Int ucolw := [:]  // user defined col width (via resize)
+  private Int rowh              // row height
+  private Int numVisCols        // num of visible cols
+  private Int numVisRows        // num of visible rows
+  private Int maxScrollx        // max scroll x value
+  private Int maxScrolly        // max scroll y value
+  private Bool hasScrollx       // is horiz scolling
+  private Bool hasScrolly       // is vert scolling
+  private Int htrackw           // hbar track width
+  private Int hthumbw           // hbar thumb width
+  private Int vtrackh           // vbar track height
+  private Int vthumbh           // vbar thumb height
+
+  // resize
+  private Int? resizeCol        // column being resized
+  private Elem? resizeElem      // visual indication of resize col size
+
+  // headerPopup
+  private Elem? hpbut             // header popup button
+  private Bool hasHpbut           // hpbut != null
+  private const Int hpbutw := 22  // width of header popup button
 
   // scroll
-  private Int scrollx        // current x scroll pos
-  private Int scrolly        // current y scroll pos
-  private Int? hbarPulseId   // hbar pulse timeout func id
-  private Int? vbarPulseId   // vbar pulse timeout func id
-  private Int? hbarPageId    // hbar page interval func id
-  private Int? vbarPageId    // vbar page interval func id
-  private Int? hthumbDragOff // offset of hthumb drag pos
-  private Int? vthumbDragOff // offset of vthumb drag pos
+  private Int scrollx           // current x scroll pos
+  private Int scrolly           // current y scroll pos
+  private Int? hbarPulseId      // hbar pulse timeout func id
+  private Int? vbarPulseId      // vbar pulse timeout func id
+  private Int? hbarPageId       // hbar page interval func id
+  private Int? vbarPageId       // vbar page interval func id
+  private Int? hthumbDragOff    // offset of hthumb drag pos
+  private Int? vthumbDragOff    // offset of vthumb drag pos
 
   // update
   private Int firstVisCol    // first visible col
   private Int firstVisRow    // first visible row
 
-  // onSelect
+  // onSelect (always in view refrence; not model)
   private Int? pivot
 
   // focus/blur
   private Bool manFocus := false
+}
+
+**************************************************************************
+** TablePos
+**************************************************************************
+
+**
+** TablePos provides an JS optimized hash key for col,row cell position
+**
+@Js
+internal const class TablePos
+{
+  new make(Int c, Int r) { col = c; row = r; toStr = "$c,$r"; hash = toStr.hash }
+  const Int col
+  const Int row
+  const override Int hash
+  const override Str toStr
+  override Bool equals(Obj? that) { toStr == that.toStr }
 }
 
 **************************************************************************
@@ -980,6 +1165,9 @@ using dom
 
   ** Number of rows in table.
   virtual Int numRows() { 0 }
+
+  ** Return height of header.
+  virtual Int headerHeight() { 20 }
 
   ** Return width of given column.
   virtual Int colWidth(Int col) { 100 }
@@ -1009,6 +1197,9 @@ using dom
   ** 0, or 1 according to the same semanatics as `sys::Obj.compare`.
   ** See `domkit::Table.sort`.
   virtual Int sortCompare(Int col, Int row1, Int row2) { 0 }
+
+  ** Callback when table is resorted
+  @NoDoc virtual Void onSort(Int? col, Dir dir) {}
 }
 
 **************************************************************************
@@ -1018,6 +1209,9 @@ using dom
 ** Table specific flags for eventing
 @Js const class TableFlags
 {
+  ** Default value with all flags cleared
+  static const TableFlags defVal := make {}
+
   new make(|This| f) { f(this) }
 
   ** Table has focus.
@@ -1030,36 +1224,6 @@ using dom
   {
     "TableFlags { focused=$focused; selected=$selected }"
   }
-}
-
-**************************************************************************
-** ListModel
-**************************************************************************
-
-** TODO
-@Js @NoDoc class ListModel : TableModel
-{
-  new make(Obj[] items, Func? onText := null)
-  {
-    this.items = items
-    this.onText = onText
-  }
-  override Int numCols() { 1 }
-  override Int numRows() { items.size }
-  override Int colWidth(Int col) { 10 } // use something small so stretches to fit
-  override Obj item(Int row) { items[row] }
-  override Void onCell(Elem cell, Int col, Int row, TableFlags flags)
-  {
-    cell.style->padding = "0 8px"
-    cell.text = text(col, row)
-  }
-  private Str text(Int col, Int row)
-  {
-    item := items[row]
-    return onText==null ? item.toStr : onText(item)
-  }
-  private Obj[] items
-  private Func? onText
 }
 
 **************************************************************************
@@ -1089,13 +1253,16 @@ using dom
   const Int row
 
   ** Mouse position relative to page.
-  const Pos pagePos
+  const Point pagePos
 
   ** Mouse position relative to cell.
-  const Pos cellPos
+  const Point cellPos
 
   ** Size of cell for this event.
   const Size size
+
+  // TODO: not sure how this works yet
+  @NoDoc Event? _event
 
   override Str toStr()
   {
@@ -1155,6 +1322,7 @@ using dom
 
   override Int numCols() { cols.size }
   override Int numRows() { rows.size }
+  override Int headerHeight() { table.model.headerHeight }
   override Int colWidth(Int c) { table.model.colWidth(cols[c]) }
   override Int rowHeight() { table.model.rowHeight }
   override Obj item(Int r) { table.model.item(rows[r]) }

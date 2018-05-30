@@ -275,10 +275,10 @@ fan.sys.TimeZone.compareAtTime = function(rule, x, time)
 // Cache
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.TimeZone.cache$ = function(continent, city, encoded)
+fan.sys.TimeZone.cache$ = function(continent, fullName, encoded)
 {
-  var fullName = city;
-  if (continent != "") fullName = continent + "/" + city;
+  // this handles cases where full name has multiple slashses
+  var city = fullName.split("/").reverse()[0];
   fan.sys.TimeZone.cache[city] = encoded;
   fan.sys.TimeZone.cache[fullName] = encoded;
   fan.sys.TimeZone.names.push(city);
@@ -298,9 +298,8 @@ fan.sys.TimeZone.fromCache$ = function(name)
   var tz  = new fan.sys.TimeZone();
 
   // decode full name
-  var continent = buf.readUtf();
-  var city = buf.readUtf();
-  var fullName = continent == "" ? city : continent + "/" + city;
+  var fullName = buf.readUtf();
+  var city = fullName.split("/").reverse()[0];
   tz.m_name = city;
   tz.m_fullName = fullName;
 
@@ -347,8 +346,8 @@ fan.sys.TimeZone.alias$ = function(alias, target)
 {
   var parts = alias.split("/");
   fan.sys.TimeZone.aliases[alias] = target;
-  // if alias is continent/city, also alias city
-  if (parts.length == 2) fan.sys.TimeZone.aliases[parts[1]] = target;
+  // if alias contains slashses, also alias the city
+  if (parts.length > 1) fan.sys.TimeZone.aliases[parts[parts.length-1]] = target;
 }
 
 //////////////////////////////////////////////////////////////////////////

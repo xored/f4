@@ -59,9 +59,11 @@ class TzTool
     jsOut := js.out
     try
     {
-      jsOut.printLine("(function () {")
-      jsOut.printLine("var c=fan.sys.TimeZone.cache\$;")
-      jsOut.printLine("var a;")
+      jsOut.printLine(
+        "(function() {
+          ${JsPod.requireSys}
+          var c=fan.sys.TimeZone.cache\$;
+          var a;")
 
       // write built-in timezones
       byContinent.each |TimeZone[] timezones, Str continent|
@@ -71,7 +73,7 @@ class TzTool
         {
           log.debug("$tz.fullName")
           encoded := encodeTimeZone(tz)
-          jsOut.printLine("c(a,${tz.name.toCode},${encoded.toBase64.toCode});")
+          jsOut.printLine("c(a,${tz.fullName.toCode},${encoded.toBase64.toCode});")
         }
       }
 
@@ -83,7 +85,12 @@ class TzTool
         jsOut.printLine("c(${alias.toCode},${target.toCode});")
       }
 
-      jsOut.printLine("})();")
+      // assign static utc and rel fields
+      jsOut.printLine("fan.sys.TimeZone.m_utc = fan.sys.TimeZone.fromStr('UTC');")
+      jsOut.printLine("fan.sys.TimeZone.m_rel = fan.sys.TimeZone.fromStr('Rel');")
+
+
+      jsOut.printLine("}).call(this);")
     }
     finally jsOut.close
     log.info("Wrote: ${js.osPath ?: js}")
@@ -91,7 +98,7 @@ class TzTool
 
   private Buf encodeTimeZone(TimeZone tz)
   {
-    buf   := Buf().writeUtf(continent(tz.fullName)).writeUtf(tz.name)
+    buf   := Buf().writeUtf(tz.fullName);
     rules := ([Str:Obj][])tz->rules
     rules.each |r| { encodeRule(r, buf.out) }
     return buf

@@ -16,7 +16,7 @@
 class HttpReq
 {
   ** Create a new HttpReq instance.
-  new make(|This|? f)
+  new make(|This|? f := null)
   {
     if (f != null) f(this)
   }
@@ -30,6 +30,21 @@ class HttpReq
   ** If true then perform this request asynchronously.
   ** Defaults to 'true'
   Bool async := true
+
+  **
+  ** Indicates whether or not cross-site 'Access-Control' requests
+  ** should be made using credentials such as cookies, authorization
+  ** headers or TLS client certificates. Setting 'withCredentials' has
+  ** no effect on same-site requests. The default is 'false'.
+  **
+  ** Requests from a different domain cannot set cookie values  for
+  ** their own domain unless 'withCredentials' is set to 'true' before
+  ** making the request. The third-party cookies obtained by setting
+  ** 'withCredentials' to 'true' will still honor same-origin policy and
+  ** hence can not be accessed by the requesting script through
+  ** `Doc.cookies` or from response headers.
+  **
+  Bool withCredentials := false
 
   **
   ** Send a request with the given content using the given

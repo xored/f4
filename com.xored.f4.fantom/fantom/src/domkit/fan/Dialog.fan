@@ -12,14 +12,16 @@ using dom
 **
 ** Dialog manages a modal window above page content.
 **
+** See also: [docDomkit]`docDomkit::Modals#dialog`
+**
 @Js class Dialog : Box
 {
   new make() : super()
   {
     this.uid = nextId.val
     nextId.val = uid+1
-    this.set("tabindex", "0")
     this.style.addClass("domkit-Dialog")
+    this->tabIndex = 0
   }
 
   ** Text displayed in title bar, or empty Str to hide title bar.
@@ -40,10 +42,10 @@ using dom
 
     mask := Elem {
       it.id = "domkitDialog-mask-$uid"
-      it->tabindex = 0
+      it->tabIndex = 0
       it.style.addClass("domkit-Dialog-mask")
       it.style->opacity = "0"
-      it.onEvent(EventType.keyDown, false) |e| { cbKeyDown?.call(e) }
+      it.onEvent("keydown", false) |e| { cbKeyDown?.call(e) }
     }
 
     this.frame = Elem
@@ -57,32 +59,32 @@ using dom
 
     if (title != null)
       frame.add(Elem {
-        it.style.addClass("domkit-Dialog-title")
+        it.style.addClass("domkit-control domkit-Dialog-title")
         it.text = title
-        it.onEvent(EventType.mouseDown, false) |e| {
+        it.onEvent("mousedown", false) |e| {
           e.stop
           vp  := Win.cur.viewport
           doc := Win.cur.doc
-          off := e.pagePos.rel(doc.body)
+          off := doc.body.relPos(e.pagePos)
           fps := frame.pos
           fsz := frame.size
           Obj? fmove
           Obj? fup
 
-          fmove = doc.onEvent(EventType.mouseMove, true) |de| {
-            pos := de.pagePos.rel(doc.body)
-            fx  := (pos.x - (off.x - fps.x)).max(0).min(vp.w - fsz.w)
-            fy  := (pos.y - (off.y - fps.y)).max(0).min(vp.h - fsz.h)
+          fmove = doc.onEvent("mousemove", true) |de| {
+            pos := doc.body.relPos(de.pagePos)
+            fx  := (pos.x.toInt - (off.x.toInt - fps.x.toInt)).max(0).min(vp.w.toInt - fsz.w.toInt)
+            fy  := (pos.y.toInt - (off.y.toInt - fps.y.toInt)).max(0).min(vp.h.toInt - fsz.h.toInt)
             mask.style->display = "block"
             frame.style->position = "absolute"
             frame.style->left = "${fx}px"
             frame.style->top  = "${fy}px"
           }
 
-          fup = doc.onEvent(EventType.mouseUp, true) |de| {
+          fup = doc.onEvent("mouseup", true) |de| {
             de.stop
-            doc.removeEvent(EventType.mouseMove, true, fmove)
-            doc.removeEvent(EventType.mouseUp,   true, fup)
+            doc.removeEvent("mousemove", true, fmove)
+            doc.removeEvent("mouseup",   true, fup)
           }
         }
       })
@@ -104,7 +106,7 @@ using dom
   ** this method does nothing.
   Void close()
   {
-    mask := Win.cur.doc.elem("domkitDialog-mask-$uid")
+    mask := Win.cur.doc.elemById("domkitDialog-mask-$uid")
     mask?.transition(["opacity":"0"], null, 100ms)
     frame?.transition(["transform": "scale(0.75)", "opacity": "0"], null, 100ms)
     {

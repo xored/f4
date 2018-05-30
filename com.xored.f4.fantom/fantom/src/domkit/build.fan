@@ -27,9 +27,11 @@ class Build : BuildPod
                 "vcs.uri":      "https://bitbucket.org/fantom/fan-1.0/"]
     depends = ["sys 1.0",
                "concurrent 1.0",
+               "graphics 1.0",
                "dom 1.0"]
     srcDirs = [`fan/`]
     resDirs = [`res/css/`]
+    docSrc  = true
   }
 
   @Target { help = "Compile to pod file and associated natives" }
@@ -45,7 +47,7 @@ class Build : BuildPod
     log.info("compileCss [$podName]")
     log.indent
 
-    srcDir  := scriptDir + `fanCss/`
+    srcDir  := scriptDir + `css/`
     resDir  := scriptDir + `res/css/`
     outFile := resDir + `${podName}.css`
 
@@ -54,13 +56,18 @@ class Build : BuildPod
     resDir.create
     log.info("CleanUp [$resDir]")
 
-    // find css
-    srcFiles := srcDir.listFiles.sort |a,b| { a.name.localeCompare(b.name) }
-    log.info("FindCssFiles [$srcFiles.size files]")
+    // collect source css
+    src := srcDir.listFiles.findAll |f| { f.ext == "css" }
+    src.sort |a,b| { a.name.localeCompare(b.name) }
+    log.info("FindCssFiles [$src.size files]")
+
+    // make sure Base.css is first
+    base := src.find |f| { f.name == "Base.css" }
+    src.moveTo(base, 0)
 
     // merge css
     out := outFile.out
-    srcFiles.each |f|
+    src.each |f|
     {
       if (f.ext != "css") return
       f.eachLine |line|

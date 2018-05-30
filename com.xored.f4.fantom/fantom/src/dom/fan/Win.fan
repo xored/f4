@@ -7,6 +7,8 @@
 //   8 Jul 09  Andy Frank  Split webappClient into sys/dom
 //
 
+using graphics
+
 **
 ** Win models the DOM window object.
 **
@@ -44,7 +46,7 @@ class Win
 //////////////////////////////////////////////////////////////////////////
 
   ** Open a new window. Returns the new window instance.
-  static native Win open(Uri uri := `about:blank`, Str? winName := null, [Str:Str]? opts := null)
+  native Win open(Uri uri := `about:blank`, Str? winName := null, [Str:Str]? opts := null)
 
   ** Close this window.  Only applicable to windows created with
   ** `open`. Otherwise method has no effect.  Returns this.
@@ -63,6 +65,10 @@ class Win
   ** Display a modal message box with the given text.
   native Void alert(Obj obj)
 
+  ** Display a confirmation dialog box with the given text.
+  ** Returns 'true' if 'ok' was selected, 'false' othterwise.
+  native Bool confirm(Obj obj)
+
   ** Return the size of the window viewport in pixels.
   native Size viewport()
 
@@ -77,6 +83,22 @@ class Win
   ** hierarchy.  If this window is the topmost window, returns
   ** self.
   native Win top()
+
+  ** Evaluate given JavaScript code.
+  static native Obj eval(Str js)
+
+//////////////////////////////////////////////////////////////////////////
+// Scrolling
+//////////////////////////////////////////////////////////////////////////
+
+  ** Return current scroll position of document in this window.
+  native Point scrollPos()
+
+  ** Scrolls to a particular set of coordinates in the document.
+  native This scrollTo(Int x, Int y)
+
+  ** Scrolls the document in the window by the given amount.
+  native This scrollBy(Int x, Int y)
 
 //////////////////////////////////////////////////////////////////////////
 // Uri
@@ -148,6 +170,26 @@ class Win
 
   ** Cancels a repeated action which was set up using `setInterval`.
   native Void clearInterval(Int intervalId)
+
+//////////////////////////////////////////////////////////////////////////
+// Geolocation
+//////////////////////////////////////////////////////////////////////////
+
+  ** Get the the current position of this device. This feature
+  ** is only available in secure contexts (HTTPS).
+  native Void geoCurPosition(|DomCoord| onSuccess, |Err|? onErr := null, [Str:Obj]? opts := null)
+
+  ** Register a handler function that will be called automatically each
+  ** time the position of the device changes. This method returns a watch
+  ** ID value that then can be used to unregister the handler with the
+  ** `geoClearWatch` method. This feature is only available in secure
+  ** contexts (HTTPS).
+  native Int geoWatchPosition(|DomCoord| onSuccess, |Err|? onErr := null, [Str:Obj]? opts := null)
+
+  ** Unregister location/error monitoring handlers previously installed
+  ** using `geoWatchPosition`. This feature is only available in secure
+  ** contexts (HTTPS).
+  native Void geoClearWatch(Int id)
 
 //////////////////////////////////////////////////////////////////////////
 // Storage

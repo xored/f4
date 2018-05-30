@@ -468,6 +468,10 @@ class StreamTest : Test
     verifyEq(in.peekChar, null)
     verifyEq(in.read,     null)
     in.close
+
+    // test chars outside Java's range (emoji)
+    str := Buf.fromHex("666f6f20e299bff09f8e99206f6e20626172").readAllStr
+    verifyEq(str.toCode(null, true), Str<|foo \u267f\ufffd on bar|>)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -759,12 +763,15 @@ class StreamTest : Test
     in.close
 
     out = f.out
-    5000.times |Int i| { out.print(i) }
+    5000.times |Int i| { out.print("a") }
+    out.printLine
+    9876.times |Int i| { out.print("b") }
     out.close
 
     in = f.in
     verifyEq(in.readLine(20).size, 20)
-    verifyEq(in.readLine.size, 4096)
+    verifyEq(in.readLine.size, 5000 - 20)
+    verifyEq(in.readLine.size, 9876)
     in.close
   }
 

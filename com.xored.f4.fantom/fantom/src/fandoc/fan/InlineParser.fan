@@ -52,7 +52,7 @@ internal class InlineParser
   {
     stack.push(parent)
     DocNode? child
-    if (last.isSpace || last == '*' || last == '/')
+    if (last.isSpace || last == '*' || last == '/' || last == '(')
     {
       switch (cur)
       {
@@ -84,7 +84,7 @@ internal class InlineParser
       case '\'':
       case '`':
       case '[':
-        return last.isSpace
+        return last.isSpace || last == '('
 
       // ![
       case '!':
@@ -137,7 +137,7 @@ internal class InlineParser
 
   private DocNode emphasis()
   {
-    if (peek <= 0 || peek.isSpace)
+    if (peek <= 0 || peek.isSpace && peekPeek != '*')
       return text
 
     em := Emphasis.make
@@ -179,21 +179,40 @@ internal class InlineParser
     if (peek <= 0 || peek == ']')
       return text
 
-    s := brackets
-    if (cur == '`')
+    // there are three options for square brackets
+    //   [anchor]`url`         // hyperlink
+    //   [![alt]`image`]`url`  // image hyperlink (no spaces allowed)
+    //   [#frag]               // id to link to a heading
+
+    DocNode? body
+    Str? anchor
+    if (peek == '!' && peekPeek == '[')
     {
-      link := Link(uri)
-      link.add(DocText(s))
-      return link
-    }
-    else if (s.startsWith("#"))
-    {
-      parent.anchorId = s[1..-1]
-      return null
+      consume // [
+      body = image
+      if (cur != ']') throw err("Invalid img link")
+      consume  // ]
     }
     else
     {
-      throw err("Invalid annotation [${s}]")
+      s := brackets
+      if (s.startsWith("#"))
+      {
+        parent.anchorId = s[1..-1]
+        return null
+      }
+      body = DocText(s)
+    }
+
+    if (cur == '`')
+    {
+      link := Link(uri)
+      link.add(body)
+      return link
+    }
+    else
+    {
+      throw err("Invalid annotation []")
     }
   }
 
@@ -201,8 +220,12 @@ internal class InlineParser
   {
     consume // !
     alt := brackets
+    size := null
+    if (cur == '[') size = brackets
     uri := uri
-    return Image(uri, alt)
+    img := Image(uri, alt)
+    img.size = size
+    return img
   }
 
   private Str uri()
@@ -266,6 +289,21 @@ internal class InlineParser
     {
       peek = -1
     }
+  }
+
+  **
+  ** Look at char after peek
+  **
+  private Int peekPeek()
+  {
+    if (pos+2 < src.size) return src[pos+2]
+    return -1
+  }
+
+  private Str debug()
+  {
+    "cur='" + (cur <= 0 ? "eof" : cur.toChar) +
+    "' peek='" + (peek <= 0 ? "eof" : peek.toChar) + "'"
   }
 
 //////////////////////////////////////////////////////////////////////////

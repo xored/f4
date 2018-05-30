@@ -25,6 +25,18 @@ fan.sys.Float.make = function(val)
   return x;
 }
 
+fan.sys.Float.makeBits = function(bits)
+{
+  throw fan.sys.Err.make("Float.makeBits not available in JavaScript");
+}
+
+fan.sys.Float.makeBits32 = function(bits)
+{
+  var buffer = new ArrayBuffer(4);
+  (new Uint32Array(buffer))[0] = bits;
+  return fan.sys.Float.make(new Float32Array(buffer)[0]);
+}
+
 fan.sys.Float.prototype.$typeof = function()
 {
   return fan.sys.Float.$type;
@@ -58,8 +70,40 @@ fan.sys.Float.isNaN = function(self)
   return isNaN(self);
 }
 
+fan.sys.Float.isNegZero = function(self)
+{
+  return 1/self === -Infinity;
+}
+
+fan.sys.Float.normNegZero = function(self)
+{
+  return fan.sys.Float.isNegZero(self) ? 0.0 : self;
+}
+
 // TODO FIXIT: hash
-fan.sys.Float.hash = function(self) { fan.sys.Str.hash(self.toString()); }
+fan.sys.Float.hash = function(self)
+{
+  return fan.sys.Str.hash(self.toString());
+}
+
+fan.sys.Float.bits = function(self)
+{
+  throw fan.sys.Err.make("Float.bits not available in JavaScript");
+}
+
+fan.sys.Float.bitsArray = function(self)
+{
+  var buf = new ArrayBuffer(8);
+  (new Float64Array(buf))[0] = self;
+  return [(new Uint32Array(buf))[0], (new Uint32Array(buf))[1]];
+}
+
+fan.sys.Float.bits32 = function(self)
+{
+  var buf = new ArrayBuffer(4);
+  (new Float32Array(buf))[0] = self;
+  return (new Uint32Array(buf))[0];
+}
 
 /////////////////////////////////////////////////////////////////////////
 // Conversion
@@ -155,6 +199,7 @@ fan.sys.Float.fromStr = function(s, checked)
 fan.sys.Float.toStr = function(self)
 {
   if (isNaN(self)) return "NaN";
+  if (fan.sys.Float.isNegZero(self)) return "-0.0";
   if (self == fan.sys.Float.m_posInf) return "INF";
   if (self == fan.sys.Float.m_negInf) return "-INF";
   return (fan.sys.Float.toInt(self) == self) ? self.toFixed(1) : ""+self;
@@ -195,9 +240,12 @@ fan.sys.Float.toLocale = function(self, pattern, locale)
 
     // get default pattern if necessary
     if (pattern == null)
-// TODO FIXIT
-//      pattern = Env.cur().locale(Sys.sysPod, "float", "#,###.0##");
-      pattern = "#,###.0##";
+    {
+      if (Math.abs(self) >= 100.0)
+        return fan.sys.Int.toLocale(Math.round(self), null, locale);
+
+      pattern = fan.sys.Float.toDefaultLocalePattern(self);
+    }
 
     // TODO: if value is < 10^-3 or > 10^7 it will be
     // converted to exponent string, so just bail on that
@@ -218,5 +266,24 @@ fan.sys.Float.toLocale = function(self, pattern, locale)
     fan.sys.ObjUtil.echo(err);
     return ''+self;
   }
+}
+
+fan.sys.Float.toDefaultLocalePattern = function(self)
+{
+  var abs  = Math.abs(self);
+  var fabs = Math.floor(abs);
+
+  if (fabs >= 10.0) return "#0.0#";
+  if (fabs >= 1.0)  return "#0.0##";
+
+  // format a fractional number (no decimal part)
+  var frac = abs - fabs;
+  if (frac < 0.00000001) return "0.0";
+  if (frac < 0.0000001)  return "0.0000000##";
+  if (frac < 0.000001)   return "0.000000##";
+  if (frac < 0.00001)    return "0.00000##";
+  if (frac < 0.0001)     return "0.0000##";
+  if (frac < 0.001)      return "0.000##";
+  return "0.0##";
 }
 

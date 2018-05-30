@@ -644,6 +644,24 @@ fan.sys.List.prototype.map = function(f)
   return acc;
 }
 
+fan.sys.List.prototype.flatMap = function(f)
+{
+  var of = f.returns().v;
+  if (of === undefined || of == null) of = fan.sys.Obj.$type.toNullable();
+  var acc = fan.sys.List.make(of);
+  if (f.m_params.size() == 1)
+  {
+    for (var i=0; i<this.m_size; ++i)
+      acc.addAll(f.call(this.m_values[i]));
+  }
+  else
+  {
+    for (var i=0; i<this.m_size; ++i)
+      acc.addAll(f.call(this.m_values[i], i));
+  }
+  return acc;
+}
+
 fan.sys.List.prototype.max = function(f)
 {
   if (f === undefined) f = null;
@@ -678,14 +696,13 @@ fan.sys.List.prototype.min = function(f)
 
 fan.sys.List.prototype.unique = function()
 {
-  var dups = fan.sys.Map.make(fan.sys.Obj.$type, fan.sys.Obj.$type);
+  var dups = new Map();
   var acc = fan.sys.List.make(this.m_of);
   for (var i=0; i<this.m_size; ++i)
   {
     var v = this.m_values[i];
     var key = v;
-    if (key == null) key = "__null_key__";
-    if (dups.get(key) == null)
+    if (dups.get(key) === undefined)
     {
       dups.set(key, this);
       acc.add(v);

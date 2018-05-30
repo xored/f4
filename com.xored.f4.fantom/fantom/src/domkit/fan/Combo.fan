@@ -13,7 +13,7 @@ using dom
 ** that allows a user to select from a list or manually enter a
 ** value.
 **
-** See also: [pod doc]`pod-doc#combo`
+** See also: [docDomkit]`docDomkit::Controls#combo`
 **
 @Js class Combo : Elem
 {
@@ -21,7 +21,7 @@ using dom
   {
     this.field = TextField
     {
-      it.onEvent(EventType.keyDown, false) |e|
+      it.onEvent("keydown", false) |e|
       {
         if (e.key == Key.down)
         {
@@ -38,6 +38,7 @@ using dom
       {
         field.val = button.sel.item
         field.focus
+        field.fireModify(null)
       }
     }
 
@@ -56,10 +57,24 @@ using dom
     set { button.items = it }
   }
 
+  ** Callback to create an 'Elem' representation for a given list
+  ** item.  If function does not return an 'Elem' instance, one will
+  ** be created using 'toStr' of value.
+  Void onElem(|Obj->Obj| f)
+  {
+    this.button.onElem(f)
+  }
+
   override Bool? enabled
   {
     get { field.enabled }
     set { field.enabled = button.enabled = it }
+  }
+
+  // framework use only
+  internal Void update(Str val)
+  {
+    button.sel.index = items.findIndex |i| { i == val } ?: 0
   }
 
   private ListButton button

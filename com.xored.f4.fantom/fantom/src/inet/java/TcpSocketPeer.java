@@ -25,26 +25,41 @@ public class TcpSocketPeer
     return new TcpSocketPeer(new Socket());
   }
 
+  public static TcpSocket makeRaw(Object raw)
+  {
+    if (!(raw instanceof Socket)) throw ArgErr.make("not a raw socket");
+    try
+    {
+      final Socket socket = (Socket)raw;
+      final TcpSocket self = new TcpSocket();
+      self.peer = new TcpSocketPeer(socket);
+      if (socket.isConnected()) self.peer.connected(self);
+      return self;
+    }
+    catch (IOException e)
+    {
+      throw IOErr.make(e);
+    }
+  }
+
   public static TcpSocket makeTls(TcpSocket upgrade)
   {
     try
     {
+      // get SSL factory because Java loves factories!
       SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(null, null, null);
+      final SSLSocketFactory factory = sslContext.getSocketFactory();
 
-      // get SSL factory because Java loves factories!
-      SSLSocketFactory factory = sslContext.getSocketFactory();
-
-      // create new SSL socket
       SSLSocket socket;
       if (upgrade == null)
       {
+        // create new SSL socket
         socket = (SSLSocket)factory.createSocket();
       }
-
-      // upgrade an existing socket
       else
       {
+        // upgrade an existing socket
         socket = (SSLSocket)factory.createSocket(
                    upgrade.peer.socket,
                    upgrade.peer.socket.getInetAddress().getHostAddress(),
@@ -55,13 +70,9 @@ public class TcpSocketPeer
       }
 
       // create the new TcpSocket instance
-      TcpSocket self = new TcpSocket();
-      self.peer = new TcpSocketPeer(socket);
-
-      // if upgrade, then initialize socket as already connected
-      if (upgrade != null) self.peer.connected(self);
-
-      return self;
+      TcpSocket tlsSocket = TcpSocket.makeRaw(socket);
+      tlsSocket.peer.sslContext = sslContext;
+      return tlsSocket;
     }
     catch (Exception e)
     {
@@ -469,11 +480,17 @@ public class TcpSocketPeer
     }
   }
 
+  public Socket socket() { return this.socket; }
+
+  public SSLContext getSslContext() { return this.sslContext; }
+
+
 //////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
   Socket socket;
+  private SSLContext sslContext;
   private int inBufSize = 4096;
   private int outBufSize = 4096;
   private IpAddr remoteAddr;

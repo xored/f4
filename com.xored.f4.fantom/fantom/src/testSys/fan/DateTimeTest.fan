@@ -211,6 +211,8 @@ class DateTimeTest : Test
 
   Void testNowUnique()
   {
+    if (Env.cur.runtime == "js") return;
+
     // spawn off a bunch of actors to loop on DateTime.nowUnique
     futures := Future[,]
     10.times |->|
@@ -404,11 +406,14 @@ class DateTimeTest : Test
     verifyEq(Weekday.localeVals.isImmutable, true)
     verifySame(Weekday.localeVals, Weekday.localeVals)
 
-    Locale.fromStr("fi", false).use
+    if (Env.cur.runtime != "js")
     {
-      verifyEq(Weekday.localeVals, [Weekday.mon, Weekday.tue, Weekday.wed, Weekday.thu, Weekday.fri, Weekday.sat, Weekday.sun])
-      verifyEq(Weekday.localeVals.isImmutable, true)
-      verifySame(Weekday.localeVals, Weekday.localeVals)
+      Locale.fromStr("fi", false).use
+      {
+        verifyEq(Weekday.localeVals, [Weekday.mon, Weekday.tue, Weekday.wed, Weekday.thu, Weekday.fri, Weekday.sat, Weekday.sun])
+        verifyEq(Weekday.localeVals.isImmutable, true)
+        verifySame(Weekday.localeVals, Weekday.localeVals)
+      }
     }
 
     verifyErr(ArgErr#) { Weekday.sun.toLocale("") }
@@ -784,8 +789,11 @@ class DateTimeTest : Test
     verifyErr(ArgErr#) { x := DateTime.make(2007, Month.jun, 6, 0, 0, 60) }
     verifyErr(ArgErr#) { x := DateTime.make(2007, Month.jun, 6, 0, 0, 0, -1) }
     verifyErr(ArgErr#) { x := DateTime.make(2007, Month.jun, 6, 0, 0, 0, 1_000_000_000) }
-    verifyErr(ArgErr#) { x := DateTime.makeTicks(-3124137600000_000001, utc) }
     verifyErr(ArgErr#) { x := DateTime.makeTicks(3155760000000_000000, utc) }
+
+    // JS cannot represent this number, it rounds to _000000, which causes the test  to fail
+    if (Env.cur.runtime != "js")
+      verifyErr(ArgErr#) { x := DateTime.makeTicks(-3124137600000_000001, utc) }
   }
 
   Void verifyDateTime(Int ticks, TimeZone tz, Int year, Month month, Int day,
@@ -1037,6 +1045,7 @@ class DateTimeTest : Test
     x = DateTime.make(2007, Month.may, 9, 15, 30, 0, 0, ny)
     verifyEq(x.toLocale("YYMMDD'T'hhmm"), "070509T1530")
     verifyEq(x.toLocale("'It is' k:mmaa!"), "It is 3:30pm!")
+    verifyEq(x.toLocale("''YY"), "'07")
 
     // errors
     verifyErr(ArgErr#) { x.toLocale("Y") }
@@ -1189,6 +1198,8 @@ class DateTimeTest : Test
     d := Date(2009, Month.jan, 10)
     verifyDateLocale(d, "D/M/YYYY", "10/1/2009")
     verifyDateLocale(d, "WWW D-MMM-YYYY", "Sat 10-Jan-2009")
+    verifyDateLocale(d, "DD MMM ''YY", "10 Jan '09")
+    verifyDateLocale(d, "'Tis is' DD MMM ''YY", "Tis is 10 Jan '09")
 
     verifyDateLocale(Date(1999, Month.mar, 2), "D-MMMM-YY", "2-March-99")
     verifyDateLocale(Date(2001, Month.oct, 23), "D-MMMM-YY", "23-October-01")
@@ -1243,10 +1254,14 @@ class DateTimeTest : Test
     verifyTimeLocale(Time(0, 0, 3), "k:mm:ss a", "12:00:03 a")
     verifyTimeLocale(Time(11, 59, 59), "k:mm:ss A", "11:59:59 A")
     verifyTimeLocale(Time(12, 0), "k:mm:ss aa", "12:00:00 pm")
+    verifyTimeLocale(Time(3, 0), "''h:mm 'time'", "'3:00 time")
 
     verifyNull(Time.fromLocale("xx:yy", "kk:mm", false))
     verifyErr(ParseErr#) { Time.fromLocale("3x:33", "kk:mm") }
     verifyErr(ParseErr#) { Time.fromLocale("10:7x", "kk:mm", true) }
+    verifyErr(ParseErr#) { Time.fromLocale("10:30", "''kk:mm") }
+    verifyErr(ParseErr#) { Time.fromLocale("10:30 ti", "kk:mm 'time'") }
+
   }
 
   Void verifyTimeLocale(Time t, Str pattern, Str expected, Time fromLocale := t)
@@ -1601,7 +1616,8 @@ class DateTimeTest : Test
   {
     d := Date(date)
     Locale("en-US").use { doVerifyWeekOfYear(d, us) }
-    Locale("fi").use    { doVerifyWeekOfYear(d, fi) }
+    if (Env.cur.runtime != "js")
+      Locale("fi").use    { doVerifyWeekOfYear(d, fi) }
     verifyEq(d.weekOfYear(Weekday.tue), tue)
     verifyEq(d.toDateTime(Time(23,59)).weekOfYear(Weekday.tue), tue)
   }
@@ -1723,6 +1739,8 @@ class DateTimeTest : Test
 
   Void testAllLocales()
   {
+    if (Env.cur.runtime == "js") return
+
     locales := Pod.find("sys").files.findAll |f| { f.pathStr.startsWith("/locale/") }.map |f| { f.basename }
     locales.each |locale|
     {

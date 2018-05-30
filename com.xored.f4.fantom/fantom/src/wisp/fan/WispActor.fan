@@ -35,79 +35,67 @@ internal const class WispActor : Actor
   **
   override Obj? receive(Obj? msg)
   {
-    TcpSocket socket := ((Unsafe)msg).val
-    try
-    {
-      // before we do anything set a receive timeout in case
-      // the client fails to send us data in a timely fashion
-      socket.options.receiveTimeout = 10sec
-
-      // loop processing requests with on this socket as
-      // long as a persistent connection is being used and
-      // we don't have any errors
-      while (process(socket)) {}
-    }
-    catch (Err e) { e.trace }
-    finally { try { socket.close } catch {} }
+    process(((Unsafe)msg).val)
     return null
   }
 
   **
-  ** Process a single HTTP request/response.  Return true if the request
-  ** was processed successfully and that a persistent connection is being
-  ** used. Return false on error or if the socket should be shutdown.
+  ** Process a single HTTP request/response.
   **
-  Bool process(TcpSocket socket)
+  private Void process(TcpSocket socket)
   {
-    // allocate request, response
-    res := WispRes(service, socket)
-    req := WispReq(service, socket, res)
+    WispRes? res
+    WispReq? req
+    close := true
+    init := false
 
-    // parse request line and headers, on error return false to
-    // close socket and terminate processing on this thread and socket
-    if (!parseReq(req)) return false
-
-    // service request
-    success := false
     try
     {
+      // allocate request, response
+      res = WispRes(service, socket)
+      req = WispReq(service, socket, res)
+
       // init thread locals
       Actor.locals["web.req"] = req
       Actor.locals["web.res"] = res
 
+      // before we do anything set a tight receive timeout in case
+      // the client fails to send us data in a timely fashion
+      socket.options.receiveTimeout = 10sec
+
+      // parse request line and headers, on error terminate processing
+      if (!parseReq(req)) return
+
       // initialize the req and res
       initReqRes(req, res)
+      init = true
 
-      // service which runs thru the installed web steps
+      // service the request which runs thru the installed web steps
       service.root.onService
 
       // save session if accessed
       service.sessionStore.doSave
 
-      // assume success which allows us to re-use this connection
-      success = true
-
-      // if the weblet didn't finishing reading the content
-      // stream then don't attempt to reuse this connection,
-      // safest thing is to just close the socket
-      try { if (req.webIn != null && req.webIn.read != null) success = false }
-      catch (IOErr e) { success = false }
+      // on upgraded to new protocol then do not close socket;
+      // otherwise ensure response if committed and flushed
+       if (res.upgraded)
+         close = false
+       else
+         res.close
     }
     catch (Err e)
     {
-      internalServerErr(req, res, e)
+      if (init)
+        internalServerErr(req, res, e)
+      else
+        e.trace
     }
-
-    // cleanup thread locals
-    Actor.locals.remove("web.req")
-    Actor.locals.remove("web.res")
-
-    // ensure response is committed and close the response
-    // output stream, but don't close the underlying socket
-    try { res.close } catch (Err e) { e.trace }
-
-    // return if using persistent connections
-    return success && res.isPersistent
+    finally
+    {
+      Actor.locals.remove("web.req")
+      Actor.locals.remove("web.res")
+      if (close) try { socket.close } catch {}
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,11 +113,11 @@ internal const class WispActor : Actor
       // skip leading CRLF (4.1)
       in := req.socket.in
       line := in.readLine
-      if (line == null) return false
+      if (line == null) throw Err("Empty request line")
       while (line.isEmpty)
       {
         line = in.readLine
-        if (line == null) return false
+        if (line == null) throw Err("Empty request line")
       }
 
       // parse request-line (5.1)
@@ -141,14 +129,15 @@ internal const class WispActor : Actor
       // method
       req.method = method.upper
 
-      // uri; immediately reject any uri which starts with ..
+      // uri; immediately reject any uri which looks dangerous
       req.uri = Uri.decode(uri)
-      if (req.uri.path.first == "..") return false
+      if (req.uri.path.first == "..") throw Err("Reject URI")
+      if (req.uri.pathStr.contains("//")) throw Err("Reject URI")
 
       // version
       if (ver == "HTTP/1.1") req.version = ver11
       else if (ver == "HTTP/1.0") req.version = ver10
-      else return false
+      else throw Err("Unsupported version")
 
       // parse headers
       req.headers = WebUtil.parseHeaders(in).ro
@@ -156,7 +145,19 @@ internal const class WispActor : Actor
       // success
       return true
     }
-    catch (Err e) { return false }
+    catch (Err e)
+    {
+      // attempt to return error response
+      try
+      {
+        out := req.socket.out
+        req.socket.out
+          .print("HTTP/1.1 400 Bad Request: $e.toStr.toCode\r\n")
+          .print("\r\n").flush
+      }
+      catch (Err e2) {}
+      return false
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,18 +171,6 @@ internal const class WispActor : Actor
   {
     // init request input stream to read content
     req.webIn = initReqInStream(req)
-
-    // init response - set predefined headers
-    res.headers["Server"] = wispVer
-    res.headers["Date"] = DateTime.now.toHttpStr
-
-    // if using HTTP 1.1 and client specified using keep-alives,
-    // then setup response to be persistent for pipelining
-    if (req.version === ver11 && req.isKeepAlive && !req.isUpgrade)
-    {
-      res.isPersistent = true
-      res.headers["Connection"] = "keep-alive"
-    }
 
     // configure Locale.cur for best match based on request
     Locale.setCur(req.locales.first)

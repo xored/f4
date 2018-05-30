@@ -25,7 +25,7 @@ fan.dom.EventPeer.prototype.target = function(self)
 fan.dom.EventPeer.prototype.pagePos = function(self)
 {
   if (this.$pagePos == null)
-    this.$pagePos = fan.dom.Pos.make(this.event.pageX, this.event.pageY);
+    this.$pagePos = fan.graphics.Point.makeInt(this.event.pageX, this.event.pageY);
   return this.$pagePos;
 }
 
@@ -42,12 +42,18 @@ fan.dom.EventPeer.prototype.delta = function(self)
   if (this.$delta == null)
   {
     this.$delta = this.event.deltaX != null && this.event.deltaY != null
-      ? fan.dom.Pos.make(this.event.deltaX, this.event.deltaY)
-      : fan.dom.Pos.m_defVal;
+      ? fan.graphics.Point.makeInt(this.event.deltaX, this.event.deltaY)
+      : fan.graphics.Point.m_defVal;
   }
   return this.$delta;
 }
 
+fan.dom.EventPeer.prototype.err = function(self)
+{
+  if (this.event.error == null) return null;
+  if (this.$err == null) this.$err = fan.sys.Err.make(this.event.error);
+  return this.$err;
+}
 
 fan.dom.EventPeer.prototype.stop = function(self)
 {
@@ -55,6 +61,19 @@ fan.dom.EventPeer.prototype.stop = function(self)
   this.event.stopPropagation();
   this.event.cancelBubble = true;
   this.event.returnValue = false;
+}
+
+fan.dom.EventPeer.prototype.get = function(self, name, def)
+{
+  var val = this.event[name];
+  if (val != null) return val;
+  if (def != null) return def;
+  return null;
+}
+
+fan.dom.EventPeer.prototype.set = function(self, name, val)
+{
+  this.elem[name] = val;
 }
 
 fan.dom.EventPeer.prototype.dataTransfer = function(self)

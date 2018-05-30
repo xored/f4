@@ -42,6 +42,7 @@ pre>
   - Inline code: 'FandocParser'
   - Strong: **foo bar**
   - Emphasis: *foo bar*
+  - Strong+Emphasis: ** *foo bar* **
   - Hyperlink: `http://fantom.org/`
   - Hyperlink: [Fantom Home Page]`http://fantom.org/`
 <pre
@@ -49,6 +50,7 @@ pre>
   - Code inline: 'FandocParser'
   - Strong: **foo bar**
   - Emphasis: *foo bar*
+  - Strong+Emphasis: ** *foo bar* **
   - Hyperlink: `http://fantom.org/`
   - Hyperlink: [Fantom Home Page]`http://fantom.org/`
 
@@ -105,6 +107,9 @@ pre>
 - I mean it!
 <pre
 
+Blocks annotated with the 'pre>' token are trimmed based on the line
+with the left most margin.
+
 Unordered List [#ul]
 ********************
 Unordered lists use a dash followed by a space.  Use indentation
@@ -156,6 +161,24 @@ pre>
      i. Subsection i
      ii. Subsection ii
 
+Horizontal Rules [#hr]
+**********************
+Horizontal rules start with '---', and must be preceded by a blank line:
+
+pre>
+  Above the rule
+
+  ---
+
+  Below the rule
+<pre
+
+Above the rule
+
+---
+
+Below the rule
+
 Block Quotes [#blockQuotes]
 ***************************
 Block quotes start the first line (or every line) of the paragraph
@@ -181,10 +204,28 @@ Images use the same syntax as a hyperlink with anchor text, but
 are prefixed with a bang:
 
 pre>
-  ![fan logo]`http://fantom.org/doc/eximg.png`
+  ![fan logo]`http://fantom.org/pod/fantomws/res/img/fantom.png`
 <pre
 
-![fan logo]`http://fantom.org/doc/eximg.png`
+![fan logo]`http://fantom.org/pod/fantomws/res/img/fantom.png`
+
+You can set an explicit size for the image as follows:
+
+pre>
+  ![fan logo][80x18]`http://fantom.org/pod/fantomws/res/img/fantom.png`
+<pre
+
+![fan logo][80x18]`http://fantom.org/pod/fantomws/res/img/fantom.png`
+
+You can make an image a link as follows with no spaces between the
+brackets:
+
+pre>
+ [![alt]`http://fantom.org/pod/fantomws/res/img/fantom.png`]`http://fantom.org/`
+<pre
+
+[![alt]`http://fantom.org/pod/fantomws/res/img/fantom.png`]`http://fantom.org/`
+
 
 Headings [#headings]
 ********************

@@ -38,7 +38,7 @@ fan.dom.WinPeer.prototype.userAgent = function(self)
 // Secondary Windows
 //////////////////////////////////////////////////////////////////////////
 
-fan.dom.WinPeer.open = function(uri, name, opts)
+fan.dom.WinPeer.prototype.open = function(self, uri, name, opts)
 {
   if (name === undefined) name = null;
   if (opts === undefined) opts = null;
@@ -57,9 +57,9 @@ fan.dom.WinPeer.open = function(uri, name, opts)
   }
 
   var w = fan.dom.Win.make();
-  if (opts != null) w.peer.win = window.open(uri.encode(), name, optStr);
-  if (name != null) w.peer.win = window.open(uri.encode(), name);
-  else              w.peer.win = window.open(uri.encode());
+  if (opts != null) w.peer.win = this.win.open(uri.encode(), name, optStr);
+  if (name != null) w.peer.win = this.win.open(uri.encode(), name);
+  else              w.peer.win = this.win.open(uri.encode());
   return w;
 }
 
@@ -97,11 +97,16 @@ fan.dom.WinPeer.prototype.alert = function(self, obj)
   this.win.alert(obj);
 }
 
+fan.dom.WinPeer.prototype.confirm = function(self, obj)
+{
+  return this.win.confirm(obj);
+}
+
 fan.dom.WinPeer.prototype.viewport = function(self)
 {
   return (typeof this.win.innerWidth != "undefined")
-    ? fan.gfx.Size.make(this.win.innerWidth, this.win.innerHeight)
-    : fan.gfx.Size.make(
+    ? fan.graphics.Size.makeInt(this.win.innerWidth, this.win.innerHeight)
+    : fan.graphics.Size.makeInt(
         this.win.document.documentElement.clientWidth,
         this.win.document.documentElement.clientHeight);
 }
@@ -109,7 +114,7 @@ fan.dom.WinPeer.prototype.viewport = function(self)
 fan.dom.WinPeer.prototype.screenSize = function(self)
 {
   if (this.$screenSize == null)
-    this.$screenSize = fan.gfx.Size.make(this.win.screen.width, this.win.screen.height);
+    this.$screenSize = fan.graphics.Size.makeInt(this.win.screen.width, this.win.screen.height);
   return this.$screenSize;
 }
 
@@ -133,6 +138,34 @@ fan.dom.WinPeer.prototype.top = function(self)
     this.$top.peer.win = this.win.top;
   }
   return this.$top;
+}
+
+fan.dom.WinPeer.eval = function(js)
+{
+  return eval(js);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Scrolling
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.scrollPos = function(self)
+{
+  var x = this.win.scrollX;
+  var y = this.win.scrollY;
+  if (!this.m_scrollPos || this.m_scrollPos.m_x != x || this.m_scrollPos.m_y != y)
+    this.m_scrollPos = fan.graphics.Point.makeInt(x, y);
+  return this.m_scrollPos;
+}
+
+fan.dom.WinPeer.prototype.scrollTo = function(self, x, y)
+{
+  this.win.scrollTo(x, y)
+}
+
+fan.dom.WinPeer.prototype.scrollBy = function(self, x, y)
+{
+  this.win.scrollBy(x, y)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -217,22 +250,7 @@ fan.dom.WinPeer.prototype.onEvent = function(self, type, useCapture, handler)
     }
   }
 
-  if (window.addEventListener)
-  {
-    // trap hashchange for non-supporting browsers
-    if (type == "hashchange" && !("onhashchange" in window))
-    {
-      this.fakeHashChange(self, handler);
-      return;
-    }
-
-    this.win.addEventListener(type, handler.$func, useCapture);
-  }
-  else
-  {
-    this.win.attachEvent('on'+type, handler.$func);
-  }
-
+  this.win.addEventListener(type, handler.$func, useCapture);
   return handler;
 }
 
@@ -303,6 +321,47 @@ fan.dom.WinPeer.prototype.clearInterval = function(self, id)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Geolocation
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.geoCurPosition = function(self, onSuccess, onErr, opts)
+{
+  this.win.navigator.geolocation.getCurrentPosition(
+    function(p,ts) { onSuccess.call(fan.dom.DomCoordPeer.wrap(p,ts)); },
+    function(err)  { if (onErr) onErr.call(fan.sys.Err.make(err.code + ": " + err.message)); },
+    this.$geoOpts(opts));
+}
+
+fan.dom.WinPeer.prototype.geoWatchPosition = function(self, onSuccess, onErr, opts)
+{
+  return this.win.navigator.geolocation.watchPosition(
+    function(p,ts) { onSuccess.call(fan.dom.DomCoordPeer.wrap(p,ts)); },
+    function(err)  { if (onErr) onErr.call(fan.sys.Err.make(err.code + ": " + err.message)); },
+    this.$geoOpts(opts));
+}
+
+fan.dom.WinPeer.prototype.geoClearWatch = function(self, id)
+{
+  this.win.navigator.geolocation.clearWatch(id);
+}
+
+fan.dom.WinPeer.prototype.$geoOpts = function(fanMap)
+{
+  if (!fanMap) return null;
+
+  var opts = {};
+  var keys = fanMap.keys();
+  for (var i=0; i<keys.size(); i++)
+  {
+    var key = keys.get(i);
+    var val = fanMap.get(key);
+    opts[key] = val;
+  }
+
+  return opts;
+}
+
+//////////////////////////////////////////////////////////////////////////
 // Storage
 //////////////////////////////////////////////////////////////////////////
 
@@ -340,10 +399,10 @@ fan.dom.WinPeer.prototype.diagnostics = function(self)
   }
 
   // user-agent
-  map.set("ua", window.navigator.userAgent);
+  map.set("ua", this.win.navigator.userAgent);
 
   // performance.timing
-  var t = window.performance.timing;
+  var t = this.win.performance.timing;
   map.set("perf.timing.unload",         dur(t.unloadEventStart,      t.unloadEventEnd));
   map.set("perf.timing.redirect",       dur(t.redirectStart,         t.redirectEnd));
   map.set("perf.timing.domainLookup",   dur(t.domainLookupStart,     t.domainLookupEnd));

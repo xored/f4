@@ -59,7 +59,7 @@ class JsPod : JsNode
   override Void write(JsWriter out)
   {
     // define namespace
-    out.w("fan.$name = {};").nl
+    writeNs(out, this.name)
 
     // write types
     types.each |t|
@@ -91,8 +91,28 @@ class JsPod : JsNode
       out.minify(in)
       in.close
     }
+    out.w("}).call(this);").nl
     out.w("//# sourceMappingURL=/pod/${name}/${name}.js.map").nl
   }
+
+  static Void writeNs(JsWriter out, Str name)
+  {
+    ns := "(function () {
+           ${requireSys}
+           if (typeof exports !== 'undefined') {
+             fan.$name = exports;
+           } else {
+             fan.$name = root.fan.$name = {};
+           }
+           "
+    ns.splitLines.each { out.w(it).nl }
+  }
+
+  static const Str requireSys :=
+    "var root=this;
+     var fan=root.fan;
+     if (!fan && (typeof require !== 'undefined')) fan = require('sys.js');
+     "
 
   Void writePeer(JsWriter out, JsType t, Bool isPeer)
   {
@@ -145,7 +165,7 @@ class JsPod : JsNode
       t.methods.each |m|
       {
         if (m.isFieldAccessor) return
-        params := m.params.join(",") |p| { "new fan.sys.Param('$p.name','$p.paramType.sig',$p.hasDef)" }
+        params := m.params.join(",") |p| { "new fan.sys.Param('$p.reflectName','$p.paramType.sig',$p.hasDef)" }
         facets := m.facets.join(",") |f| { "'$f.type.sig':$f.val.toCode" }
         out.w(".\$am('$m.origName',$m.flags,'$m.ret.sig',fan.sys.List.make(fan.sys.Param.\$type,[$params]),{$facets})")
       }

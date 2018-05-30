@@ -4,7 +4,7 @@
 //
 // History:
 //   8 Jan 09  Andy Frank  Creation
-//   8 Jul 09   Andy Frank  Split webappClient into sys/dom
+//   8 Jul 09  Andy Frank  Split webappClient into sys/dom
 //
 
 **
@@ -22,7 +22,7 @@ class HttpRes
   Int status
 
   ** The response headers.
-  Str:Str headers := Str:Str[:]
+  Str:Str headers := Str:Str[:] { it.caseInsensitive = true }
 
   ** The content of the response.
   Str content := ""

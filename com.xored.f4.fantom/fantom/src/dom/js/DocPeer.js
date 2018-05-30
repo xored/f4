@@ -17,22 +17,37 @@ fan.dom.DocPeer.prototype.$ctor = function(self)
 fan.dom.DocPeer.prototype.title  = function(self) { return this.doc.title; }
 fan.dom.DocPeer.prototype.title$ = function(self, val) { this.doc.title = val; }
 
+fan.dom.DocPeer.prototype.head = function(self)
+{
+  return fan.dom.ElemPeer.wrap(this.doc.head);
+}
+
 fan.dom.DocPeer.prototype.body = function(self)
 {
   return fan.dom.ElemPeer.wrap(this.doc.body);
 }
 
-fan.dom.DocPeer.prototype.elem = function(self, id)
+fan.dom.DocPeer.prototype.activeElem = function(self)
+{
+  var elem = this.doc.activeElement;
+  if (elem == null) return null;
+  return fan.dom.ElemPeer.wrap(elem);
+}
+
+fan.dom.DocPeer.prototype.elemById = function(self, id)
 {
   var elem = this.doc.getElementById(id);
   if (elem == null) return null;
   return fan.dom.ElemPeer.wrap(elem);
 }
 
-fan.dom.DocPeer.prototype.createElem = function(self, tagName, attribs)
+fan.dom.DocPeer.prototype.createElem = function(self, tagName, attribs, ns)
 {
-  var elem = this.doc.createElement(tagName);
+  var elem = ns
+    ? this.doc.createElementNS(ns.toStr, tagName)
+    : this.doc.createElement(tagName);
   var wrap = fan.dom.ElemPeer.wrap(elem);
+  if (ns) wrap.m_ns = ns;
   if (attribs != null)
   {
     var k = attribs.keys();
@@ -64,6 +79,37 @@ fan.dom.DocPeer.prototype.querySelectorAll = function(self, selectors)
   return list;
 }
 
+fan.dom.DocPeer.prototype.exportPng = function(self, img)
+{
+  return this.__export(img, "image/png");
+}
+
+fan.dom.DocPeer.prototype.exportJpg = function(self, img, quality)
+{
+  return this.__export(img, "image/jpeg", quality);
+}
+
+fan.dom.DocPeer.prototype.__export = function(img, mimeType, quality)
+{
+  var elem = img.peer.elem;
+
+  // set phy canvas size to img
+  var canvas = this.doc.createElement("canvas");
+  canvas.style.width  = elem.width  + "px";
+  canvas.style.height = elem.height + "px";
+
+  // scale up working space if retina
+  var ratio     = window.devicePixelRatio || 1;
+  canvas.width  = ratio * elem.width;
+  canvas.height = ratio * elem.height;
+
+  // render with scale factor
+  var cx = canvas.getContext("2d");
+  cx.scale(ratio, ratio);
+  cx.drawImage(elem, 0, 0);
+  return canvas.toDataURL(mimeType, quality);
+}
+
 fan.dom.DocPeer.prototype.onEvent = function(self, type, useCapture, handler)
 {
   handler.$func = function(e) { handler.call(fan.dom.EventPeer.make(e)); }
@@ -77,13 +123,24 @@ fan.dom.DocPeer.prototype.removeEvent = function(self, type, useCapture, handler
     this.doc.removeEventListener(type, handler.$func, useCapture);
 }
 
+fan.dom.DocPeer.prototype.exec = function(self, name, defUi, val)
+{
+  return this.doc.execCommand(name, defUi, val);
+}
+
 fan.dom.DocPeer.prototype.out = function(self)
 {
   return fan.web.WebOutStream.make(new fan.dom.DocOutStream(this.doc));
 }
 
 fan.dom.DocPeer.prototype.getCookiesStr = function(self) { return this.doc.cookie; }
-fan.dom.DocPeer.prototype.addCookieStr = function(self,c) { this.doc.cookie = c; }
+
+fan.dom.DocPeer.prototype.addCookie = function(self,c)
+{
+  // always force HttpOnly otherwise this is a no-op for browsers
+  c.m_httpOnly = false;
+  this.doc.cookie = c.toStr();
+}
 
 /*************************************************************************
  * DocOutStream

@@ -11,7 +11,7 @@
  * using the standard pattern syntax.
  */
 fan.sys.DateTimeStr = fan.sys.Obj.$extend(fan.sys.Obj);
-fan.sys.DateTime.$ctor = function()
+fan.sys.DateTimeStr.prototype.$ctor = function()
 {
   this.pattern = "";
   this.year = 0;
@@ -30,7 +30,6 @@ fan.sys.DateTime.$ctor = function()
   this.str  = "";  // when parsing
   this.pos  = 0;   // index in str for parse
 }
-
 
 fan.sys.DateTimeStr.makeDateTime = function(pattern, locale, dt)
 {
@@ -100,6 +99,7 @@ fan.sys.DateTimeStr.prototype.format = function()
     // literals
     if (c == '\'')
     {
+      var numLiterals = 0;
       while (true)
       {
         ++i;
@@ -107,7 +107,9 @@ fan.sys.DateTimeStr.prototype.format = function()
         c = this.pattern.charAt(i);
         if (c == '\'') break;
         s += c;
+        numLiterals++;
       }
+      if (numLiterals == 0) s += "'";
       continue;
     }
 
@@ -524,13 +526,22 @@ fan.sys.DateTimeStr.prototype.parse = function(s)
         break;
 
       case '\'':
-        while (true)
+        if (n == 2)
         {
-          var expected = this.pattern.charAt(++i);
-          if (expected == '\'') break;
           var actual = this.str.charAt(this.pos++);
-          if (actual != expected)
-            throw fan.sys.Err.make("Expected '" + expected + "', not '" + actual + "' [pos " + this.pos +"]");
+          if (actual != '\'')
+            throw fan.sys.Err.make("Expected single quote, not '" + actual + "' [pos " + this.pos +"]");
+        }
+        else
+        {
+          while (true)
+          {
+            var expected = this.pattern.charAt(++i);
+            if (expected == '\'') break;
+            var actual = this.str.charAt(this.pos++);
+            if (actual != expected)
+              throw fan.sys.Err.make("Expected '" + expected + "', not '" + actual + "' [pos " + this.pos +"]");
+          }
         }
         break;
 

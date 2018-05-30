@@ -3,9 +3,10 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   8 Jan 09   Andy Frank  Creation
-//   20 May 09  Andy Frank  Refactor to new OO model
-//   8 Jul 09   Andy Frank  Split webappClient into sys/dom
+//    8 Jan 2009  Andy Frank  Creation
+//   20 May 2009  Andy Frank  Refactor to new OO model
+//    8 Jul 2009  Andy Frank  Split webappClient into sys/dom
+//   19 May 2017  Andy Frank  Formalize attr vs prop
 //
 
 fan.dom.ElemPeer = fan.sys.Obj.$extend(fan.sys.Obj);
@@ -16,19 +17,32 @@ fan.dom.ElemPeer = fan.sys.Obj.$extend(fan.sys.Obj);
 
 fan.dom.ElemPeer.prototype.$ctor = function(self)
 {
-  this.m_pos  = fan.dom.Pos.m_defVal;
-  this.m_size = fan.gfx.Size.m_defVal;
+  this.m_pos  = fan.graphics.Point.m_defVal;
+  this.m_size = fan.graphics.Size.m_defVal;
 }
 
-fan.dom.ElemPeer.prototype._make = function(self, tagName)
+fan.dom.ElemPeer.prototype._make = function(self, tagName, ns)
 {
   // short-circut for wrap()
   if (tagName === undefined) return;
 
   var doc  = fan.dom.Win.cur().doc().peer.doc;
-  var elem = doc.createElement(tagName);
+  var elem = ns
+     ? doc.createElementNS(ns.toStr(), tagName)
+     : doc.createElement(tagName);
   this.elem = elem;
   this.elem._fanElem = self;
+
+  // optimziation hooks for non-html namespaces
+  if (ns)
+  {
+    if (ns.toStr() == "http://www.w3.org/2000/svg") this.$svg = true;
+  }
+}
+
+fan.dom.ElemPeer.fromNative = function(obj)
+{
+  return fan.dom.ElemPeer.wrap(obj);
 }
 
 /*
@@ -50,13 +64,16 @@ fan.dom.ElemPeer.wrap = function(elem)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+// Accessors
 //////////////////////////////////////////////////////////////////////////
 
-fan.dom.ElemPeer.prototype.tagName = function(self) { return fan.sys.Str.lower(this.elem.nodeName); }
+fan.dom.ElemPeer.prototype.ns = function(self)
+{
+  var ns = this.elem.namespaceURI;
+  return fan.sys.Uri.fromStr(ns);
+}
 
-fan.dom.ElemPeer.prototype.id  = function(self) { return this.elem.id; }
-fan.dom.ElemPeer.prototype.id$ = function(self, val) { return this.elem.id = val; }
+fan.dom.ElemPeer.prototype.tagName = function(self) { return fan.sys.Str.lower(this.elem.nodeName); }
 
 fan.dom.ElemPeer.prototype.style = function(self)
 {
@@ -87,35 +104,116 @@ fan.dom.ElemPeer.prototype.enabled$ = function(self, val)
   this.elem.disabled = !val;
 }
 
-fan.dom.ElemPeer.prototype.draggable  = function(self) { return this.elem.draggable; }
-fan.dom.ElemPeer.prototype.draggable$ = function(self, val) { this.elem.draggable = val; }
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
-fan.dom.ElemPeer.prototype.get = function(self, name, def)
+fan.dom.ElemPeer.prototype.attrs = function(self)
 {
-  if (name == "id")      return this.id(self);
-  if (name == "name")    return this.elem.name;
-  if (name == "class")   return this.elem.className; // TODO: route to Style?
-  if (name == "style")   return this.style(self);
-  if (name == "value")   return this.elem.value;
-  if (name == "checked") return this.elem.checked;
+  var map = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Str.$type);
+  map.m_caseInsensitive = true;
+  var attrs = this.elem.attributes;
+  for(var i=0; i<attrs.length; i++)
+  {
+    map.set(attrs[i].name, attrs[i].value);
+  }
+  return map;
+}
 
-  var val = this.elem[name];
-  if (val == null) val = this.elem.getAttribute(name);
+fan.dom.ElemPeer.prototype.attr = function(self, name)
+{
+  return this.elem.getAttribute(name);
+}
 
-  if (val != null) return val;
-  if (def != null) return def;
+fan.dom.ElemPeer.prototype.setAttr = function(self, name, val, ns)
+{
+  if (val == null)
+    this.elem.removeAttribute(name);
+  else
+  {
+    if (ns == null)
+      this.elem.setAttribute(name, val);
+    else
+      this.elem.setAttributeNS(ns.toStr(), name, val);
+  }
+  return self;
+}
+
+fan.dom.ElemPeer.prototype.removeAttr = function(self, name)
+{
+  this.elem.removeAttribute(name);
+  return self;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Properties
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.ElemPeer.prototype.prop = function(self, name)
+{
+  if (fan.dom.ElemPeer.propHooks[name])
+    return fan.dom.ElemPeer.propHooks[name](this);
+
+  return this.elem[name];
+}
+
+fan.dom.ElemPeer.prototype.setProp = function(self, name, val)
+{
+  this.elem[name] = val;
+  return self;
+}
+
+fan.dom.ElemPeer.propHooks = {
+  contentWindow: function(peer)
+  {
+    var v = peer.elem.contentWindow;
+    if (v == null) return null;
+    var w = fan.dom.Win.make();
+    w.peer.win = v;
+    return w
+  },
+  files: function(peer)
+  {
+    var f = peer.elem.files;
+    if (f == null) return null;
+    var list = fan.sys.List.make(fan.dom.DomFile.$type);
+    for (var i=0; i<f.length; i++) list.add(fan.dom.DomFilePeer.wrap(f[i]));
+    return list;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// FFI
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.ElemPeer.prototype.trap = function(self, name, args)
+{
+  if (this.$svg) return fan.dom.Svg.doTrap(self, name, args);
+
+  if (args == null || args.isEmpty()) return this.prop(self, name);
+  this.setProp(self, name, args.first());
   return null;
 }
 
-fan.dom.ElemPeer.prototype.set = function(self, name, val)
+fan.dom.ElemPeer.prototype.invoke = function(self, name, args)
 {
-  if (name == "id")           this.id$(self, val);
-  else if (name == "name")    this.elem.name = val;
-  else if (name == "class")   this.elem.className = val;  // TODO: route to Style?
-  else if (name == "value")   this.elem.value = val;
-  else if (name == "checked") this.elem.checked = val;
-  else if (this.elem[name])   this.elem[name] = val;
-  else this.elem.setAttribute(name, val);
+  var f = this.elem[name];
+
+  // verify propery is actually a function
+  if (typeof f != 'function')
+    throw fan.sys.ArgErr.make(name + " is not a function");
+
+  // map fantom objects to js natives
+  var arglist = null;
+  if (args != null)
+  {
+    // TODO :)
+    arglist = [];
+    for (var i=0; i<args.size(); i++)
+      arglist.push(args.get(i));
+  }
+
+  return f.apply(this.elem, arglist);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,13 +225,13 @@ fan.dom.ElemPeer.prototype.pos = function(self)
   var x = this.elem.offsetLeft;
   var y = this.elem.offsetTop;
   if (this.m_pos.m_x != x || this.m_pos.m_y != y)
-    this.m_pos = fan.dom.Pos.make(x, y);
+    this.m_pos = fan.graphics.Point.makeInt(x, y);
   return this.m_pos;
 }
 
 fan.dom.ElemPeer.prototype.pos$ = function(self, val)
 {
-  this.m_pos = fan.dom.Pos.make(val.m_x, val.m_y);
+  this.m_pos = fan.graphics.Point.makeInt(val.m_x, val.m_y);
   this.elem.style.left = val.m_x + "px";
   this.elem.style.top  = val.m_y + "px";
 }
@@ -143,21 +241,21 @@ fan.dom.ElemPeer.prototype.pagePos = function(self)
   var r = this.elem.getBoundingClientRect();
   var x = Math.round(r.left);
   var y = Math.round(r.top);
-  return fan.dom.Pos.make(x, y);
+  return fan.graphics.Point.makeInt(x, y);
 }
 
 fan.dom.ElemPeer.prototype.size = function(self)
 {
-  var w = this.elem.offsetWidth;
-  var h = this.elem.offsetHeight;
+  var w = this.elem.offsetWidth  || 0;
+  var h = this.elem.offsetHeight || 0;
   if (this.m_size.m_w != w || this.m_size.m_h != h)
-    this.m_size = fan.gfx.Size.make(w, h);
+    this.m_size = fan.graphics.Size.makeInt(w, h);
   return this.m_size;
 }
 
 fan.dom.ElemPeer.prototype.size$ = function(self, val)
 {
-  this.m_size = fan.gfx.Size.make(val.m_w, val.m_h);
+  this.m_size = fan.graphics.Size.makeInt(val.m_w, val.m_h);
   this.elem.style.width  = val.m_w + "px";
   this.elem.style.height = val.m_h + "px";
 }
@@ -167,13 +265,13 @@ fan.dom.ElemPeer.prototype.scrollPos = function(self)
   var x = this.elem.scrollLeft;
   var y = this.elem.scrollTop;
   if (!this.m_scrollPos || this.m_scrollPos.m_x != x || this.m_scrollPos.m_y != y)
-    this.m_scrollPos = fan.dom.Pos.make(x, y);
+    this.m_scrollPos = fan.graphics.Point.makeInt(x, y);
   return this.m_scrollPos;
 }
 
 fan.dom.ElemPeer.prototype.scrollPos$ = function(self, val)
 {
-  this.m_scrollPos = fan.dom.Pos.make(val.m_x, val.m_y);
+  this.m_scrollPos = fan.graphics.Point.makeInt(val.m_x, val.m_y);
   this.elem.scrollLeft = val.m_x;
   this.elem.scrollTop  = val.m_y;
 }
@@ -183,7 +281,7 @@ fan.dom.ElemPeer.prototype.scrollSize = function(self)
   var w = this.elem.scrollWidth;
   var h = this.elem.scrollHeight;
   if (!this.m_scrollSize || this.m_scrollSize.m_w != w || this.m_size.m_h != h)
-    this.m_scrollSize = fan.gfx.Size.make(w, h);
+    this.m_scrollSize = fan.graphics.Size.makeInt(w, h);
   return this.m_scrollSize;
 }
 
@@ -197,6 +295,11 @@ fan.dom.ElemPeer.prototype.parent = function(self)
   var parent = this.elem.parentNode;
   if (parent == null) return null;
   return fan.dom.ElemPeer.wrap(parent);
+}
+
+fan.dom.ElemPeer.prototype.hasChildren = function(self)
+{
+  return this.elem.childElementCount > 0;
 }
 
 fan.dom.ElemPeer.prototype.children = function(self)
@@ -264,6 +367,12 @@ fan.dom.ElemPeer.prototype.querySelectorAll = function(self, selectors)
   for (var i=0; i<elems.length; i++)
     list.add(fan.dom.ElemPeer.wrap(elems[i]));
   return list;
+}
+
+fan.dom.ElemPeer.prototype.clone = function(self, deep)
+{
+  var clone = this.elem.cloneNode(deep);
+  return fan.dom.ElemPeer.wrap(clone);
 }
 
 fan.dom.ElemPeer.prototype.addChild = function(self, child)

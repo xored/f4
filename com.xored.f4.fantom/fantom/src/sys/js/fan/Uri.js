@@ -101,6 +101,81 @@ fan.sys.Uri.encodeQueryStr = function(buf, str)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Tokens
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.Uri.escapeToken = function(str, section)
+{
+  var mask = fan.sys.Uri.$sectionToMask(section);
+  var buf = [];
+  var delimEscMap = fan.sys.Uri.delimEscMap;
+  for (var i = 0; i< str.length; ++i)
+  {
+    var c = str.charCodeAt(i);
+    if (c < delimEscMap.length && (delimEscMap[c] & mask) != 0)
+      buf.push('\\');
+    buf.push(String.fromCharCode(c));
+  }
+  return buf.join("");
+}
+
+fan.sys.Uri.encodeToken = function(str, section)
+{
+  var mask = fan.sys.Uri.$sectionToMask(section);
+  var buf = ""
+  var delimEscMap = fan.sys.Uri.delimEscMap;
+  var charMap = fan.sys.Uri.charMap;
+  for (var i = 0; i < str.length; ++i)
+  {
+    var c = str.charCodeAt(i);
+    if (c < 128 && (charMap[c] & mask) != 0 && (delimEscMap[c] & mask) == 0)
+      buf += String.fromCharCode(c);
+    else
+      buf = fan.sys.UriEncoder.percentEncodeChar(buf, c);
+  }
+  return buf;
+}
+
+fan.sys.Uri.decodeToken = function(str, section)
+{
+  var mask = fan.sys.Uri.$sectionToMask(section);
+  if (str.length == 0) return "";
+  return new fan.sys.UriDecoder(str, true).decodeToken(mask);
+}
+
+fan.sys.Uri.unescapeToken = function(str)
+{
+  var buf = "";
+  for (var i = 0; i < str.length; ++i)
+  {
+    var c = str.charAt(i);
+    if (c == '\\')
+    {
+      ++i;
+      if (i >= str.length) throw fan.sys.ArgErr.make("Invalid esc: " + str);
+      c = str.charAt(i);
+    }
+    buf += c;
+  }
+  return buf;
+}
+
+fan.sys.Uri.$sectionToMask = function(section)
+{
+  switch (section)
+  {
+    case 1: return fan.sys.Uri.PATH; break;
+    case 2: return fan.sys.Uri.QUERY; break;
+    case 3: return fan.sys.Uri.FRAG; break;
+    default: throw fan.sys.ArgErr.make("Invalid section flag: " + section);
+  }
+}
+
+fan.sys.Uri.m_sectionPath  = 1;
+fan.sys.Uri.m_sectionQuery = 2;
+fan.sys.Uri.m_sectionFrag  = 3;
+
+//////////////////////////////////////////////////////////////////////////
 // Section Constructor
 //////////////////////////////////////////////////////////////////////////
 
@@ -399,8 +474,8 @@ fan.sys.UriDecoder.prototype.pathSegments = function(pathStr, numSegs)
   if (len == 0 || (len == 1 && pathStr.charAt(0) == '/'))
     return fan.sys.Uri.emptyPath();
 
-  // check for trailing slash
-  if (len > 1 && pathStr.charAt(len-1) == '/')
+  // check for trailing slash (unless backslash escaped)
+  if (len > 1 && pathStr.charAt(len-1) == '/' && pathStr.charAt(len-2) != '\\')
   {
     numSegs--;
     len--;
@@ -503,9 +578,9 @@ fan.sys.UriDecoder.prototype.addQueryParam = function(map, q, start, eq, end, es
     val = this.toQueryStr(q, eq+1, end, escaped);
   }
 
-  dup = map.get(key, null)
-  if (dup !== undefined) val = dup + "," + val
-  map.set(key, val)
+  dup = map.get(key, null);
+  if (dup != null) val = dup + "," + val;
+  map.set(key, val);
 }
 
 fan.sys.UriDecoder.prototype.toQueryStr = function(q, start, end, escaped)
@@ -530,20 +605,46 @@ fan.sys.UriDecoder.prototype.toQueryStr = function(q, start, end, escaped)
   return s;
 }
 
+fan.sys.UriDecoder.prototype.decodeToken = function(mask)
+{
+  return this.substring(0, this.str.length, mask);
+}
+
 fan.sys.UriDecoder.prototype.substring = function(start, end, section)
 {
-  if (!this.decoding) return this.str.substring(start, end);
-
-  var buf = "";
-  this.dpos = start;
-  while (this.dpos < end)
+  var buf = [];
+  var delimEscMap = fan.sys.Uri.delimEscMap;
+  if (!this.decoding)
   {
-    var ch = this.nextChar(section);
-    if (this.nextCharWasEscaped && ch < fan.sys.Uri.delimEscMap.length && (fan.sys.Uri.delimEscMap[ch] & section) != 0)
-      buf += '\\';
-    buf += String.fromCharCode(ch);
+    var last = 0;
+    var backslash = 92; // code for backslash
+    for (var i = start; i < end; ++i)
+    {
+      var ch = this.str.charCodeAt(i);
+      if (last == backslash && ch < delimEscMap.length && (delimEscMap[ch] & section) == 0)
+      {
+        // don't allow backslash unless truly a delimiter
+        buf.pop();
+      }
+      buf.push(String.fromCharCode(ch));
+      last = ((last == backslash && ch == backslash) ? 0 : ch);
+    }
   }
-  return buf;
+  else
+  {
+    this.dpos = start;
+    while (this.dpos < end)
+    {
+      var ch = this.nextChar(section);
+      if (this.nextCharWasEscaped && ch < delimEscMap.length && (delimEscMap[ch] & section) != 0)
+      {
+        // if ch was an escaped delimiter
+        buf.push('\\');
+      }
+      buf.push(String.fromCharCode(ch));
+    }
+  }
+  return buf.join("");
 }
 
 fan.sys.UriDecoder.prototype.nextChar = function(section)
@@ -584,7 +685,6 @@ fan.sys.UriDecoder.prototype.nextOctet = function(section)
   {
     this.nextCharWasEscaped = true;
     return (fan.sys.Uri.hexNibble(this.str.charCodeAt(this.dpos++)) << 4) | fan.sys.Uri.hexNibble(this.str.charCodeAt(this.dpos++));
-    return x;
   }
   else
   {
@@ -763,6 +863,11 @@ fan.sys.Uri.prototype.toCode = function()
   return s;
 }
 
+fan.sys.Uri.prototype.hash = function()
+{
+  return fan.sys.Str.hash(this.m_str);
+}
+
 fan.sys.Uri.prototype.toStr = function()
 {
   return this.m_str;
@@ -844,6 +949,11 @@ fan.sys.Uri.prototype.isPathAbs = function()
     return false;
   else
     return this.m_pathStr.charAt(0) == '/';
+}
+
+fan.sys.Uri.prototype.isPathRel = function()
+{
+  return !this.isPathAbs();
 }
 
 fan.sys.Uri.prototype.isPathOnly = function()
@@ -1319,9 +1429,9 @@ fan.sys.Uri.isScheme = function(c)
   return c < 128 ? (fan.sys.Uri.charMap[c] & fan.sys.Uri.SCHEME) != 0 : false;
 }
 
-fan.sys.Uri.charMap     = [];
-fan.sys.Uri.nameMap     = [];
-fan.sys.Uri.delimEscMap = [];
+fan.sys.Uri.charMap     = new Array(128);
+fan.sys.Uri.nameMap     = new Array(128);
+fan.sys.Uri.delimEscMap = new Array(128);
 fan.sys.Uri.SCHEME     = 0x01;
 fan.sys.Uri.USER       = 0x02;
 fan.sys.Uri.HOST       = 0x04;
@@ -1330,6 +1440,11 @@ fan.sys.Uri.QUERY      = 0x10;
 fan.sys.Uri.FRAG       = 0x20;
 fan.sys.Uri.DIGIT      = 0x40;
 fan.sys.Uri.HEX        = 0x80;
+
+// initialize flags for all character maps to 0
+for (var i=0; i<128; ++i) { fan.sys.Uri.charMap[i] = 0 ; }
+for (var i=0; i<128; ++i) { fan.sys.Uri.nameMap[i] = 0 ; }
+for (var i=0; i<128; ++i) { fan.sys.Uri.delimEscMap[i] = 0 ; }
 
 // alpha/digits characters
 fan.sys.Uri.unreserved = fan.sys.Uri.SCHEME | fan.sys.Uri.USER | fan.sys.Uri.HOST | fan.sys.Uri.PATH | fan.sys.Uri.QUERY | fan.sys.Uri.FRAG;

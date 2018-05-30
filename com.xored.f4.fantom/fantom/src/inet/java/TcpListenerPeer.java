@@ -115,7 +115,11 @@ public class TcpListenerPeer
       TcpSocket s = TcpSocket.make();
       implAccept(s.peer.socket);
       s.peer.connected(s);
-      if (sslContext != null) s = upgradeTls(s);
+      if (sslContext != null)
+      {
+        try { s = upgradeTls(s); }
+        catch (IOException e) { s.close(); throw e; }
+      }
       return s;
     }
     catch (IOException e)
@@ -206,7 +210,6 @@ public class TcpListenerPeer
   private TcpSocket upgradeTls(TcpSocket s) throws IOException
   {
     SSLSocketFactory sf = sslContext.getSocketFactory();
-    InetSocketAddress remoteAddr = (InetSocketAddress)s.peer.socket.getRemoteSocketAddress();
     SSLSocket sslSocket = (SSLSocket)sf.createSocket(
       s.peer.socket,
       s.peer.socket.getInetAddress().getHostAddress(),
@@ -307,8 +310,6 @@ public class TcpListenerPeer
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
-  private IpAddr remoteAddr;
-  private int remotePort;
   private int inBufSize = 4096;
   private int outBufSize = 4096;
   private SysInStream in;
