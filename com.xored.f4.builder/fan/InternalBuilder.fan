@@ -29,6 +29,7 @@ class InternalBuilder : Builder {
 	
 	override CompilerErr[] buildPod(|Str|? consumer) {
 		// compile pods in a temporary workdir: /.metadata/.plugins/com.xored.fanide.core/compiler/<podName>/
+		// if we build them in a dir that we have control over, there shouldn't be any file locking / permission errors
 		pluginState	:= FanCore.getDefault.getStateLocation
 		pluginDir	:= File.os(pluginState.toOSString).normalize
 		compileDir	:= pluginDir + `compiler/${fp.podName}/`
@@ -96,26 +97,28 @@ class InternalBuilder : Builder {
 				errs.add(compileJava(consumer, compileDir, resolvedPods))
 			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
-			podFileName	:= `${fp.podName}.pod` 
-			newPodFile	:= input.outDir + podFileName
-			podFile		:= fp.podOutFile
+			oldPodFile	:= fp.podOutFile
+			newPodFile	:= input.outDir + `${fp.podName}.pod` 
 
 			if (newPodFile.exists) {
-				if (isPodChanged(newPodFile, podFile)) {
-					consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
-					newPodFile.copyTo(podFile, ["overwrite" : true])
-					jp := JavaCore.create(fp.project)
-					jp.getJavaModel.refreshExternalArchives([jp], null)
-					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
-				}
+
+				// copy pod to outDir
+				consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+				newPodFile.copyTo(oldPodFile, ["overwrite" : true])
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
 				if (fp.prefs.publishPod) {
 					consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
 					fp.compileEnv.publishPod(newPodFile)
 				}
+
+				if (isPodChanged(newPodFile, oldPodFile)) {
+					jp := JavaCore.create(fp.project)
+					jp.getJavaModel.refreshExternalArchives([jp], null)
+					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+				}
 				
-				newPodFile.delete
+				compileDir.delete
 			}
 			
 			return errs.flatten

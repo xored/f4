@@ -30,12 +30,12 @@ class ExternalBuilder : Builder {
 		out := launch(wc, consumer)
 		
 		newPodFile	:= fp.projectDir + `${fp.podName}.pod`
-		podFile		:= fp.podOutFile
+		oldPodFile	:= fp.podOutFile
 
 		if (newPodFile.exists) {
-			if (newPodFile.uri != podFile.uri) {
-				consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
-				newPodFile.copyTo(podFile, ["overwrite" : true])
+			if (newPodFile.uri != oldPodFile.uri) {
+				consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+				newPodFile.copyTo(oldPodFile, ["overwrite" : true])
 			}
 
 			if (fp.prefs.publishPod) {

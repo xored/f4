@@ -40,9 +40,10 @@ class CompilerOptionsBlock : AbstractOptionsBlock {
 	override protected Control? createOptionsBlock(Composite? parent) {
 		composite := SWTFactory.createComposite(parent, parent.getFont, 2, 1, GridData.FILL_HORIZONTAL)
 
-		SWTFactory.createLabel(composite, "Pod output dir", 1)
+		SWTFactory.createLabel(composite, "Build directory", 1)
 		bindControl(SWTFactory.createSingleText(composite, 1), podOutputDir, null)
-		SWTFactory.createLabel(composite, "Directory should be relative to the project directory", 2)
+		SWTFactory.createLabel(composite, "Where pods are built, relative to the project directory.", 2)
+		SWTFactory.createLabel(composite, "The 'build.fan > podOutDir' setting (should it exist) overrides this value.", 2)
 
 		SWTFactory.createLabel(composite, "", 2)
 		bindControl(SWTFactory.createCheckButton(composite, "Use external compiler", null, false, 2), useExternalBuilderKey, null)

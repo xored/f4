@@ -32,9 +32,7 @@ const class FantomProject {
 
 	const File		projectDir
 	
-	** 'podOutDir' from 'build.fan'.
-	const Uri?		publishDir
-		
+	const Uri?		podOutDir		
 	const Depend[]	rawDepends	:= Depend#.emptyList
 	const Uri[]		resDirs		:= Uri#.emptyList
 	const Uri[]		jsDirs		:= Uri#.emptyList
@@ -87,17 +85,17 @@ const class FantomProject {
 			projErrs.add(ProjectErr("Pod name is not set"))
 		}
 		
-		version			= manifest.version
-		summary			= manifest.summary
-		publishDir		= manifest.outPodDir
-		resDirs			= manifest.resDirs
-		jsDirs			= manifest.jsDirs
-		javaDirs		= manifest.javaDirs
-		meta			= manifest.meta.dup
-		index			= manifest.index.dup
-		docApi			= manifest.docApi
-		docSrc			= manifest.docSrc
-		rawDepends		= manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]| {
+		version		= manifest.version
+		summary		= manifest.summary
+		podOutDir	= manifest.outPodDir
+		resDirs		= manifest.resDirs
+		jsDirs		= manifest.jsDirs
+		javaDirs	= manifest.javaDirs
+		meta		= manifest.meta.dup
+		index		= manifest.index.dup
+		docApi		= manifest.docApi
+		docSrc		= manifest.docSrc
+		rawDepends	= manifest.depends.reduce(Depend[,]) |Depend[] r, Str raw -> Depend[]| {
 			depend := Depend.fromStr(raw, false)
 			if (depend != null)
 				r.add(depend)
@@ -117,9 +115,10 @@ const class FantomProject {
 		return fanHomeDir
 	}
 	
-	** The pod output file that gets built.
+	** The output pod file that gets built.
 	File podOutFile() {
-		(prefs.podOutputDir + `${podName}.pod`).normalize		
+		podDir := (podOutDir != null) ? projectDir + podOutDir : prefs.podOutputDir
+		return podDir.uri.plusSlash.plusName("${podName}.pod").toFile.normalize		
 	}
 	
 	** The 'build.fan' file.
