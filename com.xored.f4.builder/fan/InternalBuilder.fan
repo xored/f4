@@ -1,14 +1,11 @@
-using f4core
-using f4launching
+using f4core::FantomProject
+using f4core::FantomProjectManager
+using f4core::LogUtil
 using compiler
-using concurrent
 
 using [java]org.eclipse.debug.core::DebugPlugin
 using [java]org.eclipse.debug.core::ILaunchConfigurationWorkingCopy
 using [java]org.eclipse.debug.core::ILaunchManager
-using [java]org.eclipse.dltk.launching::ScriptRuntime
-using [java]org.eclipse.dltk.launching::AbstractScriptLaunchConfigurationDelegate
-using [java]org.eclipse.jdt.launching::IJavaLaunchConfigurationConstants as JavaConsts
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.core::IJavaProject
@@ -16,12 +13,8 @@ using [java]org.eclipse.jdt.launching::JavaRuntime
 using "[java]org.eclipse.core.externaltools.internal"::IExternalToolConstants as ExtConsts
 
 using [java]com.xored.fanide.core::FanCore
-using [java]org.eclipse.core.runtime::IPath
-using [java]org.eclipse.core.runtime::Path
 using [java]org.eclipse.core.runtime::NullProgressMonitor
-using [java]org.eclipse.core.resources::ResourcesPlugin
 using [java]org.eclipse.core.resources::IResource
-using [java]java.io::File as JFile
 using [java]java.util::HashMap as JHashMap
 
 using [java]com.xored.fanide.core::JStubGenerator
@@ -35,12 +28,14 @@ class InternalBuilder : Builder {
 	static const Str pluginId := "com.xored.f4.builder"
 	
 	override CompilerErr[] buildPod(|Str|? consumer) {
-		// Prepare temporary output directory for pod building
-		statePath	:= FanCore.getDefault.getStateLocation
-		projectPath	:= statePath.append("compiler").append(fp.podName)
-		root		:= projectPath.toFile
-		root.mkdirs
-		root.listFiles.each |JFile? f|{ f?.delete}
+		// compile pods in a temporary workdir: /.metadata/.plugins/com.xored.fanide.core/compiler/<podName>/
+		pluginState	:= FanCore.getDefault.getStateLocation
+		pluginDir	:= File.os(pluginState.toOSString).normalize
+		compileDir	:= pluginDir + `compiler/${fp.podName}/`
+		
+		// make sure it's empty first
+		compileDir.create
+		compileDir.listFiles.each { it.delete }
 		
 		resolvedPods := fp.resolvePods
     
@@ -53,7 +48,7 @@ class InternalBuilder : Builder {
 		// Without this, we get compilation errors similar to "pod not found: f4parser".
 		// These aren't actual dependencies and don't seem to be transitive dependencies.
 		// Note that adding them as actual project dependencies also solves the issue,
-		// Though I don't know why I'm loath to do so - hence these 3 little lines.
+		// But because I don't know why I'm loath to do so - hence these 3 little lines.
 		FantomProjectManager.instance.listProjects.each |p| {
 			resolvedPods[p.podName] = p.podOutFile
 		}
@@ -80,7 +75,7 @@ class InternalBuilder : Builder {
 			input.baseDir			= fp.projectDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
-			input.outDir			= File.os(projectPath.toOSString) 
+			input.outDir			= compileDir
 			input.output			= CompilerOutputMode.podFile
 			input.jsFiles			= fp.jsDirs
 			input.meta				= meta
@@ -98,7 +93,7 @@ class InternalBuilder : Builder {
 				}
 
 			if (!fp.javaDirs.isEmpty)
-				errs.add(compileJava(consumer, projectPath, resolvedPods))
+				errs.add(compileJava(consumer, compileDir, resolvedPods))
 			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			podFileName	:= `${fp.podName}.pod` 
@@ -215,43 +210,34 @@ class InternalBuilder : Builder {
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
 
-	private CompilerErr[] compileJava(|Str|? consumer, IPath projectPath, Str:File resolvedPods ) {
-		jtemp		:= projectPath.append("temp-java").toFile
-
-		jtemp.mkdirs
-		jtempPath	:= jtemp.getAbsolutePath
-		podFile		:= File.os(projectPath.append("${fp.podName}.pod").toOSString)
+	private CompilerErr[] compileJava(|Str|? consumer, File compileDir, Str:File resolvedPods) {
+		jtemp		:= compileDir + `temp-java/`
+		podFile		:= compileDir + `${fp.podName}.pod`
+		jtemp.create
 		
-		JHashMap jmap := JHashMap()
+		jmap := JHashMap()
 		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
 		
-		JStubGenerator.generateStubs(podFile.osPath, jtemp.getAbsolutePath, jmap)
+		JStubGenerator.generateStubs(podFile.osPath, jtemp.osPath, jmap)
 		jp := JavaCore.create(fp.project)
 
 		wc := createJdkConfig("Javac configutation", "javac", jp)
-		IRuntimeClasspathEntry[] entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
+		entries := (IRuntimeClasspathEntry[]) JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
 		entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
-		classpath := entries.map { getLocation }.add(jtempPath).join(File.pathSep)
+		classpath := entries.map { getLocation }.add(jtemp.osPath).join(File.pathSep)
 		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtempPath}\" -cp \"${classpath}\" ${javaFiles}")
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtemp.osPath}\" -cp \"${classpath}\" ${javaFiles}")
 		launch(wc, consumer)
 
 		wc = createJdkConfig("Jar configuration", "jar", jp)
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtempPath}\" \".\"")
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtemp.osPath}\" \".\"")
 		launch(wc, consumer)
 		
-		|JFile file|? delFunc := null
-		delFunc = |JFile file| {
-			if (file.isDirectory) {
-				file.listFiles().each(delFunc)
-				file.delete
-			} else
-				file.delete
-		}
-		jtemp.listFiles().each(delFunc)
-		return [,]
+		jtemp.listFiles.each { it.delete }
+
+		return CompilerErr#.emptyList
 	}
 
 	private ILaunchConfigurationWorkingCopy createJdkConfig(Str name,Str exec, IJavaProject jp)	{
