@@ -141,19 +141,16 @@ abstract class CompletionProvider {
 				if (constructors && !reporter.ignores(ProposeKind.method) && it.lower.startsWith(prefix.lower)) {
 					IFanType? type := pod.findType(it)
 					if (type != null) {
-						added := false
 						type.methods.each { 
 							if (it.isCtor|| isFromStr(it)) {
-								added = true
 								if( it.name != "make" && it.name != "fromStr")
 									reportMethod(it, type.name + "." + it.name)
 								else
 									reportMethod(it, type.name)
 							}
 						}
-						if( !added) {
-							reportType(type)
-						}
+						// always report the Type too, as it's a useful auto-complete for Types# syntax and enums 
+						reportType(type)
 					}
 				}
 				else {
