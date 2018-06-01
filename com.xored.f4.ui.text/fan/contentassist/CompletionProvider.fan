@@ -99,27 +99,31 @@ abstract class CompletionProvider {
 			curParams := params[0..< i]
 			allRelatedParams := [curParams]
 			curParams.each |param, index| {
+
 				// generate all variants of Func type
-				if(ParseUtil.isFuncType(param.of)) {
+				if (ParseUtil.isFuncType(param.of)) {
 					relatedTypes := ParseUtil.computeRelatedFuncTypes(param.of)
+					// add basic func param - see https://github.com/xored/f4/issues/103
+					relatedTypes.add("Func")
 					allRelatedParamsSize := allRelatedParams.size
-					relatedTypes[1..-1].each |type| {
-						for(Int j := 0; j < allRelatedParamsSize; ++j) {
+					for (Int j := 0; j < allRelatedParamsSize; ++j) {
+						relatedTypes[1..-1].each |type| {
 							originalRelatedParams := allRelatedParams[j]
-							relatedParams := originalRelatedParams[0..-1]
+							relatedParams := originalRelatedParams.dup
 							originalParam := originalRelatedParams[index]
 							relatedParams[index] = FakeFanParam.fake(originalParam.name, type, originalParam.hasDefault)
 							allRelatedParams.add(relatedParams)
 						}
 					}
+					
 				}
 			}
-			
-			methodName := mname != null?mname:method.name
+
+			methodName := mname != null ? mname : method.name
 			allRelatedParams.each |relatedParams| {
 				proposal := createProposal(ProposeKind.method, methodName, method.me, reporter.computeCaseRelevance(this.prefix, methodName))
 				proposal.setIsConstructor(method.isCtor)
-				if( method is IFfiForeigh) {
+				if (method is IFfiForeigh) {
 					proposal.setForeign(((IFfiForeigh)method).foreign)
 				}
 				proposal.setParameterNames(relatedParams.map{ it.name } as Str[])
@@ -149,7 +153,8 @@ abstract class CompletionProvider {
 									reportMethod(it, type.name)
 							}
 						}
-						// always report the Type too, as it's a useful auto-complete for Types# syntax and enums 
+						// always report the Type too, as it's a useful auto-complete for Types# syntax and enums
+						// see https://github.com/xored/f4/issues/102
 						reportType(type)
 					}
 				}

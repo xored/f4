@@ -108,7 +108,7 @@ class FanMethodCompletionProposal : ScriptMethodCompletionProposal {
 			 argumentOffset += 1
 		}
 		
-		buffer.add("{	 }")
+		buffer.add("{   }")
 		replacementBuffer.addArgument(argumentOffset, 1)
 		// one space only
 		
