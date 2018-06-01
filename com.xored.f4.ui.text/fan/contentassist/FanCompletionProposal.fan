@@ -8,17 +8,10 @@ using f4uiCore
 
 public class FanCompletionProposal : ScriptCompletionProposalBridge {
 
-  new make(Str? replacementString,
-      Int replacementOffset, Int replacementLength, Image? image,
-      Str? displayString, Int relevance, Bool isInDoc) 
-  : super(replacementString, replacementOffset, replacementLength, image,
-        displayString, relevance, isInDoc)
-  {
-  }
+	new make(Str? replacementString, Int replacementOffset, Int replacementLength, Image? image, Str? displayString, Int relevance, Bool isInDoc) 
+		: super(replacementString, replacementOffset, replacementLength, image, displayString, relevance, isInDoc) { }
 
-  override Bool insertCompletion()
-  {
-    FanUI.instance.plugin.getPreferenceStore
-      .getBoolean(PreferenceConstants.CODEASSIST_INSERT_COMPLETION)
-  }
+	override Bool insertCompletion() {
+		FanUI.instance.plugin.getPreferenceStore.getBoolean(PreferenceConstants.CODEASSIST_INSERT_COMPLETION)
+	}
 }
