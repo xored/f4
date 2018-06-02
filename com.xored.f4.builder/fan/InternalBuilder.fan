@@ -33,7 +33,7 @@ class InternalBuilder : Builder {
 		pluginState	:= FanCore.getDefault.getStateLocation
 		pluginDir	:= File.os(pluginState.toOSString).normalize
 		compileDir	:= pluginDir + `compiler/${fp.podName}/`
-		
+
 		// make sure it's empty first
 		compileDir.create
 		compileDir.listFiles.each { it.delete }
@@ -86,41 +86,46 @@ class InternalBuilder : Builder {
 
 			errs := compile(input)
             consumer?.call(logBuf.toStr)
-			if (!errs[0].isEmpty)
+
+			if (errs[0].size > 0)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
 				return errs.flatten.map |CompilerErr err -> CompilerErr| {
 					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
-			if (!fp.javaDirs.isEmpty)
-				errs.add(compileJava(consumer, compileDir, resolvedPods))
-			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
 			oldPodFile	:= fp.podOutFile
-			newPodFile	:= input.outDir + `${fp.podName}.pod` 
+			newPodFile	:= compileDir + `${fp.podName}.pod` 
+
+			if (!fp.javaDirs.isEmpty)
+				errs.add(compileJava(consumer, compileDir, resolvedPods))
 
 			if (newPodFile.exists) {
+				if (isPodChanged(newPodFile, oldPodFile)) {
+					jp := JavaCore.create(fp.project)
+					jp.getJavaModel.refreshExternalArchives([jp], null)
 
-				// copy pod to outDir
-				consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
-				newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+					// FIXME refreshing continually compiles Java code!?
+					// Builder does a zero depth refresh anyway
+//					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+					
+					// copy pod to outDir
+					// only copy if different, else we start to build thrash
+					consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+				}
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
 				if (fp.prefs.publishPod) {
 					consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
 					fp.compileEnv.publishPod(newPodFile)
 				}
-
-				if (isPodChanged(newPodFile, oldPodFile)) {
-					jp := JavaCore.create(fp.project)
-					jp.getJavaModel.refreshExternalArchives([jp], null)
-					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
-				}
-				
-				compileDir.delete
 			}
 			
+			// we often cannot delete the .pod file if we've been generating Java stubs (get an IOErr)
+			// so don't! Delete it when we build again - it all seems fine then.
+//			compileDir.delete
 			return errs.flatten
 			
 		} catch (Err err) {
@@ -155,7 +160,7 @@ class InternalBuilder : Builder {
 			newContent := newPodZip.contents
 			oldContent := oldPodZip.contents
 			
-			if(newPodZip.contents != oldPodZip.contents) return true
+			if (newPodZip.contents != oldPodZip.contents) return true
 			
 			return podContentChanged(newPodZip, oldPodZip)
 			
@@ -163,8 +168,6 @@ class InternalBuilder : Builder {
 			newPodZip?.close
 			oldPodZip?.close
 		}
-			
-		return true
 	}
 	
 	private Bool podContentChanged(Zip newPod, Zip oldPod) {
@@ -183,8 +186,8 @@ class InternalBuilder : Builder {
 	}
 	
 	private Bool metaChanged(File newFile, File oldFile) {
-		Str:Str newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
-		Str:Str oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
 		return newProps != oldProps
 	}
 	
@@ -223,29 +226,30 @@ class InternalBuilder : Builder {
 			jmap.put(key, file)
 		}
 		
-		JStubGenerator.generateStubs(podFile.osPath, jtemp.osPath, jmap)
-		jp := JavaCore.create(fp.project)
+		// stub generation often "locks" the pod file so it cannot be updated or deleted
+		// this happens more often when working from flash drives
+		// reading from a different .pod file at least lets us update the original (with the jstubs)
+		newPodFile	:= compileDir + `jstub/${fp.podName}.pod`
+		podFile.copyTo(newPodFile, ["overwrite":true])
+		JStubGenerator.generateStubs(newPodFile.osPath, jtemp.osPath, jmap)
 
-		wc := createJdkConfig("Javac configutation", "javac", jp)
-		entries := (IRuntimeClasspathEntry[]) JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
-		entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
-		classpath := entries.map { getLocation }.add(jtemp.osPath).join(File.pathSep)
+		classpath := fp.classpath.join(File.pathSep) { it.osPath }
 		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }
+		jp := JavaCore.create(fp.project)
+		wc := createJdkConfig("Javac configuration", "javac", jp)
 		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtemp.osPath}\" -cp \"${classpath}\" ${javaFiles}")
 		launch(wc, consumer)
 
 		wc = createJdkConfig("Jar configuration", "jar", jp)
 		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtemp.osPath}\" \".\"")
 		launch(wc, consumer)
-		
-		jtemp.listFiles.each { it.delete }
 
 		return CompilerErr#.emptyList
 	}
 
-	private ILaunchConfigurationWorkingCopy createJdkConfig(Str name,Str exec, IJavaProject jp)	{
+	private ILaunchConfigurationWorkingCopy createJdkConfig(Str name, Str exec, IJavaProject jp)	{
 		wc := createLaunchConfig(ExtConsts.ID_PROGRAM_BUILDER_LAUNCH_CONFIGURATION_TYPE, name)
-		fullExec := JavaRuntime.getVMInstall(jp).getInstallLocation.toStr+(Env.cur.os == "win32" ? "/bin/${exec}.exe" : "/bin/$exec")
+		fullExec := JavaRuntime.getVMInstall(jp).getInstallLocation.toStr + (Env.cur.os == "win32" ? "/bin/${exec}.exe" : "/bin/$exec")
 		wc.setAttribute(ExtConsts.ATTR_LOCATION, fullExec)
 		return wc
 	}

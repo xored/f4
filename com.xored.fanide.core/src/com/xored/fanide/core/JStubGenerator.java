@@ -12,6 +12,7 @@ import org.fantom.internal.sys.EquinoxEnv;
 
 import fan.sys.ClassType;
 import fan.sys.Env;
+import fan.sys.List;
 import fan.sys.LocalFile;
 import fan.sys.Pod;
 import fanx.emit.FPodEmit;
@@ -20,8 +21,9 @@ import fanx.emit.FTypeEmit;
 import fanx.fcode.FPod;
 import fanx.util.Box;
 
+// Note this only seems to be used by com.xored.f4.builder::InternalBuilder
 public class JStubGenerator {
-	public static void generateStubs(String podFileName, String outDir, Map allPods) {
+	public static void generateStubs(String podFileName, String outDir, Map allPods) throws Exception {
 		File podFile = new File(podFileName);
 		if (!podFile.exists())
 			return;
@@ -37,11 +39,6 @@ public class JStubGenerator {
 		HashMap map = Pod.storePodsCache();
 		EquinoxEnv env = (EquinoxEnv) Env.cur();
 		try {
-			// clear current pod cache
-			store = FStore.makeZip(podFile);
-			FPod fpod = new FPod(podName, store);
-			fpod.read();
-			Pod pod = new Pod(fpod, new Pod[] {});
 			for (Object key : allPods.keySet()) {
 				Object value = allPods.get(key);
 				if (key instanceof String && value instanceof LocalFile) {
@@ -50,32 +47,31 @@ public class JStubGenerator {
 			}
 			env.addJStubPod(podName, new BundleFile(podFile));
 
-			ClassType[] types = (ClassType[]) pod.types().toArray(new ClassType[pod.types().sz()]);
+			store = FStore.makeZip(podFile);
+			FPod fpod = new FPod(podName, store);
+			fpod.read();
 
-			// emit pod - we have to read back the pod here because normal
-			// pod loading clears all these tables as soon as Pod$ is emitted
-			FPod fpod2 = new FPod(podName, store);
-			fpod2.read();
-			FPodEmit podEmit = FPodEmit.emit(fpod2);
-			add(podEmit.className, podEmit.classFile, outDirFile);
+			Pod pod = new Pod(fpod, new Pod[] {});
+			List types = pod.types();
 
 			// write out each type to one or more .class files
-			for (int i = 0; i < types.length; ++i) {
-				ClassType type = types[i];
+			for (int i = 0; i < types.size(); ++i) {
+				ClassType type = (ClassType) types.get(i);
 				if (type.isNative())
 					continue;
 
 				FTypeEmit[] emitted = type.emitToClassFiles();
 
-				// write to jar
+				// write to file system
 				for (int j = 0; j < emitted.length; ++j) {
 					FTypeEmit emit = emitted[j];
 					add(emit.className, emit.classFile, outDirFile);
 				}
 			}
 
-		} catch (Throwable e) {
-			e.printStackTrace();
+			FPodEmit podEmit = FPodEmit.emit(fpod);
+			add(podEmit.className, podEmit.classFile, outDirFile);
+
 		} finally {
 			if (store != null) try { store.close(); } catch (IOException e) { /* meh */ }
 			env.removeJStubPod();
