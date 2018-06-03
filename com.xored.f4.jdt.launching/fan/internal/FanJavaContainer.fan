@@ -1,11 +1,3 @@
-//
-// Copyright (c) 2010 xored software, Inc.
-// Licensed under Eclipse Public License version 1.0
-//
-// History:
-//	 Ivan Inozemtsev May 25, 2010 - Initial Contribution
-//
-
 using [java] org.eclipse.core.runtime
 using [java] org.eclipse.core.resources::IProject
 using [java] org.eclipse.dltk.core
@@ -14,11 +6,21 @@ using [java] org.eclipse.jdt.core
 
 using f4core
 
+**
+** This adds .jars to the "Fantom Native Libraries (Java)"
+** 
 class FanJavaContainer : IClasspathContainer {
 	private IPath path
 	private IInterpreterInstall install
 	private IScriptProject project
 
+	** Dirs with jars relative to fan.home
+	private const Uri[] jarDirs := [
+		`lib/java/`,
+		`lib/java/ext/`,
+		`lib/java/ext/$Env.cur.os-$Env.cur.arch/`
+	]
+	
 	new make(IInterpreterInstall fan, IPath path, IScriptProject project) {
 		this.install = fan
 		this.path = path
@@ -27,64 +29,69 @@ class FanJavaContainer : IClasspathContainer {
 	
 	override IClasspathEntry?[]? getClasspathEntries() {
 		install := ScriptRuntime.getInterpreterInstall(project)
-		if(install == null) return IClasspathEntry?[,]
-		if(this.install != install) this.install = install
+		if (install == null) return IClasspathEntry?[,]
+		if (this.install != install) this.install = install
 		
 		IClasspathEntry?[] cpEntries := 
 			jarDirs.map |Uri loc -> File[]| {
-				(home + loc).toFile.listFiles.findAll { it.ext == "jar" }
+				(home + loc).listFiles.findAll { it.ext == "jar" }
 			}.flatten.map |File f -> IClasspathEntry?| {
-				createLibrary(f.normalize,f.basename)
+				createLibrary(f.normalize, home + `src/${f.basename}/java/`)	// maybe it's a core Fantom pod
 			}
 		
-		try {
-			FantomProject fp := FantomProjectManager.instance[project.getProject]
-			fp.classpathDepends.each |loc, name| {
-				podFP := FantomProjectManager.instance.getByPod(name)
-				if (podFP != null) {
-					IProject prj := podFP.project
-					if (prj.hasNature("org.eclipse.jdt.core.javanature")) {
-					 // Do not need to add entry
-						return
-					}
+		FantomProject fp := FantomProjectManager.instance[project.getProject]
+		fp.classpathDepends.each |loc, name| {
+			podFP := FantomProjectManager.instance.getByPod(name)
+			if (podFP != null) {
+				IProject prj := podFP.project
+				if (prj.hasNature("org.eclipse.jdt.core.javanature")) {
+					// do not need to add entry
+					return
 				}
-				
-				if(isJavaPod(loc))
-					cpEntries.add(createLibrary(loc,name))
 			}
+			
+			if (isJavaPod(loc))
+				cpEntries.add(createLibrary(loc, loc))
+		}
 
-			if (!fp.javaDirs.isEmpty)
-				cpEntries.add(createLibrary(fp.podOutFile, fp.podName))
+		if (!fp.javaDirs.isEmpty) {
+			// guess where the source root is. Sometimes we have a Java package hierarchy, sometimes we don't
+			// not that this seems to work!
+			javaDir := fp.javaDirs.first
+			if (javaDir.path.last == fp.podName)
+				javaDir = javaDir.parent
+			if (javaDir?.path?.last == "fan")
+				javaDir = javaDir?.parent ?: `` 
+			cpEntries.add(createLibrary(fp.podOutFile, fp.projectDir + javaDir))
 		}
-		catch (Err e) {
-			// TODO: This should not happen
-//			e.trace
-		}
+
 		return cpEntries
 	}
 	
-	private Uri home() { PathUtil.fanHome(install.getInstallLocation.getPath) }
+	private File home() { PathUtil.fanHome(install.getInstallLocation.getPath).toFile }
 	
-	private IClasspathEntry createLibrary(File podFile,Str podName) {
-		return JavaCore.newLibraryEntry(
-			Path(podFile.osPath),
-			Path((home + `src/$podName/java/`).toFile.osPath),
+	private IClasspathEntry createLibrary(File podFile, File? srcFile) {
+		JavaCore.newLibraryEntry(
+			Path(podFile.normalize.osPath),
+			Path(srcFile.normalize.osPath),
 			Path("")
 		)
 	}
 	
 	private static Bool isJavaPod(File f) {
 		if (!f.exists) return false
-		zip := Zip.open(f)
+		
+		zip := Zip.read(f.in)
 		try {
-			return zip.contents.keys.any { ext == "class" }
-		} finally {
+			File? entry
+			isJava := false
+			while (!isJava && (entry = zip.readNext) != null) {
+				isJava = entry.ext == "class"
+			}
+			return isJava
+		} finally
 			zip.close
-		}
 	}
-	
-	** Dirs with jars relative to fan.home
-	private const Uri[] jarDirs := [`lib/java/ext/`, `lib/java/`, `lib/java/ext/$Env.cur.os-$Env.cur.arch/`] 
 	
 	override Int getKind() { K_APPLICATION }
 	
