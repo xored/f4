@@ -46,7 +46,9 @@ class ProjectPrefs {
 class ProjectPrefsInitializer : AbstractPreferenceInitializer {
 	override Void initializeDefaultPreferences() {
 		store := DefaultScope().getNode(ProjectPrefs.qualifier)
-		store.put		(ProjectPrefs.podOutputDirName,			"bin/")
+		// keep the default Fantom build directory different to the default Java build directory
+		// so we can compile native java Peer classes. See https://github.com/xored/f4/issues/110
+		store.put		(ProjectPrefs.podOutputDirName,			"build/")
 		store.putBoolean(ProjectPrefs.useExternalBuilderName,	false)
 		store.putBoolean(ProjectPrefs.buildDependantsName,		true)
 		store.putBoolean(ProjectPrefs.publishPodName,			false)
