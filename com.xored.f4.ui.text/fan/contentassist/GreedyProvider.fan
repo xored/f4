@@ -105,6 +105,6 @@ class GreedyProvider : CompletionProvider {
 
 		slots := type.allSlots(ns)
 		reportSlots(slots)
-		if (!slots.any{ it.isCtor }) reportDefaultCtor
+		if (!slots.any { it.isCtor }) reportDefaultCtor
 	}
 }

@@ -74,8 +74,8 @@ abstract class CompletionProvider {
 	protected Void reportSlots(IFanSlot[] slots) {
 		slots = slots.findAll { it.name.lower.startsWith(prefix.lower) }
 		slots.each |slot| {
-			if(slot.isField) reportField(slot)
-			else if(slot.isMethod) reportMethod(slot) 
+			if (slot.isField) reportField(slot)
+			else if (slot.isMethod) reportMethod(slot) 
 		}
 	}
 
@@ -90,7 +90,7 @@ abstract class CompletionProvider {
 	protected Void reportMethod(IFanMethod method, Str? mname := null) {
 		params := method.params
 	 
-		if(reporter.ignores(ProposeKind.method)) return
+		if (reporter.ignores(ProposeKind.method)) return
 
 		required := params.findIndex { it.hasDefault }
 		if (required == null) { required = params.size }
@@ -115,7 +115,6 @@ abstract class CompletionProvider {
 							allRelatedParams.add(relatedParams)
 						}
 					}
-					
 				}
 			}
 
@@ -126,7 +125,7 @@ abstract class CompletionProvider {
 				if (method is IFfiForeigh) {
 					proposal.setForeign(((IFfiForeigh)method).foreign)
 				}
-				proposal.setParameterNames(relatedParams.map{ it.name } as Str[])
+				proposal.setParameterNames(relatedParams.map { it.name } as Str[])
 				proposal.setExtraInfo(FanMethodCompletionProposalExtraInfo(method, relatedParams))
 				reporter.report(proposal)
 			}
@@ -146,11 +145,11 @@ abstract class CompletionProvider {
 					IFanType? type := pod.findType(it)
 					if (type != null) {
 						type.methods.each { 
-							if (it.isCtor|| isFromStr(it)) {
-								if( it.name != "make" && it.name != "fromStr")
-									reportMethod(it, type.name + "." + it.name)
-								else
+							if (it.isCtor || isFromStr(it)) {
+								if (it.name == "make" || it.name == "fromStr")
 									reportMethod(it, type.name)
+								else
+									reportMethod(it, type.name + "." + it.name)
 							}
 						}
 						// always report the Type too, as it's a useful auto-complete for Types# syntax and enums
@@ -165,12 +164,12 @@ abstract class CompletionProvider {
 						if( type != null) {
 							added := false
 							type.methods.each { 
-								if( it.isCtor|| isFromStr(it)) {
+								if (it.isCtor || isFromStr(it)) {
 									added = true
-									if( it.name != "make" && it.name != "fromStr")
-										reportMethod(it, type.name + "." + it.name)
-									else
+									if (it.name == "make" || it.name == "fromStr")
 										reportMethod(it, type.name)
+									else
+										reportMethod(it, type.name + "." + it.name)
 								}
 							}
 							if (!added) {

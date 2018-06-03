@@ -116,8 +116,12 @@ class DotCompletionProvider : CompletionProvider {
 	}
 
 	private |IFanSlot->Bool| filter() {
-		isPound ? |IFanSlot slot->Bool| { true } :
-		(isStatic ? |IFanSlot slot->Bool| { slot.isStatic || slot.isCtor } :
-			|IFanSlot slot->Bool| { !slot.isStatic && !slot.isCtor })
+		isPound
+			? |IFanSlot slot->Bool| { true }
+			: (
+				isStatic
+					? |IFanSlot slot->Bool| {  slot.isStatic ||  slot.isCtor }
+					: |IFanSlot slot->Bool| { !slot.isStatic && !slot.isCtor }
+			)
 	}
 }
