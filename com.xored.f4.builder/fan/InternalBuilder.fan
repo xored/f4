@@ -140,6 +140,7 @@ class InternalBuilder : Builder {
 			
 		} catch (Err err) {
 			logger.err("Could not compile ${fp.podName}", err)
+			LogUtil.logErr(pluginId, "${err.typeof.qname} during build - ${err.msg}", err)
 			throw err
 
 		} finally {
@@ -151,12 +152,12 @@ class InternalBuilder : Builder {
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
-		try compiler.compile	
+		try compiler.compile
 		catch (CompilerErr e) caughtErrs.add(e) 
 		catch (IOErr e)       caughtErrs.add(CompilerErr(e.msg, null))
 		catch (Err e) {
 			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
-			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", null))
+			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
