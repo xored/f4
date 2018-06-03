@@ -92,7 +92,6 @@ class EnvOptionsBlock : AbstractOptionsBlock {
 		SWTFactory.createLabel(composite, "Pods are published to the selected Fantom environment...", 1)
 		SWTFactory.createLabel(composite, " - 'None' - pods are copied to %FAN_HOME%/lib/fan/", 1)
 		SWTFactory.createLabel(composite, " - 'util::PathEnv' - pods are copied to %FAN_ENV_PATH%/lib/fan/", 1)
-		SWTFactory.createLabel(composite, "Publish directory may be overridden by specifying 'outPodDir' in 'build.fan'", 1)
 
 		return composite
 	}
