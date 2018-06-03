@@ -49,7 +49,7 @@ class InternalBuilder : Builder {
 		// Without this, we get compilation errors similar to "pod not found: f4parser".
 		// These aren't actual dependencies and don't seem to be transitive dependencies.
 		// Note that adding them as actual project dependencies also solves the issue,
-		// But because I don't know why I'm loath to do so - hence these 3 little lines.
+		// But because I don't know why, I'm loath to do so - hence these 3 little lines.
 		FantomProjectManager.instance.listProjects.each |p| {
 			resolvedPods[p.podName] = p.podOutFile
 		}
@@ -102,16 +102,26 @@ class InternalBuilder : Builder {
 				errs.add(compileJava(consumer, compileDir, resolvedPods))
 
 			if (newPodFile.exists) {
+				
+				// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
+				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, it may
+				// due to Builder (superclass) doing a zero depth refresh
 				if (isPodChanged(newPodFile, oldPodFile)) {
-					jp := JavaCore.create(fp.project)
-					jp.getJavaModel.refreshExternalArchives([jp], null)
-
-					// FIXME refreshing continually compiles Java code!?
-					// Builder does a zero depth refresh anyway
-//					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
 					
+					// the old behaviour was thus (see below),
+					// but re-freshing (esp after we'd copied over new pod files)
+					// caused the entire project to re-build, and it would keep on 
+					// rebuilding itself continuously and endlessly. Not ideal!
+					// The Builder (superclass) does a zero depth refresh anyway.
+
+//					// refresh Java stuff
+//					jp := JavaCore.create(fp.project)
+//					jp.getJavaModel.refreshExternalArchives([jp], null)
+//
+//					// refresh Fantom stuff
+//					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+
 					// copy pod to outDir
-					// only copy if different, else we start to build thrash
 					consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
 					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
 				}
@@ -135,71 +145,6 @@ class InternalBuilder : Builder {
 		} finally {
 			(input.ns as F4Namespace)?.close
 		}
-	}
-	
-	private Zip? safeZipOpen(File file) {
-		try 	return Zip.open(file)
-		catch	return null
-	}
-	
-	private Bool isPodChanged(File newPod, File oldPod) {
-		if (!oldPod.exists) 
-			return true
-		
-		newPodZip := safeZipOpen(newPod)
-		oldPodZip := safeZipOpen(oldPod)
-		
-		try {
-			if (newPodZip == null) {
-				LogUtil.logErr(pluginId, "$newPod is not valid zip archive", null)
-				return false
-			}
-
-			if (oldPodZip == null) return true
-			
-			newContent := newPodZip.contents
-			oldContent := oldPodZip.contents
-			
-			if (newPodZip.contents != oldPodZip.contents) return true
-			
-			return podContentChanged(newPodZip, oldPodZip)
-			
-		} finally {
-			newPodZip?.close
-			oldPodZip?.close
-		}
-	}
-	
-	private Bool podContentChanged(Zip newPod, Zip oldPod) {
-		newContents := newPod.contents
-		oldContents := oldPod.contents
-		
-		comparators := [
-			`/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
-		]
-		
-		def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
-		
-		return newPod.contents.any |newFile, uri| { 
-			(comparators[uri] ?: def)(newFile, oldContents[uri])	
-		}
-	}
-	
-	private Bool metaChanged(File newFile, File oldFile) {
-		newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
-		oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
-		return newProps != oldProps
-	}
-	
-	private Bool binaryChanged(File newFile, File oldFile) {
-		Buf b1 := newFile.readAllBuf
-		Buf b2 := oldFile.readAllBuf
-		
-		if (b1.size != b2.size) return true
-		for (i:=0; i < b1.size; i++)
-			if( b1[i] != b2[i]) return true
-						
-		return false
 	}
 
 	private CompilerErr[][] compile(CompilerInput input) {
@@ -268,6 +213,73 @@ class InternalBuilder : Builder {
 		wc := DebugPlugin.getDefault.getLaunchManager.getLaunchConfigurationType(type).newInstance(null, name)
 		wc.setAttribute(ILaunchManager.ATTR_PRIVATE, true)
 		return wc
+	}
+	
+	// ----
+
+	private Bool isPodChanged(File newPod, File oldPod) {
+		if (!oldPod.exists) 
+			return true
+		
+		newPodZip := safeZipOpen(newPod)
+		oldPodZip := safeZipOpen(oldPod)
+		
+		try {
+			if (newPodZip == null) {
+				LogUtil.logErr(pluginId, "$newPod is not valid zip archive", null)
+				return false
+			}
+
+			if (oldPodZip == null) return true
+			
+			newContent := newPodZip.contents
+			oldContent := oldPodZip.contents
+			
+			if (newPodZip.contents != oldPodZip.contents) return true
+			
+			return podContentChanged(newPodZip, oldPodZip)
+			
+		} finally {
+			newPodZip?.close
+			oldPodZip?.close
+		}
+	}
+
+	private Zip? safeZipOpen(File file) {
+		try 	return Zip.open(file)
+		catch	return null
+	}
+
+	private Bool podContentChanged(Zip newPod, Zip oldPod) {
+		newContents := newPod.contents
+		oldContents := oldPod.contents
+		
+		comparators := [
+			`/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
+		]
+		
+		def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
+		
+		return newPod.contents.any |newFile, uri| { 
+			(comparators[uri] ?: def)(newFile, oldContents[uri])	
+		}
+	}
+	
+	private Bool metaChanged(File newFile, File oldFile) {
+		newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		return newProps != oldProps
+	}
+	
+	private Bool binaryChanged(File newFile, File oldFile) {
+		Buf b1 := newFile.readAllBuf
+		Buf b2 := oldFile.readAllBuf
+		
+		if (b1.size != b2.size) return true
+		for (i:=0; i < b1.size; i++)
+			if( b1[i] != b2[i]) return true
+						
+		return false
 	}
 }
 
