@@ -224,15 +224,13 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy {
 		getTabStyle.equals(CodeFormatterConstants.TAB) ? "\t" : Str.spaces(getIndentSize)
 	}
 
-	/**
-	 * Find line with number <=line, that is Fantom code line (not comment)
-	 * 
-	 * @param d
-	 *						the document to search in
-	 * @param line
-	 *						number of starting line
-	 * @return number of code line or null if no such line found
-	 */
+	**
+	** Find line with number <=line, that is Fantom code line (not comment)
+	** 
+	** @param d		the document to search in
+	** @param line	number of starting line
+	** @return 		number of code line or null if no such line found
+	**
 	private Int? getLastCodeLine(IDocument d, Int line) {
 		res := line
 		while (res > -1) {
@@ -250,122 +248,117 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy {
 
 	private Void smartIndentAfterNewLine(IDocument d, DocumentCommand c) {
 		if (c.offset == -1 || d.getLength() == 0) return
-		//try {
-			scanner := FanHeuristicScanner(d)
-			pos := (c.offset == d.getLength() ? c.offset - 1 : c.offset)
-			line := d.getLineOfOffset(pos)
-			curLine := d.getLineOfOffset(c.offset)
-			curLineStr := getDocumentLine(d, curLine)
 
-			resultIndent := ""
-			lastIndent := ""
-			FanBlock? block := null
-			needPeer := false
-			// if we need to jump into middle of block without inserting peer brace
-			dummyPeer := false
+		scanner := FanHeuristicScanner(d)
+		pos := (c.offset == d.getLength() ? c.offset - 1 : c.offset)
+		line := d.getLineOfOffset(pos)
+		curLine := d.getLineOfOffset(c.offset)
+		curLineStr := getDocumentLine(d, curLine)
 
-			block = getLastOpenBlockType(d, c.offset)
-			if (curLineStr.trim.endsWith("\\"))
+		resultIndent := ""
+		lastIndent := ""
+		FanBlock? block := null
+		needPeer := false
+		// if we need to jump into middle of block without inserting peer brace
+		dummyPeer := false
+
+		block = getLastOpenBlockType(d, c.offset)
+		if (curLineStr.trim.endsWith("\\"))
+			resultIndent = getLineIndent(d, line - 1)
+		else if (block == null) {
+			lastCodeLine := getLastCodeLine(d, line)
+			// no code above us, just copy last indent
+			if (lastCodeLine == null)
 				resultIndent = getLineIndent(d, line - 1)
-			else if (block == null) {
-				lastCodeLine := getLastCodeLine(d, line)
-				// no code above us, just copy last indent
-				if (lastCodeLine == null)
-					resultIndent = getLineIndent(d, line - 1)
-				else {
-					// if our line is inside brackets, get line with opening
-					// bracket
-					block = getLastOpenBlockType(d, d.getLineOffset(lastCodeLine))
-					if (block != null) {
-						peer := scanner.findOpeningPeer(d.getLineOffset(lastCodeLine), block.opening, block.closing)
-						if (peer != null) {
-							lastCodeLine = d.getLineOfOffset(peer)
-						}
-					}
-					resultIndent = getLineIndent(d, lastCodeLine)
-				}
-			}
 			else {
-				// block != null
-				lastCodeLine := d.getLineOfOffset(block.offset)
-				lastIndent = getLineIndent(d, lastCodeLine)
-
-				resultIndent = lastIndent + block.indent
-
-				cPos := pos
-				while ((d.getChar(cPos) == ' ' || d.getChar(cPos) == '\t')) {
-					if (cPos == d.getLength() - 1)
-						break
-					cPos++
+				// if our line is inside brackets, get line with opening
+				// bracket
+				block = getLastOpenBlockType(d, d.getLineOffset(lastCodeLine))
+				if (block != null) {
+					peer := scanner.findOpeningPeer(d.getLineOffset(lastCodeLine), block.opening, block.closing)
+					if (peer != null) {
+						lastCodeLine = d.getLineOfOffset(peer)
+					}
 				}
-				if (block.closing == d.getChar(cPos))
-					dummyPeer = true
-				// find closing peer, if exists
-				peerOffset := scanner.findClosingPeer(pos, 0, block.opening, block.closing)
-				// if not fount peer, we need it
-				if (peerOffset == null)
-					needPeer = true
+				resultIndent = getLineIndent(d, lastCodeLine)
+			}
+		}
+		else {
+			// block != null
+			lastCodeLine := d.getLineOfOffset(block.offset)
+			lastIndent = getLineIndent(d, lastCodeLine)
+
+			resultIndent = lastIndent + block.indent
+
+			cPos := pos
+			while ((d.getChar(cPos) == ' ' || d.getChar(cPos) == '\t')) {
+				if (cPos == d.getLength() - 1)
+					break
+				cPos++
+			}
+			if (block.closing == d.getChar(cPos))
+				dummyPeer = true
+			// find closing peer, if exists
+			peerOffset := scanner.findClosingPeer(pos, 0, block.opening, block.closing)
+			// if not fount peer, we need it
+			if (peerOffset == null)
+				needPeer = true
+		}
+
+		if (!(block?.opening == '[' || block?.opening == '(')) {
+			firstContinuation := previousIsFirstContinuation(d, scanner, c.offset, curLine)
+			continuation := !firstContinuation && previousIsContinuation(scanner, c.offset, curLine)
+
+			if (firstContinuation)
+				resultIndent += defaultIndent
+			else if (continuation)
+				resultIndent += getLineIndent(d, line - 1)
+			// process line indent
+		}
+
+		resultIndent = remakeIndent(resultIndent)
+
+		reg := d.getLineInformation(line)
+		lineEnd := reg.getOffset() + reg.getLength()
+
+		contentStart := findEndOfWhiteSpace(d, c.offset, lineEnd)
+		c.length = 0.max(contentStart - c.offset)
+
+		if (block?.opening == '{' && !preferenceStore.getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACES))
+			needPeer = false
+
+		if ((block?.opening == '[' || block?.opening == '(') && !preferenceStore.getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACKETS))
+			needPeer = false
+
+		if ((needPeer || dummyPeer) && block?.opening == '{') {
+			//block != null
+			buf := StrBuf().add(c.text).add(resultIndent)
+			c.shiftsCaret = false
+			c.caretOffset = c.offset + buf.size
+			prevBlock := getLastOpenBlockType(d, block.offset - 1)
+			insideRoundBrackets := (prevBlock != null && prevBlock?.opening == '(')
+			if (!dummyPeer && !insideRoundBrackets && lineEnd - contentStart > 0) {
+				c.length = lineEnd - c.offset
+				buf.add(d.get(contentStart, lineEnd - contentStart))
 			}
 
-			if (!(block?.opening == '[' || block?.opening == '(')) {
-				firstContinuation := previousIsFirstContinuation(d,
-						scanner, c.offset, curLine)
-				continuation := !firstContinuation
-						&& previousIsContinuation(scanner, c.offset, curLine)
+			buf.add(TextUtilities.getDefaultLineDelimiter(d))
+			buf.add(lastIndent)
 
-				if (firstContinuation)
-					resultIndent += defaultIndent
-				else if (continuation)
-					resultIndent += getLineIndent(d, line - 1)
-				// process line indent
+			if (!dummyPeer) {
+				if (insideRoundBrackets) {
+					buf.addChar(block.closing)
+					if (lineEnd - contentStart > 0) {
+						c.length = lineEnd - c.offset
+						buf.add(d.get(contentStart, lineEnd - contentStart))
+					}
+				} else
+					buf.addChar(block.closing)
 			}
-
-			resultIndent = remakeIndent(resultIndent)
-
-			reg := d.getLineInformation(line)
-			lineEnd := reg.getOffset() + reg.getLength()
-
-			contentStart := findEndOfWhiteSpace(d, c.offset, lineEnd)
-			c.length = 0.max(contentStart - c.offset)
-
-			if (block?.opening == '{' && !preferenceStore.getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACES))
-				needPeer = false
-
-			if ((block?.opening == '[' || block?.opening == '(') && !preferenceStore.getBoolean(FanPreferenceConstants.EDITOR_CLOSE_BRACKETS))
-				needPeer = false
-
-			if ((needPeer || dummyPeer) && block?.opening == '{') {
-				//block != null
-				buf := StrBuf().add(c.text).add(resultIndent)
-				c.shiftsCaret = false
-				c.caretOffset = c.offset + buf.size
-				prevBlock := getLastOpenBlockType(d, block.offset - 1)
-				insideRoundBrackets := (prevBlock != null && prevBlock?.opening == '(')
-				if (!dummyPeer && !insideRoundBrackets && lineEnd - contentStart > 0) {
-					c.length = lineEnd - c.offset
-					buf.add(d.get(contentStart, lineEnd - contentStart))
-				}
-
-				buf.add(TextUtilities.getDefaultLineDelimiter(d))
-				buf.add(lastIndent)
-
-				if (!dummyPeer) {
-					if (insideRoundBrackets) {
-						buf.addChar(block.closing)
-						if (lineEnd - contentStart > 0) {
-							c.length = lineEnd - c.offset
-							buf.add(d.get(contentStart, lineEnd - contentStart))
-						}
-					} else
-						buf.addChar(block.closing)
-				}
-				c.text = buf.toStr
-			}
-			else
-				c.text += resultIndent
-		//} catch (BadLocationException e) {
-		//	e.printStackTrace
-		//}
+			c.text = buf.toStr
+		}
+		else
+			c.text += resultIndent
 	}
 
 	/*@SuppressWarnings("unused")
@@ -510,61 +503,56 @@ class FanAutoEditStrategy : DefaultIndentLineAutoEditStrategy {
 
 	private Bool smartIndentJump(IDocument d, DocumentCommand c) {
 		if (c.offset == -1 || d.getLength() == 0) return false
-		//try {
-			scanner := FanHeuristicScanner(d)
-			p := c.offset == d.getLength ? c.offset - 1 : c.offset
-			curLine := d.getLineOfOffset(c.offset)
-			curLineStr := getDocumentLine(d, curLine)
 
-			line := d.getLineOfOffset(p)
-			start := d.getLineOffset(line)
-			resultIndent := ""
-			lastIndent := ""
-			FanBlock? block
+		scanner := FanHeuristicScanner(d)
+		p := c.offset == d.getLength ? c.offset - 1 : c.offset
+		curLine := d.getLineOfOffset(c.offset)
+		curLineStr := getDocumentLine(d, curLine)
 
-			// DUPLICATION: this code is identical to code in
-			// smartInsertAfterNewLine
-			block = getLastOpenBlockType(d, c.offset)
-			if (curLineStr.trim.endsWith("\\")) {
+		line := d.getLineOfOffset(p)
+		start := d.getLineOffset(line)
+		resultIndent := ""
+		lastIndent := ""
+		FanBlock? block
+
+		// DUPLICATION: this code is identical to code in smartIndentAfterNewLine
+		block = getLastOpenBlockType(d, c.offset)
+		if (curLineStr.trim.endsWith("\\")) {
+			resultIndent = getLineIndent(d, line - 1)
+		}
+		else if (block == null) {
+			lastCodeLine := getLastCodeLine(d, line)
+			// if our line is inside brackets, get line with opening bracket
+			block = getLastOpenBlockType(d, d.getLineOffset(curLine));
+			if (block != null) {
+				peer := scanner.findOpeningPeer(d.getLineOffset(curLine), block.opening, block.closing)
+				if (peer != null)
+					lastCodeLine = d.getLineOfOffset(peer)
+			}
+			// no code above us, just copy last indent
+			if (lastCodeLine == null) {
 				resultIndent = getLineIndent(d, line - 1)
-			}
-			else if (block == null) {
-				lastCodeLine := getLastCodeLine(d, line)
-				// if our line is inside brackets, get line with opening bracket
-				block = getLastOpenBlockType(d, d.getLineOffset(curLine));
-				if (block != null) {
-					peer := scanner.findOpeningPeer(d.getLineOffset(curLine), block.opening, block.closing)
-					if (peer != null)
-						lastCodeLine = d.getLineOfOffset(peer)
-				}
-				// no code above us, just copy last indent
-				if (-1 == lastCodeLine) {
-					resultIndent = getLineIndent(d, line - 1)
-				} else {
-					resultIndent = getLineIndent(d, lastCodeLine)
-				}
 			} else {
-				lastCodeLine := d.getLineOfOffset(block.offset)
-				lastIndent = getLineIndent(d, lastCodeLine)
-				resultIndent = lastIndent + block.indent
+				resultIndent = getLineIndent(d, lastCodeLine)
 			}
+		} else {
+			lastCodeLine := d.getLineOfOffset(block.offset)
+			lastIndent = getLineIndent(d, lastCodeLine)
+			resultIndent = lastIndent + block.indent
+		}
 
-			if (c.offset >= start + resultIndent.size)
-				return false // we already in the place
+		if (c.offset >= start + resultIndent.size)
+			return false // we already in the place
 
-			currentIndent := getLineIndent(d, line)
-			if (!currentIndent.startsWith(resultIndent))
-				return false // we have no place to jump
+		currentIndent := getLineIndent(d, line)
+		if (!currentIndent.startsWith(resultIndent))
+			return false // we have no place to jump
 
-			c.length = 0
-			c.shiftsCaret = false
-			c.text = ""
-			c.caretOffset = d.getLineOffset(line) + resultIndent.size
+		c.length = 0
+		c.shiftsCaret = false
+		c.text = ""
+		c.caretOffset = d.getLineOffset(line) + resultIndent.size
 
-		//} catch (BadLocationException e) {
-		//	e.printStackTrace
-		//	return false
-		//}
 		return true
 	}
 
