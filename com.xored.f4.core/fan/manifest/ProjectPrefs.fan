@@ -37,7 +37,9 @@ class ProjectPrefs {
 	}
 
 	Type compileEnvType() {
-		name := delegate.getString(qualifier, compileEnvName)
+		// when using the Fantom Project Wizard, the compileEnvType can be an empty string
+		// I suspect it is asked for, before the preferences have been initialised
+		name := delegate.getString(qualifier, compileEnvName)?.trimToNull ?: DefaultCompileEnv#.qname
 		type := Type.find(name)
 		return type
 	}

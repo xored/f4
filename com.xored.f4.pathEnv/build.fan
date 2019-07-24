@@ -5,7 +5,7 @@ class Build : BuildPod {
 	new make() {
 		podName = "f4pathEnv"
 		summary = "A PATH_ENV extension for F4 projects"
-		version = Version("1.1.0")
+		version = Version("1.1.2")
 
 		meta = [
 			"proj.name" : "F4 PATH_ENV"
