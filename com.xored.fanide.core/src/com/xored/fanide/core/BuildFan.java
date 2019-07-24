@@ -238,19 +238,19 @@ public class BuildFan {
 		}
 	}
 
-	public static String generateContent(String projName, String srcDirs, String javaDirs) {
+	public static String generateContent(String podDis, String srcDirs, String javaDirs) {
 		List<String> sb = new ArrayList<String>();
 		sb.add("using build");
 		sb.add("");
 		sb.add("class Build : BuildPod {");
 		sb.add("");
 		sb.add("\tnew make() {");
-		sb.add("\t\tpodName = \"" + fromProjectName(projName) + "\"");
-		sb.add("\t\tsummary = \"My Awesome " + projName + " Project\"");
+		sb.add("\t\tpodName = \"" + fromPodDis(podDis) + "\"");
+		sb.add("\t\tsummary = \"My Awesome " + podDis + " Project\"");
 		sb.add("\t\tversion = Version(\"1.0\")");
 		sb.add("");
 		sb.add("\t\tmeta = [");
-		sb.add("\t\t\t\"proj.name\" : \"" + projName + "\"");
+		sb.add("\t\t\t\"pod.dis\" : \"" + podDis + "\"");
 		sb.add("\t\t]");
 		sb.add("");
 		sb.add("\t\tdepends = [");
@@ -270,7 +270,7 @@ public class BuildFan {
 	}
 
 	// Nicked from Fantom's Str.fromDisplayName()
-	private static String fromProjectName(String self) {
+	private static String fromPodDis(String self) {
 		if (self.length() == 0) return "";
 		StringBuilder s = new StringBuilder(self.length());
 		int c = self.charAt(0);

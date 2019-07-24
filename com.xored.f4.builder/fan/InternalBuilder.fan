@@ -1,14 +1,11 @@
-using f4core
-using f4launching
+using f4core::FantomProject
+using f4core::FantomProjectManager
+using f4core::LogUtil
 using compiler
-using concurrent
 
 using [java]org.eclipse.debug.core::DebugPlugin
 using [java]org.eclipse.debug.core::ILaunchConfigurationWorkingCopy
 using [java]org.eclipse.debug.core::ILaunchManager
-using [java]org.eclipse.dltk.launching::ScriptRuntime
-using [java]org.eclipse.dltk.launching::AbstractScriptLaunchConfigurationDelegate
-using [java]org.eclipse.jdt.launching::IJavaLaunchConfigurationConstants as JavaConsts
 using [java]org.eclipse.jdt.launching::IRuntimeClasspathEntry
 using [java]org.eclipse.jdt.core::JavaCore
 using [java]org.eclipse.jdt.core::IJavaProject
@@ -16,12 +13,8 @@ using [java]org.eclipse.jdt.launching::JavaRuntime
 using "[java]org.eclipse.core.externaltools.internal"::IExternalToolConstants as ExtConsts
 
 using [java]com.xored.fanide.core::FanCore
-using [java]org.eclipse.core.runtime::IPath
-using [java]org.eclipse.core.runtime::Path
 using [java]org.eclipse.core.runtime::NullProgressMonitor
-using [java]org.eclipse.core.resources::ResourcesPlugin
 using [java]org.eclipse.core.resources::IResource
-using [java]java.io::File as JFile
 using [java]java.util::HashMap as JHashMap
 
 using [java]com.xored.fanide.core::JStubGenerator
@@ -35,12 +28,15 @@ class InternalBuilder : Builder {
 	static const Str pluginId := "com.xored.f4.builder"
 	
 	override CompilerErr[] buildPod(|Str|? consumer) {
-		// Prepare temporary output directory for pod building
-		statePath	:= FanCore.getDefault.getStateLocation
-		projectPath	:= statePath.append("compiler").append(fp.podName)
-		root		:= projectPath.toFile
-		root.mkdirs
-		root.listFiles.each |JFile? f|{ f?.delete}
+		// compile pods in a temporary workdir: /.metadata/.plugins/com.xored.fanide.core/compiler/<podName>/
+		// if we build them in a dir that we have control over, there shouldn't be any file locking / permission errors
+		pluginState	:= FanCore.getDefault.getStateLocation
+		pluginDir	:= File.os(pluginState.toOSString).normalize
+		compileDir	:= pluginDir + `compiler/${fp.podName}/`
+
+		// make sure it's empty first
+		compileDir.create
+		compileDir.listFiles.each { it.delete }
 		
 		resolvedPods := fp.resolvePods
     
@@ -53,7 +49,7 @@ class InternalBuilder : Builder {
 		// Without this, we get compilation errors similar to "pod not found: f4parser".
 		// These aren't actual dependencies and don't seem to be transitive dependencies.
 		// Note that adding them as actual project dependencies also solves the issue,
-		// Though I don't know why I'm loath to do so - hence these 3 little lines.
+		// But because I don't know why, I'm loath to do so - hence these 3 little lines.
 		FantomProjectManager.instance.listProjects.each |p| {
 			resolvedPods[p.podName] = p.podOutFile
 		}
@@ -80,7 +76,7 @@ class InternalBuilder : Builder {
 			input.baseDir			= fp.projectDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
-			input.outDir			= File.os(projectPath.toOSString) 
+			input.outDir			= compileDir
 			input.output			= CompilerOutputMode.podFile
 			input.jsFiles			= fp.jsDirs
 			input.meta				= meta
@@ -90,28 +86,44 @@ class InternalBuilder : Builder {
 
 			errs := compile(input)
             consumer?.call(logBuf.toStr)
-			if (!errs[0].isEmpty)
+
+			if (errs[0].size > 0)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
 				return errs.flatten.map |CompilerErr err -> CompilerErr| {
 					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
-			if (!fp.javaDirs.isEmpty)
-				errs.add(compileJava(consumer, projectPath, resolvedPods))
-			
 			// Compare pod file in output directory to podFile in project and overwrite it if they are different
-			podFileName	:= `${fp.podName}.pod` 
-			newPodFile	:= input.outDir + podFileName
-			podFile		:= fp.podOutFile
+			oldPodFile	:= fp.podOutFile
+			newPodFile	:= compileDir + `${fp.podName}.pod` 
+
+			if (!fp.javaDirs.isEmpty)
+				errs.add(compileJava(consumer, compileDir, resolvedPods))
 
 			if (newPodFile.exists) {
-				if (isPodChanged(newPodFile, podFile)) {
-					consumer?.call("[DEBUG] Copying pod to ${podFile.osPath}")
-					newPodFile.copyTo(podFile, ["overwrite" : true])
-					jp := JavaCore.create(fp.project)
-					jp.getJavaModel.refreshExternalArchives([jp], null)
-					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+				
+				// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
+				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, it may
+				// due to Builder (superclass) doing a zero depth refresh
+				if (isPodChanged(newPodFile, oldPodFile)) {
+					
+					// the old behaviour was thus (see below),
+					// but re-freshing (esp after we'd copied over new pod files)
+					// caused the entire project to re-build, and it would keep on 
+					// rebuilding itself continuously and endlessly. Not ideal!
+					// The Builder (superclass) does a zero depth refresh anyway.
+
+//					// refresh Java stuff
+//					jp := JavaCore.create(fp.project)
+//					jp.getJavaModel.refreshExternalArchives([jp], null)
+//
+//					// refresh Fantom stuff
+//					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+
+					// copy pod to outDir
+					consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
 				}
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
@@ -119,144 +131,71 @@ class InternalBuilder : Builder {
 					consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
 					fp.compileEnv.publishPod(newPodFile)
 				}
-				
-				newPodFile.delete
 			}
 			
+			// we often cannot delete the .pod file if we've been generating Java stubs (get an IOErr)
+			// so don't! Delete it when we build again - it all seems fine then.
+//			compileDir.delete
 			return errs.flatten
 			
 		} catch (Err err) {
 			logger.err("Could not compile ${fp.podName}", err)
+			LogUtil.logErr(pluginId, "${err.typeof.qname} during build - ${err.msg}", err)
 			throw err
 
 		} finally {
 			(input.ns as F4Namespace)?.close
 		}
 	}
-	
-	private Zip? safeZipOpen(File file) {
-		try 	return Zip.open(file)
-		catch	return null
-	}
-	
-	private Bool isPodChanged(File newPod, File oldPod) {
-		if (!oldPod.exists) 
-			return true
-		
-		newPodZip := safeZipOpen(newPod)
-		oldPodZip := safeZipOpen(oldPod)
-		
-		try {
-			if (newPodZip == null) {
-				LogUtil.logErr(pluginId, "$newPod is not valid zip archive", null)
-				return false
-			}
-
-			if (oldPodZip == null) return true
-			
-			newContent := newPodZip.contents
-			oldContent := oldPodZip.contents
-			
-			if(newPodZip.contents != oldPodZip.contents) return true
-			
-			return podContentChanged(newPodZip, oldPodZip)
-			
-		} finally {
-			newPodZip?.close
-			oldPodZip?.close
-		}
-			
-		return true
-	}
-	
-	private Bool podContentChanged(Zip newPod, Zip oldPod) {
-		newContents := newPod.contents
-		oldContents := oldPod.contents
-		
-		comparators := [
-			`/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
-		]
-		
-		def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
-		
-		return newPod.contents.any |newFile, uri| { 
-			(comparators[uri] ?: def)(newFile, oldContents[uri])	
-		}
-	}
-	
-	private Bool metaChanged(File newFile, File oldFile) {
-		Str:Str newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
-		Str:Str oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
-		return newProps != oldProps
-	}
-	
-	private Bool binaryChanged(File newFile, File oldFile) {
-		Buf b1 := newFile.readAllBuf
-		Buf b2 := oldFile.readAllBuf
-		
-		if (b1.size != b2.size) return true
-		for (i:=0; i < b1.size; i++)
-			if( b1[i] != b2[i]) return true
-						
-		return false
-	}
 
 	private CompilerErr[][] compile(CompilerInput input) {
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
-		try compiler.compile	
+		try compiler.compile
 		catch (CompilerErr e) caughtErrs.add(e) 
 		catch (IOErr e)       caughtErrs.add(CompilerErr(e.msg, null))
 		catch (Err e) {
 			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
-			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", null))
+			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
 
-	private CompilerErr[] compileJava(|Str|? consumer, IPath projectPath, Str:File resolvedPods ) {
-		jtemp		:= projectPath.append("temp-java").toFile
-
-		jtemp.mkdirs
-		jtempPath	:= jtemp.getAbsolutePath
-		podFile		:= File.os(projectPath.append("${fp.podName}.pod").toOSString)
+	private CompilerErr[] compileJava(|Str|? consumer, File compileDir, Str:File resolvedPods) {
+		jtemp		:= compileDir + `temp-java/`
+		podFile		:= compileDir + `${fp.podName}.pod`
+		jtemp.create
 		
-		JHashMap jmap := JHashMap()
+		jmap := JHashMap()
 		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
 		
-		JStubGenerator.generateStubs(podFile.osPath, jtemp.getAbsolutePath, jmap)
-		jp := JavaCore.create(fp.project)
+		// stub generation often "locks" the pod file so it cannot be updated or deleted
+		// this happens more often when working from flash drives
+		// reading from a different .pod file at least lets us update the original (with the jstubs)
+		newPodFile	:= compileDir + `jstub/${fp.podName}.pod`
+		podFile.copyTo(newPodFile, ["overwrite":true])
+		JStubGenerator.generateStubs(newPodFile.osPath, jtemp.osPath, jmap)
 
-		wc := createJdkConfig("Javac configutation", "javac", jp)
-		IRuntimeClasspathEntry[] entries := JavaRuntime.computeUnresolvedRuntimeClasspath(jp)
-		entries = entries.map { JavaRuntime.resolveRuntimeClasspathEntry(it, jp) }.flatten
-		classpath := entries.map { getLocation }.add(jtempPath).join(File.pathSep)
+		classpath := fp.classpath.join(File.pathSep) { it.osPath }
 		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtempPath}\" -cp \"${classpath}\" ${javaFiles}")
+		jp := JavaCore.create(fp.project)
+		wc := createJdkConfig("Javac configuration", "javac", jp)
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "-d \"${jtemp.osPath}\" -cp \"${classpath}\" ${javaFiles}")
 		launch(wc, consumer)
 
 		wc = createJdkConfig("Jar configuration", "jar", jp)
-		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtempPath}\" \".\"")
+		wc.setAttribute(ExtConsts.ATTR_TOOL_ARGUMENTS, "uf \"${podFile.osPath}\" -C \"${jtemp.osPath}\" \".\"")
 		launch(wc, consumer)
-		
-		|JFile file|? delFunc := null
-		delFunc = |JFile file| {
-			if (file.isDirectory) {
-				file.listFiles().each(delFunc)
-				file.delete
-			} else
-				file.delete
-		}
-		jtemp.listFiles().each(delFunc)
-		return [,]
+
+		return CompilerErr#.emptyList
 	}
 
-	private ILaunchConfigurationWorkingCopy createJdkConfig(Str name,Str exec, IJavaProject jp)	{
+	private ILaunchConfigurationWorkingCopy createJdkConfig(Str name, Str exec, IJavaProject jp)	{
 		wc := createLaunchConfig(ExtConsts.ID_PROGRAM_BUILDER_LAUNCH_CONFIGURATION_TYPE, name)
-		fullExec := JavaRuntime.getVMInstall(jp).getInstallLocation.toStr+(Env.cur.os == "win32" ? "/bin/${exec}.exe" : "/bin/$exec")
+		fullExec := JavaRuntime.getVMInstall(jp).getInstallLocation.toStr + (Env.cur.os == "win32" ? "/bin/${exec}.exe" : "/bin/$exec")
 		wc.setAttribute(ExtConsts.ATTR_LOCATION, fullExec)
 		return wc
 	}
@@ -275,6 +214,73 @@ class InternalBuilder : Builder {
 		wc := DebugPlugin.getDefault.getLaunchManager.getLaunchConfigurationType(type).newInstance(null, name)
 		wc.setAttribute(ILaunchManager.ATTR_PRIVATE, true)
 		return wc
+	}
+	
+	// ----
+
+	private Bool isPodChanged(File newPod, File oldPod) {
+		if (!oldPod.exists) 
+			return true
+		
+		newPodZip := safeZipOpen(newPod)
+		oldPodZip := safeZipOpen(oldPod)
+		
+		try {
+			if (newPodZip == null) {
+				LogUtil.logErr(pluginId, "$newPod is not valid zip archive", null)
+				return false
+			}
+
+			if (oldPodZip == null) return true
+			
+			newContent := newPodZip.contents
+			oldContent := oldPodZip.contents
+			
+			if (newPodZip.contents != oldPodZip.contents) return true
+			
+			return podContentChanged(newPodZip, oldPodZip)
+			
+		} finally {
+			newPodZip?.close
+			oldPodZip?.close
+		}
+	}
+
+	private Zip? safeZipOpen(File file) {
+		try 	return Zip.open(file)
+		catch	return null
+	}
+
+	private Bool podContentChanged(Zip newPod, Zip oldPod) {
+		newContents := newPod.contents
+		oldContents := oldPod.contents
+		
+		comparators := [
+			`/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
+		]
+		
+		def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
+		
+		return newPod.contents.any |newFile, uri| { 
+			(comparators[uri] ?: def)(newFile, oldContents[uri])	
+		}
+	}
+	
+	private Bool metaChanged(File newFile, File oldFile) {
+		newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
+		return newProps != oldProps
+	}
+	
+	private Bool binaryChanged(File newFile, File oldFile) {
+		Buf b1 := newFile.readAllBuf
+		Buf b2 := oldFile.readAllBuf
+		
+		if (b1.size != b2.size) return true
+		for (i:=0; i < b1.size; i++)
+			if( b1[i] != b2[i]) return true
+						
+		return false
 	}
 }
 

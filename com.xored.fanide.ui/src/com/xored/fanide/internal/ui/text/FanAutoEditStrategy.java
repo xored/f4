@@ -692,7 +692,7 @@ public class FanAutoEditStrategy extends DefaultIndentLineAutoEditStrategy {
 			FanBlock block;
 
 			// DUPLICATION: this code is identical to code in
-			// smartInsertAfterNewLine
+			// smartIndentAfterNewLine
 			block = getLastOpenBlockType(d, c.offset);
 			if (curLineStr.trim().endsWith("\\")) {
 				resultIndent = getLineIndent(d, line - 1);
