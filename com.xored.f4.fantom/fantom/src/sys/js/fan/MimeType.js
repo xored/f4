@@ -34,6 +34,9 @@ fan.sys.MimeType.fromStr = function(s, checked)
         if (s == "text/plain") return fan.sys.MimeType.m_textPlain;
         if (s == "text/html")  return fan.sys.MimeType.m_textHtml;
         if (s == "text/xml")   return fan.sys.MimeType.m_textXml;
+        if (s == "text/plain; charset=utf-8") return fan.sys.MimeType.m_textPlainUtf8;
+        if (s == "text/html; charset=utf-8")  return fan.sys.MimeType.m_textHtmlUtf8;
+        if (s == "text/xml; charset=utf-8")   return fan.sys.MimeType.m_textXmlUtf8;
         break;
       case 'x':
         if (s == "x-directory/normal") return fan.sys.MimeType.m_dir;
@@ -97,16 +100,28 @@ fan.sys.MimeType.doParseParams = function(s, offset)
   {
     var c = s.charAt(i);
 
-    if (c == '(' && !inQuotes)
-      throw fan.sys.ParseErr.makeStr("MimeType", s, "comments not supported");
+    // let parens slide since sometimes they occur in cookies
+    // if (c == '(' && !inQuotes)
+    //   throw fan.sys.ParseErr.makeStr("MimeType", s, "comments not supported");
 
-    if (c == '=' && !inQuotes)
+    if (c == '=' && eq < 0 && !inQuotes)
     {
       eq = i++;
       while (fan.sys.MimeType.isSpace(s, i)) ++i;
       if (s.charAt(i) == '"') { inQuotes = true; ++i; c = s.charAt(i); }
       else inQuotes = false;
       valStart = i;
+    }
+
+    if (c == ';' && eq < 0 && !inQuotes)
+    {
+      // key with no =val
+      var key = fan.sys.Str.trim(s.substring(keyStart, i));
+      params.set(key, "");
+      keyStart = i+1;
+      eq = valStart = valEnd = -1;
+      hasEsc = false;
+      continue;
     }
 
     if (eq < 0) continue;
@@ -139,12 +154,19 @@ fan.sys.MimeType.doParseParams = function(s, offset)
 
   if (keyStart < s.length)
   {
-    if (eq < 0) throw fan.sys.IndexErr.make(eq);
     if (valEnd < 0) valEnd = s.length-1;
-    var key = fan.sys.Str.trim(s.substring(keyStart, eq));
-    var val = fan.sys.Str.trim(s.substring(valStart, valEnd+1));
-    if (hasEsc) val = fan.sys.MimeType.unescape(val);
-    params.set(key, val);
+    if (eq < 0)
+    {
+      var key = fan.sys.Str.trim(s.substring(keyStart, s.length));
+      params.set(key, "");
+    }
+    else
+    {
+      var key = fan.sys.Str.trim(s.substring(keyStart, eq));
+      var val = fan.sys.Str.trim(s.substring(valStart, valEnd+1));
+      if (hasEsc) val = fan.sys.MimeType.unscape(val);
+      params.set(key, val);
+    }
   }
 
   return params;
@@ -174,12 +196,21 @@ fan.sys.MimeType.unescape = function(s)
 
 fan.sys.MimeType.forExt = function(s)
 {
+  // TODO:FIXIT - we should really be loading this somehow from ext2mime.props
   if (s == null) return null;
   try
   {
+    s = s.toLowerCase();
+    var m = null;
+    switch (s)
+    {
+      case "png": m = "image/png"; break;
+      case "txt": m = "text/plain; charset=utf-8"; break ;
+      case "text": m = "text/plain; charset=utf-8"; break;
+    }
     // TODO FIXIT
     //return (MimeType)Repo.readSymbolsCached(etcUri, Duration.oneMin).get(FanStr.lower(s));
-    return null;
+    return fan.sys.MimeType.fromStr(m);
   }
   catch (err)
   {
@@ -234,6 +265,12 @@ fan.sys.MimeType.prototype.charset = function()
 }
 */
 
+fan.sys.MimeType.prototype.noParams = function()
+{
+  if (this.params.isEmpty()) return this;
+  return fan.sys.MimeType.fromStr(this.mediaType() + "/" + this.subType());
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Lazy Load
 //////////////////////////////////////////////////////////////////////////
@@ -256,12 +293,13 @@ fan.sys.MimeType.emptyQuery = null;
 // Predefined
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.MimeType.predefined = function(media, sub)
+fan.sys.MimeType.predefined = function(media, sub, params)
 {
+  if (params === undefined) params = "";
   var t = new fan.sys.MimeType();
   t.m_mediaType = media;
   t.m_subType = sub;
-  t.m_params = fan.sys.MimeType.emptyParams();
+  t.m_params = fan.sys.MimeType.parseParams(params, true);
   t.m_str = media + "/" + sub;
   return t;
 }

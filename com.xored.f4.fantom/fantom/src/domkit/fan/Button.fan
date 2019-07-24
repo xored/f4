@@ -11,24 +11,27 @@ using dom
 **
 ** Button is a widget that invokes an action when pressed.
 **
-** See also: [pod doc]`pod-doc#button`, `ToggleButton`, `ListButton`
+** See also: [docDomkit]`docDomkit::Controls#button`,
+** `ToggleButton`, `ListButton`
 **
 @Js class Button : Elem
 {
   new make() : super()
   {
-    this.style.addClass("domkit-Button")
-    this.set("tabindex", "0")
-    this.onEvent(EventType.mouseDown, false) |e|
+    this.style.addClass("domkit-control domkit-control-button domkit-Button")
+    this->tabIndex = 0
+    this.onEvent("mousedown", false) |e|
     {
       e.stop
       if (!enabled) return
+      this._event = e
       mouseDown = true
       doMouseDown
     }
-    this.onEvent(EventType.mouseUp, false) |e|
+    this.onEvent("mouseup", false) |e|
     {
       if (!enabled) return
+      this._event = e
       doMouseUp
       if (mouseDown)
       {
@@ -37,16 +40,18 @@ using dom
       }
       mouseDown = false
     }
-    this.onEvent(EventType.mouseLeave, false) |e|
+    this.onEvent("mouseleave", false) |e|
     {
       if (!mouseDown) return
+      this._event = e
       doMouseUp
       mouseDown = false
     }
-    this.onEvent(EventType.keyDown, false) |e|
+    this.onEvent("keydown", false) |e|
     {
       if (!enabled) return
-      if (e.key == Key.space)
+      this._event = e
+      if (e.key == Key.space || (this is ListButton && e.key == Key.down))
       {
         doMouseDown
         if (cbPopup == null) Win.cur.setTimeout(100ms) |->| { fireAction(e); doMouseUp }
@@ -77,15 +82,15 @@ using dom
     if (popup?.isOpen == true) return
 
     x := pagePos.x
-    y := pagePos.y + size.h
-    w := size.w
+    y := pagePos.y + size.h.toInt
+    w := size.w.toInt
 
     if (isCombo)
     {
       // stretch popup to fit combo
       combo := this.parent
       x = combo.pagePos.x
-      w = combo.size.w
+      w = combo.size.w.toInt
     }
 
     // shift to align text
@@ -101,12 +106,18 @@ using dom
       case Align.right:  x += w
     }
 
-    popup.onClose
+    // use internal _onClose to keep onClose available for use
+    popup._onClose
     {
       showUp
       if (isCombo) ((Combo)this.parent).field.focus
+      else this.focus
     }
-    popup.style["min-width"] = "${w}px"
+
+    // limit width to button size if not explicity set
+    if (popup.style.effective("min-width") == null)
+      popup.style->minWidth = "${w}px"
+
     popup.open(x, y)
   }
 
@@ -118,12 +129,12 @@ using dom
       if (it)
       {
         style.removeClass("disabled")
-        this.set("tabindex", "0")
+        this->tabIndex = 0
       }
       else
       {
         style.addClass("disabled")
-        this.set("tabindex", "-1")
+        this->tabIndex = -1
       }
     }
   }
@@ -138,7 +149,13 @@ using dom
   internal virtual Void doMouseUp()   { showUp }
   internal Bool mouseDown := false
 
-  private Void fireAction(Event e) { cbAction?.call(this) }
+  private Void fireAction(Event e)
+  {
+    cbAction?.call(this)
+  }
+
+  // TODO: not sure how this works yet
+  @NoDoc Event? _event
 
   private Popup? popup   := null
   private Func? cbAction := null

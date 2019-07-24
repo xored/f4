@@ -9,16 +9,22 @@
 using dom
 
 **
-** Text field input element
+** Text field input element.
+**
+** See also: [docDomkit]`docDomkit::Controls#textField`
 **
 @Js class TextField : Elem
 {
   new make() : super("input")
   {
     this.set("type", "text")
-    this.style.addClass("domkit-TextField").addClass("domkit-border")
-    this.onEvent(EventType.input, false) |e| { fireModify(e) }
-    this.onEvent(EventType.keyDown, false) |e|
+    this.style.addClass("domkit-control domkit-control-text domkit-TextField")
+    this.onEvent("input", false) |e|
+    {
+      checkUpdate
+      fireModify(e)
+    }
+    this.onEvent("keydown", false) |e|
     {
       if (e.key == Key.enter) fireAction(e)
     }
@@ -43,8 +49,8 @@ using dom
   ** Set to 'true' to set field to readonly mode.
   Bool ro
   {
-    get { this.get("readonly") }
-    set { this.set("readonly", it) }
+    get { this.prop("readOnly") }
+    set { this.setProp("readOnly", it) }
   }
 
   ** Set to 'true' to mask characters inputed into field.
@@ -58,7 +64,7 @@ using dom
   Str val
   {
     get { this->value }
-    set { this->value = it }
+    set { this->value = it; checkUpdate }
   }
 
   ** Callback when value is modified by user.
@@ -70,13 +76,19 @@ using dom
   ** Select given range of text
   Void select(Int start, Int end)
   {
-    set("selectionStart", start)
-    set("selectionEnd", end)
+    setProp("selectionStart", start)
+    setProp("selectionEnd", end)
   }
 
   internal Void fireAction(Event? e) { cbAction?.call(this) }
   private Func? cbAction := null
 
-  private Void fireModify(Event? e) { cbModify?.call(this) }
+  internal Void fireModify(Event? e) { cbModify?.call(this) }
   private Func? cbModify := null
+
+  // framework use only
+  private Void checkUpdate()
+  {
+    if (parent is Combo) ((Combo)parent).update(val.trim)
+  }
 }

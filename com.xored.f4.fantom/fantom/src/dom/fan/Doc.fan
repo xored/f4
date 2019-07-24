@@ -36,21 +36,28 @@ class Doc
 // Elements
 //////////////////////////////////////////////////////////////////////////
 
+  ** Get the head element.
+  native Elem head()
+
   ** Get the body element.
   native Elem body()
+
+  ** Get the currently focued element, or 'null' for none.
+  native Elem? activeElem()
 
   **
   ** Get the element with this 'id', or 'null' if no
   ** element is found with this 'id'.
   **
-  native Elem? elem(Str id)
+  native Elem? elemById(Str id)
 
   **
   ** Create a new element with the given tag name.  If the
   ** attrib map is specified, set the new elements attributes
-  ** to the given values.
+  ** to the given values. Optionally a namespace for the
+  ** element can be specified with 'ns'.
   **
-  native Elem createElem(Str tagName, [Str:Str]? attrib := null)
+  native Elem createElem(Str tagName, [Str:Str]? attrib := null, Uri? ns := null)
 
   ** Create a document fragment.
   @NoDoc native Elem createFrag()
@@ -69,6 +76,21 @@ class Doc
   **
   native Elem[] querySelectorAll(Str selectors)
 
+  **
+  ** Render the given image to an offscreen <canvas> element and
+  ** export the contents to a data URI of type 'image/png'.
+  **
+  @NoDoc native Str exportPng(Elem img)
+
+  **
+  ** Render the given image to an offscreen <canvas> element and
+  ** export the contents to a data URI of type 'image/jpeg'. The
+  ** image quality can be configured by specifying a number
+  ** between '0f' and '1f' for 'quality'.  If 'quality' is null
+  ** the default value will be used.
+  **
+  @NoDoc native Str exportJpg(Elem img, Float? quality)
+
 //////////////////////////////////////////////////////////////////////////
 // Events
 //////////////////////////////////////////////////////////////////////////
@@ -80,6 +102,14 @@ class Doc
   ** Remove the given event handler from this document.  If this
   ** handler was not registered, this method does nothing.
   native Void removeEvent(Str type, Bool useCapture, Func handler)
+
+  ** When a HTML document has been switched to 'designMode', the document
+  ** object exposes the 'exec' method which allows one to run commands to
+  ** manipulate the contents of the editable region.
+  **   - 'name': the command name to execute
+  **   - 'defUi': flag to indicate if default user interface is shown
+  **   - 'val': optional value for commands that take an argument
+  native Bool exec(Str name, Bool defUi := false, Obj? val := null)
 
 //////////////////////////////////////////////////////////////////////////
 // Writing
@@ -112,12 +142,8 @@ class Doc
   **
   ** Add a cookie to this session.
   **
-  Void addCookie(Cookie c)
-  {
-    addCookieStr(c.toStr)
-  }
+  native Void addCookie(Cookie c)
 
   private native Str getCookiesStr()
-  private native Str addCookieStr(Str c)
 
 }

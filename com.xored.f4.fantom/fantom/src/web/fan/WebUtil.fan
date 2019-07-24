@@ -213,38 +213,6 @@ class WebUtil
     return map
   }
 
-  ** Parse a list of 'auth-param' as defined in
-  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
-  static Str:Str parseAuthParams(Str s)
-  {
-    AuthParser(s).authParams
-  }
-
-  ** Parse a Str according to the 'challenge' syntax as defined in
-  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
-  static WebAuthScheme[] parseChallenge(Str s)
-  {
-    challenge := WebAuthScheme[,]
-    parser    := AuthParser(s)
-    next      := (WebAuthScheme?)null
-    while ((next = parser.nextScheme) != null)
-    {
-      challenge.add(next)
-    }
-    if (challenge.isEmpty || !parser.eof) throw ParseErr("Invalid challenge: '${s}'")
-    return challenge
-  }
-
-  ** Parse a Str according to the 'credentials' syntax as defined in
-  ** [RFC7235]`https://tools.ietf.org/html/rfc7235`
-  static WebAuthScheme parseCredentials(Str s)
-  {
-    parser := AuthParser(s)
-    creds  := parser.nextScheme
-    if (creds == null || !parser.eof) throw ParseErr("Invalid credentials: '${s}'")
-    return creds
-  }
-
   ** Write HTTP headers
   @NoDoc static Void writeHeaders(OutStream out, Str:Str headers)
   {
@@ -457,7 +425,7 @@ class WebUtil
     if (env?.size > 0)
     {
       envStr.add("var env = fan.sys.Map.make(fan.sys.Str.\$type, fan.sys.Str.\$type);\n")
-      envStr.add("env.caseInsensitive\$(true);\n")
+      envStr.add("  env.caseInsensitive\$(true);\n")
       env.each |v,k|
       {
         envStr.add("  ")
@@ -467,20 +435,13 @@ class WebUtil
         else
           envStr.add("env.set('$k', $v);\n")
       }
-      envStr.add("fan.sys.Env.cur().\$setVars(env);\n")
+      envStr.add("  fan.sys.Env.cur().\$setVars(env);")
     }
 
     out.printLine(
      "<script type='text/javascript'>
-      //<![CDATA[
-      var webJsMain_hasRun = false;
-      var doLoad = function()
+      window.addEventListener('load', function()
       {
-        // safari appears to have a problem calling this event
-        // twice, so make sure we short-circuit if already run
-        if (webJsMain_hasRun) return;
-        webJsMain_hasRun = true;
-
         // inject env vars
         $envStr.toStr
 
@@ -493,12 +454,7 @@ class WebUtil
         // invoke main
         if (main.isStatic()) main.call();
         else main.callOn(main.parent().make());
-      }
-      if (window.addEventListener)
-        window.addEventListener('load', doLoad, false);
-      else
-        window.attachEvent('onload', doLoad);
-      //]]>
+      }, false);
       </script>")
   }
 
@@ -510,7 +466,7 @@ class WebUtil
   internal const static Int LF  := '\n'
   internal const static Int HT  := '\t'
   internal const static Int SP  := ' '
-  internal const static Int maxTokenSize := 4096
+  internal const static Int maxTokenSize := 16384
 
 }
 

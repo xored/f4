@@ -66,6 +66,7 @@ class FandocDocWriter : DocWriter
         img := (Image) elem
         onImage?.call(img)
         out.print("![${img.alt}")
+        if (img.size != null) out.print("][${img.size}")
 
       case DocNodeId.para:
         para := (Para) elem
@@ -107,6 +108,9 @@ class FandocDocWriter : DocWriter
         out.print(listIndexes.peek)
         listIndexes.peek.increment
         inListItem = true
+
+      case DocNodeId.hr:
+        out.print("---\n\n")
     }
   }
 

@@ -11,7 +11,7 @@ using dom
 **
 ** ToggleButton models a boolean state toggled by pressing a button.
 **
-** See also: [pod doc]`pod-doc#toggleButton`, `Button`
+** See also: [docDomkit]`docDomkit::Controls#toggleButton`, `Button`
 **
 @Js class ToggleButton : Button
 {
@@ -26,6 +26,7 @@ using dom
     set
     {
       &selected = it
+      this.style.toggleClass("selected", it)
       if (it)
       {
         showDown
@@ -57,6 +58,17 @@ using dom
 
   internal override Void doMouseUp()
   {
-    if (mouseDown) selected = !selected
+    if (mouseDown)
+    {
+      selected = !selected
+      if (group != null)
+      {
+        group._event = this._event
+        group.select(this)
+      }
+    }
   }
+
+  // internal use only
+  internal ButtonGroup? group := null
 }

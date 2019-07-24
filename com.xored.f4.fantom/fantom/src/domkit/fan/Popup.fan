@@ -8,11 +8,12 @@
 
 using concurrent
 using dom
+using graphics
 
 **
 ** Popup window which can be closed clicking outside of element.
 **
-** See also: [pod doc]`pod-doc#popup`
+** See also: [docDomkit]`docDomkit::Modals#popup`
 **
 @Js class Popup : Elem
 {
@@ -22,6 +23,7 @@ using dom
     nextId.val = uid+1
     this.style.addClass("domkit-Popup")
     this.onEvent("keydown", false) |e| { if (e.key == Key.esc) close }
+    this->tabIndex = 0
   }
 
   ** Where to align Popup relative to open(x,y):
@@ -33,10 +35,15 @@ using dom
   ** Return 'true' if this popup currently open.
   Bool isOpen { private set }
 
-  ** Open this popup in the current Window. If popup
-  ** is already open this method does nothing.
-  Void open(Int x, Int y)
+  ** Open this popup in the current Window. If popup is already
+  ** open this method does nothing. This method always invokes
+  ** `fitBounds` to verify popup does not overflow viewport.
+  Void open(Float x, Float y)
   {
+    if (isOpen) return
+
+    this.openPos = Point(x, y)
+
     this.style.setAll([
       "left": "${x}px",
       "top":  "${y}px",
@@ -55,27 +62,12 @@ using dom
       it.add(this)
     })
 
-    // shift halign if needed
-    sz := this.size
-    switch (halign)
-    {
-      case Align.center: x -= sz.w / 2; this.style["left"] = "${x}px"
-      case Align.right:  x -= sz.w;     this.style["left"] = "${x}px"
-    }
-
-    // adjust if outside viewport
-    vp := Win.cur.viewport
-    if (sz.w + gutter + gutter > vp.w) this.style["width"]  = "${vp.w-gutter-gutter}px"
-    if (sz.h + gutter + gutter > vp.h) this.style["height"] = "${vp.h-gutter-gutter}px"
-
-    // refresh size
-    sz = this.size
-    if ((x + sz.w + gutter) > vp.w) this.style["left"] = "${vp.w-sz.w-gutter}px"
-    if ((y + sz.h + gutter) > vp.h) this.style["top"]  = "${vp.h-sz.h-gutter}px"
+    fitBounds
+    onBeforeOpen
 
     this.transition([
       "opacity": "1"
-    ], null, 100ms) { fireOpen(null) }
+    ], null, 100ms) { this.focus; fireOpen(null) }
   }
 
   ** Close this popup. If popup is already closed
@@ -84,11 +76,52 @@ using dom
   {
     this.transition(["transform": "scale(0.75)", "opacity": "0"], null, 100ms)
     {
-      mask := Win.cur.doc.elem("domkitPopup-mask-$uid")
+      mask := Win.cur.doc.elemById("domkitPopup-mask-$uid")
       mask?.parent?.remove(mask)
       fireClose(null)
     }
   }
+
+  **
+  ** Fit popup with current window bounds. This may move the origin of
+  ** where popup is opened, or modify the width or height, or both.
+  **
+  ** This method is called automatically by `open`.  For content that
+  ** is asynchronusly loaded after popup is visible, and that may modify
+  ** the initial size, it is good practice to invoke this method to
+  ** verify content does not overflow the viewport.
+  **
+  ** If popup is not open, this method does nothing.
+  **
+  Void fitBounds()
+  {
+    // isOpen may not be set yet, so check if mounted.
+    if (this.parent == null) return
+
+    x  := openPos.x
+    y  := openPos.y
+    sz := this.size
+
+    // shift halign if needed
+    switch (halign)
+    {
+      case Align.center: x = gutter.max(x - (sz.w.toInt / 2)); this.style->left = "${x}px"
+      case Align.right:  x = gutter.max(x - sz.w.toInt);       this.style->left = "${x}px"
+    }
+
+    // adjust if outside viewport
+    vp := Win.cur.viewport
+    if (sz.w + gutter + gutter > vp.w) this.style->width  = "${vp.w-gutter-gutter}px"
+    if (sz.h + gutter + gutter > vp.h) this.style->height = "${vp.h-gutter-gutter}px"
+
+    // refresh size
+    sz = this.size
+    if ((x + sz.w + gutter) > vp.w) this.style->left = "${vp.w-sz.w-gutter}px"
+    if ((y + sz.h + gutter) > vp.h) this.style->top  = "${vp.h-sz.h-gutter}px"
+  }
+
+  ** Protected sub-class callback invoked directly before popup is visible.
+  protected virtual Void onBeforeOpen() {}
 
   ** Callback when popup is opened.
   Void onOpen(|This| f) { cbOpen = f }
@@ -96,12 +129,22 @@ using dom
   ** Callback when popup is closed.
   Void onClose(|This| f) { cbClose = f }
 
-  private Void fireOpen(Event? e)  { cbOpen?.call(this);  isOpen=true  }
-  private Void fireClose(Event? e) { cbClose?.call(this); isOpen=false }
+  ** Internal callback when popup is closed.
+  internal Void _onClose(|This| f) { _cbClose = f }
+
+  private Void fireOpen(Event? e)  { cbOpen?.call(this); isOpen=true  }
+  private Void fireClose(Event? e)
+  {
+    _cbClose?.call(this)
+    cbClose?.call(this)
+    isOpen = false
+  }
 
   private const Int uid
   private static const AtomicRef nextId := AtomicRef(0)
-  private static const Int gutter := 12
+  private static const Float gutter := 12f
+  private Point? openPos
   private Func? cbOpen
   private Func? cbClose
+  private Func? _cbClose
 }

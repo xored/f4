@@ -21,16 +21,23 @@ class FandocTest : Test
   {
     verifyDoc("*x*", ["<body>", ["<p>", ["<em>", "x"]]])
     verifyDoc("*foo*", ["<body>", ["<p>", ["<em>", "foo"]]])
+    verifyDoc("\n*foo*", ["<body>", ["<p>", ["<em>", "foo"]]])
     verifyDoc("alpha *foo* beta", ["<body>", ["<p>", "alpha ", ["<em>", "foo"], " beta"]])
 
     verifyDoc("**x**", ["<body>", ["<p>", ["<strong>", "x"]]])
+    verifyDoc("\n\n**x**", ["<body>", ["<p>", ["<strong>", "x"]]])
     verifyDoc("alpha **foo** beta", ["<body>", ["<p>", "alpha ", ["<strong>", "foo"], " beta"]])
 
+    ph := FandocParser { parseHeader = false }.parseStr("\n**foo**")
+    verifyDocNode(ph, ["<body>", ["<p>", ["<strong>", "foo"]]])
+
     // strong nested in emphasis
+    verifyDoc("* **wow** *", ["<body>", ["<p>",  ["<em>", " ", ["<strong>", "wow"], " "]]])
     verifyDoc("You know, *winter\n**really, really**\nsucks*!", ["<body>", ["<p>", "You know, ",
       ["<em>", "winter ", ["<strong>", "really, really"], " sucks"], "!"]])
 
     // emphasis nested in strong
+    verifyDoc("** *wow* **", ["<body>", ["<p>",  ["<strong>", " ", ["<em>", "wow"], " "]]])
     verifyDoc("You know, **winter\n*really, really*\nsucks**!", ["<body>", ["<p>", "You know, ",
       ["<strong>", "winter ", ["<em>", "really, really"], " sucks"], "!"]])
 
@@ -95,6 +102,7 @@ class FandocTest : Test
 
     verifyDoc("[cool site]`http://cool/`", ["<body>", ["<p>", ["<a http://cool/>", "cool site"]]])
     verifyDoc("Check [cool site]`http://cool/`!", ["<body>", ["<p>", "Check ", ["<a http://cool/>", "cool site"], "!"]])
+    verifyDoc("([cool site]`http://cool/`)", ["<body>", ["<p>", "(", ["<a http://cool/>", "cool site"], ")"]])
 
     // empty [] are normal text
     verifyDoc("[]", ["<body>", ["<p>", "[]"]])
@@ -108,8 +116,10 @@ class FandocTest : Test
   Void testImage()
   {
     verifyDoc("![cool image]`cool.png`", ["<body>", ["<p>", ["<img cool image;cool.png>"]]])
+    verifyDoc("![cool image][100x200]`cool.png`", ["<body>", ["<p>", ["<img cool image;cool.png;100x200>"]]])
     verifyDoc("![Brian's Idea]`http://foo/idea.gif`", ["<body>", ["<p>", ["<img Brian's Idea;http://foo/idea.gif>"]]])
     verifyDoc("alpha ![x]`img.png` beta", ["<body>", ["<p>", "alpha ", ["<img x;img.png>"], " beta"]])
+    verifyDoc("[![x]`img.png`]`#link`", ["<body>", ["<p>", ["<a>", ["<img x;img.png>"]]]])
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,6 +195,23 @@ class FandocTest : Test
         - b
       <pre
       ", ["<body>", ["<pre>", "- a\n\n- b\n"]])
+
+    verifyDoc(
+     "pre>
+        a
+       b
+      c
+      <pre
+      ", ["<body>", ["<pre>", "  a\n b\nc\n"]])
+
+    verifyDoc(
+     "pre>
+         3
+        2
+           5
+          4
+      <pre
+      ", ["<body>", ["<pre>", " 3\n2\n   5\n  4\n"]])
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -225,7 +252,18 @@ class FandocTest : Test
 
     verifyDoc("a\n\n####\nb", ["<body>", ["<p>", "a"], ["<p>", "#### b"]])
     verifyDoc("a\n\n===\n\nb", ["<body>", ["<p>", "a"], ["<p>", "==="], ["<p>", "b"]])
-    verifyDoc("\n\n------\n", ["<body>", ["<p>", "------"]])
+    verifyDoc("\n\n------\n", ["<body>", ["<hr>"]])
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// HR
+//////////////////////////////////////////////////////////////////////////
+
+  Void testHr()
+  {
+    verifyDoc("Foo\n\n---\nBar", ["<body>", ["<p>", "Foo"], ["<hr>"], ["<p>", "Bar"]])
+    verifyDoc("\n\n---", ["<body>", ["<hr>"]])
+    verifyDoc("\n\n---\n", ["<body>", ["<hr>"]])
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -481,8 +519,8 @@ class FandocTest : Test
     parser := FandocParser { silent = true }
     doc := parser.parse("Test", str.in)
     verifyDocNode(doc, expected)
-    //echo("======")
-    //parser.errs.each |Err e| { echo(e) }
+    // echo("======")
+    // parser.errs.each |Err e| { echo(e) }
     verifyEq(parser.errs.size, errs.size/2)
     parser.errs.each |FandocErr e, Int i|
     {
@@ -572,7 +610,10 @@ class FandocTest : Test
   {
     parser := FandocParser { silent = true }
     doc := parser.parse("Test", str.in)
+
+    // echo("__________________\n$str\n\n")
     // doc.write(HtmlDocWriter())
+
     verifyDocNode(doc, expected)
 
     roundtrip := StrBuf()
@@ -616,6 +657,7 @@ class FandocTest : Test
       elemName = "img"
       verifyEq(actual->alt, body.split(';')[0])
       verifyEq(actual->uri, body.split(';')[1])
+      verifyEq(actual->size, body.split(';').getSafe(2))
     }
 
     verifyEq(actual.htmlName, elemName)

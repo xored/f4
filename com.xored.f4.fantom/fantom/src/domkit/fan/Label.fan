@@ -11,12 +11,12 @@ using dom
 **
 ** Simple text based element.
 **
-** See also: [pod doc]`pod-doc#label`
+** See also: [docDomkit]`docDomkit::Controls#label`
 **
 @Js class Label : Elem
 {
   new make() : super("span")
   {
-    this.style.addClass("domkit-Label")
+    this.style.addClass("domkit-control domkit-Label")
   }
 }

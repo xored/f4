@@ -63,6 +63,12 @@ fan.sys.Decimal.equals = function(self, that)
   return false;
 }
 
+// TODO FIXIT: hash
+fan.sys.Decimal.hash = function(self)
+{
+  fan.sys.Str.hash(self.toString());
+}
+
 fan.sys.Decimal.encode = function(self, out)
 {
   out.w(""+self).w("d");
@@ -78,8 +84,11 @@ fan.sys.Decimal.toLocale = function(self, pattern, locale)
   if (locale === undefined || locale == null) locale = fan.sys.Locale.cur();
   if (pattern === undefined) pattern = null;
 
+  // TODO: for now we just route to Float.toLocale
+  return fan.sys.Float.toLocale(self, pattern, locale);
+
   // get current locale
-  // var locale = fans.sys.Locale.cur();
+  // var locale = fan.sys.Locale.cur();
   // java.text.DecimalFormatSymbols df = locale.decimal();
   //
   // // get default pattern if necessary
@@ -92,6 +101,4 @@ fan.sys.Decimal.toLocale = function(self, pattern, locale)
   //
   // // route to common FanNum method
   // return FanNum.toLocale(p, d, df);
-
-  return "" + self;
 }

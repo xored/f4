@@ -105,6 +105,8 @@ public class Actor
 
   public final long queueSize() { return queue.size; }
 
+  public final long queuePeak() { return queue.peak; }
+
 //////////////////////////////////////////////////////////////////////////
 // Utils
 //////////////////////////////////////////////////////////////////////////
@@ -198,7 +200,9 @@ public class Actor
       if (future == null) break;
 
       // dispatch the messge
+      this.curMsg = future.msg;
       _dispatch(future);
+      this.curMsg = null;
     }
 
     // flush locals back to context
@@ -303,6 +307,7 @@ public class Actor
       if (tail == null) { head = tail = f; f.next = null; }
       else { tail.next = f; tail = f; }
       size++;
+      if (size > peak) peak = size;
     }
 
     public Future coalesce(Future f)
@@ -312,12 +317,19 @@ public class Actor
 
     void dump(fan.sys.OutStream out)
     {
+      int num = 0;
+      int max = 50;
       for (Future x = head; x != null; x = x.next)
-        out.print("  ").printLine(x.msg);
+      {
+        if (num < max) out.print("  ").printLine(x.msg);
+        num++;
+      }
+      if (num > max) out.print("  " + (num-max) + " more messages...");
     }
 
     Future head, tail;
     int size;
+    int peak;
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -411,6 +423,8 @@ public class Actor
       out.printLine("  pool:      " + pool.name);
       out.printLine("  submitted: " + submitted);
       out.printLine("  queue:     " + queueSize());
+      out.printLine("  peak:      " + queuePeak());
+      out.printLine("  curMsg:    " + curMsg);
       queue.dump(out);
 
     }
@@ -439,6 +453,7 @@ public class Actor
   private Func receive;                  // func to invoke on receive or null
   private Object lock = new Object();    // lock for message queue
   private Queue queue;                   // message queue linked list
+  private Object curMsg;                 // if currently processing a message
   private boolean submitted = false;     // is actor submitted to thread pool
 
 }

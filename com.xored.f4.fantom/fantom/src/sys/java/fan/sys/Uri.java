@@ -115,6 +115,78 @@ public final class Uri
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Tokens
+//////////////////////////////////////////////////////////////////////////
+
+  public static String escapeToken(String str, long section)
+  {
+    int mask = sectionToMask(section);
+    StringBuilder buf = new StringBuilder(str.length()+4);
+    for (int i=0; i<str.length(); ++i)
+    {
+      int c = str.charAt(i);
+      if (c < delimEscMap.length && (delimEscMap[c] & mask) != 0)
+        buf.append((char)'\\');
+      buf.append((char)c);
+    }
+    return buf.toString();
+  }
+
+  public static String encodeToken(String str, long section)
+  {
+    int mask = sectionToMask(section);
+    StringBuilder buf = new StringBuilder(str.length()+4);
+    for (int i=0; i<str.length(); ++i)
+    {
+      int c = str.charAt(i);
+      if (c < 128 && (charMap[c] & mask) != 0 && (delimEscMap[c] & mask) == 0)
+        buf.append((char)c);
+      else
+        percentEncodeChar(buf, c);
+    }
+    return buf.toString();
+  }
+
+  public static String decodeToken(String str, long section)
+  {
+    int mask = sectionToMask(section);
+    if (str.length() == 0) return "";
+    return new Decoder(str, true).decodeToken(mask);
+  }
+
+  public static String unescapeToken(String str)
+  {
+    StringBuilder buf = new StringBuilder(str.length());
+    for (int i=0; i<str.length(); ++i)
+    {
+      int c = str.charAt(i);
+      if (c == '\\')
+      {
+        i++;
+        if (i>=str.length()) throw ArgErr.make("Invalid esc: " + str);
+        c = str.charAt(i);
+      }
+      buf.append((char)c);
+    }
+    return buf.toString();
+  }
+
+  private static int sectionToMask(long section)
+  {
+    switch ((int)section)
+    {
+      case 1:  return PATH;
+      case 2:  return QUERY;
+      case 3:  return FRAG;
+      default: throw ArgErr.make("Invalid section flag: " + section);
+    }
+  }
+
+  public static final long sectionPath  = 1;
+  public static final long sectionQuery = 2;
+  public static final long sectionFrag  = 3;
+
+//////////////////////////////////////////////////////////////////////////
 // Java Constructors
 //////////////////////////////////////////////////////////////////////////
 
@@ -184,6 +256,7 @@ public final class Uri
         String seg = (String)path.get(i);
         if (seg.equals(".") && (path.sz() > 1 || host != null))
         {
+          if (path.isRO()) path = path.rw();
           path.removeAt(i);
           modified = true;
           dotLast = true;
@@ -191,6 +264,7 @@ public final class Uri
         }
         else if (seg.equals("..") && i > 0 && !path.get(i-1).toString().equals(".."))
         {
+          if (path.isRO()) path = path.rw();
           path.removeAt(i);
           path.removeAt(i-1);
           modified = true;
@@ -416,6 +490,11 @@ public final class Uri
       return new List(Sys.StrType, path);
     }
 
+    String decodeToken(int mask)
+    {
+      return substring(0, str.length(), mask);
+    }
+
     Map decodeQuery()
     {
       return parseQuery(substring(0, str.length(), QUERY));
@@ -509,16 +588,33 @@ public final class Uri
 
     private String substring(int start, int end, int section)
     {
-      if (!decoding) return str.substring(start, end);
-
       StringBuilder buf = new StringBuilder(end-start);
-      dpos = start;
-      while (dpos < end)
+      if (!decoding)
       {
-        int ch = nextChar(section);
-        if (nextCharWasEscaped && ch < delimEscMap.length && (delimEscMap[ch] & section) != 0)
-          buf.append('\\');
-        buf.append((char)ch);
+        int last = 0;
+        for (int i=start; i<end; ++i)
+        {
+          int ch = str.charAt(i);
+          if (last == '\\' && ch < delimEscMap.length && (delimEscMap[ch] & section) == 0)
+          {
+            buf.setLength(buf.length()-1); // don't allow backslash unless truly a delimiter
+          }
+          buf.append((char)ch);
+          last = last == '\\' && ch == '\\' ? 0 : ch;
+        }
+      }
+      else
+      {
+        dpos = start;
+        while (dpos < end)
+        {
+          int ch = nextChar(section);
+          if (nextCharWasEscaped && ch < delimEscMap.length && (delimEscMap[ch] & section) != 0)
+          {
+            buf.append('\\');  // if ch was an escaped delimiter
+          }
+          buf.append((char)ch);
+        }
       }
       return buf.toString();
     }
@@ -833,6 +929,11 @@ public final class Uri
       return false;
     else
       return pathStr.charAt(0) == '/';
+  }
+
+  public boolean isPathRel()
+  {
+    return !isPathAbs();
   }
 
   public boolean isPathOnly()
@@ -1252,7 +1353,8 @@ public final class Uri
 
   public File toFile()
   {
-    return File.make(this);
+    if (scheme == null || scheme.equals("file")) return File.make(this);
+    return (File)get();
   }
 
   public Object get() { return get(null, true); }

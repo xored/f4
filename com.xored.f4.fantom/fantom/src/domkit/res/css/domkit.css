@@ -1,27 +1,3 @@
-div.domkit-AccordionBox {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-html {
-  height: 100%;
-}
-body {
-  font: 14px Helvetica Neue;
-  line-height: 14px;
-  padding: 0;
-  margin: 0;
-  background: #fff;
-  overflow: hidden;
-  height: 100%;
-}
-a {
-  color: #2980b9;
-}
-.domkit-fill {
-  width: 100%;
-  height: 100%;
-}
 .domkit-border { border: 1px solid #bbb; }
 .domkit-border-top    { border-top:    1px solid #bbb; }
 .domkit-border-right  { border-right:  1px solid #bbb; }
@@ -30,15 +6,149 @@ a {
 .domkit-sel {
   background-color: #dcdcdc !important;
 }
-:focus .domkit-sel {
+:focus .domkit-sel, .domkit-sel.pin {
   background-color: #3498db !important;
   color: #fff !important;
 }
 :focus .domkit-sel a {
   color: #fff !important;
 }
-.domkit-font-mono {
-  font: 11px Menlo;
+.domkit-noselect {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.domkit-control {
+  box-sizing: border-box;
+  display: inline-block;
+  font: inherit;
+  margin: 0;
+  padding: 5px 0;
+  line-height: 1.2;
+  vertical-align: top;
+}
+.domkit-control:not(input):empty:before {
+  content: "\200b";
+}
+.domkit-control[disabled],
+.domkit-control.disabled { opacity: 0.3; }
+.domkit-control[readonly],
+.domkit-control.readonly { background: #f8f8f8; }
+/* this disables hrefs links */
+a.domkit-control.disabled { pointer-events:none; }
+.domkit-resize-splitter {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.2);
+}
+.domkit-control-button {
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  padding: 4px 10px;
+  cursor: default;
+  text-align: center;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.domkit-control-button:hover { background: #f5f5f5; }
+.domkit-control-button.down  { background: #ddd; }
+.domkit-control-button.selected,
+.domkit-control-button.selected:hover {
+  color: #fff;
+  background-color: hsl(204, 70%, 53%); /*#3498db;*/
+  border-color: hsl(204, 70%, 43%);
+}
+.domkit-control-button.def-action {
+  color: #fff;
+  background: hsl(204, 70%, 53%);
+  border-color: hsl(204, 70%, 43%);
+}
+.domkit-control-button.def-action.down {
+  background: hsl(204, 70%, 43%);
+}
+.domkit-control-text {
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 2px;
+  margin: 0;
+  padding: 4px;
+}
+.domkit-control-button:focus,
+.domkit-control-text:focus {
+  border-color: #3498db;
+}
+.domkit-control-button.def-action:focus {
+  background: hsl(204, 70%, 60%);
+  border-color: hsl(204, 70%, 43%);
+}
+.domkit-control-button.def-action.down:focus {
+  background: hsl(204, 70%, 43%);
+}
+.domkit-control.group-left {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.domkit-control.group-middle {
+  border-radius: 0;
+  border-left: none;
+}
+.domkit-control.group-right {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none;
+}
+.domkit-control.disclosure {
+  position: relative;
+  text-align: left;
+  padding-right: 20px;
+  overflow: hidden;
+}
+.domkit-control.disclosure:after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 2px);
+  right: 5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #555;
+}
+.domkit-control.disclosure-list {
+  position: relative;
+  text-align: left;
+  padding-right: 20px;
+  overflow: hidden;
+}
+.domkit-control.disclosure-list:before {
+  content: "";
+  position: absolute;
+  top: calc(50% - 6px);
+  right: 5px;
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 4px solid #555;
+}
+.domkit-control.disclosure-list:after {
+  content: "";
+  position: absolute;
+  bottom: calc(50% - 6px);
+  right: 5px;
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid #555;
+}
+
+div.domkit-AccordionBox {
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 div.domkit-Box {
@@ -50,96 +160,50 @@ div.domkit-Box {
 }
 
 div.domkit-Button {
-  box-sizing: border-box;
-  display: inline-block;
-  cursor: default;
-  color: #555;
-  background: #fff;
-  /*
-  background: -webkit-linear-gradient(top, #fff, #eee);
-  background:    -moz-linear-gradient(top, #fff, #eee);
-  background:         linear-gradient(top, #fff, #eee);
-  */
-  box-shadow: rgba(0, 0, 0, 0.05) 0 1px 1px;
-  padding: 0 10px;
-  border: 1px solid #c8c8c8;
-  border-bottom-color: #aaa;
-  border-radius: 3px;
-  vertical-align: top;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
   outline: none;
-  text-align: center;
-  height: 23px;
-  line-height: 22px;
 }
 div.domkit-Button:focus {
   z-index: 2;
   position: relative;  /* needed to make z-index work */
-}
-div.domkit-Button.down {
-  background: #ddd;
-  box-shadow: none;
-}
-div.domkit-Button.disabled {
-  opacity: 0.3;
-}
-div.domkit-Button.domkit-def {
-  background: #3498db;
-  color: #fff;
-  border-color: #1d7fbf;
-  border-bottom-color: #0d5c91;
-}
-div.domkit-Button.domkit-def.down {
-  background: #1d7fbf;
-}
-div.domkit-Button.domkit-group-left {
-  border-radius: 3px 0 0 3px;
-}
-div.domkit-Button.domkit-group-middle {
-  border-radius: 0;
-  border-left: none;
-}
-div.domkit-Button.domkit-group-right {
-  border-radius: 0 3px 3px 0;
-  border-left: none;
-}
-div.domkit-Button.domkit-group-textfield {
-  border-color: #bbb;
-  box-shadow: none;
 }
 
 div.domkit-CardBox {
 }
 
 input.domkit-Checkbox {
+  position: relative;
+  bottom: -2px;
+  margin:  0;
+  padding: 0;
 }
-span.domkit-Checkbox-label {
-  padding-left: 4px;
+label input.domkit-Checkbox + span.domkit-Label {
+  padding-left: 6px;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
 }
-input.domkit-Checkbox[disabled] + span.domkit-Checkbox-label {
+input.domkit-Checkbox[disabled] + span.domkit-Label {
   opacity: 0.3;
 }
 
 div.domkit-Combo {
   box-sizing: border-box;
   display: inline-block;
+  white-space: nowrap;
 }
 div.domkit-Combo input.domkit-TextField {
   width: calc(100% - 23px);
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
 }
 div.domkit-Combo div.domkit-Button {
   border-left: none;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   width: 23px;
-  padding: 0;
+  padding-left:  0;
+  padding-right: 0;
 }
 div.domkit-Combo div.domkit-ListButton:before { right: 8px; }
 div.domkit-Combo div.domkit-ListButton:after  { right: 8px; }
@@ -148,22 +212,17 @@ div.domkit-Dialog {
   outline: none;
 }
 div.domkit-Dialog-frame {
-  background: #ececec;
+  background: #f2f2f2;
   border: 1px solid #aaa;
-  border-radius: 4px 4px 0 0 ;
+  border-radius: 4px 4px 0 0;
   box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.4);
   max-width:  calc(100% - 24px);
   max-height: calc(100% - 24px);
 }
 div.domkit-Dialog-title {
   text-align: center;
-  height: 25px;
-  line-height: 25px;
-  border-bottom: 1px solid #aaa;
-  border-radius: 4px 4px 0 0;
-  background: -webkit-linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
-  background:    -moz-linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
-  background:         linear-gradient(top, #fff, #e8e8e8 1px, #d2d2d2);
+  display: block;
+  font-weight: 500;
   cursor: default;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -186,7 +245,7 @@ div.domkit-Dialog-mask {
   -webkit-justify-content: center;
 }
 
-.domkit-dnd-over::after{
+.domkit-dnd-over::after {
   content: "";
   position: absolute;
   top: 0;
@@ -253,43 +312,13 @@ div.domkit-GridBox table td {
   padding: 0;
 }
 
-span.domkit-Label {
-  height: 23px;
-  line-height: 23px;
-}
+span.domkit-Label {}
 
-div.domkit-ListButton {
-  position: relative;
-  text-align: left;
-  padding-right: 20px;
-  overflow: hidden;
-}
+div.domkit-ListButton {}
 div.domkit-ListButton > div {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-}
-div.domkit-ListButton:before {
-  content: "";
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 0;
-  height: 0;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  border-bottom: 4px solid #555;
-}
-div.domkit-ListButton:after {
-  content: "";
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  width: 0;
-  height: 0;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  border-top: 4px solid #555;
 }
 div.domkit-ListButton-MenuItem.domkit-MenuItem {
   white-space: nowrap;
@@ -306,23 +335,26 @@ div.domkit-ListButton-MenuItem.domkit-MenuItem.sel:before {
 
 div.domkit-Menu {
   background: #fff !important;
-  border-radius: 5px;
+  border-radius: 3px;
   overflow: auto;
   outline: none;
+  padding: 5px 0;
 }
 div.domkit-MenuItem {
-  padding: 4px 20px 4px 10px;
+  display: block;
+  padding-left: 10px;
+  padding-right: 20px;
   min-width: 100px;
   cursor: default;
 }
-div.domkit-MenuItem:first-child { border-radius: 4px 4px 0 0; }
-div.domkit-MenuItem:last-child  { border-radius: 0 0 4px 4px; }
 
 div.domkit-Popup {
   position: absolute;
-  background: #ececec;
+  outline: none;
+  background: rgba(248, 248, 248, 0.95);
   border: 1px solid #ddd;
   box-shadow: 0px 9px 18px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 div.domkit-Popup-mask {
   position: absolute;
@@ -334,35 +366,23 @@ div.domkit-Popup-mask {
 }
 
 div.domkit-ProgressBar {
-  box-sizing: border-box;
-  display: inline-block;
-  background: #fff;
-  box-shadow: rgba(0, 0, 0, 0.05) 0 1px 1px;
-  border: 1px solid #c8c8c8;
-  border-bottom-color: #aaa;
-  border-radius: 3px;
-  vertical-align: top;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  outline: none;
-  text-align: center;
   width: 200px;
-  height: 23px;
-  line-height: 22px;
 }
 
 input.domkit-RadioButton {
+  position: relative;
+  bottom: -2px;
+  margin:  0;
+  padding: 0;
 }
-span.domkit-RadioButton-label {
-  padding-left: 4px;
+label input.domkit-RadioButton + span.domkit-Label {
+  padding-left: 6px;
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
 }
-input.domkit-RadioButton[disabled] + span.domkit-RadioButton-label {
+input.domkit-RadioButton[disabled] + span.domkit-Label {
   opacity: 0.3;
 }
 
@@ -370,10 +390,7 @@ div.domkit-SashBox {
   overflow: hidden;  /* required for dir=right */
   position: relative;
 }
-div.domkit-SashBox-splitter {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.2);
-}
+div.domkit-SashBox-div {}
 
 div.domkit-ScrollBox {
   overflow: auto;
@@ -448,17 +465,35 @@ div.domkit-Table-thead {
   overflow: hidden;
   /* style */
   box-sizing: border-box;
-  background: #eee;
-  background: -webkit-linear-gradient(top, #f0f0f0, #e2e2e2);
-  background:    -moz-linear-gradient(top, #f0f0f0, #e2e2e2);
-  background:         linear-gradient(top, #f0f0f0, #e2e2e2);
-  border-bottom: 1px solid #999;
+  background: #ececee;
+  border-bottom: 1px solid #a9a9a9;
+}
+div.domkit-Table-header-popup {
+  position: absolute;
+  box-sizing: border-box;
+  top: 0;
+  right: 0;
+  padding: 2px 4px;
+  background: #ececee;
+  border-left: 1px solid #a9a9a9;
+}
+div.domkit-Table-header-popup:active {
+  background: #ddd;
+}
+div.domkit-Table-header-popup div {
+  width: 12px;
+  height: 1px;
+  background-color: #999;
+  margin: 3px 0;
 }
 div.domkit-Table-header-sort:before {
   content: "\25bc";
   color: #999;
   font-size: 10px;
   float: right;
+}
+div.domkit-Table-header-sort.popup {
+  padding-right: 26px;
 }
 div.domkit-Table-header-sort.up:before {
   -webkit-transform: rotate(180deg);
@@ -474,19 +509,20 @@ div.domkit-Table-tbody {
 div.domkit-Table-header {
   position: absolute;
   box-sizing: border-box;
-  border-right: 1px solid #999;
+  border-right: 1px solid #a9a9a9;
   padding: 0 4px;
   font-size: 11px;
-  font-weight: bold;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+div.domkit-Table-header:active { background: #ddd; }
 div.domkit-Table-header.last { border-right: none; }
 div.domkit-Table-cell {
   position: absolute;
   box-sizing: border-box;
-  border-right: 1px solid #d9d9d9;
+  border-right: 1px solid #e4e4e5;
   padding: 0 4px;
   font-size: 12px;
   white-space: nowrap;
@@ -495,67 +531,19 @@ div.domkit-Table-cell {
 }
 div.domkit-Table-cell.last { border-right: none; }
 div.domkit-Table-cell.odd  { background: #fff; }
-div.domkit-Table-cell.even { background: #f9f9f9; }
+div.domkit-Table-cell.even { background: #f9f9fa; }
 
 textarea.domkit-TextArea {
-  box-sizing: border-box;
-  font: 11px Menlo;
-  padding: 4px;
-  margin: 0;
   width: 100%;
   height: 100%;
-}
-textarea.domkit-TextArea[disabled] {
-  opacity: 0.3;
-}
-textarea.domkit-TextArea[readonly] {
-  background: #f8f8f8;
-}
-textarea.domkit-TextArea:focus {
   outline: none;
-  /*
-  box-shadow: 0 0 2px 2px #7baddc !important;
-  z-index: 2;
-  position: relative;  /* needed to make z-index work *-/
-  */
 }
 
 input.domkit-TextField {
-  box-sizing: border-box;
-  font: 11px Menlo;
-  padding: 4px;
-  margin: 0;
-  height: 23px;
-}
-input.domkit-TextField[disabled] {
-  opacity: 0.3;
-}
-input.domkit-TextField[readonly] {
-  background: #f8f8f8;
-}
-input.domkit-TextField:focus {
   outline: none;
-  /*
-  box-shadow: 0 0 2px 2px #7baddc !important;
-  z-index: 2;
-  position: relative;  /* needed to make z-index work *-/
-  */
 }
-.domkit-nofocus input.domkit-TextField:focus,
-input.domkit-TextField.domkit-nofocus:focus {
-  /*box-shadow: none !important;*/
-}
-input.domkit-TextField.domkit-group-left {
-  margin-right: 0;
-}
-input.domkit-TextField.domkit-group-middle {
-  margin-left: 0;
-  margin-right: 0;
-  border-left: none;
-}
-input.domkit-TextField.domkit-group-right {
-  margin-left: 0;
-  border-left: none;
+input.domkit-TextField[type='password'] {
+  font-family: sans-serif;
 }
 
 div.domkit-Tree {
@@ -570,29 +558,38 @@ div.domkit-Tree:focus {
   outline: none;
 }
 div.domkit-Tree-node {
+  position: relative;
+  box-sizing: border-box;
   cursor: default;
   white-space: nowrap;
-  padding: 0px 4px;
-  height: 20px;
-  line-height: 20px;
+  padding: 3px 5px;
+  line-height: 1;
 }
 div.domkit-Tree-node-expander {
-  float: left;
-  font-size: 80%;
-  width: 16px;
-  height: 20px;
-  line-height: 19px;
   box-sizing: border-box;
-  padding-left: 5px;
+  display: inline-block;
+  position: absolute;
+  top: calc(50% - 6px);
+  width: 16px;
+  font-size: 12px;
   color: #888;
+  text-align: center;
 }
 :focus div.domkit-sel div.domkit-Tree-node-expander { color: #fff }
+:focus div.domkit-Tree-node.domkit-sel.down { background: #2980b9 !important; }
 div.domkit-Tree-node-block.expanded > div.domkit-Tree-node div.domkit-Tree-node-expander {
   -webkit-transform: rotate(90deg);
-  padding-left: 4px;
 }
 div.domkit-Tree-node div:nth-child(2) {
   display: inline-block;
   width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+div.domkit-WellBox {
+  background: #e5e5e5;
+  border-radius: 4px;
+  padding: 10px;
 }
 

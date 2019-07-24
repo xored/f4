@@ -21,8 +21,7 @@ fan.dom.StylePeer.prototype.$ctor = function(self)
 
 fan.dom.StylePeer.prototype.classes  = function(self)
 {
-  var arr = this.elem.className.split(" ");
-  return fan.sys.List.make(fan.sys.Str.$type, arr);
+  return fan.sys.List.make(fan.sys.Str.$type, this.elem.classList);
 }
 
 fan.dom.StylePeer.prototype.classes$ = function(self, val)
@@ -33,33 +32,22 @@ fan.dom.StylePeer.prototype.classes$ = function(self, val)
 
 fan.dom.StylePeer.prototype.hasClass = function(self, className)
 {
-  var arr = this.elem.className.split(" ");
-  for (var i=0; i<arr.length; i++)
-    if (arr[i] == className)
-      return true;
-  return false;
+  return this.elem.classList.contains(className);
 }
 
 fan.dom.StylePeer.prototype.addClass = function(self, className)
 {
-  if (!this.hasClass(self, className))
-  {
-    if (this.elem.className.length == 0) this.elem.className = className;
-    else this.elem.className += " " + className;
-  }
+  // split for legacy support for addClass("x y z")
+  var arr = className.split(" ");
+  for (var i=0; i<arr.length; i++) this.elem.classList.add(arr[i]);
   return self;
 }
 
 fan.dom.StylePeer.prototype.removeClass = function(self, className)
 {
-  var arr = this.elem.className.split(" ");
-  for (var i=0; i<arr.length; i++)
-    if (arr[i] == className)
-    {
-      arr.splice(i, 1);
-      break;
-    }
-  this.elem.className = arr.join(" ");
+  // split for legacy support for removeClass("x y z")
+  var arr = className.split(" ");
+  for (var i=0; i<arr.length; i++) this.elem.classList.remove(arr[i]);
   return self;
 }
 
@@ -87,13 +75,34 @@ fan.dom.StylePeer.prototype.effective = function(self, name)
   var matches = [];
   for (var i=0; i<document.styleSheets.length; i++)
   {
+    // it is a security exception to introspect the rules of a
+    // stylesheet that was loaded from a different domain than
+    // the current document; so just silently ignore those rules
+
     var sheet = document.styleSheets[i];
-    var rules = sheet.rules || sheet.cssRules;
+    var rules;
+    try { rules = sheet.rules || sheet.cssRules || []; }
+    catch (err) { rules = []; }
+
     for (var r=0; r<rules.length; r++)
     {
       var rule = rules[r];
-      if (this.elem.matches(rule.selectorText))
-        matches.push(rule);
+      if (this.elem.msMatchesSelector)
+      {
+        if (this.elem.msMatchesSelector(rule.selectorText))
+          matches.push(rule);
+      }
+      else
+      {
+        // Safari 10 (at least) throws an err during matches() if it doesn't
+        // understand the CSS selector; silently ignore these errs
+        try
+        {
+          if (this.elem.matches(rule.selectorText))
+            matches.push(rule);
+        }
+        catch (err) {}
+      }
     }
   }
 

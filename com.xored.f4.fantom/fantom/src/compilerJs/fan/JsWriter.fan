@@ -116,6 +116,9 @@ class JsWriter
     inBlock := false
     in.readAllLines.each |line|
     {
+      // TODO: temp hack for inlining already minified js
+      if (line.size > 1024) { w(line).nl; return }
+
       s := line
       // line comments
       if (s.size > 1 && (s[0] == '/' && s[1] == '/')) return
@@ -151,7 +154,7 @@ class JsWriter
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
-  OutStream out
+  private OutStream out
   SourceMap? sourcemap
   Int indentation := 0
   Bool needIndent := false

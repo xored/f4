@@ -44,6 +44,32 @@ class FloatTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Neg Zero
+//////////////////////////////////////////////////////////////////////////
+
+  Void testNegZero()
+  {
+    verifyEq(0f.isNegZero, false)
+    verifyEq(0f.negate.toStr, "-0.0")
+    verifyEq(0f.negate.isNegZero, true)
+    verifyEq(Float.fromStr("0").isNegZero, false)
+    verifyEq(Float.fromStr("-0").isNegZero, true)
+    verifyEq(Float.fromStr("-0.008").isNegZero, false)
+    verifyEq(Float.posInf.isNegZero, false)
+    verifyEq(Float.negInf.isNegZero, false)
+    verifyEq(Float.nan.isNegZero, false)
+
+    // can't use equality checks safely
+    verifyEq(0f.negate.toStr, "-0.0")
+    verifyEq(0f.negate.normNegZero.toStr, "0.0")
+    verifyEq(Float.fromStr("-0").toStr, "-0.0")
+    verifyEq(Float.fromStr("-0").normNegZero.toStr, "0.0")
+    verifyEq(Float.fromStr("0").toStr, "0.0")
+    verifyEq(Float.fromStr("-0.2").normNegZero.toStr, "-0.2")
+    verifyEq(Float.fromStr("1.6").normNegZero.toStr, "1.6")
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Equals
 //////////////////////////////////////////////////////////////////////////
 
@@ -439,28 +465,29 @@ class FloatTest : Test
 
   Void testBits()
   {
-    verifyEq(0f.bits,   0)
+    js := Env.cur.runtime == "js"
+
+    if (!js)
+    {
+      verifyEq(0f.bits,           0)
+      verifyEq(7.0f.bits,         0x401c000000000000)
+      verifyEq(0.007f.bits,       0x3f7cac083126e979)
+      verifyEq(3000000.0f.bits,   0x4146e36000000000)
+      verifyEq((-1.0f).bits,      0xbff0000000000000)
+      verifyEq((-7.05E-12f).bits, 0xbd9f019826e0ec8b)
+    }
+
     verifyEq(0f.bits32, 0)
-
-    verifyEq(7.0f.bits,   0x401c000000000000)
     verifyEq(7.0f.bits32, 0x40e00000)
-
-    verifyEq(0.007f.bits,   0x3f7cac083126e979)
     verifyEq(0.007f.bits32, 0x3be56042)
-
-    verifyEq(3000000.0f.bits,   0x4146e36000000000)
     verifyEq(3000000.0f.bits32, 0x4a371b00)
-
-    verifyEq((-1.0f).bits, 0xbff0000000000000)
     verifyEq((-1.0f).bits32, 0xbf800000)
-
-    verifyEq((-7.05E-12f).bits, 0xbd9f019826e0ec8b)
     verifyEq((-7.05E-12f).bits32, 0xacf80cc1)
 
     floats := [0.0f, 88.0f, -7.432f, 123.56e18f, Float.posInf, Float.negInf, Float.nan]
     floats.each |Float r|
     {
-      verifyEq(Float.makeBits(r.bits), r)
+      if (!js) verifyEq(Float.makeBits(r.bits), r)
       verify(Float.makeBits32(r.bits32).approx(r))
     }
   }
@@ -713,6 +740,35 @@ class FloatTest : Test
     verifyLocale(Float.pi, "0.0000", "3.1416")
     verifyLocale(Float.pi, "0.00000", "3.14159")
 
+    // null (default) format
+    verifyLocale( 1000.6f, null, "1,001")
+    verifyLocale(-1000.6f, null, "-1,001")
+    verifyLocale( 100.6f,  null, "101")
+    verifyLocale(-100.6f,  null, "-101")
+    verifyLocale( 10.129f, null, "10.13")
+    verifyLocale(-10.129f, null, "-10.13")
+    verifyLocale( 1.129f,  null, "1.129")
+    verifyLocale(-1.129f,  null, "-1.129")
+    verifyLocale( 0.129f,         null,  "0.129")
+    verifyLocale(-0.129f,         null, "-0.129")
+    verifyLocale( 0.0129f,        null,  "0.013")
+    verifyLocale(-0.0129f,        null, "-0.013")
+    verifyLocale( 0.00129f,       null,  "0.001")
+    verifyLocale(-0.00129f,       null, "-0.001")
+    verifyLocale( 0.000129f,      null,  "0.00013")
+    verifyLocale(-0.000129f,      null, "-0.00013")
+    verifyLocale( 0.0000129f,     null,  "0.000013")
+    verifyLocale(-0.0000129f,     null, "-0.000013")
+    verifyLocale( 0.00000129f,    null,  "0.0000013")
+    verifyLocale(-0.00000129f,    null, "-0.0000013")
+    verifyLocale( 0.000000129f,   null,  "0.00000013")
+    verifyLocale(-0.000000129f,   null, "-0.00000013")
+    verifyLocale( 0.0000000129f,  null,  "0.000000013")
+    verifyLocale(-0.0000000129f,  null, "-0.000000013")
+    verifyLocale( 0.00000000129f, null,  "0.0")
+    verifyLocale(-0.00000000129f, null, "-0.0")
+
+
     Locale("en-US").use
     {
       verifyEq(0.0003f.toLocale("0.0##"), "0.0")
@@ -730,7 +786,7 @@ class FloatTest : Test
     }
 
     // default, alternate locale
-    verifyLocale(12345.4f, null, "12,345.4")
+    verifyLocale(12345.4f, null, "12,345")
     Locale("fr-FR").use
     {
       verifyEq(12345.4f.toLocale("#,###.0"), "12\u00a0345,4")

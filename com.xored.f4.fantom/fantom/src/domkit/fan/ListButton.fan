@@ -12,16 +12,18 @@ using dom
 ** ListButton allows user selection of an item in a list by
 ** showing a listbox popup on button press.
 **
-** See also: [pod doc]`pod-doc#listButton`, `Button`, `ToggleButton`
+** See also: [docDomkit]`docDomkit::Controls#listButton`,
+** `Button`, `ToggleButton`
 **
 @Js class ListButton : Button
 {
   new make() : super()
   {
-    this.style.addClass("domkit-ListButton")
+    this.style.addClass("domkit-ListButton disclosure-list")
     this.isList = true
     this.sel = ListButtonSelection(this)
     this.onPopup { makeLisbox }
+    this.update
   }
 
   ** The current list items.
@@ -55,7 +57,8 @@ using dom
   {
     if (isCombo) return
     this.removeAll
-    if (items.size > 0) this.add(makeElem(sel.item))
+    if (items.size == 0) this.add(Elem { it.text = "\u200b" })
+    else this.add(makeElem(sel.item))
   }
 
   ** Fire select event.
@@ -64,27 +67,23 @@ using dom
   ** Build listbox.
   private Popup makeLisbox()
   {
-    menu := Menu {}
+    this.find = ""
+    this.menu = Menu {}
     items.each |item,i|
     {
+      elem := makeElem(item)
       menu.add(MenuItem {
         it.style.addClass("domkit-ListButton-MenuItem")
         if (sel.index == i) it.style.addClass("sel")
-        it.add(makeElem(item))
+        it.add(elem)
         it.onAction { sel.index=i; fireSelect }
       })
+
+      // TODO: temp hook to mark list items as disabled
+      if (elem.style.hasClass("disabled")) menu.lastChild.enabled = false
     }
     menu.select(sel.index)
-    // menu.onOpen
-    // {
-    //   // TODO FIXIT: make event handles cumulative
-    //   menu.focus
-    //
-    //   // TODO FIXIT: need onBeforeOpen - onOpen fires after
-    //   // animation so we get a "jump" in the UI as result
-    //   // scroll sel into view
-    //   menu.scrollPos = Pos(0, menu.children[sel.index].pos.y)
-    // }
+    menu.onCustomKeyDown = |Event e| { onMenuKeyDown(e) }
     return menu
   }
 
@@ -94,8 +93,21 @@ using dom
     return v is Elem ? v : Elem { it.text=v.toStr }
   }
 
+  private Void onMenuKeyDown(Event e)
+  {
+    if (e.key.code.isAlphaNum)
+    {
+      find += e.key.code.toChar.lower
+      ix := items.findIndex |i| { i.toStr.lower.startsWith(find) }
+      if (ix != null) menu.select(ix)
+    }
+  }
+
   private Func? cbSelect := null
   private Func? cbElem   := null
+
+  private Str find := ""  // onPopup
+  private Menu? menu      // onPopup
 }
 
 **************************************************************************

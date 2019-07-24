@@ -80,6 +80,7 @@ abstract class AbstractBufTest : Test
 **
 ** BufTest
 **
+@Js
 class BufTest : AbstractBufTest
 {
 
@@ -312,10 +313,13 @@ class BufTest : AbstractBufTest
     verifyEq(b[6], 'g')
     verifyErr(IndexErr#) |->Int| { return b[7] }
 
-    f := makeFile
-    verifyEq(f.capacity, Int.maxVal)
-    f.capacity = 10
-    verifyEq(f.capacity, Int.maxVal)
+    if (Env.cur.runtime != "js")
+    {
+      f := makeFile
+      verifyEq(f.capacity, Int.maxVal)
+      f.capacity = 10
+      verifyEq(f.capacity, Int.maxVal)
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -590,6 +594,8 @@ class BufTest : AbstractBufTest
 
   Void verifyConveniences(Buf buf, Buf temp)
   {
+    js := Env.cur.runtime == "js"
+
     // convenience writes
     temp.print("fool")
     buf.clear
@@ -598,10 +604,10 @@ class BufTest : AbstractBufTest
     buf.writeI2(0xa00a)
     buf.writeI4(-1234)
     buf.writeI4(0xabcd0123)
-    buf.writeI8(0xabcd0123ffffeeee)
+    if (!js) buf.writeI8(0xabcd0123ffffeeee)
     buf.writeF4(2f)
-    buf.writeF8(77.0f)
-    buf.writeDecimal(50.03D)
+    if (!js) buf.writeF8(77.0f)
+    if (!js) buf.writeDecimal(50.03D)
     buf.writeBool(true)
     buf.print("harry").printLine(" potter")
     buf.writeUtf("deathly hallows")
@@ -615,10 +621,10 @@ class BufTest : AbstractBufTest
     verifyEq(buf.readU2, 0xa00a)
     verifyEq(buf.readS4, -1234)
     verifyEq(buf.readU4, 0xabcd0123)
-    verifyEq(buf.readS8, 0xabcd0123ffffeeee)
+    if (!js) verifyEq(buf.readS8, 0xabcd0123ffffeeee)
     verifyEq(buf.readF4, 2f)
-    verifyEq(buf.readF8, 77f)
-    verifyEq(buf.readDecimal, 50.03d)
+    if (!js) verifyEq(buf.readF8, 77f)
+    if (!js) verifyEq(buf.readDecimal, 50.03d)
     verifyEq(buf.readBool, true)
     verifyEq(buf.readLine, "harry potter")
     verifyEq(buf.readUtf, "deathly hallows")
@@ -813,10 +819,22 @@ class BufTest : AbstractBufTest
 
   Void testPipe()
   {
-    verifyPipe(makeMem,  makeMem)
-    verifyPipe(makeMem,  makeFile)
-    verifyPipe(makeFile, makeMem)
-    verifyPipe(makeFile, makeFile)
+    // test for js env
+    src := makeMem
+    dst := makeMem
+    1800.times |Int i| { src.write(i) }
+    src.flip
+    src.in.pipe(dst.out, null, false)
+    verifyEq(dst.size, 1800)
+    1800.times |Int i| { verifyEq(dst[i], i.and(0xff)) }
+
+    if (Env.cur.runtime != "js")
+    {
+      verifyPipe(makeMem,  makeMem)
+      verifyPipe(makeMem,  makeFile)
+      verifyPipe(makeFile, makeMem)
+      verifyPipe(makeFile, makeFile)
+    }
   }
 
   Void verifyPipe(Buf src, Buf dst)
@@ -914,6 +932,8 @@ class BufTest : AbstractBufTest
 
   Void testToFile()
   {
+    if (Env.cur.runtime == "js") return
+
     mut := Buf().print("test!")
     f := mut.toFile(`test/path/file.txt`)
     verifyToFile(f)
@@ -946,6 +966,8 @@ class BufTest : AbstractBufTest
 
   Void testImmutable()
   {
+    js := Env.cur.runtime == "js"
+
     orig := "ABCD".toBuf
     buf := orig.toImmutable
     e := ReadonlyErr#
@@ -1015,14 +1037,16 @@ class BufTest : AbstractBufTest
     verifyErr(e) { buf.readChars(3) }
     verifyErr(e) { buf.readDecimal }
     verifyErr(e) { buf.readF4 }
-    verifyErr(e) { buf.readF8 }
+// TODO
+if (!js) verifyErr(e) { buf.readF8 }
     verifyErr(e) { buf.readLine }
     verifyErr(e) { buf.readObj }
     verifyErr(e) { buf.readProps }
     verifyErr(e) { buf.readS1 }
     verifyErr(e) { buf.readS2 }
     verifyErr(e) { buf.readS4 }
-    verifyErr(e) { buf.readS8 }
+// TODO
+if (!js) verifyErr(e) { buf.readS8 }
     verifyErr(e) { buf.readStrToken }
     verifyErr(e) { buf.readU1 }
     verifyErr(e) { buf.readU2 }
@@ -1041,10 +1065,12 @@ class BufTest : AbstractBufTest
     verifyErr(e) { buf.writeChars("abc") }
     verifyErr(e) { buf.writeDecimal(10d) }
     verifyErr(e) { buf.writeF4(10f) }
-    verifyErr(e) { buf.writeF8(10f) }
+// TODO
+if (!js) verifyErr(e) { buf.writeF8(10f) }
     verifyErr(e) { buf.writeI2(10) }
     verifyErr(e) { buf.writeI4(10) }
-    verifyErr(e) { buf.writeI8(10) }
+// TODO
+if (!js) verifyErr(e) { buf.writeI8(10) }
     verifyErr(e) { buf.writeObj("x") }
     verifyErr(e) { buf.writeProps(["x":"x"]) }
     verifyErr(e) { buf.writeUtf("x") }
@@ -1056,5 +1082,23 @@ class BufTest : AbstractBufTest
     verifyEq(buf.size, 4)
     verifyEq(buf[1], 'B')
     verifyEq(buf.in.readAllStr, "ABCD")
+
+    // endian
+    buf = Buf()
+    verifyEq(buf.endian, Endian.big)
+    buf.endian = Endian.little
+    buf = buf.toImmutable
+    verifyErr(e) { buf.endian = Endian.big }
+    verifyEq(buf.endian, Endian.little)
+    verifyEq(buf.in.endian, Endian.little)
+
+    // charset
+    buf = Buf()
+    verifyEq(buf.charset, Charset.utf8)
+    buf.charset = Charset.utf16BE
+    buf = buf.toImmutable
+    verifyErr(e) { buf.charset = Charset.utf8 }
+    verifyEq(buf.charset, Charset.utf16BE)
+    verifyEq(buf.in.charset, Charset.utf16BE)
   }
 }

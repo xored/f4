@@ -7,6 +7,8 @@
 //   8 Jul 09   Andy Frank  Split webappClient into sys/dom
 //
 
+using graphics
+
 **
 ** Elem models a DOM element object.
 **
@@ -20,20 +22,40 @@ class Elem
 // Constructors
 //////////////////////////////////////////////////////////////////////////
 
-  ** Create a new Elem in the current Doc.
-  new make(Str tagName := "div") { _make(tagName) }
+  ** Create a new Elem in the current Doc. Optionally
+  ** a namespace can be specified with 'ns'.
+  new make(Str tagName := "div", Uri? ns := null) { _make(tagName, ns) }
 
-  private native Void _make(Str tagName)
+  private native Void _make(Str tagName, Uri? ns)
+
+  ** Create an `Elem` instance from a native JavaScript DOM object.
+  static native Elem fromNative(Obj elem)
+
+  ** Create an `Elem` instance from a HTML string.
+  ** This is equivlaent
+  **   elem := Elem { it.html=html }.firstChild
+  static Elem fromHtml(Str html)
+  {
+    Elem { it.html=html }.firstChild
+  }
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
+// Accessors
 //////////////////////////////////////////////////////////////////////////
+
+  ** The namespace URI of this element.
+  native Uri ns()
 
   ** Get the tag name for this element.
   native Str tagName()
 
-  ** The id for this element.
-  native Str id
+  ** The id for this element. Returns 'null' if id is not defined.
+  Str? id
+  {
+    // use attr so we get 'null' if not defined
+    get { attr("id") }
+    set { setAttr("id", it) }
+  }
 
   ** Get the Style instance for this element.
   native Style style()
@@ -49,33 +71,85 @@ class Elem
   ** elements.
   virtual native Bool? enabled
 
-  ** The draggable attribute for this element.
-  native Bool draggable
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
-  ** Get an attribute by name.  If not found return
-  ** the specificed default value.
-  @Operator native Obj? get(Str name, Obj? def := null)
+  ** Get 'name:value' map of all attributes.
+  native Str:Str attrs()
 
-  ** Set an attribute to the given value.
-  @Operator native Void set(Str name, Obj? val)
+  ** Get the given HTML attribute value for this element.
+  ** Returns 'null' if attribute not defined.
+  native Str? attr(Str name)
 
-  ** Get or set an attribute.
-  override Obj? trap(Str name, Obj?[]? args := null)
-  {
-    if (args == null || args.isEmpty) return get(name)
-    set(name, args.first)
-    return null
-  }
+  ** Set the given HTML attribute value for this element. If 'val'
+  ** is 'null' the attribute is removed (see `removeAttr`).
+  ** Optionally a namespace can be specified with 'ns'.
+  native This setAttr(Str name, Str? val, Uri? ns := null)
+
+  ** Remove the given HTML attribute from this element.
+  native This removeAttr(Str name)
+
+  ** Convenience for `attr`.
+  @Operator Obj? get(Str name) { attr(name) }
+
+  ** Conveneince for `setAttr`.
+  @Operator Void set(Str name, Str? val) { setAttr(name, val) }
+
+//////////////////////////////////////////////////////////////////////////
+// Properties
+//////////////////////////////////////////////////////////////////////////
+
+  ** Get the given DOM property value for this element.
+  ** Returns 'null' if property does not exist.
+  native Obj? prop(Str name)
+
+  ** Set the given DOM properity value for this element.
+  native This setProp(Str name, Obj? val)
+
+//////////////////////////////////////////////////////////////////////////
+// FFI
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** The 'trap' operator will behave slightly differently based
+  ** on the namespace of the element.
+  **
+  ** For HTML elements, 'trap' works as a convenience for `prop`
+  ** and `setProp`:
+  **
+  **   div := Elem("div")
+  **   div->tabIndex = 0   // equivalent to div.setProp("tabIndex", 0)
+  **
+  ** For SVG elements (where `ns` is '`http://www.w3.org/2000/svg`'),
+  ** 'trap' routes to `attr` and `setAttr`:
+  **
+  **   svg := Svg.line(0, 0, 10, 10)
+  **   svg->x1 = 5      // equivalent to svg.setAttr("x1", "5")
+  **   svg->y1 = 5      // equivalent to svg.setAttr("y1", "5")
+  **   svg->x2 == "10"  // equivalent to svg.attr("x2")
+  **
+  native override Obj? trap(Str name, Obj?[]? args := null)
+
+  ** Invoke the given native DOM function with optional arguments.
+  native Obj? invoke(Str name, Obj?[]? args := null)
 
 //////////////////////////////////////////////////////////////////////////
 // Layout
 //////////////////////////////////////////////////////////////////////////
 
   ** Position of element relative to its parent in pixels.
-  native Pos pos
+  native Point pos
 
   ** Position of element relative to the whole document.
-  native Pos pagePos()
+  native Point pagePos()
+
+  ** Given a page position, return 'p' relative to this element.
+  Point relPos(Point p)
+  {
+    pp := this.pagePos
+    return Point(p.x - pp.x, p.y - pp.y)
+  }
 
   ** Size of element in pixels.
   native Size size
@@ -90,7 +164,7 @@ class Elem
   // }
 
   ** Top left scroll position of element.
-  native Pos scrollPos
+  native Point scrollPos
 
   ** Scrollable size of element.
   native Size scrollSize()
@@ -102,6 +176,9 @@ class Elem
   ** Get the parent Elem of this element, or null if
   ** this element has no parent.
   native Elem? parent()
+
+  ** Return 'true' if `children` is non-zero, 'false' otherwise.
+  native Bool hasChildren()
 
   ** Get the child nodes of this element.
   native Elem[] children()
@@ -135,6 +212,9 @@ class Elem
   ** on which it is invoked that match the specified group of
   ** CSS selectors.
   native Elem[] querySelectorAll(Str selectors)
+
+  ** Return a duplicate of this node.
+  native Elem clone(Bool deep := true)
 
   ** Add a new element as a child to this element. Return this.
   @Operator virtual This add(Elem child)

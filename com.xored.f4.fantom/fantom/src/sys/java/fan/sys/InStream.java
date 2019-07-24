@@ -406,6 +406,7 @@ public class InStream
 
   public void charset(Charset charset)
   {
+    if (this.charset == charset) return;
     this.charsetDecoder = charset.newDecoder();
     this.charsetEncoder = charset.newEncoder();
     this.charset = charset;
@@ -448,7 +449,7 @@ public class InStream
     return buf.toString();
   }
 
-  public String readLine() { return readLine(FanInt.Chunk); }
+  public String readLine() { return readLine(null); }
   public String readLine(Long max)
   {
     // max limit
@@ -491,7 +492,7 @@ public class InStream
     return buf.toString();
   }
 
-  public String readStrToken() { return readStrToken(FanInt.Chunk, null); }
+  public String readStrToken() { return readStrToken(null, null); }
   public String readStrToken(Long max) { return readStrToken(max, null); }
   public String readStrToken(Long max, Func f)
   {
@@ -530,7 +531,7 @@ public class InStream
     return buf.toString();
   }
 
-  public String readNullTerminatedStr() { return readNullTerminatedStr(FanInt.Chunk); }
+  public String readNullTerminatedStr() { return readNullTerminatedStr(null); }
   public String readNullTerminatedStr(Long max)
   {
     // max limit

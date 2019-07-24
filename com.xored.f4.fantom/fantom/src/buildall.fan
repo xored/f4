@@ -49,12 +49,12 @@ class Build : BuildGroup
 
   private static Str[] execCmd(File launcher, Str[] opts := [,])
   {
-  	cmd := [launcher.osPath].addAll(opts)
-  	if (Env.cur.os == "win32")
-  	{
-  	  cmd = ["cmd.exe", "/C", launcher.osPath].addAll(opts)
-  	}
-  	return cmd
+    cmd := [launcher.osPath].addAll(opts)
+    if (Env.cur.os == "win32")
+    {
+      cmd = ["cmd.exe", "/C", launcher.osPath].addAll(opts)
+    }
+    return cmd
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ class Build : BuildGroup
       filter = |File f, Str path->Bool|
       {
         n := f.name
-        if (n.startsWith(".hg")) return false
+        if (n.startsWith(".")) return false
         if (n == "tmp") return false
         if (n == "temp") return false
         if (f.isDir) log.info("  $path")
@@ -189,7 +189,7 @@ class Build : BuildGroup
   {
     superclean
     compile
-    test
+   // test
     examples
     deleteNonDist
     readme

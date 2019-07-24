@@ -11,7 +11,7 @@ using dom
 **
 ** Checkbox displays a checkbox that can be toggled on and off.
 **
-** See also: [pod doc]`pod-doc#checkbox`
+** See also: [docDomkit]`docDomkit::Controls#checkbox`
 **
 @Js class Checkbox : Elem
 {
@@ -29,10 +29,15 @@ using dom
     Elem("label")
     {
       this,
-      content is Elem
-        ? content
-        : Elem("span") { it.style.addClass("domkit-Checkbox-label"); it.text=content.toStr },
+      content is Elem ? content : Label { it.text=content.toStr },
     }
+  }
+
+  ** Get or set indeterminate flag.
+  Bool indeterminate
+  {
+    get { this->indeterminate }
+    set { this->indeterminate = it }
   }
 
   ** Value of checked.

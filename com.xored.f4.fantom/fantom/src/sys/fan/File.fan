@@ -155,6 +155,12 @@ abstract const class File
   abstract DateTime? modified
 
   **
+  ** Return if this file should be hidden to users.  On Unix hidden
+  ** files start with a dot and on Windows a metadata flag is used.
+  **
+  virtual Bool isHidden()
+
+  **
   ** Get this File as an operating system specific path on
   ** the local system.  If this File doesn't represent a
   ** path on the local file system then return null.
@@ -280,7 +286,7 @@ abstract const class File
   ** If during the copy, an existing file of the same name is found,
   ** then the "overwrite" option should be to 'true' to overwrite or
   ** 'false' to skip.  The overwrite option can also be a function
-  ** of type '|File f->Bool|' which is passed every destination file
+  ** of type '|File to,File from->Bool|' which is passed every to/from file
   ** to be overwritten.  If the overwrite function throws an exception,
   ** it is raised to the 'copyTo' caller.  If a directory overwrite is
   ** skipped, then it its children are skipped too.  If options are null
@@ -390,37 +396,37 @@ abstract const class File
   abstract OutStream out(Bool append := false, Int? bufferSize := 4096)
 
   **
-  ** Convenience for [in.readAllBuf]`File.readAllBuf`.
+  ** Convenience for [in.readAllBuf]`InStream.readAllBuf`.
   ** The input stream is guaranteed to be closed.
   **
   Buf readAllBuf()
 
   **
-  ** Convenience for [in.readAllLines]`File.readAllLines`.
+  ** Convenience for [in.readAllLines]`InStream.readAllLines`.
   ** The input stream is guaranteed to be closed.
   **
   Str[] readAllLines()
 
   **
-  ** Convenience for [in.eachLine]`File.eachLine`.
+  ** Convenience for [in.eachLine]`InStream.eachLine`.
   ** The input stream is guaranteed to be closed.
   **
   Void eachLine(|Str line| f)
 
   **
-  ** Convenience for [in.readAllStr]`File.readAllStr`.
+  ** Convenience for [in.readAllStr]`InStream.readAllStr`.
   ** The input stream is guaranteed to be closed.
   **
   Str readAllStr(Bool normalizeNewlines := true)
 
   **
-  ** Convenience for [in.readProps()]`File.readProps`.
+  ** Convenience for [in.readProps()]`InStream.readProps`.
   ** The input stream is guaranteed to be closed.
   **
   Str:Str readProps()
 
   **
-  ** Convenience for [out.writeProps()]`File.writeProps`.
+  ** Convenience for [out.writeProps()]`OutStream.writeProps`.
   ** The output stream is guaranteed to be closed.
   **
   Void writeProps(Str:Str props)
