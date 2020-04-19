@@ -27,7 +27,6 @@ public class FanExplorerRefactorActionProvider extends CommonActionProvider {
 		if (fInViewPart) {
 			fRefactorActionGroup.fillActionBars(actionBars);
 			fRefactorActionGroup.retargetFileMenuActions(actionBars);
-
 		}
 	}
 
@@ -50,7 +49,7 @@ public class FanExplorerRefactorActionProvider extends CommonActionProvider {
 					&& workbenchSite.getPart() instanceof IViewPart) {
 				IViewPart viewPart = (IViewPart) workbenchSite.getPart();
 
-				fRefactorActionGroup = new RefactorActionGroup(viewPart);
+				fRefactorActionGroup = new RefactorActionGroup(viewPart, null);
 
 				fInViewPart = true;
 			}
@@ -74,7 +73,6 @@ public class FanExplorerRefactorActionProvider extends CommonActionProvider {
 	public void dispose() {
 		if (fInViewPart) {
 			fRefactorActionGroup.dispose();
-
 		}
 		super.dispose();
 	}
