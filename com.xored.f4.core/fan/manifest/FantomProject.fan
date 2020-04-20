@@ -224,17 +224,17 @@ const class FantomProject {
 		future := resolveFutureRef.val as Future
 		if (future == null) {		
 			future = Synchronized(ActorPool()).async |->Obj?| {
-				pods := compileEnv.resolvePods
-				resolvePodsRef.val	= pods
+				resolvedPods		:= compileEnv.resolvePods
+				resolvePodsRef.val	= resolvedPods
 				dependsStrRef.val	= dependsStr
-				return pods
+				return resolvedPods
 			}
 			resolveFutureRef.val = future
 		}
-		pods := future.get
-		resolveFutureRef.val = null
 
-		return pods
+		// if there was an error, be sure to create a new future 
+		try return future.get
+		finally resolveFutureRef.val = null
 	}
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }
