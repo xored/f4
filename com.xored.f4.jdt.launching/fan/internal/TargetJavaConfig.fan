@@ -1,11 +1,3 @@
-//
-// Copyright (c) 2010 xored software, Inc.
-// Licensed under Eclipse Public License version 1.0
-//
-// History:
-//	 Ivan Inozemtsev Jun 3, 2010 - Initial Contribution
-//
-
 using [java] org.eclipse.debug.core
 using [java] org.eclipse.jdt.launching
 using [java] org.eclipse.dltk.launching::ScriptLaunchConfigurationConstants
@@ -81,7 +73,7 @@ class JavaLaunchUtil {
 			envVars[it] = configEnv.get(it)
 		}
 		
-		envVars["FAN_ENV_PODS"] = getPodLocations(findOpenProjects(config))
+		envVars["FAN_ENV_PODS"] = getPodLocations(findOpenProjects(proj, config))
 		compileEnv.tweakLaunchEnv(envVars)
 		
 		// copy envVars back into the Java config
@@ -89,7 +81,7 @@ class JavaLaunchUtil {
 		envVars.each |val, key| { configEnv.put(key, val) }
 		copy.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, configEnv)
 
-		// copy f4launchEnv.pod to FAN_HOME
+		// copy f4launchEnv.pod to FAN_HOME (Env Classes need to be in FAN_HOME, not WORK_DIR)
 		envPodUrl := compileEnv.envPodUrl
 		if (envPodUrl != null) {
 			// top tip from http://blog.vogella.com/2010/07/06/reading-resources-from-plugin/
@@ -116,7 +108,9 @@ class JavaLaunchUtil {
 	}
 
 	static Bool confirmLaunch(ILaunchConfiguration config) {
-		projsInErr := findOpenProjects(config).findAll { it.hasBuildErrs }
+		iProj		:= AbstractScriptLaunchConfigurationDelegate.getProject(config)
+		proj		:= FantomProjectManager.instance.get(iProj)
+		projsInErr	:= findOpenProjects(proj, config).findAll { it.hasBuildErrs }
 		if (projsInErr.isEmpty)
 			return true
 
@@ -130,9 +124,14 @@ class JavaLaunchUtil {
 		return gogogo
 	}
 
-	private static FantomProject[] findOpenProjects(ILaunchConfiguration config) {
+	private static FantomProject[] findOpenProjects(FantomProject fp, ILaunchConfiguration config) {
 		projectList := (Str[]) config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-		return FantomProjectManager.instance.listProjects
+
+		otherProjects := fp.prefs.referencedPodsOnly
+			? FantomProjectManager.instance.listReferencedProjects(fp.podName)
+			: FantomProjectManager.instance.listProjects
+
+		return otherProjects
 			.exclude { it.isPlugin }
 			.findAll { projectList.isEmpty ? true : projectList.contains(it.podName) }
 	}

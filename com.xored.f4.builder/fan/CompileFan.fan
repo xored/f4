@@ -69,7 +69,6 @@ class CompileFan : IScriptBuilder {
 	** Called for each resource required to build. Only resources with specified
 	** project nature are here.
 	IStatus? buildModelElements(IScriptProject? project, JList? elements, IProgressMonitor? monitor, Int status) {
-		allProjects := FantomProjectManager.instance.listProjects
 		fp := fantomProject(project)
 		buildPod(fp)
 		return Status(IStatus.OK, pluginId, "OK")

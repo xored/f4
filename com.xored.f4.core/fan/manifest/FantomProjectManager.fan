@@ -40,7 +40,6 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		} catch(Err e) {
 			e.trace //TODO: Add normal error reporting
 			throw e
-//			throw Err(e.msg + " - msg: $msg", e)
 		}
 	}
 	
@@ -60,6 +59,10 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 	
 	FantomProject[] listProjects() { runInManager(#doListProjects, [,]) }
 
+	** SlimerDude - Apr 2020 - A beta feature to cut down on build thrashing
+	** 'cos I dunno why we need ALL projects as dependencies!? 
+	FantomProject[] listReferencedProjects(Str podName) { runInManager(#doListReferencedProjects, [podName]) }
+
 	//////////////////////////////////////////////////////////////////////////
 	// Method handlers
 	//////////////////////////////////////////////////////////////////////////
@@ -73,7 +76,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		
 		//add opened projects
 		change.openedProjects.each |IProject p| {
-			if(isFantomProject(p)) addProject(p)
+			if (isFantomProject(p)) addProject(p)
 		}
 		
 		[change.closedProjects, change.openedProjects].flatten.each |IProject p| {
@@ -106,14 +109,14 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 	}
 	
 	private Bool isFantomProject(IProject p) {
-		if(!p.exists) return projects[getKey(p)] != null
+		if (!p.exists) return projects[getKey(p)] != null
 		return p.getNature(F4Nature.id) != null
 	}
 	
 	private Void removeProject(IProject p) {
 		key := getKey(p)
-		fp := projects[key]
-		if(fp == null) return
+		fp  := projects[key]
+		if (fp == null) return
 		projects.remove(key)
 		pods.remove(fp.podName)
 	}
@@ -133,23 +136,21 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		if(fp == null) return IProject[,]
 		podName := fp.podName
 		ps := projects
-		return ps.vals.findAll |p|
-		{
-			p.rawDepends.any |d|
-			{
+		return ps.vals.findAll |p| {
+			p.rawDepends.any |d| {
 				d.name == podName
 			}
 		}.map { it.project }
 	}
 	
 	private FantomProject? doGet(IProject project) {
-		loc := project.getLocation
-		if(loc == null) {
+		// SlimerDude - Apr 2020 - not sure why a null location prevents us from returning the project?
+		if (project.getLocation == null) {
 			echo("location is null for project $project.getName")
 			return null
 		}
 		key := getKey(project)
-		if(projects.containsKey(key)) return projects[key]
+		if (projects.containsKey(key)) return projects[key]
 		return addProject(project)
 	}
 
@@ -158,12 +159,17 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		DLTKCore.create(ResourcesPlugin.getWorkspace.getRoot).getScriptProjects(F4Nature.id).each |IScriptProject sp| {
 			addProject(sp.getProject)
 		}
-		
 	}
 	
 	private FantomProject[] doListProjects() { projects.vals.dup.toImmutable }
 	
 	private FantomProject? doGetByPod(Str podName) { pods[podName] }
+
+	private FantomProject[] doListReferencedProjects(Str podName) {
+		fp := pods[podName]
+		projs := fp.project.getReferencedProjects.map { doGet(it) }.exclude { it == null }
+		return projs
+	}
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Private hepler methods
@@ -172,7 +178,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 	private FantomProject? createProject(IProject project) {
 		try	{
 			return FantomProject.makeFromProject(project)
-		} catch(Err e) {
+		} catch (Err e) {
 			e.trace
 			return null
 		}
@@ -187,9 +193,7 @@ const class FantomProjectManager : Actor, BuildfanChangeListener {
 		locals.getOrAdd("projects") |->Obj| { [Str:FantomProject][:] }
 	}
 	
-	**
 	** Fantom projects by pod name
-	** 
 	private Str:FantomProject pods() {
 		locals.getOrAdd("pods") |->Obj| { [Str:FantomProject][:] }
 	}

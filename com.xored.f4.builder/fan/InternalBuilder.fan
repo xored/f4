@@ -50,10 +50,13 @@ class InternalBuilder : Builder {
 		// These aren't actual dependencies and don't seem to be transitive dependencies.
 		// Note that adding them as actual project dependencies also solves the issue,
 		// But because I don't know why, I'm loath to do so - hence these 3 little lines.
-		FantomProjectManager.instance.listProjects.each |p| {
-			resolvedPods[p.podName] = p.podOutFile
-		}
-		
+
+		// SlimerDude - Apr 2020 - Beta feature to turn this off 
+		if (fp.prefs.referencedPodsOnly == false)
+			FantomProjectManager.instance.listProjects.each |p| {
+				resolvedPods[p.podName] = p.podOutFile
+			}
+
 		logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
 		try {
