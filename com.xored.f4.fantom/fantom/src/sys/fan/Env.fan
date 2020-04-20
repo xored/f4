@@ -77,6 +77,12 @@ abstract const class Env
   Str runtime()
 
   **
+  ** Get the Java VM Version as a single integer (8, 9, etc.).
+  ** If the `runtime` is not java, return 0.
+  **
+  Int javaVersion()
+
+  **
   ** Return the default hash code of `Obj.hash` for the
   ** specified object regardless of whether the object
   ** has overridden the 'hash' method.  If null then
@@ -274,8 +280,15 @@ abstract const class Env
   ** Get listing of all keys mapped by indexed props.  The
   ** values of each key may be resolved by the `index` method.
   ** See [docLang]`docLang::Env#index` for details.
+  ** NOTE: Java runtime only
   **
   virtual Str[] indexKeys()
+
+  **
+  ** Return list of all pod names that define the given key.
+  ** NOTE: Java runtime only
+  **
+  virtual Str[] indexPodNames(Str key)
 
   **
   ** Return a merged key/value map of all the prop files found

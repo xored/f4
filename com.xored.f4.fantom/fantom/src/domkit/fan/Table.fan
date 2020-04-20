@@ -149,6 +149,9 @@ using graphics
   ** Selection for table
   Selection sel { private set }
 
+  ** Callback when selection has changed but before taking effect.
+  @NoDoc Void onBeforeSelect(|Int[]->Bool| f) { cbBeforeSelect = f }
+
   ** Callback when selection has changed.
   Void onSelect(|This| f) { cbSelect = f }
 
@@ -161,6 +164,9 @@ using graphics
 //////////////////////////////////////////////////////////////////////////
 // Update
 //////////////////////////////////////////////////////////////////////////
+
+  ** Subclass hook to run when `rebuild` is invoked.
+  @NoDoc protected virtual Void onBeforeRebuild() {}
 
   ** Rebuild table layout.
   Void rebuild()
@@ -273,6 +279,9 @@ using graphics
   ** Callback from refresh with valid layout dimensions.
   private Void doRebuild()
   {
+    // subclass rebuild hook
+    onBeforeRebuild
+
     // update view first so downstream checks work properly
     view.refresh
     view.sort(view.sortCol, view.sortDir)
@@ -379,9 +388,10 @@ using graphics
     {
       this.hpbut = Elem
       {
+        mtop := ((theadh-21) / 2) + 3
         it.style.addClass("domkit-Table-header-popup")
         it.style->height = "${theadh}px"
-        it.add(Elem {})
+        it.add(Elem { it.style->marginTop="${mtop}px" })
         it.add(Elem {})
         it.add(Elem {})
       }
@@ -872,7 +882,12 @@ using graphics
     {
       // short-circuit if out of bounds
       row := my / rowh
-      if (row >= numRows) return
+      if (row >= numRows)
+      {
+        // click in backbground clears selection
+        if (e.type == "mousedown") updateSel(Int[,])
+        return
+      }
 
       // find pos relative to cell (cx calc above)
       cy := my - (row * rowh)
@@ -1039,6 +1054,7 @@ using graphics
   {
     if (!sel.enabled) return
     if (sel.indexes == newsel) return
+    if (cbBeforeSelect?.call(newsel) == false) return
     sel.indexes = newsel
     cbSelect?.call(this)
   }
@@ -1064,6 +1080,7 @@ using graphics
     // "mouseout",
   ]
 
+  private Func? cbBeforeSelect
   private Func? cbSelect
   private Func? cbAction
   private Str:Func cbTableEvent := [:]

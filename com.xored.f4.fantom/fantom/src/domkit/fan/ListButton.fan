@@ -7,6 +7,7 @@
 //
 
 using dom
+using graphics
 
 **
 ** ListButton allows user selection of an item in a list by
@@ -20,10 +21,12 @@ using dom
   new make() : super()
   {
     this.style.addClass("domkit-ListButton disclosure-list")
-    this.isList = true
     this.sel = ListButtonSelection(this)
-    this.onPopup { makeLisbox }
+    this.onPopup { makeListbox }
     this.update
+
+    // shift to align text
+    this.popupOffset = Point(-12, 0)
   }
 
   ** The current list items.
@@ -57,7 +60,7 @@ using dom
   {
     if (isCombo) return
     this.removeAll
-    if (items.size == 0) this.add(Elem { it.text = "\u200b" })
+    if (items.size == 0 || sel.item == null) this.add(Elem { it.text = "\u200b" })
     else this.add(makeElem(sel.item))
   }
 
@@ -65,7 +68,7 @@ using dom
   internal Void fireSelect() { cbSelect?.call(this) }
 
   ** Build listbox.
-  private Popup makeLisbox()
+  private Popup makeListbox()
   {
     this.find = ""
     this.menu = Menu {}
@@ -73,8 +76,11 @@ using dom
     {
       elem := makeElem(item)
       menu.add(MenuItem {
-        it.style.addClass("domkit-ListButton-MenuItem")
-        if (sel.index == i) it.style.addClass("sel")
+        if (!isCombo)
+        {
+          it.style.addClass("domkit-ListButton-MenuItem")
+          if (sel.index == i) it.style.addClass("sel")
+        }
         it.add(elem)
         it.onAction { sel.index=i; fireSelect }
       })
@@ -119,7 +125,7 @@ using dom
   new make(ListButton button) { this.button = button }
   override Int max() { button.items.size }
   override Obj toItem(Int index) { button.items[index] }
-  override Int? toIndex(Obj item) { button.items.findIndex(item) }
+  override Int? toIndex(Obj item) { button.items.findIndex |i| { i == item }}
   override Void onUpdate(Int[] oldIndexes, Int[] newIndexes) { button.update }
   private ListButton button
 }

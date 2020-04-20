@@ -133,6 +133,9 @@ class Event
 
   private new make() {}
 
+  ** Create an `Event` instance from a native JavaScript Event object.
+  static native Event fromNative(Obj event)
+
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +178,7 @@ class Event
   native Void stop()
 
   ** Get an attribute by name.  If not found return
-  ** the specificed default value.
+  ** the specified default value.
   @Operator native Obj? get(Str name, Obj? def := null)
 
   ** Set an attribute to the given value.

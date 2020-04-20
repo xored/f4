@@ -130,6 +130,52 @@ class JavaTest : Test
     verifyEq(s->background, "#eee")
   }
 
+  Void testClassAttr()
+  {
+    // test class handling via xxxAttr methods
+    elem := Elem {}
+    verifyEq(elem.attrs.size, 0)
+    verifyEq(elem.attr("class"), null)
+
+    // add a class
+    elem.style.addClass("foo")
+    verifyEq(elem.style.hasClass("foo"), true)
+    verifyEq(elem.attr("class"), "foo")
+    verifyEq(elem.attrs.size, 1)
+
+    // should replace classes
+    elem.setAttr("class", "bar zar")
+    verifyEq(elem.style.hasClass("foo"), false)
+    verifyEq(elem.style.hasClass("bar"), true)
+    verifyEq(elem.style.hasClass("zar"), true)
+    verifyEq(elem.attr("class"), "bar zar")
+
+    // should remove all classes
+    elem.removeAttr("class")
+    verifyEq(elem.style.classes.size, 0)
+    verifyEq(elem.attr("class"), null)
+  }
+
+  Void testQuerySelector()
+  {
+    Elem? root
+    Elem? a
+    Elem? b
+
+    root = Elem {
+      it.setAttr("foo", "notme")
+      a = Elem { it.setAttr("foo", "bar") },
+      b = Elem { it.setAttr("foo", "bar") },
+    }
+
+    m := root.querySelectorAll("[foo]")
+    verifyEq(m.size, 2)
+    verifySame(m[0], a)
+    verifySame(m[1], b)
+
+    verifySame(root.querySelector("[foo]"), a)
+  }
+
   Void testSvg()
   {
     a := Svg.line(0, 0, 10, 10)

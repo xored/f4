@@ -9,6 +9,7 @@ package fanx.interop;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,6 +122,14 @@ public class Interop
   public static File toFan(java.io.File file)
   {
     return new LocalFile(file);
+  }
+
+  /**
+   * Convert from java.nio.file.Path to sys::File.
+   */
+  public static File toFan(java.nio.file.Path path)
+  {
+    return new PathFile(path);
   }
 
   /**
@@ -237,6 +246,14 @@ public class Interop
   }
 
   /**
+   * Convert a java.util.stream.Stream to a sys::List of the specified type.
+   */
+  public static List toFan(java.util.stream.Stream s, Type of)
+  {
+    return toFan(s.iterator(), of);
+  }
+
+  /**
    * Convert a java.util.HashMap to a sys::Map with a type of Obj:Obj?.
    */
   public static Map toFan(HashMap map)
@@ -261,5 +278,9 @@ public class Interop
     return map.toJava();
   }
 
+  public static java.util.List toJava(List list)
+  {
+    return Arrays.asList(list.toArray());
+  }
 
 }

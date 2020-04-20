@@ -127,7 +127,7 @@ internal const class WispActor : Actor
       ver    := toks[2]
 
       // method
-      req.method = method.upper
+      req.setMethod(method)
 
       // uri; immediately reject any uri which looks dangerous
       req.uri = Uri.decode(uri)
@@ -230,6 +230,7 @@ internal const class WispActor : Actor
         res.headers.clear
         req.stash["err"] = err
         service.errMod.onService
+        res.close
       }
     }
     catch (Err e) WispService.log.err("internalServiceError res failed", e)
