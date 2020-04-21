@@ -45,7 +45,10 @@ class ProjectPrefs {
 		// when using the Fantom Project Wizard, the compileEnvType can be an empty string
 		// I suspect it is asked for, before the preferences have been initialised
 		name := delegate.getString(qualifier, compileEnvName)?.trimToNull ?: DefaultCompileEnv#.qname
-		type := Type.find(name)
+		
+		// Eclipse's stoopid Oomph plugin somehow keeps setting the env to afFpm even though it's not installed!
+		// so let's not error and instead just resort to something sensible
+		type := Type.find(name, false) ?: DefaultCompileEnv#.qname
 		return type
 	}
 }
