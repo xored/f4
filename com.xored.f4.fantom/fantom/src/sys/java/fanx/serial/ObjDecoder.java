@@ -235,7 +235,7 @@ public class ObjDecoder
       // if last parameter is an function then pass toSet
       // as an it-block for setting the fields
       Param p = (Param)makeCtor.params().last();
-      if (p != null && p.type().fits(Sys.FuncType))
+      if (p != null && p.type().fits(Sys.FuncType) && t.isConst())
       {
         if (args == null) args = new List(Sys.ObjType);
         args.add(Field.makeSetFunc(toSet));
@@ -578,7 +578,10 @@ public class ObjDecoder
     if (curt == Token.COLON)
     {
       consume();
-      t = new MapType(t, readType());
+      boolean lbracket2 = curt == Token.LBRACKET;
+      if (lbracket2) consume();
+      t = new MapType(t, readType(lbracket2));
+      if (lbracket2) consume(Token.RBRACKET, "Expected closing ]");
     }
     while (curt == Token.LRBRACKET)
     {

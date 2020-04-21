@@ -33,23 +33,37 @@ using graphics
     {
       if (cbDrag == null) return
       data := cbDrag.call(elem)
-      DndUtil.map[data.hash] = data
-      e.dataTransfer.setData("text/plain", data.hash.toStr)
+      DndUtil.setData(e.dataTransfer, data)
+      if (cbDragImage != null)
+      {
+        this.dragImage = cbDragImage.call(data)
+        this.dragImage.style->position = "absolute"
+        this.dragImage.style->top      = "-1000px"
+        this.dragImage.style->right    = "-1000px"
+        Win.cur.doc.body.add(dragImage)
+        e.dataTransfer.setDragImage(dragImage, 0, 0)
+      }
     }
     elem.onEvent("dragend", false) |e|
     {
       if (cbEnd != null) cbEnd(elem)
+      dragImage?.parent?.remove(dragImage)
     }
   }
 
   ** Callback to get data payload for drag event.
   Void onDrag(|Elem->Obj| f) { cbDrag = f }
 
+  ** Callback to customize the drag image for drag event.
+  Void onDragImage(|Obj->Elem| f) { cbDragImage = f }
+
   ** Callback when the drag event has ended.
   Void onEnd(|Elem| f) { cbEnd = f }
 
   private Func? cbDrag
+  private Func? cbDragImage
   private Func? cbEnd
+  private Elem? dragImage
 }
 
 **************************************************************************
@@ -136,10 +150,10 @@ using graphics
 **
 ** Internal drag and drop utilities.
 **
-@Js internal class DndUtil
+@NoDoc @Js class DndUtil
 {
   ** Global map of data payloads.
-  static Int:Obj map()
+  private static Int:Obj map()
   {
     m := Actor.locals["domkit.dnd.map"] as Int:Obj
     if (m == null) Actor.locals["domkit.dnd.map"] = m = Int:Obj[:]
@@ -149,9 +163,32 @@ using graphics
   ** Get the data payload for given transfer instance.
   static Obj getData(DataTransfer dt)
   {
-    key := dt.getData("text/plain").toInt(10, false)
-    if (key == null) throw ArgErr("Drag target not found: $dt")
-    val := map[key] ?: throw ArgErr("Drag target not found: $dt")
-    return val
+    data := dt.getData("text/plain")
+
+    if (data.isEmpty)
+    {
+      // if we have no data set then most likely this is file
+      // being dragged in externally into the browser
+      return dt.files
+    }
+
+    if (data.startsWith("fandnd:"))
+    {
+      // if our own key then return actor local data copy
+      key := data["fandnd:".size..-1].toInt(10, false)
+      if (key == null) throw ArgErr("Drag target not found: $data")
+      val := map[key] ?: throw ArgErr("Drag target not found: $key")
+      return val
+    }
+
+    // fallback to return original data
+    return data
+  }
+
+  ** Set the data payload on given transfer instance.
+  static Void setData(DataTransfer dt, Obj data)
+  {
+    map[data.hash] = data
+    dt.setData("text/plain", "fandnd:${data.hash.toStr}")
   }
 }

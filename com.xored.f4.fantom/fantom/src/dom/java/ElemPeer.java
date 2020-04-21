@@ -71,17 +71,31 @@ public class ElemPeer
   public Map attrs(Elem self)
   {
     Map map = new Map(new MapType(Sys.StrType, Sys.StrType));
+
+    // collect props
     Iterator it = props.entrySet().iterator();
     while (it.hasNext())
     {
       Entry e = (Entry)it.next();
       map.set(e.getKey(), e.getValue().toString());
     }
+
+    // merge in class if specified
+    String className = self.attr("class");
+    if (className != null) map.set("class", className);
+
     return map;
   }
 
   public String attr(Elem self, String name)
   {
+    // delegate to Style for class
+    if (name.equals("class"))
+    {
+      List c = style(self).classes();
+      return c.size() == 0 ? null : c.join(" ");
+    }
+
     // do not route to prop to avoid propHooks traps
     Object val = props.get(name);
     return val == null ? null : val.toString();
@@ -89,16 +103,32 @@ public class ElemPeer
 
   public Elem setAttr(Elem self, String name, String val, Uri ns)
   {
-    // TODO: ns?
-    // route to setProp
-    this.setProp(self, name, val==null ? null : val.toString());
+    if (name.equals("class"))
+    {
+      // delegate to Style for class
+      style(self).peer._setClass(style, val);
+    }
+    else
+    {
+      // TODO: ns?
+      // route to setProp
+      this.setProp(self, name, val==null ? null : val.toString());
+    }
     return self;
   }
 
-  public Elem removeAtrr(Elem self, String name)
+  public Elem removeAttr(Elem self, String name)
   {
-    // route to setProp
-    this.setProp(self, name, null);
+    if (name.equals("class"))
+    {
+      // delegate to Style for class
+      style(self).peer._setClass(style, "");
+    }
+    else
+    {
+      // route to setProp
+      this.setProp(self, name, null);
+    }
     return self;
   }
 
@@ -213,6 +243,7 @@ public class ElemPeer
 
   public void replaceChild(Elem self, Elem oldChild, Elem newChild)
   {
+    if (oldChild == newChild) return;
     if (newChild.parent() != null) throw new RuntimeException("child already parented");
     int i = kids.indexOf(oldChild);
     if (i < 0) throw new RuntimeException("oldChild not a child of this element");
@@ -225,6 +256,43 @@ public class ElemPeer
   {
     child.peer.parent = null;
     kids.remove(child);
+  }
+
+  public Elem querySelector(Elem self, String selectors)
+  {
+    return (Elem)querySelectorAll(self, selectors).first();
+  }
+
+  public List querySelectorAll(Elem self, String selectors)
+  {
+    QuerySelector q = QuerySelector.parse(selectors);
+    ArrayList matches = new ArrayList();
+    matchQuerySelector(self, q, matches);
+    return Interop.toFan(matches, self.typeof());
+  }
+
+  private void matchQuerySelector(Elem parent, QuerySelector q, ArrayList matches)
+  {
+    List kids = parent.children();
+    for (int i=0; i<kids.size(); i++)
+    {
+      Elem elem = (Elem)kids.get(i);
+
+      // TODO: match on tag name and/or class name
+
+      // check attrs
+      Map attrs = elem.attrs();
+      for (int j=0; j<attrs.keys().size(); j++)
+      {
+        String key = (String)attrs.keys().get(j);
+        String val = (String)attrs.get(key);
+        if (q.attrs.contains(key)) matches.add(elem);
+        // TODO: match on value
+      }
+
+      // recurse children
+      matchQuerySelector(elem, q, matches);
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////

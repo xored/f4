@@ -58,6 +58,25 @@ const class Cookie
   }
 
   **
+  ** Construct a cookie to use for session management.
+  ** The following web config properties are used:
+  **   - secureSessionCookie: force use of 'Secure' cookie option
+  **   - sameSiteSessionCookie: force use of 'SameSite:strict' cookie option
+  **
+  @NoDoc static Cookie makeSession(Str name, Str val, [Field:Obj?]? overrides := null)
+  {
+    pod := Cookie#.pod
+    fields := [
+      #secure: pod.config("secureSessionCookie", "false") == "true",
+      #sameSite: pod.config("sameSiteSessionCookie", "strict"),
+      #maxAge: 1day,
+      #httpOnly: true
+    ]
+    if (overrides != null) overrides.each |v, f| { fields[f] = v }
+    return Cookie.make(name, val, Field.makeSetFunc(fields))
+  }
+
+  **
   ** Construct with name and value.  The name must be a valid
   ** HTTP token and must not start with "$" (see `WebUtil.isToken`).
   ** The value string must be an ASCII string within the inclusive
@@ -145,6 +164,15 @@ const class Cookie
   const Bool httpOnly := true
 
   **
+  ** If this value is non-null, then we add the SameSite attribute to
+  ** the cookie. Valid values are
+  **   - 'lax'
+  **   - 'strict'
+  ** By default we set the attribute to 'strict'
+  **
+  const Str? sameSite := "strict"
+
+  **
   ** Return the cookie formatted as an Set-Cookie HTTP header.
   **
   override Str toStr()
@@ -165,6 +193,7 @@ const class Cookie
     if (path != null) s.add(";Path=").add(path)
     if (secure) s.add(";Secure")
     if (httpOnly) s.add(";HttpOnly")
+    if (sameSite != null) s.add(";SameSite=${sameSite}")
     return s.toStr
   }
 

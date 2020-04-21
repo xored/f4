@@ -50,35 +50,34 @@ class InternalBuilder : Builder {
 		// These aren't actual dependencies and don't seem to be transitive dependencies.
 		// Note that adding them as actual project dependencies also solves the issue,
 		// But because I don't know why, I'm loath to do so - hence these 3 little lines.
-		FantomProjectManager.instance.listProjects.each |p| {
-			resolvedPods[p.podName] = p.podOutFile
-		}
-		
+
+		// SlimerDude - Apr 2020 - Beta feature to turn this off 
+		if (fp.prefs.referencedPodsOnly == false)
+			FantomProjectManager.instance.listProjects.each |p| {
+				resolvedPods[p.podName] = p.podOutFile
+			}
+
 		logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make
 		try {
 			logBuf	:= StrBuf().add("\n")
 			meta	:= fp.meta.dup 
-			meta["pod.docApi"]			= fp.docApi.toStr
-			meta["pod.docSrc"]			= fp.docSrc.toStr
-			meta["pod.native.java"]		= (!fp.javaDirs.isEmpty).toStr
-			meta["pod.native.dotnet"]	= false.toStr
-			meta["pod.native.js"]		= (!fp.jsDirs.isEmpty).toStr
+			meta["pod.docApi"]		= fp.docApi.toStr
+			meta["pod.docSrc"]		= fp.docSrc.toStr
 
             input.log            	= CompilerLog(logBuf.out)
 			input.podName			= fp.podName
 			input.version			= fp.version
+			input.summary			= fp.summary
 			input.ns				= F4Namespace(resolvedPods, fp.classpath, fp.javaProject)
 			input.depends			= fp.rawDepends.dup
-			input.includeDoc		= true
-			input.summary			= fp.summary
 			input.mode				= CompilerInputMode.file
 			input.baseDir			= fp.projectDir
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
+			input.jsFiles			= fp.jsDirs
 			input.outDir			= compileDir
 			input.output			= CompilerOutputMode.podFile
-			input.jsFiles			= fp.jsDirs
 			input.meta				= meta
 			input.index				= fp.index
 			input.includeDoc		= fp.docApi
@@ -236,9 +235,7 @@ class InternalBuilder : Builder {
 			newContent := newPodZip.contents
 			oldContent := oldPodZip.contents
 			
-			if (newPodZip.contents != oldPodZip.contents) return true
-			
-			return podContentChanged(newPodZip, oldPodZip)
+			return podContentChanged(newContent, oldContent)
 			
 		} finally {
 			newPodZip?.close
@@ -251,35 +248,46 @@ class InternalBuilder : Builder {
 		catch	return null
 	}
 
-	private Bool podContentChanged(Zip newPod, Zip oldPod) {
-		newContents := newPod.contents
-		oldContents := oldPod.contents
-		
-		comparators := [
-			`/meta.props` : | File f1, File f2 -> Bool | { metaChanged(f1, f2) } 
-		]
-		
-		def := | File f1, File f2 -> Bool | { binaryChanged(f1, f2) }
-		
-		return newPod.contents.any |newFile, uri| { 
-			(comparators[uri] ?: def)(newFile, oldContents[uri])	
+	private Bool podContentChanged(Uri:File newContents, Uri:File oldContents) {
+		if (newContents.keys.rw.sort != oldContents.keys.rw.sort)
+			return true
+
+		return newContents.any |newFile, uri| {
+			if (uri == `/meta.props`)
+				return metaChanged(newFile, oldContents[uri])
+
+			if (uri.ext == "js")
+				return jsChanged(newFile, oldContents[uri])
+
+			return binaryChanged(newFile, oldContents[uri])
 		}
 	}
 	
 	private Bool metaChanged(File newFile, File oldFile) {
+		// just because the build timestamp changed, doesn't mean the pod has new content!
 		newProps := newFile.readProps.exclude |v, k| { k.startsWith("build.") }
 		oldProps := oldFile.readProps.exclude |v, k| { k.startsWith("build.") }
 		return newProps != oldProps
 	}
+
+	private Bool jsChanged(File newFile, File oldFile) {
+		// just because the build timestamp changed, doesn't mean the pod has new content!
+		newJs := newFile.readAllLines.exclude { it.startsWith("  m_meta.set(\"build.") }
+		oldJs := oldFile.readAllLines.exclude { it.startsWith("  m_meta.set(\"build.") }
+
+		if (newJs.size != oldJs.size) return true
+		for (i:=0; i < newJs.size; i++)
+			if (newJs[i] != oldJs[i]) return true
+		return false
+	}
 	
 	private Bool binaryChanged(File newFile, File oldFile) {
-		Buf b1 := newFile.readAllBuf
-		Buf b2 := oldFile.readAllBuf
+		b1 := newFile.readAllBuf
+		b2 := oldFile.readAllBuf
 		
 		if (b1.size != b2.size) return true
 		for (i:=0; i < b1.size; i++)
-			if( b1[i] != b2[i]) return true
-						
+			if (b1[i] != b2[i]) return true
 		return false
 	}
 }

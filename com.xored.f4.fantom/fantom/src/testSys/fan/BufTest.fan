@@ -54,11 +54,13 @@ abstract class AbstractBufTest : Test
   Void verifyBufEq(Buf a, Buf b)
   {
     verify(eq(a, b))
+    verify(a.bytesEqual(b))
   }
 
   Void verifyBufNotEq(Buf a, Buf b)
   {
     verify(!eq(a, b))
+    verify(!a.bytesEqual(b))
   }
 
   Bool eq(Buf a, Buf b)
@@ -94,6 +96,12 @@ class BufTest : AbstractBufTest
     verifyEquality(makeMem,  makeFile)
     verifyEquality(makeFile, makeMem)
     verifyEquality(makeFile, makeFile)
+
+    verifyBufEq(Buf(), Buf())
+    verifyBufEq(Buf().print("abc"), Buf().print("abc"))
+    verifyBufNotEq(Buf().print("abc"), Buf().print("ab"))
+    verifyBufNotEq(Buf().print("ab"), Buf().print("abc"))
+    verifyBufNotEq(Buf().print("abcx"), Buf().print("abcy"))
   }
 
   Void verifyEquality(Buf a, Buf b)
@@ -1089,8 +1097,8 @@ if (!js) verifyErr(e) { buf.writeI8(10) }
     buf.endian = Endian.little
     buf = buf.toImmutable
     verifyErr(e) { buf.endian = Endian.big }
-    verifyEq(buf.endian, Endian.little)
-    verifyEq(buf.in.endian, Endian.little)
+    verifyEq(buf.endian, Endian.big)
+    verifyEq(buf.in.endian, Endian.big)
 
     // charset
     buf = Buf()
@@ -1098,7 +1106,7 @@ if (!js) verifyErr(e) { buf.writeI8(10) }
     buf.charset = Charset.utf16BE
     buf = buf.toImmutable
     verifyErr(e) { buf.charset = Charset.utf8 }
-    verifyEq(buf.charset, Charset.utf16BE)
-    verifyEq(buf.in.charset, Charset.utf16BE)
+    verifyEq(buf.charset, Charset.utf8)
+    verifyEq(buf.in.charset, Charset.utf8)
   }
 }

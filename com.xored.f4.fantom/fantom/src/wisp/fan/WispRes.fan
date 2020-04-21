@@ -24,7 +24,6 @@ internal class WispRes : WebRes
   {
     // init headers
     headers := Str:Str[:] { caseInsensitive = true }
-    headers["Server"] = WispActor.wispVer
     headers["Date"] = DateTime.now.toHttpStr
     headers["Connection"] = "close"
     headers.setAll(service.extraResHeaders)
@@ -134,7 +133,7 @@ internal class WispRes : WebRes
       bufOut.head.title.w("$statusCode ${statusMsg[statusCode]}").titleEnd.headEnd
       bufOut.body
       bufOut.h1.w(statusMsg[statusCode]).h1End
-      if (msg != null) bufOut.w(msg).nl
+      if (msg != null) bufOut.w(msg.toXml).nl
       bufOut.bodyEnd
       bufOut.htmlEnd
 
@@ -146,6 +145,7 @@ internal class WispRes : WebRes
     this.statusCode = statusCode
     this.errMsg = msg
     if (buf != null) this.out.writeBuf(buf.flip)
+    else commit(false)
     done
   }
 

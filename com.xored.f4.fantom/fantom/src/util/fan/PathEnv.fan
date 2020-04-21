@@ -54,7 +54,7 @@ const class PathEnv : Env
     acc := File[,]
     try
     {
-      path.split(File.pathSep[0]).each |item|
+      path.split(';').each |item|
       {
         if (item.isEmpty) return
         dir := (item.startsWith("..") && ref != null)
@@ -64,7 +64,6 @@ const class PathEnv : Env
         if (!dir.exists) { log.warn("Dir not found: $dir"); return }
         if (!dir.isDir) { log.warn("Not a dir: $dir"); return }
         doAdd(acc, dir)
-
       }
     }
     catch (Err e) log.err("Cannot parse path: $path", e)
@@ -157,17 +156,18 @@ const class PathEnv : Env
   **
   override Str[] findAllPodNames()
   {
-    acc := Str[,]
+    acc := Str:Str[:]
     path.each |dir|
     {
       lib := dir + `lib/fan/`
       lib.list.each |f|
       {
         if (f.isDir || f.ext != "pod") return
-        acc.add(f.basename)
+        podName := f.basename
+        acc[podName] = podName
       }
     }
-    return acc
+    return acc.keys
   }
 
   private const Log log := Log.get("pathenv")

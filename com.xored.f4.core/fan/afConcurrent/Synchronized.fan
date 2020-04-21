@@ -70,7 +70,7 @@ internal const class Synchronized {
 	** 
 	** The given func and return value must be immutable.
 	virtual Future async(|->Obj?| f) {
-		// explicit call to .toImmutable() - see http://fantom.org/sidewalk/topic/1798#c12190
+		// explicit call to .toImmutable() - see https://fantom.org/forum/topic/1798
 		func	:= f.toImmutable
 		future 	:= actor.send([true, func].toImmutable)
 		return future	// sounds cool, huh!?
@@ -83,7 +83,7 @@ internal const class Synchronized {
 	** 
 	** The given func and return value must be immutable.
 	virtual Future asyncLater(Duration d, |->Obj?| f) {
-		// explicit call to .toImmutable() - see http://fantom.org/sidewalk/topic/1798#c12190
+		// explicit call to .toImmutable() - see https://fantom.org/forum/topic/1798
 		func	:= f.toImmutable
 		future 	:= actor.sendLater(d, [true, func].toImmutable)
 		return future	// sounds cool, huh!?
@@ -100,7 +100,7 @@ internal const class Synchronized {
 		if (inSync)
 			throw Err("This lock is NOT re-entrant. Due to Actor semantics, nested calls to synchronized() result in a Deadlock.")
 
-		// explicit call to .toImmutable() - see http://fantom.org/sidewalk/topic/1798#c12190
+		// explicit call to .toImmutable() - see https://fantom.org/forum/topic/1798
 		func	:= f.toImmutable
 		future	:= actor.send([false, func].toImmutable)
 

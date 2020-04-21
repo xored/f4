@@ -210,6 +210,9 @@ class ProjectTab : AbstractLaunchConfigurationTab
   { 
     return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_PROJECT) 
   }
+	
+  override Bool OkToLeaveTab() { true }
+  override Void postApply() { }
 }
 
 ************************************************************************************************

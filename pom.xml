@@ -6,7 +6,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
-    <tycho-version>0.25.0</tycho-version>
+    <tycho-version>1.2.0</tycho-version>
     <tycho-groupid>org.eclipse.tycho</tycho-groupid>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -44,14 +44,19 @@
     <!-- Result -->
     <module>repository</module>
     <module>product</module>
+
+    <!--
+    	Tests no worky:
+    	[ERROR] Failed to execute goal org.eclipse.rcptt:rcptt-maven-plugin:2.2.0:resources (default-resources) on project f4tests: The explicit location D:\X-Drive\workspace\f4\f4tests\..\product\target\products\com.xored.f4.ide-win32.win32.x86_64.zip is not valid -> [Help 1]
     <module>f4tests</module>
+    -->
   </modules>
 
   <repositories>
     <repository>
-      <id>neon</id>
+      <id>e2018-09</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/neon/</url>
+      <url>http://download.eclipse.org/releases/2018-09/</url>
     </repository>
 
     <repository>
@@ -60,7 +65,7 @@
       </snapshots>
       <id>dltk-core</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/technology/dltk/updates-dev/5.6/</url>
+      <url>http://download.eclipse.org/technology/dltk/updates-dev/5.10/</url>
     </repository>
     <repository>
       <snapshots>
@@ -68,7 +73,10 @@
       </snapshots>
       <id>fantom-runtime</id>
       <layout>p2</layout>
-      <url>http://updates.xored.com/fantom-runtime/</url>
+      <!-- this xored update site is out of date -->
+      <!-- <url>http://updates.xored.com/fantom-runtime/</url> -->
+      <!-- so instead, build the Fantom Runtime project yourself and point this directory to it -->
+      <url>file:///D:/Y-Drive/workspace/fantom-runtime/org.fantom-updatesite/target/site/</url>
     </repository>
   </repositories>
 
@@ -105,16 +113,22 @@
         <configuration>
           <resolver>p2</resolver>
           <environments>
+          <!--
+          -->
             <environment>
               <os>win32</os>
               <ws>win32</ws>
               <arch>x86</arch>
             </environment>
+          <!--
+          -->
             <environment>
               <os>win32</os>
               <ws>win32</ws>
               <arch>x86_64</arch>
             </environment>
+          <!--
+          -->
             <environment>
               <os>linux</os>
               <ws>gtk</ws>
@@ -130,7 +144,14 @@
               <ws>cocoa</ws>
               <arch>x86_64</arch>
             </environment>
+          <!--
+          -->
           </environments>
+          <formats>
+            <win32>zip</win32>
+            <linux>zip</linux>
+            <macosx>zip</macosx>
+          </formats>
         </configuration>
       </plugin>
     </plugins>
