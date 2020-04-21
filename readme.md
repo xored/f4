@@ -26,7 +26,7 @@ Now you can modify the F4 source code and launch a new verison of F4 by running 
 An alternative is to:
  - Maven build the Fantom Runtime project and then this F4 project
  - Install [eclipse v4.9 2018-09](https://www.eclipse.org/downloads/eclipse-packages/) (choose the RCP package so you have eclipse SDK source)
- - Install [DLTK 5.10]`http://download.eclipse.org/technology/dltk/updates-dev/5.10/`
+ - Install [DLTK 5.10](http://download.eclipse.org/technology/dltk/updates-dev/5.10/)
  - Install F4 features from the [local F4 update site](file:/C:/path-to-f4-repo/f4/repository/target/repository/)
 
 Eclipse is used to build all the pods and jars. The Maven build then assembles it all into a executables and Eclipse update sites in `/repository/target/`.
