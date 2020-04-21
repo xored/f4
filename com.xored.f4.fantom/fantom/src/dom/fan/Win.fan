@@ -35,7 +35,8 @@ class Win
     this.isChrome  = ua.contains("Chrome/")
     this.isSafari  = ua.contains("Safari/") && ua.contains("Version/")
     this.isFirefox = ua.contains("Firefox/")
-    this.isIE      = ua.contains("MSIE")
+    this.isIE      = ua.contains("MSIE") || ua.contains("Trident/")
+    this.isEdge    = ua.contains("Edge/")
   }
 
   ** Return the current window instance.
@@ -86,6 +87,9 @@ class Win
 
   ** Evaluate given JavaScript code.
   static native Obj eval(Str js)
+
+  ** Log object to console.
+  native Obj log(Obj obj)
 
 //////////////////////////////////////////////////////////////////////////
 // Scrolling
@@ -217,6 +221,7 @@ class Win
   @NoDoc const Bool isSafari
   @NoDoc const Bool isFirefox
   @NoDoc const Bool isIE
+  @NoDoc const Bool isEdge
 
 //////////////////////////////////////////////////////////////////////////
 // Diagnostics

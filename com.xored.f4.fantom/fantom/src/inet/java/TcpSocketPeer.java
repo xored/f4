@@ -42,13 +42,22 @@ public class TcpSocketPeer
     }
   }
 
-  public static TcpSocket makeTls(TcpSocket upgrade)
+  public static TcpSocket makeTls() { return makeTls(null, null); }
+  public static TcpSocket makeTls(TcpSocket upgrade) { return makeTls(upgrade, null); }
+  public static TcpSocket makeTls(TcpSocket upgrade, Object tlsContext)
   {
     try
     {
-      // get SSL factory because Java loves factories!
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-      sslContext.init(null, null, null);
+      SSLContext sslContext;
+
+      if (tlsContext != null) sslContext = (SSLContext)tlsContext;
+      else
+      {
+        // get SSL factory because Java loves factories!
+        sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, null, null);
+      }
+
       final SSLSocketFactory factory = sslContext.getSocketFactory();
 
       SSLSocket socket;

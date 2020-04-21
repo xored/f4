@@ -338,6 +338,11 @@
     verifyInheritance(MxGooRoo#)
   }
 
+  Void testToStr()
+  {
+    verifyEq("classToStr", ClsSubSubMxToStr().toStr)
+  }
+
   Void verifyInheritance(Type t)
   {
     a1 := t.make(["a"])
@@ -347,6 +352,11 @@
     verify(a1 == a2)
     verify(a1 != b)
     verify(t.method("equals").parent == MxGoo#)
+  }
+
+  Void testPrivMethod()
+  {
+    verifyEq("private hello", ClsMxPrivMethod().hello)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -378,6 +388,20 @@
 //////////////////////////////////////////////////////////////////////////
 // Helper Types
 //////////////////////////////////////////////////////////////////////////
+
+@Js const mixin MxToStr { override Str toStr() { "mixin" } }
+@Js const mixin SubMxToStr : MxToStr { }
+@Js const mixin SubSubMxToStr : SubMxToStr { }
+@Js const class ClsSubMxToStr : SubMxToStr { override Str toStr() { "classToStr" } }
+@Js const class ClsSubSubMxToStr : ClsSubMxToStr, SubSubMxToStr { }
+
+@Js mixin MxPrivMethod
+{
+  Str hello() { doHello }
+  private Str doHello() { "private hello" }
+}
+
+@Js class ClsMxPrivMethod : MxPrivMethod { }
 
 @Js
 mixin MxA

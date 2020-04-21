@@ -1,11 +1,3 @@
-//
-// Copyright (c) 2009-2010 xored software, Inc.
-// Licensed under Eclipse Public License version 1.0
-//
-// History:
-//	 Ivan Inozemtsev Apr 16, 2010 - Initial Contribution
-//
-
 using [java]org.eclipse.core.resources::IProject
 using [java]org.eclipse.core.resources::IResource
 
@@ -22,7 +14,7 @@ class Manifest {
 		lineOffsets = buildOffsets(content)
 
 		MethodDef? method := parser.cunit.types.find { it.name.text == "Build" }?.slots?.find { it->name->text == "make" }
-		if(method == null) throw ArgErr("Can't parse build.fan in $project.getName")
+		if (method == null) throw ArgErr("Can't parse build.fan in $project.getName")
 		
 		lines = [Str:Int][:]
 		vals =	method.body.stmts
@@ -30,7 +22,7 @@ class Manifest {
 			.findAll |ExprStmt st->Bool| { st.expr.id == ExprId.assign }
 			.map |ExprStmt st -> BinaryExpr| { st.expr }
 			.reduce([Str:Obj?][:]) |Str:Obj? result, BinaryExpr expr->Str:Obj?| {
-				if(expr.left isnot Ref) return result
+				if (expr.left isnot Ref) return result
 				name := expr.left->text
 				result[name] = resolveLiteral(expr.right)
 				lines[name]	 = lineByPos(expr.right.start)

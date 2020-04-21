@@ -105,6 +105,12 @@ class UnitTest : Test
 
   Void testDatabase()
   {
+    Unit.list.each |u|
+    {
+     if (u.name.startsWith("_")) return  // skip custom definitions
+     if (u.name != u.name.lower) fail(u.name)
+    }
+
     m := Unit("meter")
     verifyEq(m.ids.isImmutable, true)
     verifyEq(m.ids, ["meter", "m"])
@@ -164,6 +170,7 @@ class UnitTest : Test
 
   Void verifyUnitName(Str id)
   {
+    if (id.startsWith("_")) return  // skip custom definitions
     id.each |ch|
     {
       if (ch.isAlpha) return

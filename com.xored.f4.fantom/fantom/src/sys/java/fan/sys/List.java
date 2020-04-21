@@ -205,7 +205,21 @@ public final class List
 
   public final boolean contains(Object value)
   {
-    return index(value) != null;
+    if (value == null) return containsSame(value);
+    for (int i=0; i<size; ++i)
+    {
+      Object obj = values[i];
+      if (obj != null && obj.equals(value))
+        return true;
+    }
+    return false;
+  }
+
+  public final boolean containsSame(Object value)
+  {
+    for (int i=0; i<size; ++i)
+      if (values[i] == value) return true;
+    return false;
   }
 
   public final boolean containsAll(List list)
@@ -384,6 +398,12 @@ public final class List
   {
     // modify in insert(int, Obj)
     return insert(size, value);
+  }
+
+  public final List addIfNotNull(Object value)
+  {
+    if (value == null) return this;
+    return add(value);
   }
 
   public final List addAll(List list)

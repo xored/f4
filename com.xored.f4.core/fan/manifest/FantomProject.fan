@@ -148,9 +148,14 @@ const class FantomProject {
 	// Build info
 	//////////////////////////////////////////////////////////////////////////	
 	
-	** (Steve : 7 Jun 16) - not really sure what this returns.
+	** (SlimerDude Jun 2016) - not really sure what this returns.
 	** Seems to be absolute locations of required pods
 	** Used by com.xored.f4.jdt.launching::FanJavaContainer --> Fantom Native Libraries (Java)
+	** 
+	** (SlimerDude Apr 2020) - also by
+	**   - IProject.getReferencedProjects() 
+	**     - called by f4jdtLaunching.FanJavaContainer.getClasspathEntries()
+	**       - called by f4core.FantomProjectManager.doListReferencedProjects()
 	Str:File classpathDepends() {
 		buildPathFiles := (Str:File) scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
@@ -181,6 +186,11 @@ const class FantomProject {
 			return r
 		}
 		
+		// new beta behaviour
+		if (prefs.referencedPodsOnly)
+			return buildPathFiles
+		
+		// old behaviour
 		podFiles := resolvePods.rw.setAll(buildPathFiles)
 		return podFiles
 	}
@@ -199,9 +209,16 @@ const class FantomProject {
 		resolveErrs	= compileEnv.resolveErrs.toImmutable
 
 		// overwrite entries with workspace pods
-		FantomProjectManager.instance.listProjects.each |FantomProject p| {
-			if (podFiles.containsKey(p.podName) || rawDepends.any { it.name == p.podName })
-				podFiles[p.podName] = p.podOutFile
+		if (prefs.referencedPodsOnly) {
+			// new beta behaviour
+			podFiles.setAll(classpathDepends)
+
+		} else {
+			// old behaviour
+			FantomProjectManager.instance.listProjects.each |fp| {
+				if (podFiles.containsKey(fp.podName) || rawDepends.any { it.name == fp.podName })
+					podFiles[fp.podName] = fp.podOutFile
+			}
 		}
 
 		// prevent errs such as "Project cannot reference itself: poo"
@@ -224,17 +241,17 @@ const class FantomProject {
 		future := resolveFutureRef.val as Future
 		if (future == null) {		
 			future = Synchronized(ActorPool()).async |->Obj?| {
-				pods := compileEnv.resolvePods
-				resolvePodsRef.val	= pods
+				resolvedPods		:= compileEnv.resolvePods
+				resolvePodsRef.val	= resolvedPods
 				dependsStrRef.val	= dependsStr
-				return pods
+				return resolvedPods
 			}
 			resolveFutureRef.val = future
 		}
-		pods := future.get
-		resolveFutureRef.val = null
 
-		return pods
+		// if there was an error, be sure to create a new future 
+		try return future.get
+		finally resolveFutureRef.val = null
 	}
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }

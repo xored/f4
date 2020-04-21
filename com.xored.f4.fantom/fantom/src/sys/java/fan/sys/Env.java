@@ -53,6 +53,8 @@ public abstract class Env
 
   public final String runtime() { return "java"; }
 
+  public final long javaVersion() { return Sys.javaVersion; }
+
   public final long idHash(Object obj) { return System.identityHashCode(obj); }
 
 //////////////////////////////////////////////////////////////////////////
@@ -156,6 +158,11 @@ public abstract class Env
   public List indexKeys()
   {
     return index.keys();
+  }
+
+  public List indexPodNames(String key)
+  {
+    return index.podNames(key);
   }
 
   public Map props(Pod pod, Uri uri, Duration maxAge)

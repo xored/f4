@@ -148,20 +148,27 @@ class DateTimeTest : Test
     verifySame(a.tz, TimeZone.cur)
 
     b := DateTime.now(null)
-    verify(a !== b)
-    verify(b === DateTime.now)
+    verifyNotSame(a, b)
+    verifySame(b, DateTime.now)
 
     if (Env.cur.runtime != "js")
     {
-      Actor.sleep(200ms)
-      verify(b === DateTime.now)
+      verifySame(b, DateTime.now)
+      verifySame(b, DateTime.now(100ms))
 
-      c := DateTime.now(180ms)
-      verify(b !== c)
+      Actor.sleep(100ms)
+      c := DateTime.now(50ms)
+      verifyNotSame(b, c)
     }
 
     verifyEq(Date.today, DateTime.now.date)
     verifyEq(Date.today(TimeZone.utc), DateTime.nowUtc.date)
+
+    verifyEq(Date.yesterday, DateTime.now.date - 1day)
+    verifyEq(Date.yesterday(TimeZone.utc), DateTime.nowUtc.date - 1day)
+
+    verifyEq(Date.tomorrow, DateTime.now.date + 1day)
+    verifyEq(Date.tomorrow(TimeZone.utc), DateTime.nowUtc.date + 1day)
 
     dt1   := DateTime.now(null)
     ticks := DateTime.nowTicks
@@ -758,7 +765,6 @@ class DateTimeTest : Test
     verifyDateTime(195256800000_000000, jeru, 2006, mar, 10, 0, 0, 0, fri, std)
     verifyDateTime(195343200000_000000, jeru, 2006, mar, 11, 0, 0, 0, sat, std)
     verifyDateTime(197071200000_000000, jeru, 2006, mar, 31, 0, 0, 0, fri, std)
-    verifyDateTime(197154000000_000000, jeru, 2006, apr,  1, 0, 0, 0, sat, dst)
 
     // St. John has -3:30 offset
     verifyDateTime(255148200000_000000, stJohn, 2008, jan, 31, 23, 0, 0, thu, std)

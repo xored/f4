@@ -180,13 +180,19 @@ public class Pod
       if (allPodsList == null)
       {
         List names = Env.cur().findAllPodNames();
-        List pods = new List(Sys.PodType, names.sz());
+        Map acc = new Map(Sys.StrType, Sys.PodType);
         for (int i=0; i<names.sz(); ++i)
         {
           String name = (String)names.get(i);
+          if (acc.get(name) != null)
+          {
+            System.out.println("ERROR: duplicate pod names: " + name);
+            continue;
+          }
           try
           {
-            pods.add(doFind(name, true, null, null));
+            Pod pod = doFind(name, true, null, null);
+            acc.set(name, pod);
           }
           catch (Throwable e)
           {
@@ -194,16 +200,20 @@ public class Pod
             e.printStackTrace();
           }
         }
-        allPodsList = (List)pods.sort().toImmutable();
+        allPodsList = (List)acc.vals().sort().toImmutable();
       }
       return allPodsList;
     }
   }
 
-  private static Object reloadList()
+  private static Object reloadList(List args)
   {
-    Log log = Log.get("sys");
-    log.info("Pod reload list");
+    boolean silent = args != null && args.sz() > 0 && args.get(0) == LogLevel.silent;
+    if (!silent)
+    {
+      Log log = Log.get("sys");
+      log.info("Pod reload list");
+    }
 
     // update global data structures
     synchronized (podsByName)
@@ -248,7 +258,7 @@ public class Pod
 
   public Object trap(String name, List args)
   {
-    if (name.equals("reloadList")) return reloadList();
+    if (name.equals("reloadList")) return reloadList(args);
     if (name.equals("reload")) return reload();
     if (name.equals("classLoader")) return classLoader;
     if (name.equals("loadFile")) return loadFile();

@@ -47,6 +47,9 @@ class CompilerOptionsBlock : AbstractOptionsBlock {
 
 		SWTFactory.createLabel(composite, "", 2)
 		bindControl(SWTFactory.createCheckButton(composite, "Use external compiler", null, false, 2), useExternalBuilderKey, null)
+
+		SWTFactory.createLabel(composite, "", 2)
+		bindControl(SWTFactory.createCheckButton(composite, "Use referenced projects only (beta)", null, false, 2), referencedPodsOnlyKey, null)
 		
 		SWTFactory.createLabel(composite, "", 2)
 		SWTFactory.createLabel(composite, "Note: Projects need to be re-built to make use of changes made above", 2)
@@ -62,7 +65,11 @@ class CompilerOptionsBlock : AbstractOptionsBlock {
 		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.useExternalBuilderName)
 	}
 	
+	private static PreferenceKey referencedPodsOnlyKey() {
+		PreferenceKey(ProjectPrefs.qualifier, ProjectPrefs.referencedPodsOnlyName)
+	}
+	
 	private static PreferenceKey[] allKeys() {
-		[podOutputDir, useExternalBuilderKey]
+		[podOutputDir, useExternalBuilderKey, referencedPodsOnlyKey]
 	}
 }

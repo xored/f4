@@ -41,7 +41,7 @@ class WebClientTest : Test
   Void testGetFixed()
   {
     // use skyfoundry.com assuming simple static image page
-    c := WebClient(`http://skyfoundry.com/res/img/database.png`)
+    c := WebClient(`http://skyfoundry.com/static/img/product/server.svg`)
     verify(!c.isConnected)
     try
     {
@@ -63,9 +63,10 @@ class WebClientTest : Test
       // fixed content-length
       len := c.resHeader("Content-Length").toInt
       png := c.resBuf
-      verifyEq(png[1].toChar, "P")
-      verifyEq(png[2].toChar, "N")
-      verifyEq(png[3].toChar, "G")
+      verifyEq(png[0].toChar, "<")
+      verifyEq(png[1].toChar, "s")
+      verifyEq(png[2].toChar, "v")
+      verifyEq(png[3].toChar, "g")
     }
     finally c.close
   }
@@ -83,8 +84,6 @@ class WebClientTest : Test
       verifyEq(c.resCode, 200)
       verifyEq(c.resPhrase, "OK")
       verifyEq(c.resHeaders.caseInsensitive, true)
-      verify(c.cookies.size > 0)
-      verify(c.reqHeaders["Cookie"] != null)
 
       // chunked transfer
       verify(c.resHeader("Transfer-Encoding").lower.contains("chunked"))
@@ -141,7 +140,7 @@ class WebClientTest : Test
       `/doc/docLang/TypeDatabase.html`: `/doc/docLang/Env#index`,
     ]
     uri := map.keys.random
-    base := `http://fantom.org/`
+    base := `https://fantom.org/`
     verifyRedirect(base + uri, base + map[uri])
   }
 
@@ -168,12 +167,12 @@ class WebClientTest : Test
 
   Void testPipeline()
   {
-    c := WebClient(`http://fantom.org`)
+    c := WebClient(`https://fantom.org`)
     try
     {
       c.writeReq
       c.writeReq
-      c.reqUri = `http://fantom.org/bad-bad`
+      c.reqUri = `https://fantom.org/bad-bad`
       c.writeReq
 
       c.readRes

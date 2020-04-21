@@ -14,7 +14,7 @@ percent, %; ; 100
 pixel, px
 decibel, db
 power_factor, pf
-pH
+ph, pH
 percent_relative_humidity, %RH
 grams_of_water_per_kilogram_dry_air, gH₂O/kgAir
 volts_per_degree_kelvin, V/K
@@ -25,8 +25,8 @@ percent_obscuration_per_meter, %obsc/m
 psi_per_degree_fahrenheit, psi/°F
 square_meters_per_newton, m²/N
 watts_per_square_meter_degree_kelvin, W/m²K
-db_milliVolt, dBmV
-db_microVolt, dBµV
+db_millivolt, dBmV
+db_microvolt, dBµV
 parts_per_unit, ppu
 parts_per_million, ppm; ; 1.0E-6
 parts_per_billion, ppb; ; 1.0E-9
@@ -220,8 +220,11 @@ farad, F; kg-1*m-2*sec4*A2
 
 -- cooling efficiency (null)
 coefficient_of_performance, COP; ; 1
-kilowatt_per_ton, kW/ton; ; 3.516
-energy_efficiency_ratio, Btu/Wh, EER; ; 0.2916666667
+energy_efficiency_ratio, Btu/Wh, EER; ; 0.2930832356
+// cooling efficiency is dimensionless quantity. There is
+// no direct scaling factor to relate COP and EER to kW/ton
+// but we want it grouped here.
+kilowatt_per_ton, kW/ton; ; 1
 
 -- density (kg1*m-3)
 kilograms_per_cubic_meter, kg/m³; kg1*m-3
@@ -248,10 +251,10 @@ amperes_per_square_meter, A/m²; m-2*A1
 volts_per_meter, V/m; kg1*m1*sec-3*A-1
 
 -- electric potential (kg1*m2*sec-3*A-1)
-Volt, V; kg1*m2*sec-3*A-1
-milliVolt, mV; kg1*m2*sec-3*A-1; 0.0010
-kiloVolt, kV; kg1*m2*sec-3*A-1; 1000.0
-megaVolt, MV; kg1*m2*sec-3*A-1; 1000000.0
+volt, Volt, V; kg1*m2*sec-3*A-1
+millivolt, mV; kg1*m2*sec-3*A-1; 0.0010
+kilovolt, kV; kg1*m2*sec-3*A-1; 1000.0
+megavolt, MV; kg1*m2*sec-3*A-1; 1000000.0
 
 -- electric resistance (kg1*m2*sec-3*A-2)
 ohm, Ω, Ω; kg1*m2*sec-3*A-2
@@ -283,6 +286,9 @@ gigajoule, GJ; kg1*m2*sec-2; 1000000000.0
 newton_meter, Nm; kg1*m2*sec-2
 cubic_meters_natural_gas, m³_gas; kg1*m2*sec-2; 37313432.83582089
 cubic_feet_natural_gas, ft³_gas; kg1*m2*sec-2; 1086498
+hundred_cubic_feet_natural_gas; kg1*m2*sec-2; 108649800
+thousand_cubic_feet_natural_gas; kg1*m2*sec-2; 1086498000
+million_cubic_feet_natural_gas; kg1*m2*sec-2; 1086498000000
 
 -- apparent energy (kg1*m2*sec-2)
 volt_ampere_hour, VAh; kg1*m2*sec-2; 3600.0
@@ -352,9 +358,10 @@ degrees_fahrenheit_per_minute, °F/min; sec-1*K1; 0.0092592592592593
 degrees_kelvin_per_hour, K/h; sec-1*K1; 2.777777777777778E-4
 degrees_kelvin_per_minute, K/min; sec-1*K1; 0.016666666666666666
 
--- illuminance (m-2*cd1)
+-- illuminance (m-2*cd*sr)
 lux, lx; m-2*cd1
-candelas_per_square_meter, cd/m²; m-2*cd1
+footcandle, fc; m-2*cd1; 0.092937
+phot; m-2*cd1; 10000.0
 
 -- inductance (kg1*m2*sec-2*A-2)
 henry, H; kg1*m2*sec-2*A-2
@@ -374,13 +381,15 @@ foot, ft; m1; 0.3048
 yard, yd; m1; 0.9144
 mile; m1; 1609.344
 
--- luminescence (cd1)
-candela, cd; cd1
-footcandle, ftcd; cd1
+-- luminance (m-2*cd)
+candelas_per_square_meter, cd/m²; m-2*cd1
+candels_per_square_foot, cd/ft²; m-2*cd1; 0.092937
 
--- luminous flux (cd1)
+-- luminous flux (cd*sr)
 lumen, lm; cd1
 
+-- luminous intensity (cd)
+candela, cd; cd1
 -- magnetic field strength (m-1*A1)
 amperes_per_meter, A/m; m-1*A1
 
@@ -431,6 +440,7 @@ megabtus_per_hour, MBTU/h, MMBTU/h; kg1*m2*sec-3; 293071.07017222
 joules_per_hour, J/h; kg1*m2*sec-3; 0.000277777778
 kilojoules_per_hour, kJ/h; kg1*m2*sec-3; 0.277777778
 megajoules_per_hour, MJ/h; kg1*m2*sec-3; 277.777778
+gigajoules_per_hour, GJ/h; kg1*m2*sec-3; 277777.778
 
 -- power by area (kg1*sec-3)
 watts_per_square_meter, W/m²; kg1*sec-3
@@ -546,6 +556,7 @@ kilocubic_feet_per_minute, kcfm; m3*sec-1; 0.4719474432
 imperial_gallons_per_minute, galUK/min; m3*sec-1; 0.004546092
 liters_per_minute, L/min; m3*sec-1; 1.6666666666666667E-5
 gallons_per_minute, gal/min; m3*sec-1; 6.30901964E-5
+gallons_per_hour, gal/hr, gph; m3*sec-1; 1.0515033E-6
 liters_per_hour, L/h; m3*sec-1; 2.7777777777777776E-7
 cubic_meters_per_minute, m³/min; m3*sec-1; 0.016666666666666666
 cubic_meters_per_hour, m³/h; m3*sec-1; 2.777777777777778E-4
