@@ -11,7 +11,12 @@ internal const class DltkPod : IFanPod {
 	override const Str[] typeNames
 	new make(Str name, Fragment[] fragments) {
 		this.name = name
-		this.typesMap = [Str:IFanType][:].addList(allTypes(fragments)) |type| { type.name }
+		
+		// SlimerDude (Apr 2020)
+		// use setList() not addList() so duplicate class and filenames don't cause an error
+		// yes, a compilation error will still occur, but we'll still be able parse the source
+		// and do highlighting
+		this.typesMap = [Str:IFanType][:].setList(allTypes(fragments)) |type| { type.name }
 		this.typeNames = typesMap.keys
 	}
 	
