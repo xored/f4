@@ -163,19 +163,18 @@ const class FantomProject {
 		.map |IBuildpathEntry bp -> File?| {
 			switch(bp.getEntryKind) {
 				case IBuildpathEntry.BPE_PROJECT:
-					projectName := bp.getPath.segments.first
-					project := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
-					if (project.isAccessible) {
-						fp := FantomProjectManager.instance[project]
-						return fp.podOutFile
-					}
-					// Return null if project is not accessible
-					return null
+					projectName	:= bp.getPath.segments.first
+					project		:= ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
+					return project.isOpen && project.isAccessible
+						? FantomProjectManager.instance[project].podOutFile
+						: null
+
 				case IBuildpathEntry.BPE_LIBRARY:
 					// libs are gotten from an older, cached, and workspace wide version of Interpreter libs (Fantom-1.0.68)
 					// whereas we want libs specific to this project, so return null here and add our resolved pods
 					// return PathUtil.resolveLibPath(bp)
 					return null
+
 				default:
 					return null
 			}

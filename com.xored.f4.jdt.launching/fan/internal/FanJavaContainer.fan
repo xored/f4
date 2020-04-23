@@ -44,7 +44,7 @@ class FanJavaContainer : IClasspathContainer {
 			podFP := FantomProjectManager.instance.getByPod(name)
 			if (podFP != null) {
 				IProject prj := podFP.project
-				if (prj.hasNature("org.eclipse.jdt.core.javanature")) {
+				if (prj.isAccessible && prj.hasNature("org.eclipse.jdt.core.javanature")) {
 					// do not need to add entry
 					return
 				}
