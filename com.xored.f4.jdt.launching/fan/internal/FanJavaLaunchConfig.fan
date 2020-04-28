@@ -18,23 +18,23 @@ class FanJavaLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig {
 	protected static const Str mainLaunchType := "fanx.tools.Fan"
 
 	override Void launch(ILaunchConfiguration? config, Str? mode, ILaunch? launch, IProgressMonitor? m) {
-		if (JavaLaunchUtil.confirmLaunch(config) == true)
+		if (FanJavaLaunchUtil.confirmLaunch(config) == true)
 			super.launch(config, mode, launch, m)
 	}
 
 	override Str?[]? getEnvironment(ILaunchConfiguration? config) {
-		JavaLaunchUtil.environment(config, super.getEnvironment(config))
+		FanJavaLaunchUtil.environment(config, super.getEnvironment(config))
 	}
 	
 	override Str?[]? getClasspath(ILaunchConfiguration? config) {
-		JavaLaunchUtil.classpath(config, super.getClasspath(config))
+		FanJavaLaunchUtil.classpath(config, super.getClasspath(config))
 	}
 	
 	override protected Void setDefaultSourceLocator(ILaunch? launch, ILaunchConfiguration? config) {
-		JavaLaunchUtil.setSourceLocator(launch, config, getLaunchManager)
+		FanJavaLaunchUtil.setSourceLocator(launch, config, getLaunchManager)
 	}
 	
 	override Void config(ILaunchConfiguration? src, ILaunchConfigurationWorkingCopy? target, Str mode ) {
-		JavaLaunchUtil.config(src,target,mode,mainLaunchType)
+		FanJavaLaunchUtil.config(src,target,mode,mainLaunchType)
 	}
 }

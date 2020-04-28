@@ -24,23 +24,23 @@ class FanTestingLaunchConfig : JavaLaunchDelegate, TargetLaunchConfig {
 		DLTKTestingCore.registerTestingProcessor(launch, FanTestProcessor(launch))
 		launch.setAttribute(DLTKTestingConstants.ATTR_ENGINE_ID, FanTestingEngine.id)
 
-		if (JavaLaunchUtil.confirmLaunch(conf) == true)
+		if (FanJavaLaunchUtil.confirmLaunch(conf) == true)
 			super.launch(wc, mode, launch, m)
 	}
 
 	override Str?[]? getClasspath(ILaunchConfiguration? config) {
-		JavaLaunchUtil.classpath(config, super.getClasspath(config))
+		FanJavaLaunchUtil.classpath(config, super.getClasspath(config))
 	}
 	
 	override protected Void setDefaultSourceLocator(ILaunch? launch, ILaunchConfiguration? config) {
-		JavaLaunchUtil.setSourceLocator(launch, config, getLaunchManager)
+		FanJavaLaunchUtil.setSourceLocator(launch, config, getLaunchManager)
 	}
 	
 	override Void config(ILaunchConfiguration? src, ILaunchConfigurationWorkingCopy? target, Str mode) {
-		JavaLaunchUtil.config(src,target,mode,mainLaunchType)
+		FanJavaLaunchUtil.config(src,target,mode,mainLaunchType)
 	}
 	
 	override Str?[]? getEnvironment(ILaunchConfiguration? config) {
-		JavaLaunchUtil.environment(config, super.getEnvironment(config))
+		FanJavaLaunchUtil.environment(config, super.getEnvironment(config))
 	} 
 }

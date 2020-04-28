@@ -15,7 +15,8 @@ using [java] org.eclipse.ui::PlatformUI
 using f4launching
 using f4core
 
-class JavaLaunchUtil {
+** Used by FanJavaLaunchConfig & f4testing::FanTestingLaunchConfig
+class FanJavaLaunchUtil {
 	
 	static Void config(ILaunchConfiguration? src, ILaunchConfigurationWorkingCopy? target, Str mode, Str mainLaunchType) {
 		scriptName	:= AbstractScriptLaunchConfigurationDelegate.getScriptProjectName(src)
