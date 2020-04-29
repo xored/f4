@@ -1,6 +1,6 @@
 using concurrent
 
-** Caches a value for X amount of time.
+** Caches a value for X amount of time - used to alleviate build thrashing.
 ** Factory funcs may be specified in ctor or overridden during get().
 const class QuickCash {
 	

@@ -223,7 +223,7 @@ const class FantomProject {
 	
 	** The workspace has changed somehow (projects updates) and we're involved somehow
 	internal Void update() {
-		podFiles	:= doResolvePods.rw
+		podFiles := doResolvePods.rw
 
 		// overwrite entries with workspace pods
 		dependentProjects.each {
@@ -233,95 +233,13 @@ const class FantomProject {
 		// prevent errs such as "Project cannot reference itself: poo"
 		podFiles.remove(podName)
 		
-		this.resolvedPodsRef.val = podFiles.toImmutable
-		
+		this.resolvedPodsRef.val	 = podFiles.toImmutable
 		this.classpathDependsRef.val = doClasspathDepends.toImmutable
 	}
-	
-//	** Returns a map of pod names to pod files.
-//	** Only called by InterpreterContainer.processEntres() and InternalBuilder.buildPod()
-//	Str:File resolvePods() {
-//		podFiles	:= doResolvePods.rw
-//		resolveErrs	= compileEnv.resolveErrs.toImmutable
-//
-////		// overwrite entries with workspace pods
-////		if (prefs.referencedPodsOnly) {
-////			// new beta behaviour
-////			podFiles.setAll(classpathDepends)
-////		}
-//
-//		// overwrite entries with workspace pods
-//		// new behaviour - kinda the same as the old
-////		if (prefs.referencedPodsOnly) {
-//			dependentProjects.each {
-//				podFiles[it.podName] = it.podOutFile
-//			}
-////		}
-//
-////		// old behaviour
-////		if (prefs.referencedPodsOnly == false) {
-////			FantomProjectManager2.instance.allProjects.each |fp| {
-////				if (podFiles.containsKey(fp.podName) || rawDepends.any { it.name == fp.podName })
-////					podFiles[fp.podName] = fp.podOutFile
-////			}
-////		}
-//
-//		// prevent errs such as "Project cannot reference itself: poo"
-//		podFiles.remove(podName)
-//
-//		return podFiles
-//	}
-	
-	
 	
 	FantomProject[] dependentProjects() {
 		projectManager := FantomProjectManager2.instance
 		return projectManager.dependentProjects(this)
-		
-//		fantomProjects := FantomProject[,]
-//		for (i := 0; i < rawDepends.size; ++i) {
-//			project := projectManager.getByPodName(rawDepends[i].name)
-//			if (project != null)
-//				fantomProjects.add(project)
-//		}
-//		return fantomProjects
-	}
-
-	private const Str buildFanStr
-	Bool buildFanHasChanged() {
-		// TODO quick cache this?
-		try		return buildFile.readAllStr != buildFanStr
-		catch	return true
-	}
-	
-//	private const AtomicRef	dependsStrRef		:= AtomicRef()
-	private const AtomicRef	resolvePodsRef		:= AtomicRef()
-	private const AtomicRef	resolveFutureRef	:= AtomicRef()
-	private Str:File doResolvePods() {
-		// cache the resolved pods until the dependencies change
-		// this MASSIVELY reduces the F4 build churn
-//		dependsStr := rawDepends.rw.sort |p1, p2| { p1.name <=> p2.name }.join("; ")
-//		if (dependsStr == dependsStrRef.val)
-//			return resolvePodsRef.val
-		
-//		CompileEnv caches pods for 3 secs, so don't worry about that!
-		
-		// coalesce multiple calls into one
-		future := resolveFutureRef.val as Future
-		if (future == null) {		
-			future = Synchronized(ActorPool()).async |->Obj?| {
-				resolvedPods		:= compileEnv.resolvePods
-				resolvePodsRef.val	= resolvedPods.toImmutable
-//				dependsStrRef.val	= dependsStr
-				resolveErrsRef.val	= compileEnv.resolveErrs.toImmutable
-				return resolvedPods
-			}
-			resolveFutureRef.val = future
-		}
-
-		// if there was an error, be sure to create a new future 
-		try return future.get
-		finally resolveFutureRef.val = null
 	}
 	
 	IScriptProject scriptProject() { DLTKCore.create(project) }
@@ -332,6 +250,33 @@ const class FantomProject {
 	
 	ProjectPrefs prefs() {
 		ProjectPrefs(this)
+	}
+
+	private const QuickCash	buildFanStrRef := QuickCash(1sec)
+	private const Str buildFanStr
+	Bool buildFanHasChanged() {
+		try		return buildFanStrRef.get |->Bool| { buildFile.readAllStr != buildFanStr } 
+		catch	return true
+	}
+	
+	private const AtomicRef	resolvePodsRef		:= AtomicRef()
+	private const AtomicRef	resolveFutureRef	:= AtomicRef()
+	private Str:File doResolvePods() {
+		// coalesce multiple calls into one
+		future := resolveFutureRef.val as Future
+		if (future == null) {		
+			future = Synchronized(ActorPool()).async |->Obj?| {
+				resolvedPods		:= compileEnv.resolvePods
+				resolvePodsRef.val	= resolvedPods.toImmutable
+				resolveErrsRef.val	= compileEnv.resolveErrs.toImmutable
+				return resolvedPods
+			}
+			resolveFutureRef.val = future
+		}
+
+		// if there was an error, be sure to create a new future 
+		try return future.get
+		finally resolveFutureRef.val = null
 	}
 	
 	private const AtomicRef	compileEnvRef := AtomicRef()
