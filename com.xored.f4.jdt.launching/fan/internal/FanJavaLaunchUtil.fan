@@ -118,20 +118,17 @@ class FanJavaLaunchUtil {
 
 		gogogo := true
 		PlatformUI.getWorkbench.getDisplay.syncExec |->| {
-				shell	:= PlatformUI.getWorkbench.getActiveWorkbenchWindow.getShell
-				msg		:= "The following projects contain errors and have not been built:\n\n" + projsInErr.map { "  ${it.project.getName}" }.join("\n") + "\n\nOld pod versions will be used until errors are resolved.\n\nDo you wish to continue?"
-				dialog	:= MessageDialog(shell, "Project Errors", null, msg, MessageDialog.WARNING, Str[,].add("Yes").add("No"), 0)
-				gogogo	= dialog.open == 0
+			shell	:= PlatformUI.getWorkbench.getActiveWorkbenchWindow.getShell
+			msg		:= "The following projects contain errors and have not been built:\n\n" + projsInErr.map { "  ${it.project.getName}" }.join("\n") + "\n\nOld pod versions will be used until errors are resolved.\n\nDo you wish to continue?"
+			dialog	:= MessageDialog(shell, "Project Errors", null, msg, MessageDialog.WARNING, Str[,].add("Yes").add("No"), 0)
+			gogogo	= dialog.open == 0
 		}
 		return gogogo
 	}
 
 	private static FantomProject[] findOpenProjects(FantomProject fp, ILaunchConfiguration config) {
-		projectList := (Str[]) config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-
-		otherProjects := fp.prefs.referencedPodsOnly
-			? FantomProjectManager2.instance.getByPodName(fp.podName).dependentProjects.add(fp)
-			: FantomProjectManager2.instance.allProjects
+		projectList		:= (Str[]) config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
+		otherProjects	:= FantomProjectManager2.instance.getByPodName(fp.podName).dependentProjects.rw.add(fp)
 
 		return otherProjects
 			.exclude { it.isPlugin }

@@ -124,8 +124,7 @@ internal class FantomProjectManagerState {
 	}
 
 	FantomProject[] dependentProjects(FantomProject fp) {
-		des:=doDependentProjects(fp, Str:FantomProject[:]).vals.toImmutable
-		return des
+		doDependentProjects(fp, Str:FantomProject[:]).vals.toImmutable
 	}
 
 	private Str:FantomProject doDependentProjects(FantomProject fp, Str:FantomProject fps) {

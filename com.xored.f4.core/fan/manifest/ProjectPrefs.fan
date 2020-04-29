@@ -8,7 +8,6 @@ class ProjectPrefs {
 	static const Str qualifier				:= "com.xored.f4.core"	// from com.xored.f4.builder::CompileFan.pluginId
 	static const Str podOutputDirName		:= "podOutputDir"
 	static const Str useExternalBuilderName	:= "useExternalBuilder"
-	static const Str referencedPodsOnlyName	:= "referencedPodsOnly"
 	static const Str buildDependantsName	:= "buildDependants"
 	static const Str publishPodName			:= "publishPod"
 	static const Str compileEnvName			:= "compileEnv"
@@ -31,10 +30,6 @@ class ProjectPrefs {
 	
 	Bool useExternalBuilder() { 
 		delegate.getBoolean(qualifier, useExternalBuilderName)
-	}
-	
-	Bool referencedPodsOnly() { 
-		delegate.getBoolean(qualifier, referencedPodsOnlyName)
 	}
 	
 	Bool publishPod() {
@@ -63,6 +58,5 @@ class ProjectPrefsInitializer : AbstractPreferenceInitializer {
 		store.putBoolean(ProjectPrefs.buildDependantsName,		true)
 		store.putBoolean(ProjectPrefs.publishPodName,			false)
 		store.put		(ProjectPrefs.compileEnvName,			DefaultCompileEnv#.qname)
-		store.putBoolean(ProjectPrefs.referencedPodsOnlyName,	false)
 	}
 }
