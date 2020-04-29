@@ -13,6 +13,7 @@ using [java] org.eclipse.core.runtime
 using [java] org.eclipse.core.resources
 using [java] org.eclipse.core.variables
 using f4core 
+using f4core::FantomProjectManager2
 
 class LaunchConfigDelegate : AbstractScriptLaunchConfigurationDelegate {
 	override Str? getLanguageId() { return F4Nature.id }
@@ -53,7 +54,8 @@ class LaunchConfigDelegate : AbstractScriptLaunchConfigurationDelegate {
 		Bool useClassOnly := config.getAttribute(LaunchConsts.useClassOnly, false)
 		if(projectName.isEmpty || useClassOnly) return className
 
-		podName := FantomProjectManager.instance[ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)].podName
+		proj := ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
+		podName := FantomProjectManager2.instance.get(proj).podName
 		if(className.isEmpty) return podName
 		
 		return "$podName::$className"

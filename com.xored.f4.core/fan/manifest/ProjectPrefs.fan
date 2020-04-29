@@ -48,7 +48,7 @@ class ProjectPrefs {
 		
 		// Eclipse's stoopid Oomph plugin somehow keeps setting the env to afFpm even though it's not installed!
 		// so let's not error and instead just resort to something sensible
-		type := Type.find(name, false) ?: DefaultCompileEnv#.qname
+		type := Type.find(name, false) ?: DefaultCompileEnv#
 		return type
 	}
 }

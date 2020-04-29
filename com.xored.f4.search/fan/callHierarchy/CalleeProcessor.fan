@@ -18,9 +18,8 @@ using "[java]org.eclipse.dltk.internal.core"
 using f4core
 using f4parser
 using f4model
-**
-**
-**
+using f4core::FantomProjectManager2
+
 class CalleeProcessor : ICalleeProcessor
 {
   private IMethod? method
@@ -74,7 +73,7 @@ class MethodVisitor : AstVisitor {
   
   private static IMethod[] resolve(SlotRef slot) {
     IMethod[] methods := [,]
-    project := FantomProjectManager.instance.getByPod(slot.modelSlot.type.pod)
+    project := FantomProjectManager2.instance.getByPodName(slot.modelSlot.type.pod)
     if( project == null) return methods
     project.scriptProject.getScriptFolders.each {
       ((IScriptFolder)it).getSourceModules.each {

@@ -1,4 +1,5 @@
 using f4core
+using f4core::FantomProjectManager2
 using f4model
 using f4parser
 using f4uiText
@@ -61,7 +62,7 @@ class AstView : ViewPart, IPartListener
   private static IFanNamespace getNamespace(ISourceModule? content) {
     project := content?.getScriptProject?.getProject
     if (project == null || !project.isOpen) return EmptyNamespace()
-    return FantomProjectManager.instance[project].ns
+    return FantomProjectManager2.instance.get(project).ns
   }
   
   override Void partActivated(IWorkbenchPart? part) {

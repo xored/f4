@@ -39,12 +39,10 @@ class ParseUtil : TypeUtil
     Parser(module.getSource, ns(module)).cunit
   }
   
-  static IFanNamespace ns(ISourceModule module)
-  {
+  static IFanNamespace ns(ISourceModule module) {
     sp := module.getScriptProject
-    fp := FantomProjectManager.instance[sp.getProject]
-    if( module.isBinary)
-      {
+    fp := FantomProjectManager2.instance.get(sp.getProject)
+    if( module.isBinary) {
       fragment := module.getAncestor(IModelElement.PROJECT_FRAGMENT)
       if(fragment is  PodFragment)
       {
@@ -52,7 +50,7 @@ class ParseUtil : TypeUtil
         // TODO maybe podName resolution should be deferred to the CompileEnv as that provides the pod Files in the first place
         fileName := fg.getPath.removeFileExtension.lastSegment
         podName  := fileName.contains("-") ? fileName[0..<fileName.index("-")] : fileName
-        return DltkNamespace(fp, podName)
+		return fp.ns
       }
     }
     IFanNamespace? ns

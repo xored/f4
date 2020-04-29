@@ -1,5 +1,5 @@
 using f4core::FantomProject
-using f4core::FantomProjectManager
+using f4core::FantomProjectManager2
 using f4core::LogUtil
 using compiler
 
@@ -38,7 +38,8 @@ class InternalBuilder : Builder {
 		compileDir.create
 		compileDir.listFiles.each { it.delete }
 		
-		resolvedPods := fp.resolvePods
+`/f4log.txt`.toFile.out(true).writeChars("$fp.podName BUILDING\n").close
+		resolvedPods := fp.resolvedPods
     
 		bldLoc := Loc(fp.buildFile)
 		if (fp.resolveErrs.size > 0) {
@@ -53,7 +54,7 @@ class InternalBuilder : Builder {
 
 		// SlimerDude - Apr 2020 - Beta feature to turn this off 
 		if (fp.prefs.referencedPodsOnly == false)
-			FantomProjectManager.instance.listProjects.each |p| {
+			FantomProjectManager2.instance.allProjects.each |p| {
 				resolvedPods[p.podName] = p.podOutFile
 			}
 

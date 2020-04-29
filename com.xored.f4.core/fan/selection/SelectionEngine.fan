@@ -26,7 +26,8 @@ class SelectionEngine : ISelectionEngine {
 	override IModelElement?[]? select(IModuleSource? module, Int start, Int end) { 
 		DltkAst ast := SourceParserUtil.parse(module as ISourceModule, null)
 		src = module.getSourceContents
-		fp := FantomProjectManager.instance[module.getModelElement.getScriptProject.getProject]
+		ip := module.getModelElement.getScriptProject.getProject
+		fp := FantomProjectManager2.instance.get(ip)
 		ns = ParseUtil.ns((ISourceModule)module.getModelElement)
 		
 		unit = ast.unit

@@ -20,6 +20,7 @@ using [java] java.lang::Class
 
 using [java] com.xored.f4.debug.ui::JavaOpenEditorAction
 using f4core
+using f4core::FantomProjectManager2
 using f4model
 using f4debugUi
 
@@ -117,7 +118,7 @@ class FanTestRunnerUI : AbstractTestRunnerUI, ITestElementResolver {
 		method := podTypeMethod[2]
 		
 		if(pod == null) return null
-		fp := FantomProjectManager.instance.getByPod(pod)
+		fp := FantomProjectManager2.instance.getByPodName(pod)
 		if(fp == null) return null
 		
 		IMethod? result := 

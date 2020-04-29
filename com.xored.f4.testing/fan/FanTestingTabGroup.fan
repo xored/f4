@@ -16,6 +16,7 @@ using [java] org.eclipse.swt.layout
 using [java] org.eclipse.swt.events
 using [java] org.eclipse.swt
 using f4core
+using f4core::FantomProjectManager2
 using f4launching
 using f4model
 
@@ -95,7 +96,7 @@ class FanTestingMainTab : MainLaunchConfigurationTab {
 		className := mainClassText
 		if(className.isEmpty) return true //that's ok, tests from entire pod
 		
-		ns := FantomProjectManager.instance[getProject.getProject].ns
+		ns := FantomProjectManager2.instance.get(getProject.getProject).ns
 		type := ns.currPod.findType(className,false)
 		if(type == null) {
 			setErrorMessage("Class $className is not found")

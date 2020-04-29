@@ -14,7 +14,7 @@ class FanSourceContainer : AbstractSourceContainer
   override Obj?[]? findSourceElements(Str? name) {
     Path path := Path(name)
     if (!path.segment(0).equals("fan")) return [,] 
-    FantomProject? project := FantomProjectManager.instance.getByPod(path.segment(1))
+    FantomProject? project := FantomProjectManager2.instance.getByPodName(path.segment(1))
     if (project == null) return [,]
     Obj[] sources := [,]
     project.srcDirs.each {
