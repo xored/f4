@@ -182,7 +182,7 @@ const class FantomProject {
 					projectName	:= bp.getPath.segments.first
 					project		:= ResourcesPlugin.getWorkspace.getRoot.getProject(projectName)
 					return project.isOpen && project.isAccessible
-						? FantomProjectManager2.instance.get(project).podOutFile
+						? FantomProjectManager.instance.get(project).podOutFile
 						: null
 
 				case IBuildpathEntry.BPE_LIBRARY:
@@ -238,7 +238,7 @@ const class FantomProject {
 	}
 	
 	FantomProject[] dependentProjects() {
-		projectManager := FantomProjectManager2.instance
+		projectManager := FantomProjectManager.instance
 		return projectManager.dependentProjects(this)
 	}
 	

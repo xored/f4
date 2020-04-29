@@ -31,7 +31,7 @@ internal class DltkNamespace : IFanNamespace {
 			case Fragment.K_SOURCE:
 				// source fragment
 				project := (fragment.getParent as IScriptProject).getProject
-				return FantomProjectManager2.instance.get(project).podName
+				return FantomProjectManager.instance.get(project).podName
 			default:
 				// pod fragment
 				// TODO maybe podName resolution should be deferred to the CompileEnv as that provides the pod Files in the first place

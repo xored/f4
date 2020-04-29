@@ -27,7 +27,7 @@ class SelectionEngine : ISelectionEngine {
 		DltkAst ast := SourceParserUtil.parse(module as ISourceModule, null)
 		src = module.getSourceContents
 		ip := module.getModelElement.getScriptProject.getProject
-		fp := FantomProjectManager2.instance.get(ip)
+		fp := FantomProjectManager.instance.get(ip)
 		ns = ParseUtil.ns((ISourceModule)module.getModelElement)
 		
 		unit = ast.unit

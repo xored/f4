@@ -33,7 +33,7 @@ class InterpreterContainer : IInterpreterContainerExtension, IInterpreterContain
 		if (project == null || librariesList == null) return
 
 		entries			:= IBuildpathEntry[,]
-		fpm				:= FantomProjectManager2.instance
+		fpm				:= FantomProjectManager.instance
 		fantomProject	:= fpm.get(project.getProject)
 		interpreter		:= fantomProject?.interpreterInstall?.getInstallLocation?.getPath		
 

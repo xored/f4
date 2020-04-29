@@ -16,7 +16,7 @@ using [java] org.eclipse.swt.layout
 using [java] org.eclipse.swt.events
 using [java] org.eclipse.swt
 using f4core
-using f4core::FantomProjectManager2
+using f4core::FantomProjectManager
 using f4launching
 using f4model
 
@@ -85,7 +85,7 @@ class FanMainConfigTab : MainLaunchConfigurationTab
     className := mainClassText
     if(className.isEmpty) className = "Main"
     
-    ns := FantomProjectManager2.instance.get(getProject.getProject).ns
+    ns := FantomProjectManager.instance.get(getProject.getProject).ns
     type := ns.currPod.findType(className,false)
     if(type == null)
     {

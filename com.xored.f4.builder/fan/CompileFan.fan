@@ -1,6 +1,6 @@
 using compiler
 using f4core
-using f4core::FantomProjectManager2
+using f4core::FantomProjectManager
 
 using [java]java.util::List as JList 
 using [java]java.util::Set as JSet
@@ -130,7 +130,7 @@ class CompileFan : IScriptBuilder {
 	//////////////////////////////////////////////////////////////////////////
 
 	private FantomProject fantomProject(IScriptProject project) {
-		FantomProjectManager2.instance.get(project.getProject)
+		FantomProjectManager.instance.get(project.getProject)
 	}
 
 	//////////////////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@ class ParseUtil : TypeUtil
   
   static IFanNamespace ns(ISourceModule module) {
     sp := module.getScriptProject
-    fp := FantomProjectManager2.instance.get(sp.getProject)
+    fp := FantomProjectManager.instance.get(sp.getProject)
     if( module.isBinary) {
       fragment := module.getAncestor(IModelElement.PROJECT_FRAGMENT)
       if(fragment is  PodFragment)

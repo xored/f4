@@ -14,7 +14,7 @@ using [java] org.eclipse.swt.widgets::Display
 using [java] org.eclipse.ui::PlatformUI
 using f4launching
 using f4core
-using f4core::FantomProjectManager2
+using f4core::FantomProjectManager
 
 ** Used by FanJavaLaunchConfig & f4testing::FanTestingLaunchConfig
 class FanJavaLaunchUtil {
@@ -65,7 +65,7 @@ class FanJavaLaunchUtil {
 	
 	static Str?[]? environment(ILaunchConfiguration? config, Str?[]? base) {
 		iProj		:= AbstractScriptLaunchConfigurationDelegate.getProject(config)
-		proj		:= FantomProjectManager2.instance.get(iProj)
+		proj		:= FantomProjectManager.instance.get(iProj)
 		compileEnv	:= proj.compileEnv
 
 		copy		:= config.getWorkingCopy
@@ -111,7 +111,7 @@ class FanJavaLaunchUtil {
 
 	static Bool confirmLaunch(ILaunchConfiguration config) {
 		iProj		:= AbstractScriptLaunchConfigurationDelegate.getProject(config)
-		proj		:= FantomProjectManager2.instance.get(iProj)
+		proj		:= FantomProjectManager.instance.get(iProj)
 		projsInErr	:= findOpenProjects(proj, config).findAll { it.hasBuildErrs }
 		if (projsInErr.isEmpty)
 			return true
@@ -128,7 +128,7 @@ class FanJavaLaunchUtil {
 
 	private static FantomProject[] findOpenProjects(FantomProject fp, ILaunchConfiguration config) {
 		projectList		:= (Str[]) config.getAttribute(LaunchConsts.projectList, ArrayList()).toArray
-		otherProjects	:= FantomProjectManager2.instance.getByPodName(fp.podName).dependentProjects.rw.add(fp)
+		otherProjects	:= FantomProjectManager.instance.getByPodName(fp.podName).dependentProjects.rw.add(fp)
 
 		return otherProjects
 			.exclude { it.isPlugin }

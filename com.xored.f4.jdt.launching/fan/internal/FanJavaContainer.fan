@@ -5,7 +5,7 @@ using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jdt.core
 
 using f4core
-using f4core::FantomProjectManager2
+using f4core::FantomProjectManager
 
 **
 ** This adds .jars to the "Fantom Native Libraries (Java)"
@@ -40,9 +40,9 @@ class FanJavaContainer : IClasspathContainer {
 				createLibrary(f.normalize, home + `src/${f.basename}/java/`)	// maybe it's a core Fantom pod
 			}
 		
-		FantomProject fp := FantomProjectManager2.instance.get(project.getProject)
+		FantomProject fp := FantomProjectManager.instance.get(project.getProject)
 		fp.classpathDepends.each |loc, name| {
-			podFP := FantomProjectManager2.instance.getByPodName(name)
+			podFP := FantomProjectManager.instance.getByPodName(name)
 			if (podFP != null) {
 				IProject prj := podFP.project
 				if (prj.isAccessible && prj.hasNature("org.eclipse.jdt.core.javanature")) {

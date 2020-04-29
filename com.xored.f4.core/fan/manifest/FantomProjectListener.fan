@@ -8,9 +8,9 @@ using [java] org.eclipse.core.resources::IResourceDelta
 using [java] org.eclipse.core.resources::IProject
 
 internal const class FantomProjectListener {
-	const FantomProjectManager2	fantomProjects
+	const FantomProjectManager	fantomProjects
 	
-	new make(FantomProjectManager2 fantomProjects) {
+	new make(FantomProjectManager fantomProjects) {
 		this.fantomProjects = fantomProjects
 
 		DLTKCore.create(ResourcesPlugin.getWorkspace.getRoot).getScriptProjects(F4Nature.id).each |IScriptProject sp| {
@@ -70,8 +70,8 @@ internal class DeltaVisitor2 {
 		}
 	}
 	
-	WorkspaceChange2 workspaceChanges() {
-		WorkspaceChange2 {
+	WorkspaceChange workspaceChanges() {
+		WorkspaceChange {
 			it.closedProjects	= this.closedProjects
 			it.openedProjects	= this.openedProjects
 			it.updatedProjects	= this.updatedProjects
@@ -92,7 +92,7 @@ internal class DeltaVisitor2 {
 	private static Bool openChange	 (IResourceDelta delta) { delta.getFlags.and(IResourceDelta.OPEN) != 0 }
 }
 
-internal class WorkspaceChange2 {
+internal class WorkspaceChange {
 	IProject[] closedProjects  := IProject[,]
 	IProject[] openedProjects  := IProject[,]
 	IProject[] updatedProjects := IProject[,]

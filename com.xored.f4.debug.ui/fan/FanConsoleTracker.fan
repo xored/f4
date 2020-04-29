@@ -18,7 +18,7 @@ using [java] org.eclipse.dltk.core
 using [java] org.eclipse.dltk.debug.ui
 using "[java]org.eclipse.dltk.internal.ui.editor"
 using [java] com.xored.fanide.core
-using f4core::FantomProjectManager2
+using f4core::FantomProjectManager
 using f4core
 
 class FanConsoleTracker : IPatternMatchListenerDelegate
@@ -99,7 +99,7 @@ class SourceSearchJob : Job
   private Obj? tryFindInProjects()
   {
     found := IResource[,]
-    FantomProjectManager2.instance.allProjects.each |fp|
+    FantomProjectManager.instance.allProjects.each |fp|
     {
       if(link.projectName != null && link.projectName != fp.podName)
         return
@@ -116,7 +116,7 @@ class SourceSearchJob : Job
   private Obj? tryFindSourceModule() 
   { 
     found := Obj[,]
-    FantomProjectManager2.instance.allProjects.each |fp|
+    FantomProjectManager.instance.allProjects.each |fp|
     {
       if(fp.podName == link.projectName || 
         fp.project.getName == link.projectName)

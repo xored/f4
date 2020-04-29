@@ -1,9 +1,10 @@
-using [java]java.lang
-using [java]org.eclipse.core.resources
-using [java]org.eclipse.core.runtime
-using [java]org.eclipse.debug.core.sourcelookup
-using [java]org.eclipse.debug.core.sourcelookup.containers
-using [java]com.xored.fanide.core
+using [java] java.lang
+using [java] org.eclipse.core.resources
+using [java] org.eclipse.core.runtime
+using [java] org.eclipse.debug.core.sourcelookup
+using [java] org.eclipse.debug.core.sourcelookup.containers
+using [java] com.xored.fanide.core
+using f4core::FantomProjectManager
 using f4core
 
 class FanSourceContainer : AbstractSourceContainer
@@ -14,7 +15,7 @@ class FanSourceContainer : AbstractSourceContainer
   override Obj?[]? findSourceElements(Str? name) {
     Path path := Path(name)
     if (!path.segment(0).equals("fan")) return [,] 
-    FantomProject? project := FantomProjectManager2.instance.getByPodName(path.segment(1))
+    FantomProject? project := FantomProjectManager.instance.getByPodName(path.segment(1))
     if (project == null) return [,]
     Obj[] sources := [,]
     project.srcDirs.each {

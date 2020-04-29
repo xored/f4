@@ -1,5 +1,4 @@
 using f4core::FantomProject
-using f4core::FantomProjectManager2
 using f4core::LogUtil
 using compiler
 

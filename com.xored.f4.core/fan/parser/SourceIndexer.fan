@@ -18,7 +18,7 @@ class SourceIndexer {
 		if(module is ISourceModule) 
 			return SourceParserUtil.parse(module as ISourceModule, null)->unit
 		proj := module.getModelElement.getScriptProject.getProject
-		ns	 := FantomProjectManager2.instance.get(proj).ns
+		ns	 := FantomProjectManager.instance.get(proj).ns
 		return Parser(module.getSourceContents, ns).cunit
 	}
 }
