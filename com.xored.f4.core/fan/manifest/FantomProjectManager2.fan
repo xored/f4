@@ -155,26 +155,19 @@ internal class FantomProjectManagerState {
 	}
 
 	FantomProject[] dependentProjects(FantomProject fp) {
-`/f4log.txt`.toFile.out(true).writeChars("----\n").close
 		des:=doDependentProjects(fp, Str:FantomProject[:]).vals.toImmutable
-`/f4log.txt`.toFile.out(true).writeChars("$fp ==> $des\n").close
 		return des
 	}
 
 	private Str:FantomProject doDependentProjects(FantomProject fp, Str:FantomProject fps) {
-`/f4log.txt`.toFile.out(true).writeChars("  $fp --> ${fp.rawDepends}\n").close
 		for (i := 0; i < fp.rawDepends.size; ++i) {
 			podName := fp.rawDepends[i].name
 			
-`/f4log.txt`.toFile.out(true).writeChars("  $fp --> has ${podName} == ${fps.containsKey(podName)} \n").close
-
 			// prevent infinite cyclic dependencies
 			if (!fps.containsKey(podName)) {
 				project := getByPodName(podName)
-`/f4log.txt`.toFile.out(true).writeChars("  $fp --> pro ${podName} == ${project}\n").close
 
 				if (project != null) {
-`/f4log.txt`.toFile.out(true).writeChars("  $fp --> $podName\n").close
 					fps[podName] = project
 					doDependentProjects(project, fps)
 				}
@@ -188,13 +181,11 @@ internal class FantomProjectManagerState {
 		// if the existing project looks okay, let's keep it!
 		fp := projects[ip.getName]
 		if (fp != null) {
-//`/f4log.txt`.toFile.out(true).writeChars("$ip.getName Proj exists (build.fan diff-${fp.buildFanHasChanged}) (${fp.resolveErrs}) \n").close
 			if (fp.resolveErrs.isEmpty && fp.buildFanHasChanged == false) {
 				return false
 			}
 		}
 
-`/f4log.txt`.toFile.out(true).writeChars("$ip.getName MAKING NEW!\n").close
 		fp = FantomProject.makeFromProject(ip)
 		projects[ip.getName] = fp
 		return true
@@ -221,13 +212,11 @@ class DeltaVisitor2 : IResourceDeltaVisitor {
 				project := (IProject) resource
 
 				if (!project.exists || projectClosed(delta, project)) {
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName - PROJ CLOSED\n").close
 					closedProjects.add(project)
 					return false
 				}
 			
 				if (projectOpened(delta, project)) {
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName - PROJ OPENED\n").close
 					openedProjects.add(project)
 					return false
 				}
@@ -239,7 +228,6 @@ class DeltaVisitor2 : IResourceDeltaVisitor {
 
 			case IResource.FILE:
 				if ((resource.getName == Manifest.filename || resource.getName == IJavaProject.CLASSPATH_FILE_NAME) && contentChanged(delta))
-`/f4log.txt`.toFile.out(true).writeChars("$resource.getProject.getName - FILE CHANGE\n").close
 					updatedProjects.add(resource.getProject)
 				return false
 

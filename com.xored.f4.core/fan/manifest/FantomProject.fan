@@ -166,14 +166,12 @@ const class FantomProject {
 	**     - called by f4jdtLaunching.FanJavaContainer.getClasspathEntries()
 	**       - called by f4core.FantomProjectManager.doListReferencedProjects()
 	private Str:File doClasspathDepends() {
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName - classpathDepends()\n").close
-
 		entries := IBuildpathEntry?[,]
 		
 		try	entries = scriptProject.getResolvedBuildpath(false)
 		catch (Err err)
-			// F4 hangs when getResolvedBuildpath() errors
-			resolveErrsRef.val = resolveErrs.rw.add(err)
+			// F4 hangs when getResolvedBuildpath() errors - usually when there's an unknown Java JDK
+			resolveErrsRef.val = resolveErrs.rw.add(err).toImmutable
 
 		buildPathFiles	:= (Str:File) entries.findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
@@ -202,12 +200,7 @@ const class FantomProject {
 			r[v.basename] = v
 			return r
 		}
-		
-//		// new beta behaviour
-//		if (prefs.referencedPodsOnly)
-//			return buildPathFiles
-		
-		// old behaviour
+
 		podFiles := resolvedPods.rw.setAll(buildPathFiles)
 		return podFiles
 	}
@@ -230,8 +223,6 @@ const class FantomProject {
 	
 	** The workspace has changed somehow (projects updates) and we're involved somehow
 	internal Void update() {
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName - UPDATING resolved PODS\n").close
-		
 		podFiles	:= doResolvePods.rw
 
 		// overwrite entries with workspace pods
@@ -242,9 +233,7 @@ const class FantomProject {
 		// prevent errs such as "Project cannot reference itself: poo"
 		podFiles.remove(podName)
 		
-//`/f4log.txt`.toFile.out(true).writeChars("$project.getName - setting resolved pods to ${podFiles}\n").close
 		this.resolvedPodsRef.val = podFiles.toImmutable
-		
 		
 		this.classpathDependsRef.val = doClasspathDepends.toImmutable
 	}
@@ -252,7 +241,6 @@ const class FantomProject {
 //	** Returns a map of pod names to pod files.
 //	** Only called by InterpreterContainer.processEntres() and InternalBuilder.buildPod()
 //	Str:File resolvePods() {
-//`/f4log.txt`.toFile.out(true).writeChars("$podName resolvingPods\n").close
 //		podFiles	:= doResolvePods.rw
 //		resolveErrs	= compileEnv.resolveErrs.toImmutable
 //

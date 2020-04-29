@@ -38,7 +38,6 @@ class InternalBuilder : Builder {
 		compileDir.create
 		compileDir.listFiles.each { it.delete }
 		
-`/f4log.txt`.toFile.out(true).writeChars("$fp.podName BUILDING\n").close
 		resolvedPods := fp.resolvedPods
     
 		bldLoc := Loc(fp.buildFile)

@@ -36,9 +36,6 @@ const class ContainerResetter : Actor {
 			return null
 		}
 
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName Resetting\n").close
-echo("Resetting $project.getName")
-		
 		scriptProject := DLTKCore.create(project)
 		if (scriptProject.exists) {
 			DLTKCore.getBuildpathContainerInitializer(ScriptRuntime.INTERPRETER_CONTAINER)
