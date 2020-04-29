@@ -17,6 +17,7 @@ using [java]org.eclipse.dltk.core::SourceParserUtil
 using [java]org.eclipse.dltk.core::ISourceModule
 using f4parser
 using f4model
+using f4core::FantomProjectManager
 using f4core
 
 class FanCodeFoldingBlockProvider : IFoldingBlockProvider
@@ -52,7 +53,7 @@ class FanCodeFoldingBlockProvider : IFoldingBlockProvider
     project := content?.getModelElement?.getScriptProject?.getProject
     if(project == null) return EmptyNamespace()
     if (!(project?.isOpen ?: false)) return EmptyNamespace()
-    return FantomProjectManager2.instance.get(project).ns
+    return FantomProjectManager.instance.get(project).ns
   }
   
   override Void computeFoldableBlocks(IFoldingContent? content) {
