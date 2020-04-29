@@ -4,32 +4,47 @@
 
 F4 is Eclipse-based IDE for the [Fantom programming language](http://fantom-lang.org/), which is has been (mostly) written in Fantom using F4 itself.
 
-F4 is based on [Eclipse v4.9 2018-09](https://www.eclipse.org/downloads/eclipse-packages/) with [Dynamic Languages Toolkit (DLTK) v5.10](https://eclipse.org/dltk/).
+F4 is based on [Eclipse v4.9 2018-09](https://www.eclipse.org/downloads/packages/release/2018-09/r) with [Dynamic Languages Toolkit (DLTK) v5.10](https://eclipse.org/dltk/).
 
 Pre-compiled installations of F4 may be downloaded from the [GitHub Releases Tab](https://github.com/xored/f4/releases) or (older versions) from the [Xored website](http://www.xored.com/products/f4/).
 
 
 
-## Developing
+## Contributing / Building F4
 
 Most eclipse plugins are compiled Fantom pods so, interestingly, F4 can only be developed and built with F4!
 
-To setup a development environment to contribute to F4:
+To setup a development environment to build and run F4:
 
- - Install a recent version of [F4](https://github.com/xored/f4/releases)
- - Install the DLTK v5.9 SDK from the [eclipse Update Website](http://download.eclipse.org/technology/dltk/updates-dev/5.9/) for access to the DLTK source. (Note only the `core` plugins need to be installed.)
+ - Install [eclipse v4.9 2018-09](https://www.eclipse.org/downloads/packages/release/2018-09/r) -  choose the RCP package so you have eclipse SDK source
+ - Install DLTK 5.10 in eclipse using the [Update Site](http://download.eclipse.org/technology/dltk/updates-dev/5.10/)
+ - Install F4 features from the Update Respository - see `f4-1.1.4-repository.zip` in releases
  - Clone the [Fantom Runtime](http://github.com/xored/fantom-runtime) repository and import all projects
- - Clone this F4 repository and import all projects
+ - Clone this [F4 IDE](https://github.com/xored/f4) repository and import all projects
 
-Now you can modify the F4 source code and launch a new verison of F4 by running `com.xored.f4.platform.ide` as an eclipse application.
+Now you can now modify the F4 source code and launch a new verison of F4 by running `com.xored.f4.platform.ide` as an eclipse application.
 
-An alternative is to:
- - Maven build the Fantom Runtime project and then this F4 project
- - Install [eclipse v4.9 2018-09](https://www.eclipse.org/downloads/eclipse-packages/) (choose the RCP package so you have eclipse SDK source)
- - Install [DLTK 5.10](http://download.eclipse.org/technology/dltk/updates-dev/5.10/)
- - Install F4 features from the [local F4 update site](file:/C:/path-to-f4-repo/f4/repository/target/repository/)
+The dev environment often needs some love to ensure success, I find these hints help:
 
-Eclipse is used to build all the pods and jars. The Maven build then assembles it all into a executables and Eclipse update sites in `/repository/target/`.
+ - Use an Open JDK / Java 1.8 to run and compile eclipse / F4.
+ - Update `eclipse.ini` to point to your JDK of choice and increase the max memory usage:
+   ```
+   -vm
+   C:/Apps/Java/openjdk-1.8.0.161/bin
+   -startup
+   plugins/org.eclipse.equinox.launcher_1.5.100.v20180827-1352.jar
+   --launcher.library
+   plugins/org.eclipse.equinox.launcher.win32.win32.x86_64_1.1.800.v20180827-1352
+   -showsplash
+   com.xored.f4.platform
+   -vmargs
+   -Xms512m
+   -Xmx16384m
+   -XX:MaxPermSize=4096m
+   ```
+ - Eclipse Oomh likes to savage your clean vanilla system with unwanted updates to your preferences. Disable it by going to `Window -> Preferences -> Oomph -> Setup tasks` and ticking `Skip automatic task execution at startup time`. Then reset your preferences, then restart eclipse.
+ 
+ - **Important:** Delete `f4launch.pod` from the default Fantom interpreter - hunt it down in the file system. You're likely to get cyclic project dependency errors if you don't.
 
 
 
@@ -37,7 +52,17 @@ Eclipse is used to build all the pods and jars. The Maven build then assembles i
 
 Maven is used to package F4, and has been tested with [Maven 3.3.9](http://archive.apache.org/dist/maven/maven-3/3.3.9/binaries/).
 
-Run `mvn clean package` in the project root to build F4 as standalone product. An eclipse update site will be assembled the `/repository/target/repository/` folder, and full installation products may be found under `/product/target/products/`.
+Eclipse is used to build all the pods and jars. The Maven build just assembles it all into a executables and Eclipse update repositories. 
+
+ 1. Run `mvn -o clean package` in the root directory of the `Fantom Runtime` project.
+ 2. Modify `pom.xml` in the F4 project to point to the newly built runtime.
+ 3. Run `mvn -o clean package` in the root directory of the `F4` project.
+ 
+Steps 1 & 2 only need to be done the once.
+
+Step 3 builds F4 as standalone product.
+
+An eclipse update site `.zip` will be assembled the `/repository/target/` folder and full installation products may be found under `/product/target/products/`.
 
 
 
