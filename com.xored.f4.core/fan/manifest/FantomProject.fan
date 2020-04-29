@@ -168,7 +168,14 @@ const class FantomProject {
 	private Str:File doClasspathDepends() {
 `/f4log.txt`.toFile.out(true).writeChars("$project.getName - classpathDepends()\n").close
 
-		buildPathFiles := (Str:File) scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp->Bool| {
+		entries := IBuildpathEntry?[,]
+		
+		try	entries = scriptProject.getResolvedBuildpath(false)
+		catch (Err err)
+			// F4 hangs when getResolvedBuildpath() errors
+			resolveErrsRef.val = resolveErrs.rw.add(err)
+
+		buildPathFiles	:= (Str:File) entries.findAll |IBuildpathEntry bp->Bool| {
 			!bp.getPath.segments.first.toStr.startsWith(IBuildpathEntry.BUILDPATH_SPECIAL)
 		}
 		.map |IBuildpathEntry bp -> File?| {
@@ -235,7 +242,7 @@ const class FantomProject {
 		// prevent errs such as "Project cannot reference itself: poo"
 		podFiles.remove(podName)
 		
-`/f4log.txt`.toFile.out(true).writeChars("$project.getName - setting resolved pods to ${podFiles}\n").close
+//`/f4log.txt`.toFile.out(true).writeChars("$project.getName - setting resolved pods to ${podFiles}\n").close
 		this.resolvedPodsRef.val = podFiles.toImmutable
 		
 		

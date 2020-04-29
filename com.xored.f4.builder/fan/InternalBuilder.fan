@@ -55,7 +55,7 @@ class InternalBuilder : Builder {
 		// SlimerDude - Apr 2020 - Beta feature to turn this off 
 		if (fp.prefs.referencedPodsOnly == false)
 			FantomProjectManager2.instance.allProjects.each |p| {
-				resolvedPods[p.podName] = p.podOutFile
+				resolvedPods = resolvedPods.rw[p.podName] = p.podOutFile
 			}
 
 		logger	:= ConsoleLogger(consumer)
