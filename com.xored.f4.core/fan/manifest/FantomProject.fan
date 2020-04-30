@@ -74,11 +74,8 @@ const class FantomProject {
 			projErrs.add(ProjectErr(e.toStr))
 			projectErrs	= projErrs
 			podName		= "<unknown>"
-			buildFanStr	= ""
 			return
 		}
-		
-		buildFanStr = manifest.buildFanStr
 		
 		if (manifest.podName != null)
 			podName = manifest.podName
@@ -220,9 +217,15 @@ const class FantomProject {
 			update
 		return resolvedPodsRef.val
 	}
-	
+
+	** Reset so we lazily resolve pods when needed
+	Void reset() {
+		this.resolvedPodsRef.val	 = null
+		this.classpathDependsRef.val = null		
+	}
+
 	** The workspace has changed somehow (projects updates) and we're involved somehow
-	internal Void update() {
+	private Void update() {
 		podFiles := doResolvePods.rw
 
 		// overwrite entries with workspace pods
@@ -250,13 +253,6 @@ const class FantomProject {
 	
 	ProjectPrefs prefs() {
 		ProjectPrefs(this)
-	}
-
-	private const QuickCash	buildFanStrRef := QuickCash(1sec)
-	private const Str buildFanStr
-	Bool buildFanHasChanged() {
-		try		return buildFanStrRef.get |->Bool| { buildFile.readAllStr != buildFanStr } 
-		catch	return true
 	}
 	
 	private const AtomicRef	resolvePodsRef		:= AtomicRef()

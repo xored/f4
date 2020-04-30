@@ -78,14 +78,23 @@ internal class FantomProjectManagerState {
 			projects		.remove(it.getName)
 		}
 
+		// remove all updated projects to ensure they get re-created
+		// updated projects are those with build.fan changes
+		change.updatedProjects.each {
+			projects		.remove(it.getName)			
+		}
 		
 		// do the update
 		projectsToUpdate.vals.each {
-			updated := updateProject(it)
-			if (updated)
+			created := updateProject(it)
+
+			if (created)
+				// resetting seems quite processor intensive, so only do it if we really need to
 				resetter.reset(it)
-			else
-				projects[it.getName].update
+
+			if (!created)
+				// reset existing projects so pods get lazily resolved
+				projects[it.getName].reset
 		}
 		
 		return null
@@ -148,11 +157,10 @@ internal class FantomProjectManagerState {
 	private Bool updateProject(IProject ip) {
 		// if the existing project looks okay, let's keep it!
 		fp := projects[ip.getName]
-		if (fp != null) {
-			if (fp.resolveErrs.isEmpty && fp.buildFanHasChanged == false) {
+		if (fp != null)
+			// SlimerDude (Apr 2020) should be no need to manually check build.fan - rely on workspace updates instead
+			if (fp.projectErrs.isEmpty && fp.resolveErrs.isEmpty)
 				return false
-			}
-		}
 
 		fp = FantomProject.makeFromProject(ip)
 		projects[ip.getName] = fp
@@ -160,8 +168,6 @@ internal class FantomProjectManagerState {
 	}
 	
 	private Bool isFantomProject(IProject ip) {
-		ip.exists
-			? ip.getNature(F4Nature.id)  != null
-			: projects[ip.getName] != null
+		ip.exists && ip.getNature(F4Nature.id) != null
 	}
 }

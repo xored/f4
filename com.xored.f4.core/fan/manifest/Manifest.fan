@@ -9,7 +9,7 @@ class Manifest {
 
 	new make(FantomProject fantomProject) {
 		project		:= fantomProject.project
-		buildFanStr	= PathUtil.resolveRes(project.getFile(filename)).readAllStr
+		buildFanStr	:= PathUtil.resolveRes(project.getFile(filename)).readAllStr
 		lineOffsets = buildOffsets(buildFanStr)
 
 		parser		:= Parser(buildFanStr, EmptyNamespace())
@@ -37,7 +37,6 @@ class Manifest {
 	public static const Str filename := "build.fan"
 
 	** Lines of field initializers
-	Str			buildFanStr
 	Str:Int		lines		{ private set } 
 	Str:Obj?	vals		{ private set }
 	Str? 		podName()	{ vals["podName"] }

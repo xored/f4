@@ -11,9 +11,11 @@ using [java]org.eclipse.jdt.core::IClasspathEntry
 
 using concurrent
 
-** Listens for Build.fan changes and updates container
-** Automatically groups update requests by project
-const class ContainerResetter : Actor {
+** Listens for Build.fan changes and updates container.
+** Automatically groups update requests by project.
+** 
+** SlimerDude (Apr 2020) I don't really know what this does, but given the coalescing I assume it's quite time consuming!
+internal const class ContainerResetter : Actor {
 
 	new make(ActorPool pool) : 
 		super.makeCoalescing (
