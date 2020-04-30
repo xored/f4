@@ -27,12 +27,10 @@ const class FantomProject {
 	private static const Str[] disabledDirs := ["CVS"]
 	
 	const Str		podName 
+	const File		projectDir
+	const Uri?		podOutDir		
 	const Str		summary		:= ""
 	const Version	version		:= Version.defVal
-
-	const File		projectDir
-	
-	const Uri?		podOutDir		
 	const Depend[]	rawDepends	:= Depend#.emptyList
 	const Uri[]		resDirs		:= Uri#.emptyList
 	const Uri[]		jsDirs		:= Uri#.emptyList
@@ -106,6 +104,24 @@ const class FantomProject {
 		projectErrs		= projErrs
 	}
 	
+	
+	
+	// ---- Eclipse Stuff ----
+	
+	IInterpreterInstall?	interpreterInstall()	{ ScriptRuntime.getInterpreterInstall(scriptProject) }
+	
+	IJavaProject			javaProject()			{ JavaCore.create(project) }
+	
+	IScriptProject			scriptProject()			{ DLTKCore.create(project) }
+	
+	IFanNamespace			ns()					{ DltkNamespace(this, podName) }
+	
+	ProjectPrefs			prefs()					{ ProjectPrefs(this) }
+
+	
+	
+	// ---- Fantom Stuff ----
+	
 	** The interpreter installation dir, also known as '%FAN_HOME%'.
 	File fanHomeDir() {
 		// this is calculated dynamically so it picks up changes to the Interpreter Library location
@@ -125,10 +141,6 @@ const class FantomProject {
 		(projectDir + `build.fan`).normalize
 	}
 
-	IInterpreterInstall? interpreterInstall() {
-		ScriptRuntime.getInterpreterInstall(scriptProject)
-	}
-	
 	File[] classpath() {
 		javaProj	:= javaProject
 		entries		:= JavaRuntime.computeUnresolvedRuntimeClasspath(javaProject)
@@ -139,20 +151,51 @@ const class FantomProject {
 		return resolved.map { File.os(it.getLocation) }
 	}
 	
-	IJavaProject javaProject() {
-		JavaCore.create(project)
+	Uri[] srcDirs() {
+		unfoldDirs(scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp -> Bool| {
+			bp.getEntryKind == IBuildpathEntry.BPE_SOURCE
+		}.map |IBuildpathEntry bp -> Uri| {
+			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
+		}, projectDir.uri).sort
+	}  
+	
+	FantomProject[] dependentProjects() {
+		projectManager := FantomProjectManager.instance
+		return projectManager.dependentProjects(this)
 	}
 	
-	//////////////////////////////////////////////////////////////////////////
-	// Build info
-	//////////////////////////////////////////////////////////////////////////	
-	
+	private const AtomicRef resolvedPodsRef := AtomicRef(null)
+	Str:File resolvedPods() {
+		if (resolvedPodsRef.val == null)
+			update
+		return resolvedPodsRef.val
+	}
+
 	private const AtomicRef classpathDependsRef := AtomicRef(null)
 	Str:File classpathDepends() {
 		if (classpathDependsRef.val == null)
 			update
 		return classpathDependsRef.val
 	}
+	
+	** Reset so we lazily resolve pods when needed
+	internal Void reset() {
+		this.resolvedPodsRef.val	 = null
+		this.classpathDependsRef.val = null		
+	}
+
+	private const AtomicRef	compileEnvRef := AtomicRef()
+	CompileEnv compileEnv() {
+		// only bother making a new one if the type / preferences change
+		// this may make a difference for FpmEnv which reads file config
+		if (compileEnvRef.val?.typeof != prefs.compileEnvType)
+			compileEnvRef.val = prefs.compileEnvType.make([this])
+		return compileEnvRef.val
+	}
+
+
+	
+	// ---- Private helper methods ----
 	
 	** (SlimerDude Jun 2016) - not really sure what this returns.
 	** Seems to be absolute locations of required pods
@@ -202,28 +245,6 @@ const class FantomProject {
 		return podFiles
 	}
 
-	Uri[] srcDirs() {
-		unfoldDirs(scriptProject.getResolvedBuildpath(false).findAll |IBuildpathEntry bp -> Bool| {
-			bp.getEntryKind == IBuildpathEntry.BPE_SOURCE
-		}.map |IBuildpathEntry bp -> Uri| {
-			bp.getPath.segments[1..-1].reduce(`./`) |Uri r, Str s -> Uri| { r.plusName(s, true) }
-		}, projectDir.uri).sort
-	}  
-	
-	
-	private const AtomicRef resolvedPodsRef := AtomicRef(null)
-	Str:File resolvedPods() {
-		if (resolvedPodsRef.val == null)
-			update
-		return resolvedPodsRef.val
-	}
-
-	** Reset so we lazily resolve pods when needed
-	Void reset() {
-		this.resolvedPodsRef.val	 = null
-		this.classpathDependsRef.val = null		
-	}
-
 	** The workspace has changed somehow (projects updates) and we're involved somehow
 	private Void update() {
 		podFiles := doResolvePods.rw
@@ -238,21 +259,6 @@ const class FantomProject {
 		
 		this.resolvedPodsRef.val	 = podFiles.toImmutable
 		this.classpathDependsRef.val = doClasspathDepends.toImmutable
-	}
-	
-	FantomProject[] dependentProjects() {
-		projectManager := FantomProjectManager.instance
-		return projectManager.dependentProjects(this)
-	}
-	
-	IScriptProject scriptProject() { DLTKCore.create(project) }
-	
-	IFanNamespace ns() {
-		DltkNamespace(this, podName)
-	}
-	
-	ProjectPrefs prefs() {
-		ProjectPrefs(this)
 	}
 	
 	private const AtomicRef	resolvePodsRef		:= AtomicRef()
@@ -275,19 +281,6 @@ const class FantomProject {
 		finally resolveFutureRef.val = null
 	}
 	
-	private const AtomicRef	compileEnvRef := AtomicRef()
-	CompileEnv compileEnv() {
-		// only bother making a new one if the type / preferences change
-		// this may make a difference for FpmEnv which reads file config
-		if (compileEnvRef.val?.typeof != prefs.compileEnvType)
-			compileEnvRef.val = prefs.compileEnvType.make([this])
-		return compileEnvRef.val
-	}
-
-	
-	
-	// ---- Private helper methods ----
-
 	private Uri[] unfoldDirs(Uri[] dirs, Uri baseDir) {
 		result := Uri[,]
 		result.addAll(dirs)
