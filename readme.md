@@ -54,15 +54,17 @@ Maven is used to package F4, and has been tested with [Maven 3.3.9](http://archi
 
 Eclipse is used to build all the pods and jars. The Maven build just assembles it all into a executables and Eclipse update repositories. 
 
- 1. Run `mvn -o clean package` in the root directory of the `Fantom Runtime` project.
+ 1. Run `mvn clean package` in the root directory of the `Fantom Runtime` project.
  2. Modify `pom.xml` in the F4 project to point to the newly built runtime.
- 3. Run `mvn -o clean package` in the root directory of the `F4` project.
+ 3. Run `mvn clean package` in the root directory of the `F4` project.
  
 Steps 1 & 2 only need to be done the once.
 
 Step 3 builds F4 as standalone product.
 
 An eclipse update site `.zip` will be assembled the `/repository/target/` folder and full installation products may be found under `/product/target/products/`.
+
+Tip - use `mvn -o clean package` to run offline builds.
 
 
 
