@@ -34,11 +34,11 @@ class InterpreterContainer : IInterpreterContainerExtension, IInterpreterContain
 
 		entries			:= IBuildpathEntry[,]
 		fpm				:= FantomProjectManager.instance
-		fantomProject	:= fpm[project.getProject]
+		fantomProject	:= fpm.get(project.getProject)
 		interpreter		:= fantomProject?.interpreterInstall?.getInstallLocation?.getPath		
 
-		fantomProject.resolvePods.each |podFile, podName| { 
-			podProject := fpm.getByPod(podName)
+		fantomProject.resolvedPods.each |podFile, podName| { 
+			podProject := fpm.getByPodName(podName)
 			if (podProject != null) {
 				entries.add(DLTKCore.newProjectEntry(podProject.project.getFullPath))
 				return

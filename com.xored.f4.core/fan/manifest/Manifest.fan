@@ -5,14 +5,14 @@ using f4parser
 using f4model
 
 class Manifest {
-	private Range:Int lineOffsets
+	private Range:Int	lineOffsets
 
 	new make(FantomProject fantomProject) {
 		project		:= fantomProject.project
-		content		:= PathUtil.resolveRes(project.getFile(filename)).readAllStr
-		parser		:= Parser(content, EmptyNamespace())
-		lineOffsets = buildOffsets(content)
+		buildFanStr	:= PathUtil.resolveRes(project.getFile(filename)).readAllStr
+		lineOffsets = buildOffsets(buildFanStr)
 
+		parser		:= Parser(buildFanStr, EmptyNamespace())
 		MethodDef? method := parser.cunit.types.find { it.name.text == "Build" }?.slots?.find { it->name->text == "make" }
 		if (method == null) throw ArgErr("Can't parse build.fan in $project.getName")
 		

@@ -1,5 +1,4 @@
 using f4core::FantomProject
-using f4core::FantomProjectManager
 using f4core::LogUtil
 using compiler
 
@@ -38,24 +37,12 @@ class InternalBuilder : Builder {
 		compileDir.create
 		compileDir.listFiles.each { it.delete }
 		
-		resolvedPods := fp.resolvePods
+		resolvedPods := fp.resolvedPods
     
 		bldLoc := Loc(fp.buildFile)
 		if (fp.resolveErrs.size > 0) {
 			return fp.resolveErrs.map { CompilerErr(it.toStr, bldLoc) }
 		}
-		
-		// Blindly add all workspace pods - seems to be the only way to get F4 to compile itself (...!?)
-		// Without this, we get compilation errors similar to "pod not found: f4parser".
-		// These aren't actual dependencies and don't seem to be transitive dependencies.
-		// Note that adding them as actual project dependencies also solves the issue,
-		// But because I don't know why, I'm loath to do so - hence these 3 little lines.
-
-		// SlimerDude - Apr 2020 - Beta feature to turn this off 
-		if (fp.prefs.referencedPodsOnly == false)
-			FantomProjectManager.instance.listProjects.each |p| {
-				resolvedPods[p.podName] = p.podOutFile
-			}
 
 		logger	:= ConsoleLogger(consumer)
 		input	:= CompilerInput.make

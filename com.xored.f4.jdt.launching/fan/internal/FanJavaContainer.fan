@@ -5,6 +5,7 @@ using [java] org.eclipse.dltk.launching
 using [java] org.eclipse.jdt.core
 
 using f4core
+using f4core::FantomProjectManager
 
 **
 ** This adds .jars to the "Fantom Native Libraries (Java)"
@@ -39,12 +40,12 @@ class FanJavaContainer : IClasspathContainer {
 				createLibrary(f.normalize, home + `src/${f.basename}/java/`)	// maybe it's a core Fantom pod
 			}
 		
-		FantomProject fp := FantomProjectManager.instance[project.getProject]
+		FantomProject fp := FantomProjectManager.instance.get(project.getProject)
 		fp.classpathDepends.each |loc, name| {
-			podFP := FantomProjectManager.instance.getByPod(name)
+			podFP := FantomProjectManager.instance.getByPodName(name)
 			if (podFP != null) {
 				IProject prj := podFP.project
-				if (prj.hasNature("org.eclipse.jdt.core.javanature")) {
+				if (prj.isAccessible && prj.hasNature("org.eclipse.jdt.core.javanature")) {
 					// do not need to add entry
 					return
 				}
@@ -80,6 +81,9 @@ class FanJavaContainer : IClasspathContainer {
 	
 	private static Bool isJavaPod(File f) {
 		if (!f.exists) return false
+		
+		// FIXME Slimer is this okay? I mean, why open the zip during a build thrash!?
+		return f.ext == "jar" || f.ext == "pod" || f.ext == ".zip"
 		
 		zip := Zip.read(f.in)
 		try {

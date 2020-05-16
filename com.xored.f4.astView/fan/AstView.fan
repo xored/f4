@@ -1,13 +1,14 @@
 using f4core
+using f4core::FantomProjectManager
 using f4model
 using f4parser
 using f4uiText
-using [java]org.eclipse.ui
-using [java]org.eclipse.ui.part
-using [java]org.eclipse.swt.widgets
-using [java]org.eclipse.jface.viewers
-using [java]org.eclipse.dltk.ui
-using [java]org.eclipse.dltk.core
+using [java] org.eclipse.ui
+using [java] org.eclipse.ui.part
+using [java] org.eclipse.swt.widgets
+using [java] org.eclipse.jface.viewers
+using [java] org.eclipse.dltk.ui
+using [java] org.eclipse.dltk.core
 
 class AstView : ViewPart, IPartListener
 { 
@@ -61,7 +62,7 @@ class AstView : ViewPart, IPartListener
   private static IFanNamespace getNamespace(ISourceModule? content) {
     project := content?.getScriptProject?.getProject
     if (project == null || !project.isOpen) return EmptyNamespace()
-    return FantomProjectManager.instance[project].ns
+    return FantomProjectManager.instance.get(project).ns
   }
   
   override Void partActivated(IWorkbenchPart? part) {

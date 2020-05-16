@@ -9,7 +9,7 @@ const class F4LaunchEnv : Env {
 
 	static new make() {
 		// Env.cur defaults to BootEnv until we create ourselves
-		podLocs		:= Env.cur.vars["FAN_ENV_PODS"]?.trim?.split(File.pathSep.chars.first, true)
+		podLocs		:= Env.cur.vars["FAN_ENV_PODS"]?.trim?.split(File.pathSep.chars.first, true)?.exclude { it.trimToNull == null }
 		if (podLocs != null && podLocs.size == 0)
 			podLocs = null
 		
@@ -27,12 +27,16 @@ const class F4LaunchEnv : Env {
 	
 	private const Str:File podLocations
 	
-	private new makeInternal(Str[] podLocs, Env parent) : super.make(parent) {
-		podLocations = Str:File[:] { it.ordered=true }.addList(podLocs.map { File.os(it) }) { it.basename }
-		podLocations.vals.each {
-			if (!it.exists)
-				throw Err("Pod file does not exist - ${it.osPath}")
+	private new makeInternal(Str[]? podLocs, Env parent) : super.make(parent) {
+		podLocations := Str:File[:] { it.ordered=true }
+		if (podLocs != null) {
+			podLocations.addList(podLocs.map { File.os(it).normalize }) { it.basename }
+			podLocations.vals.each {
+				if (!it.exists)
+					throw Err("Pod file does not exist - ${it.osPath}")
+			}
 		}
+		this.podLocations = podLocations
 	}
 
 	override File? findPodFile(Str podName) {

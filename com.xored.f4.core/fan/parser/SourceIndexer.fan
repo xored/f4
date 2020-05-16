@@ -17,7 +17,8 @@ class SourceIndexer {
 	private static CUnit cunit(IModuleSource module) {
 		if(module is ISourceModule) 
 			return SourceParserUtil.parse(module as ISourceModule, null)->unit
-		ns := FantomProjectManager.instance[module.getModelElement.getScriptProject.getProject].ns
+		proj := module.getModelElement.getScriptProject.getProject
+		ns	 := FantomProjectManager.instance.get(proj).ns
 		return Parser(module.getSourceContents, ns).cunit
 	}
 }

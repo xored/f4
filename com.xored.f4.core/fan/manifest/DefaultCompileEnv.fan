@@ -24,7 +24,7 @@ const class DefaultCompileEnv : CompileEnv {
 				podFiles[podFile.basename] = podFile		
 			}
 		
-			buildConsole.debug("DefaultEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
+			buildConsole.debug("DefaultCompileEnv - Resolved ${podFiles.size} pods for ${fanProj.podName} from: ${workDir.osPath}")
 			return podFiles.toImmutable
 		}
 	}

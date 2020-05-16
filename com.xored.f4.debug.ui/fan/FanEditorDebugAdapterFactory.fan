@@ -26,10 +26,9 @@ using [java] org.eclipse.core.resources
 using [java] org.eclipse.osgi.util
 
 using f4core
+using f4core::FantomProjectManager
 using f4parser
-**
-**
-**
+
 class FanEditorDebugAdapterFactory : ScriptEditorDebugAdapterFactory
 {
   override protected ScriptToggleBreakpointAdapter? getBreakpointAdapter()
@@ -222,7 +221,7 @@ class FanToggleBreakpointAdapter : ScriptToggleBreakpointAdapter
   
   private Str? getResourcePodName(IResource? res)
   {
-    FantomProjectManager.instance[res.getProject].podName
+    FantomProjectManager.instance.get(res.getProject).podName
   }
 }
 

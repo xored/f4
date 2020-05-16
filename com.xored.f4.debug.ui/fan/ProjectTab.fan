@@ -20,11 +20,9 @@ using [java] org.eclipse.jface.viewers
 using [java] org.eclipse.ui.plugin::AbstractUIPlugin
 using [java] java.util::ArrayList
 using f4core
+using f4core::FantomProjectManager
 using f4launching
 
-**
-**
-**
 class ProjectTab : AbstractLaunchConfigurationTab 
 {
   private Combo? fSelectionCombo
@@ -161,7 +159,7 @@ class ProjectTab : AbstractLaunchConfigurationTab
   
   private FantomProject[] getFantomProjects()
   {
-    return FantomProjectManager.instance.listProjects.exclude { it.isPlugin }
+    return FantomProjectManager.instance.allProjects.exclude { it.isPlugin }
   }
   
   private Void toggleProjects(Bool select)

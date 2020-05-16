@@ -1,203 +1,173 @@
-using [java]org.eclipse.core.resources::IProject
-using [java]org.eclipse.dltk.core::IScriptModel
-using [java]org.eclipse.dltk.core::IScriptProject
-using [java]org.eclipse.dltk.core::DLTKCore
-using [java]org.eclipse.core.resources::ResourcesPlugin
-using concurrent
+using [java] org.eclipse.core.resources::IProject
+using concurrent::ActorPool
 
-const class FantomProjectManager : Actor, BuildfanChangeListener {
-	static const FantomProjectManager?	instance := FantomProjectManager()
-	private const ContainerResetter		resetter
-	const BuildfanListener				buildFanChange
+const class FantomProjectManager {
+	static const FantomProjectManager	instance := FantomProjectManager()
 
+	private const SynchronizedState		fantomProjects
+	private const FantomProjectListener	projectListener
 
-	//////////////////////////////////////////////////////////////////////////
-	// Constructor and fields
-	//////////////////////////////////////////////////////////////////////////
-	
-	private new make() : super(ActorPool()) {
-		try {
-			resetter = ContainerResetter(pool)
-			buildFanChange = BuildfanListener(pool)
-			buildFanChange.subscribe
-			buildFanChange.addListener(this)
-			init	
-		} catch(Err e) {
-			e.trace
-			throw e
-		}
-	}
-	
-	//////////////////////////////////////////////////////////////////////////
-	// Overriden methods
-	//////////////////////////////////////////////////////////////////////////
-	
-	override Obj? receive(Obj? msg) {
-		// rewritten to fail fast
-		try	{
-			list := (Obj[])msg
-			return ((Method)list[0]).callOn(this, ((Unsafe)list[1]).val)
-		} catch(Err e) {
-			e.trace //TODO: Add normal error reporting
-			throw e
-		}
-	}
-	
-	override Void notify(WorkspaceChange change) {
-		runInManager(#doNotify, [change])
+	private new make() {
+		this.fantomProjects	 = SynchronizedState.makeWithType(ActorPool(), FantomProjectManagerState#)
+		this.projectListener = FantomProjectListener(this)
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// Public API
-	//////////////////////////////////////////////////////////////////////////
+	FantomProject? get(IProject project) {
+		projectRef := Unsafe(project)
+		return call { it.getOrAdd(projectRef) }
+	}
 	
-	internal Void init() { send([#doInit,Unsafe([,])].toImmutable) }
+	FantomProject? getByPodName(Str podName) {
+		call { it.getByPodName(podName) }
+	}
 	
-	@Operator FantomProject? get(IProject project) { runInManager(#doGet, [project]) }
+	FantomProject[] allProjects() {
+		call { it.allProjects } 
+	}
 	
-	FantomProject? getByPod(Str podName) { runInManager(#doGetByPod, [podName]) }
+	FantomProject[] dependentProjects(FantomProject fp) {
+		call { it.dependentProjects(fp) }
+	}
 	
-	FantomProject[] listProjects() { runInManager(#doListProjects, [,]) }
+	internal Void notify(WorkspaceChange change) {
+		changeRef := Unsafe(change)
+		call { it.applyChanges(changeRef.val) } 
+	}
+	
+	private Obj? call(|FantomProjectManagerState->Obj?| state) {
+		fantomProjects.sync(state)
+	}
+}
 
-	** SlimerDude - Apr 2020 - A beta feature to cut down on build thrashing
-	** 'cos I dunno why we need ALL projects as dependencies!? 
-	FantomProject[] listReferencedProjects(Str podName) { runInManager(#doListReferencedProjects, [podName]) }
-
-	//////////////////////////////////////////////////////////////////////////
-	// Method handlers
-	//////////////////////////////////////////////////////////////////////////
+internal class FantomProjectManagerState {
+	private ContainerResetter	resetter
+	private Str:FantomProject	projects
 	
-	private Obj? runInManager(Method method, Obj?[] args) { marker ? method.callOn(this,args) : send([method,Unsafe(args)].toImmutable).get }
+	new make() {
+		this.resetter	= ContainerResetter(ActorPool())
+		this.projects	= Str:FantomProject[:]
+	}
 	
-	private Void doNotify(WorkspaceChange change) {
-		// we need to reset containers for all projects that depend on 
+	Obj? applyChanges(WorkspaceChange change) {
+		// reset containers for all projects that depend on 
 		// closed or opened projects and for all projects with updated content
-		projectsToUpdate := [Str:IProject][:]
+
+		projectsToUpdate := [Str:IProject][:] { it.ordered = true }
 		
-		//add opened projects
-		change.openedProjects.each |IProject p| {
-			if (isFantomProject(p)) addProject(p)
+		// add updated and opened Fantom projects
+		change.openedProjects.each {
+			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
+		}
+		change.updatedProjects.each {
+			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
 		}
 		
-		[change.closedProjects, change.openedProjects].flatten.each |IProject p| {
-			dependentProjects(p).each |IProject d| {
-				projectsToUpdate[d.getName] = d 
-			}
+		
+		// add parent projects
+		change.openedProjects.each {
+			parentProjects(it).each {	projectsToUpdate[it.getName] = it }
+		}
+		change.closedProjects.each {
+			parentProjects(it).each {	projectsToUpdate[it.getName] = it }
 		}
 
-		// add updated and opened projects to projectsToUpdate
-		[change.updatedProjects, change.openedProjects].flatten.each |IProject p| { 
-			if(isFantomProject(p)) projectsToUpdate[p.getName] = p 
-		}
 		
-		// now we need to exclude all removed projects for this list
-		projectsToUpdate = projectsToUpdate.exclude |v, k| {
-			change.closedProjects.any { getName == k }
-		}
-
 		// remove all closed projects
-		change.closedProjects.each |p| { removeProject(p) }
-		
-		// buildfanChanged(change.updatedProjects.first)
-		projectsToUpdate.vals.each |p| {
-			addProject(p)
+		change.closedProjects.each {
+			projectsToUpdate.remove(it.getName)
+			projects		.remove(it.getName)
+		}
+
+		// remove all updated projects to ensure they get re-created
+		// updated projects are those with build.fan changes
+		change.updatedProjects.each {
+			projects		.remove(it.getName)			
 		}
 		
-		projectsToUpdate.vals.each |p| {
-			resetter.reset(p)
+		// do the update
+		projectsToUpdate.vals.each {
+			created := updateProject(it)
+
+			if (created)
+				// resetting seems quite processor intensive, so only do it if we really need to
+				resetter.reset(it)
+
+			if (!created)
+				// reset existing projects so pods get lazily resolved
+				projects[it.getName].reset
 		}
+		
+		return null
 	}
 	
-	private Bool isFantomProject(IProject p) {
-		if (!p.exists) return projects[getKey(p)] != null
-		return p.getNature(F4Nature.id) != null
-	}
-	
-	private Void removeProject(IProject p) {
-		key := getKey(p)
-		fp  := projects[key]
-		if (fp == null) return
-		projects.remove(key)
-		pods.remove(fp.podName)
-	}
-	
-	private static Str getKey(IProject p) { p.getName }
-	
-	private FantomProject addProject(IProject p) {
-		fp := FantomProject.makeFromProject(p)
-		removeProject(p)
-		projects[getKey(p)] = fp
-		pods[fp.podName] = fp
-		return fp
-	}
-	
-	private IProject[] dependentProjects(IProject project) {
-		fp := projects[getKey(project)]
-		if(fp == null) return IProject[,]
-		podName := fp.podName
-		ps := projects
-		return ps.vals.findAll |p| {
-			p.rawDepends.any |d| {
-				d.name == podName
+	private IProject[] parentProjects(IProject ip) {
+		fp := projects[ip.getName]
+		if (fp == null)
+			return IProject#.emptyList
+		
+		parents := IProject[,]
+		projs := projects.vals
+		for (i := 0; i < projs.size; ++i) {
+			proj := projs[i]
+			deps := proj.rawDepends
+			for (j := 0; j < deps.size; ++j) {
+				if (deps[j].name == fp.podName)
+					parents.add(proj.project)
 			}
-		}.map { it.project }
+		}
+		return parents
 	}
 	
-	private FantomProject? doGet(IProject project) {
-		// SlimerDude - Apr 2020 - not sure why a null location prevents us from returning the project?
-		if (project.getLocation == null) {
-			echo("location is null for project $project.getName")
-			return null
-		}
-		key := getKey(project)
-		if (projects.containsKey(key)) return projects[key]
-		return addProject(project)
+	FantomProject? getOrAdd(Unsafe projectRef) {
+		ip := (IProject) projectRef.val
+		updateProject(ip)
+		return projects[ip.getName]
+	}
+	
+	FantomProject? getByPodName(Str podName) {
+		projects.find { it.podName == podName }
+	}
+	
+	FantomProject[] allProjects() {
+		projects.vals.toImmutable
 	}
 
-	private Void doInit() {
-		setMarker
-		DLTKCore.create(ResourcesPlugin.getWorkspace.getRoot).getScriptProjects(F4Nature.id).each |IScriptProject sp| {
-			addProject(sp.getProject)
-		}
+	FantomProject[] dependentProjects(FantomProject fp) {
+		doDependentProjects(fp, Str:FantomProject[:]).vals.toImmutable
 	}
-	
-	private FantomProject[] doListProjects() { projects.vals.dup.toImmutable }
-	
-	private FantomProject? doGetByPod(Str podName) { pods[podName] }
 
-	private FantomProject[] doListReferencedProjects(Str podName) {
-		fp := pods[podName]
-		projs := fp.project.getReferencedProjects.map { doGet(it) }.exclude { it == null }
-		return projs
-	}
-	
-	//////////////////////////////////////////////////////////////////////////
-	// Private hepler methods
-	//////////////////////////////////////////////////////////////////////////
-	
-	private FantomProject? createProject(IProject project) {
-		try	{
-			return FantomProject.makeFromProject(project)
-		} catch (Err e) {
-			e.trace
-			return null
+	private Str:FantomProject doDependentProjects(FantomProject fp, Str:FantomProject fps) {
+		for (i := 0; i < fp.rawDepends.size; ++i) {
+			podName := fp.rawDepends[i].name
+			
+			// prevent infinite cyclic dependencies
+			if (!fps.containsKey(podName)) {
+				project := getByPodName(podName)
+
+				if (project != null) {
+					fps[podName] = project
+					doDependentProjects(project, fps)
+				}
+			}
 		}
+		return fps
+	}
+
+	** Returns 'true' if the project was updated
+	private Bool updateProject(IProject ip) {
+		// if the existing project looks okay, let's keep it!
+		fp := projects[ip.getName]
+		if (fp != null)
+			// SlimerDude (Apr 2020) should be no need to manually check build.fan - rely on workspace updates instead
+			if (fp.projectErrs.isEmpty && fp.resolveErrs.isEmpty)
+				return false
+
+		fp = FantomProject.makeFromProject(ip)
+		projects[ip.getName] = fp
+		return true
 	}
 	
-	//////////////////////////////////////////////////////////////////////////
-	// Locals-backed properties
-	//////////////////////////////////////////////////////////////////////////
-	
-	** Fantom projects by location
-	private Str:FantomProject projects() {
-		locals.getOrAdd("projects") |->Obj| { [Str:FantomProject][:] }
+	private Bool isFantomProject(IProject ip) {
+		ip.exists && ip.getNature(F4Nature.id) != null
 	}
-	
-	** Fantom projects by pod name
-	private Str:FantomProject pods() {
-		locals.getOrAdd("pods") |->Obj| { [Str:FantomProject][:] }
-	}
-	
-	private Bool marker() { locals[toStr] as Bool ?: false }
-	private Void setMarker() { locals[toStr] = true }
 }

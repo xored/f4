@@ -23,6 +23,7 @@ using [java] org.eclipse.dltk.core.IProjectFragment
 
 using f4debugUi
 using f4core
+using f4core::FantomProjectManager
 using f4launching
 
 class FanTestingLaunchShortcut : AbstractScriptLaunchShortcut {
@@ -71,7 +72,7 @@ class FanTestingLaunchShortcut : AbstractScriptLaunchShortcut {
 		attrs := [Str:Obj?][:]
 		typeName:=""
 		if (!(script is IProject)) {
-			fp := FantomProjectManager.instance[script.getProject]
+			fp := FantomProjectManager.instance.get(script.getProject)
 			if(fp == null) return null //not a fantom project
 			
 			sourceModule := DLTKCore.createSourceModuleFrom(script)

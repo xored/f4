@@ -17,6 +17,7 @@ using "[java]com.xored.fanide.internal.core.model"
 using [java] java.lang::Class
 using [java] java.io::File as JavaFile
 using f4core
+using f4core::FantomProjectManager
 
 class SourceLookupParticipant : AbstractSourceLookupParticipant {
 
@@ -77,8 +78,8 @@ class SourceLookupParticipant : AbstractSourceLookupParticipant {
 	
 	private IModelElement[] findInWorkspace(Str pod, Str name) {
 		result := IModelElement[,]
-		FantomProjectManager.instance.listProjects.each |fp| {
-			if(fp.podName != pod) return
+		FantomProjectManager.instance.allProjects.each |fp| {
+			if (fp.podName != pod) return
 			fp.project.accept |IResource res -> Bool| {
 				if(res.getType == IResource.FILE && res.getName.equalsIgnoreCase(name)) {
 					result.add(DLTKCore.create(res as IFile))
@@ -91,7 +92,7 @@ class SourceLookupParticipant : AbstractSourceLookupParticipant {
 	
 	private IModelElement[] findInLibs(Str pod, Str name) {
 		result := IModelElement[,]
-		FantomProjectManager.instance.listProjects.each |fp| {
+		FantomProjectManager.instance.allProjects.each |fp| {
 			fp.scriptProject.getProjectFragments.each |IProjectFragment pf|	{
 				if (pf isnot PodFragment) return
 				podFragment := pf as PodFragment
