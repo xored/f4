@@ -4,6 +4,7 @@
 //
 // History:
 //   26 Mar 09  Brian Frank  Creation
+//   24 Apr 20  Brian Frank  Make Future abstract
 //
 package fan.concurrent;
 
@@ -103,9 +104,24 @@ public class Actor
     return null;
   }
 
+//////////////////////////////////////////////////////////////////////////
+// Diagnostics
+//////////////////////////////////////////////////////////////////////////
+
+  public final String threadState()
+  {
+    if (curMsg != idleMsg) return "running";
+    if (submitted) return "pending";
+    return "idle";
+  }
+
   public final long queueSize() { return queue.size; }
 
   public final long queuePeak() { return queue.peak; }
+
+  public final long receiveCount() { return receiveCount; }
+
+  public final long receiveTicks() { return receiveTicks; }
 
 //////////////////////////////////////////////////////////////////////////
 // Utils
@@ -146,27 +162,35 @@ public class Actor
     if (pool.isStopped()) throw Err.make("ActorPool is stopped");
 
     // get the future instance to manage this message's lifecycle
-    Future f = new Future(msg);
+    ActorFuture f = new ActorFuture(msg);
 
     // either enqueue immediately or schedule with pool
     if (dur != null)
       pool.schedule(this, dur, f);
     else if (whenDone != null)
-      whenDone.sendWhenDone(this, f);
+      toWhenDoneFuture(whenDone).sendWhenDone(this, f);
     else
       f = _enqueue(f, true);
 
     return f;
   }
 
-  final Future _enqueue(Future f, boolean coalesce)
+  private static ActorFuture toWhenDoneFuture(Future f)
+  {
+    if (f instanceof ActorFuture) return (ActorFuture)f;
+    Future wraps = f.wraps();
+    if (wraps instanceof ActorFuture) return (ActorFuture)wraps;
+    throw ArgErr.make("Only actor Futures supported for sendWhenComplete");
+  }
+
+  final ActorFuture _enqueue(ActorFuture f, boolean coalesce)
   {
     synchronized (lock)
     {
       // attempt to coalesce
       if (coalesce)
       {
-        Future c = queue.coalesce(f);
+        ActorFuture c = queue.coalesce(f);
         if (c != null) return c;
       }
 
@@ -186,26 +210,41 @@ public class Actor
 
   public final void _work()
   {
-    // set locals for this actor
+    // reset environment for this actor
     locals.set(context.locals);
     Locale.setCur(context.locale);
 
-    // process up to 100 messages before yielding the thread
-    int maxMessages = (int)pool.maxMsgsBeforeYield;
-    for (int count = 0; count < maxMessages; count++)
+    // process messages for maxTimeBeforeYield before yielding the thread
+    long maxTicks = pool.maxTimeBeforeYield.ticks();
+    long startTicks = Duration.nowTicks();
+    while (true)
     {
       // get next message, or if none pending we are done
-      Future future = null;
+      ActorFuture future = null;
       synchronized (lock) { future = queue.get(); }
       if (future == null) break;
 
       // dispatch the messge
       this.curMsg = future.msg;
       _dispatch(future);
-      this.curMsg = null;
+      this.curMsg = idleMsg;
+
+      // if there are pending actors waiting for a thread,
+      // then check if its time to yield our thread
+      if (pool.hasPending())
+      {
+        long curTicks = Duration.nowTicks();
+        if (curTicks - startTicks >= maxTicks) break;
+      }
     }
 
-    // flush locals back to context
+    // keep track of time between start and now; for efficiency we only
+    // update this after a work cycle has ended - but this means its
+    // possible to be stuck continously processing the queue if never have
+    // to yield our thread, in which case we won't see this stat updated
+    receiveTicks += Duration.nowTicks() - startTicks;
+
+    // flush environment back to context
     context.locale = Locale.cur();
 
     // done dispatching, either clear the submitted
@@ -225,12 +264,13 @@ public class Actor
 
   }
 
-  final void _dispatch(Future future)
+  final void _dispatch(ActorFuture future)
   {
     try
     {
       if (future.isCancelled()) return;
       if (pool.killed) { future.cancel(); return; }
+      receiveCount++;
       future.complete(receive(future.msg));
     }
     catch (Err e)
@@ -264,26 +304,8 @@ public class Actor
 
   static Object _safe(Object obj)
   {
-    if (obj == null) return null;
-    if (FanObj.isImmutable(obj)) return obj;
-
-    if (_safeLogErr)
-    {
-      _safeLogErr = false;
-      System.out.println("==");
-      System.out.println("==");
-      System.out.println("== Actor msg serialization is deprecated;");
-      System.out.println("== See http://fantom.org/forum/topic/2428");
-      System.out.println("==");
-      System.out.println("==");
-    }
-
-    Buf buf = new MemBuf(512);
-    buf.out().writeObj(obj);
-    buf.flip();
-    return buf.in().readObj();
+    return FanObj.toImmutable(obj);
   }
-  private static volatile boolean _safeLogErr = true;
 
 //////////////////////////////////////////////////////////////////////////
 // Queue
@@ -291,10 +313,10 @@ public class Actor
 
   static class Queue
   {
-    public Future get()
+    public ActorFuture get()
     {
       if (head == null) return null;
-      Future f = head;
+      ActorFuture f = head;
       head = f.next;
       if (head == null) tail = null;
       f.next = null;
@@ -302,7 +324,7 @@ public class Actor
       return f;
     }
 
-    public void add(Future f)
+    public void add(ActorFuture f)
     {
       if (tail == null) { head = tail = f; f.next = null; }
       else { tail.next = f; tail = f; }
@@ -310,7 +332,7 @@ public class Actor
       if (size > peak) peak = size;
     }
 
-    public Future coalesce(Future f)
+    public ActorFuture coalesce(ActorFuture f)
     {
       return null;
     }
@@ -319,7 +341,7 @@ public class Actor
     {
       int num = 0;
       int max = 50;
-      for (Future x = head; x != null; x = x.next)
+      for (ActorFuture x = head; x != null; x = x.next)
       {
         if (num < max) out.print("  ").printLine(x.msg);
         num++;
@@ -327,7 +349,7 @@ public class Actor
       if (num > max) out.print("  " + (num-max) + " more messages...");
     }
 
-    Future head, tail;
+    ActorFuture head, tail;
     int size;
     int peak;
   }
@@ -344,9 +366,9 @@ public class Actor
       this.coalesceFunc = coalesceFunc;
     }
 
-    public Future get()
+    public ActorFuture get()
     {
-      Future f = super.get();
+      ActorFuture f = super.get();
       if (f != null)
       {
         try
@@ -362,7 +384,7 @@ public class Actor
       return f;
     }
 
-    public void add(Future f)
+    public void add(ActorFuture f)
     {
       try
       {
@@ -376,12 +398,12 @@ public class Actor
       super.add(f);
     }
 
-    public Future coalesce(Future incoming)
+    public ActorFuture coalesce(ActorFuture incoming)
     {
       Object key = toKey(incoming.msg);
       if (key == null) return null;
 
-      Future orig = (Future)pending.get(key);
+      ActorFuture orig = (ActorFuture)pending.get(key);
       if (orig == null) return null;
 
       orig.msg = coalesce(orig.msg, incoming.msg);
@@ -419,14 +441,18 @@ public class Actor
       out = (fan.sys.OutStream)args.get(0);
     try
     {
+      Duration ticksTotal = Duration.make(receiveTicks());
+      Duration ticksAvg = Duration.make(receiveCount <= 0 ? 0 : receiveTicks / receiveCount);
+
       out.printLine("Actor");
       out.printLine("  pool:      " + pool.name);
-      out.printLine("  submitted: " + submitted);
-      out.printLine("  queue:     " + queueSize());
-      out.printLine("  peak:      " + queuePeak());
-      out.printLine("  curMsg:    " + curMsg);
+      out.printLine("  state:     " + threadState());
+      out.printLine("  queue:     " + queueSize() + " (peak " + queuePeak() + ")");
+      out.printLine("  received:  " + receiveCount());
+      out.printLine("  ticks:     " + ticksTotal.toLocale() + " (avg " + ticksAvg.toLocale() + ")");
+      if (curMsg != idleMsg)
+        out.printLine("  curMsg:    " + curMsg);
       queue.dump(out);
-
     }
     catch (Exception e) { out.printLine("  " + e + "\n"); }
     return out;
@@ -448,12 +474,15 @@ public class Actor
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
+  static final String idleMsg = new String("_idle_");
+
   final Context context;                 // mutable world state of actor
   private ActorPool pool;                // pooled controller
   private Func receive;                  // func to invoke on receive or null
   private Object lock = new Object();    // lock for message queue
   private Queue queue;                   // message queue linked list
-  private Object curMsg;                 // if currently processing a message
+  private Object curMsg = idleMsg;       // if currently processing a message
   private boolean submitted = false;     // is actor submitted to thread pool
-
+  private int receiveCount;              // total number of messages received
+  private long receiveTicks;             // total ticks spend in receive
 }

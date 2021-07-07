@@ -59,7 +59,8 @@ class ActorTest : Test
     100.times |Int i| { futures.add(a.send(i)) }
     futures.each |Future f, Int i|
     {
-      verifyType(f, Future#)
+      verifyType(f, ActorFuture#)
+      verifyEq(f.typeof.base, Future#)
       verifyEq(f.get, i+1)
       verifySame(f.state, FutureState.ok)
       verifyEq(f.get, i+1)
@@ -118,16 +119,11 @@ class ActorTest : Test
     verifySame(f.get, constObj)
     verifySame(f.state, FutureState.ok)
 
-    // serializable
-    f = a.send("serial")
-    verifyEq(f.get, SerMsg { i = 123_321 })
-    verifyEq(f.get, SerMsg { i = 123_321 })
-    verifyNotSame(f.get, f.get)
-    verifySame(f.state, FutureState.ok)
-
-    // non-serializable mutables
-    verifyErr(IOErr#) { a.send(this) }
-    verifyErr(IOErr#) { a.send("mutable").get }
+    // not immutable
+    verifyErr(NotImmutableErr#) { a.send(this) }
+    verifyErr(NotImmutableErr#) { a.send(SerMsg { i = 123 }) }
+    verifyErr(NotImmutableErr#) { a.send("serial").get }
+    verifyErr(NotImmutableErr#) { a.send("mutable").get }
 
     // receive raises error
     f = a.send("throw")
@@ -141,9 +137,9 @@ class ActorTest : Test
     switch (msg)
     {
       case "const":   return constObj
-      case "serial":  return SerMsg { i = 123_321 }
+      case "serial":  return SerMsg { i = 123 }
       case "throw":   throw UnknownServiceErr()
-      case "mutable": return Buf()
+      case "mutable": return StrBuf()
       default: return "?"
     }
   }
@@ -677,12 +673,13 @@ class ActorTest : Test
 
   Void testFuture()
   {
-    f := Future()
+    f := Future.makeCompletable
     verifyEq(f.state, FutureState.pending)
-    verifySame(f.typeof, Future#)
+    verifySame(f.typeof, ActorFuture#)
+    verifySame(f.typeof.base, Future#)
 
     // can only complete with immutable value
-    verifyErr(IOErr#) { f.complete(this) }  // TODO: NotImmutableErr
+    verifyErr(NotImmutableErr#) { f.complete(this) }
     verifySame(f.state, FutureState.pending)
 
     // verify complete
@@ -697,7 +694,7 @@ class ActorTest : Test
     verifyEq(f.get, "done!")
 
     // verify completeErr
-    f = Future()
+    f = Future.makeCompletable
     verifyEq(f.state, FutureState.pending)
     err := CastErr()
     f.completeErr(err)
@@ -709,7 +706,7 @@ class ActorTest : Test
     verifyErr(CastErr#) { f.get }
 
     // verify cancel;
-    f = Future()
+    f = Future.makeCompletable
     f.cancel
     verifySame(f.state, FutureState.cancelled)
     verifyErr(CancelledErr#) { f.get }
@@ -790,6 +787,92 @@ class ActorTest : Test
       return msg
     }
   }
+
+//////////////////////////////////////////////////////////////////////////
+// Yields
+//////////////////////////////////////////////////////////////////////////
+
+  Void testYields()
+  {
+    pool := ActorPool { maxThreads = 1; maxTimeBeforeYield = 100ms }
+    a := Actor(pool) |msg| { Actor.sleep(50ms); return msg }
+    verifyEq(a.threadState, "idle")
+    5.times |i| { a.send(null) }
+
+    b := Actor(pool) |msg| { "ret: $msg" }
+    t1 := Duration.now
+    f := b.send("x")
+    verifyEq(a.threadState, "running")
+    verifyEq(b.threadState, "pending")
+    verifyEq(f.get, "ret: x")
+    t2 := Duration.now
+    verify(t2 - t1 < 120ms)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Balance
+//////////////////////////////////////////////////////////////////////////
+
+  Void testBalance()
+  {
+    pool := ActorPool {}
+    a := Actor(pool) |msg| { if (msg != "start") Actor.sleep(100ms); return msg }
+    b := Actor(pool) |msg| { if (msg != "start") Actor.sleep(100ms); return msg }
+    c := Actor(pool) |msg| { if (msg != "start") Actor.sleep(100ms); return msg }
+    d := Actor(pool) |msg| { if (msg != "start") Actor.sleep(100ms); return msg }
+    e := Actor(pool) |msg| { return msg }
+
+    a.send("start").get; 4.times |x| { a.send(x) }
+    b.send("start").get; 3.times |x| { b.send(x) }
+    c.send("start").get; 5.times |x| { c.send(x) }
+    d.send("start").get; 3.times |x| { d.send(x) }
+
+    verifyEq(a.queueSize, 3)
+    verifyEq(b.queueSize, 2)
+    verifyEq(c.queueSize, 4)
+    verifyEq(d.queueSize, 2)
+    verifyEq(e.queueSize, 0)
+
+    verifySame(pool.balance([a]), a)
+    verifySame(pool.balance([e]), e)
+    verifySame(pool.balance([a, b]), b)
+    verifySame(pool.balance([a, b, c]), b)
+    verifySame(pool.balance([c, a, b]), b)
+    verifySame(pool.balance([c, d, a, b]), d)
+    verifySame(pool.balance([a, b, c, d]), b)
+    verifySame(pool.balance([d, c, b, a]), d)
+    verifySame(pool.balance([e, d, c, b, a]), e)
+    verifySame(pool.balance([a, b, c, d, e]), e)
+    verifySame(pool.balance([a, b, e, c, d]), e)
+
+    verifyErr(IndexErr#) { pool.balance(Actor[,]) }
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Diagnostics
+//////////////////////////////////////////////////////////////////////////
+
+  Void testDiagnostics()
+  {
+    pool := ActorPool {}
+    a := Actor(pool) |msg| { Actor.sleep(msg); return msg }
+    verifyDiagnostics(a, 0, 0, 0, 0ms)
+    a.send(100ms)
+    a.send(100ms)
+    Actor.sleep(10ms)
+    verifyDiagnostics(a, 1, 2, 1, 0ms)
+    Actor.sleep(200ms)
+    verifyDiagnostics(a, 0, 2, 2, 200ms)
+  }
+
+  private Void verifyDiagnostics(Actor a, Int queueSize, Int queuePeak, Int receiveCount, Duration receiveTicks)
+  {
+    verifyEq(a.queueSize,    queueSize)
+    verifyEq(a.queuePeak,    queuePeak)
+    verifyEq(a.receiveCount, receiveCount)
+    diff := Duration((receiveTicks.ticks - a.receiveTicks).abs)
+    verify(diff < 50ms)
+  }
 }
 
 **************************************************************************
@@ -803,4 +886,5 @@ internal class SerMsg
   override Bool equals(Obj? that) { that is SerMsg && i == that->i }
   Int i := 7
 }
+
 

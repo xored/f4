@@ -185,22 +185,15 @@ public final class List
 
   public final List getRange(Range r)
   {
-    try
-    {
-      int s = r.startIndex(size);
-      int e = r.endIndex(size);
-      int n = e - s + 1;
-      if (n < 0) throw IndexErr.make(r);
+    int s = r.startIndex(size);
+    int e = r.endIndex(size);
+    int n = e - s + 1;
+    if (n < 0) throw IndexErr.make(r);
 
-      List acc = new List(of, n);
-      acc.size = n;
-      System.arraycopy(values, s, acc.values, 0, n);
-      return acc;
-    }
-    catch (ArrayIndexOutOfBoundsException e)
-    {
-      throw IndexErr.make(r);
-    }
+    List acc = new List(of, n);
+    acc.size = n;
+    System.arraycopy(values, s, acc.values, 0, n);
+    return acc;
   }
 
   public final boolean contains(Object value)
@@ -400,7 +393,10 @@ public final class List
     return insert(size, value);
   }
 
-  public final List addIfNotNull(Object value)
+  // deprecated
+  public final List addIfNotNull(Object value) { return addNotNull(value); }
+
+  public final List addNotNull(Object value)
   {
     if (value == null) return this;
     return add(value);
@@ -758,6 +754,18 @@ public final class List
     return acc;
   }
 
+  public final List findNotNull()
+  {
+    List acc = new List(of.toNonNullable(), size);
+    for (int i=0; i<size; ++i)
+    {
+      Object item = values[i];
+      if (item != null)
+        acc.add(item);
+    }
+    return acc;
+  }
+
   public final List exclude(Func f)
   {
     List acc = new List(of, size);
@@ -843,6 +851,24 @@ public final class List
     return acc;
   }
 
+  public final List mapNotNull(Func f)
+  {
+    Type r = f.returns();
+    if (r == Sys.VoidType) r = Sys.ObjType;
+    List acc = new List(r.toNonNullable(), (int)size());
+    if (f.arity() == 1)
+    {
+      for (int i=0; i<size; ++i)
+        acc.addNotNull(f.call(values[i]));
+    }
+    else
+    {
+      for (int i=0; i<size; ++i)
+        acc.addNotNull(f.call(values[i], Long.valueOf(i)));
+    }
+    return acc;
+  }
+
   public final List flatMap(Func f)
   {
     Type r = f.returns();
@@ -858,6 +884,35 @@ public final class List
     {
       for (int i=0; i<size; ++i)
         acc.addAll((List)f.call(values[i], Long.valueOf(i)));
+    }
+    return acc;
+  }
+
+  public final Map groupBy(Func f)
+  {
+    Type r = f.returns();
+    if (r == Sys.VoidType) r = Sys.ObjType;
+    Map acc = new Map(r, typeof());
+    return groupByInto(acc, f);
+  }
+
+  public final Map groupByInto(Map acc, Func f)
+  {
+    MapType accType = acc.type();
+    if (!(accType.v instanceof ListType)) throw ArgErr.make("Map value type is not list: $accType");
+    Type bucketOfType = ((ListType)accType.v).v;
+    boolean arity1 = f.arity() == 1;
+    for (int i=0; i<size; ++i)
+    {
+      Object val = values[i];
+      Object key = arity1 ? f.call(val) : f.call(val, Long.valueOf(i));
+      List bucket = (List)acc.get(key);
+      if (bucket == null)
+      {
+        bucket = new List(bucketOfType, 8);
+        acc.set(key, bucket);
+      }
+      bucket.add(val);
     }
     return acc;
   }

@@ -68,16 +68,18 @@ internal class ApiDocParser
       this.typeLoc = attrs.loc
 
       // zero or more slots
-      slots := Str:DocSlot[:]
+      list := DocSlot[,]
+      map  := Str:DocSlot[:]
       while (true)
       {
         slot := parseSlot
         if (slot == null) break
-        slots[slot.name] = slot
+        list.add(slot)
+        map[slot.name] = slot
       }
 
       // construct DocType from my own fields
-      return DocType(pod, attrs, typeRef, slots)
+      return DocType(pod, attrs, typeRef, list, map)
     }
     finally { if (close) in.close }
   }
@@ -133,7 +135,8 @@ internal class ApiDocParser
     consumeLine
 
     // attrs, facets, and doc
-    attrs  := parseAttrs
+    attrs := parseAttrs
+    attrs.flags = attrs.flags.and(DocFlags.Const.not)
     return DocMethod(attrs, typeRef, name, returns, params)
   }
 

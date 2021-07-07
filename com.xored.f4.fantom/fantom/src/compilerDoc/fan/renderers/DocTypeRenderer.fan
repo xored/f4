@@ -113,7 +113,7 @@ class DocTypeRenderer : DocRenderer
     if (DocFlags.isEnum(type.flags))
     {
       out.ul
-      type.slots.each |s|
+      type.declared.each |s|
       {
         if (DocFlags.isEnum(s.flags))
           out.li.a(`#$s.name`).esc(s.name).aEnd.liEnd
@@ -171,7 +171,14 @@ class DocTypeRenderer : DocRenderer
   {
     out.p("class='sig'").code
     slot.facets.each |f| { writeFacet(f); out.br }
+    writeSlotSigText(slot)
+    out.codeEnd.pEnd
+  }
 
+  ** Render slot signature inside the outer p element.
+  ** This does *not* include facets, but does include signature links.
+  @NoDoc Void writeSlotSigText(DocSlot slot)
+  {
     if (slot is DocField)
     {
       // field sig
@@ -209,8 +216,6 @@ class DocTypeRenderer : DocRenderer
       }
       out.w(")")
     }
-
-    out.codeEnd.pEnd
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -281,6 +286,11 @@ class DocTypeRenderer : DocRenderer
       else throw Err("Unsupported parameterized type: $ref")
       if (ref.isNullable) out.w("?")
     }
+    else if (ref.isGenericVar)
+    {
+      out.w(full ? ref.qname : ref.name)
+         .w(ref.isNullable ? "?" : "")
+    }
     else
     {
       // make link by hand to avoid having to resolve
@@ -302,6 +312,14 @@ class DocTypeRenderer : DocRenderer
   virtual Void writeFacet(DocFacet f)
   {
     out.code("class='sig'")
+    writeFacetText(f)
+    out.codeEnd
+  }
+
+  ** Write the facet content inside the outer code element
+  ** which includes links to the facet type and body values.
+  @NoDoc Void writeFacetText(DocFacet f)
+  {
     out.w("@")
     writeTypeRef(f.type)
     if (f.fields.size > 0)
@@ -309,7 +327,6 @@ class DocTypeRenderer : DocRenderer
       s := f.fields.join("; ") |v,n| { "$n.toXml=$v.toXml" }
       out.w(" { $s }")
     }
-    out.codeEnd
   }
 
   ** Map filename/line number to a source file link
@@ -330,5 +347,6 @@ class DocTypeRenderer : DocRenderer
     writeLink(link)
     out.pEnd
   }
+
 }
 

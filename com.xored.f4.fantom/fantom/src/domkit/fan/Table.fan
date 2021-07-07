@@ -44,7 +44,7 @@ using graphics
     // manually track focus so we can detect when
     // the browser window becomes unactive while
     // maintaining focus internally in document
-    this.onEvent("focus", false) |e| { manFocus=true;  refresh }
+    this.onEvent("focus", false) |e| { if (!manFocus) { manFocus=true; refresh }}
     this.onEvent("blur",  false) |e| { manFocus=false; refresh }
 
     // rebuild if size changes
@@ -92,6 +92,7 @@ using graphics
     view.sort(col, dir)
     model.onSort(col, dir)
     refresh
+    cbSort?.call(this)
   }
 
   ** Scroll to the given row and column in table.  Pass 'null' to
@@ -157,6 +158,13 @@ using graphics
 
   ** Callback when row is double-clicked.
   Void onAction(|This| f) { cbAction = f }
+
+  ** Callback when table is sorted by a column
+  Void onSort(|This| f) { cbSort = f }
+
+  ** Callback when a key is pressed in table.
+  // TODO: need to fix to take |This,Event| arg...
+  @NoDoc Void onKeyDown(|Event| f) { cbKeyDown = f }
 
   ** Callback when a event occurs inside a table cell.
   Void onTableEvent(Str type, |TableEvent| f) { cbTableEvent[type] = f }
@@ -924,6 +932,23 @@ using graphics
   ** Callback to handle selection changes from a mouse event.
   private Void onMouseEventSelect(Event e, Int row, Int vrow)
   {
+    // always force focus for mousedown
+    manFocus = true
+
+    // short-circuit if we initiated a hyperlink so that
+    // the event can bubble properly down to the <a> tag
+    if (e.target.tagName == "a")
+    {
+      // Chrome seems to be doing some weird stuff here; forcing
+      // an onblur call on the Table <div> inbetween firing the
+      // hyperlink. Technically that might be correct but complicates
+      // how we manage focus.  So if we detect this manually invoke
+      // the click to skip over that behavoir
+      e.target->click
+      e.stop
+      return
+    }
+
     cur := sel.indexes
     newsel := cur.dup
 
@@ -1007,17 +1032,20 @@ using graphics
         if (cur < 0) cur = cur.not - 1
         pre := colx[cur] == scrollx ? cur-1 : cur
         scrollTo(0.max(pre), null)
+        return
 
       case Key.right:
         cur := colx.binarySearch(scrollx)
         if (cur < 0) cur = cur.not - 1
         scrollTo((numCols-1).min(cur+1), null)
+        return
 
       case Key.up:
         if (sel.indexes.isEmpty)
         {
           updateSel([selFirstVis])
           scrollTo(null, firstVisRow)
+          return
         }
         else
         {
@@ -1025,6 +1053,7 @@ using graphics
           prev := pivot - 1
           updateSel([view.rowViewToModel(prev)])
           scrollTo(null, prev)
+          return
         }
 
       case Key.down:
@@ -1032,6 +1061,7 @@ using graphics
         {
           updateSel([selFirstVis])
           scrollTo(null, firstVisRow)
+          return
         }
         else
         {
@@ -1039,6 +1069,7 @@ using graphics
           next := pivot + 1
           updateSel([view.rowViewToModel(next)])
           scrollTo(null, next)
+          return
         }
     }
 
@@ -1048,6 +1079,9 @@ using graphics
       cbAction?.call(this)
       return
     }
+
+    // else bubble up to callback
+    if (e.type == "keydown") return cbKeyDown?.call(e)
   }
 
   @NoDoc Void updateSel(Int[] newsel)
@@ -1083,6 +1117,8 @@ using graphics
   private Func? cbBeforeSelect
   private Func? cbSelect
   private Func? cbAction
+  private Func? cbSort
+  private Func? cbKeyDown
   private Str:Func cbTableEvent := [:]
   private Func? cbHeaderPopup
 
@@ -1315,7 +1351,7 @@ internal const class TablePos
   override Void onUpdate(Int[] oldIndexes, Int[] newIndexes)
   {
     oldIndexes.each |i| { if (i < max) view.table.refreshRow(view.rowModelToView(i)) }
-    newIndexes.each |i| { view.table.refreshRow(view.rowModelToView(i)) }
+    newIndexes.each |i| { if (i < max) view.table.refreshRow(view.rowModelToView(i)) }
   }
   private TableView view
 }

@@ -273,6 +273,11 @@ fan.sys.List.prototype.add = function(value)
 
 fan.sys.List.prototype.addIfNotNull = function(value)
 {
+  return this.addNotNull(value);
+}
+
+fan.sys.List.prototype.addNotNull = function(value)
+{
   if (value == null) return this;
   return this.add(value);
 }
@@ -575,6 +580,18 @@ fan.sys.List.prototype.findType = function(t)
   return acc;
 }
 
+fan.sys.List.prototype.findNotNull = function()
+{
+  var acc = fan.sys.List.make(this.m_of.toNonNullable());
+  for (var i=0; i<this.m_size; ++i)
+  {
+    var item = this.m_values[i];
+    if (item != null)
+      acc.add(item);
+  }
+  return acc;
+}
+
 fan.sys.List.prototype.exclude = function(f)
 {
   var acc = fan.sys.List.make(this.m_of);
@@ -660,6 +677,24 @@ fan.sys.List.prototype.map = function(f)
   return acc;
 }
 
+fan.sys.List.prototype.mapNotNull = function(f)
+{
+  var r = f.returns();
+  if (r == fan.sys.Void.$type) r = fan.sys.Obj.$type.toNullable();
+  var acc = fan.sys.List.make(r.toNonNullable());
+  if (f.m_params.size() == 1)
+  {
+    for (var i=0; i<this.m_size; ++i)
+      acc.addNotNull(f.call(this.m_values[i]));
+  }
+  else
+  {
+    for (var i=0; i<this.m_size; ++i)
+      acc.addNotNull(f.call(this.m_values[i], i));
+  }
+  return acc;
+}
+
 fan.sys.List.prototype.flatMap = function(f)
 {
   var of = f.returns().v;
@@ -674,6 +709,35 @@ fan.sys.List.prototype.flatMap = function(f)
   {
     for (var i=0; i<this.m_size; ++i)
       acc.addAll(f.call(this.m_values[i], i));
+  }
+  return acc;
+}
+
+
+fan.sys.List.prototype.groupBy = function(f)
+{
+  var r = f.returns();
+  if (r == fan.sys.Void.$type) r = fan.sys.Obj.$type;
+  var acc = fan.sys.Map.make(r, this.$typeof());
+  return this.groupByInto(acc, f);
+}
+
+fan.sys.List.prototype.groupByInto = function(acc, f)
+{
+  var mapValType = acc.m_type.v;
+  var bucketOfType = mapValType.v;
+  var arity1 = f.arity() == 1;
+  for (var i=0; i<this.m_size; ++i)
+  {
+    var val = this.m_values[i];
+    var key = arity1 ? f.call(val) : f.call(val, i);
+    var bucket = acc.get(key);
+    if (bucket == null)
+    {
+      bucket = fan.sys.List.make(bucketOfType, 8);
+      acc.set(key, bucket);
+    }
+    bucket.add(val);
   }
   return acc;
 }

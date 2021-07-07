@@ -24,10 +24,9 @@ abstract class DocRenderer
   ** All subclasses must implement ctor with env, out, doc params.
   new make(DocEnv env, WebOutStream out, Doc doc)
   {
-    this.env = env
-    this.out = out
-    this.doc = doc
-    this.theme = env.theme
+    this.envRef = env
+    this.outRef = out
+    this.docRef = doc
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,17 +34,20 @@ abstract class DocRenderer
 //////////////////////////////////////////////////////////////////////////
 
   ** Environment with access to model, theme, linking, etc
-  DocEnv env { private set }
+  virtual DocEnv env() { envRef }
+  private DocEnv envRef
 
   ** HTML output stream
-  WebOutStream out { private set }
+  virtual WebOutStream out() { outRef }
+  private WebOutStream outRef
 
   ** Document to be renderered
-  const Doc doc
+  virtual Doc doc() { docRef }
+  private Doc docRef
 
   ** Theme to use for rendering chrome and navigation.
   ** This field is initialized from `DocEnv.theme`.
-  const DocTheme theme
+  virtual DocTheme theme() { env.theme }
 
 //////////////////////////////////////////////////////////////////////////
 // Hooks
@@ -111,50 +113,17 @@ abstract class DocRenderer
   virtual Void writeFandoc(DocFandoc doc)
   {
     // parse fandoc
-    loc := doc.loc
+    docLoc := doc.loc
     parser := FandocParser()
     parser.silent = true
-    root := parser.parse(loc.file, doc.text.in)
+    root := parser.parse(docLoc.file, doc.text.in)
 
     // if no errors, then write as HTML
     if (parser.errs.isEmpty)
     {
       writer := HtmlDocWriter(out)
-      writer.onLink = |Link elem|
-      {
-        // don't process absolute links
-        orig := elem.uri
-        if (orig.startsWith("http:/") ||
-            orig.startsWith("https:/") ||
-            orig.startsWith("ftp:/")) return
-
-        linkLoc := DocLoc(loc.file, loc.line + elem.line -1)
-        try
-        {
-          // route to DocEnv.link
-          link := resolveFandocLink(elem, true)
-
-          // get environment URI for the DocLink
-          elem.uri = env.linkUri(link).encode
-          elem.isCode = link.target.isCode
-
-          // extra checking
-          env.linkCheck(link, linkLoc)
-
-          // if link text was original URI, then update with DocLink.dis
-          if (elem.children.first is DocText && elem.children.first.toStr == orig)
-          {
-            elem.removeAll.add(DocText(link.dis))
-          }
-        }
-        catch (Err e)
-        {
-          if (elem.uri.startsWith("examples::"))
-            elem.uri = "http://fantom.org/doc/" + elem.uri.replace("::", "/")
-          else
-            env.err(e.toStr, linkLoc)
-        }
-      }
+      writer.onLink  = |Link elem| { onFandocLink(elem, toFandocElemLoc(docLoc, elem.line)) }
+      writer.onImage = |Image elem| { onFandocImage(elem, toFandocElemLoc(docLoc, elem.line)) }
       root.children.each |child| { child.write(writer) }
     }
 
@@ -164,12 +133,61 @@ abstract class DocRenderer
       // report each error
       parser.errs.each |err|
       {
-        env.err(err.msg, DocLoc(loc.file, loc.line + err.line - 1))
+        env.err(err.msg, toFandocElemLoc(docLoc, err.line))
       }
 
       // print as <pre>
       out.pre.w(doc.text).preEnd
     }
+  }
+
+  ** Map document location and element to the element location
+  private DocLoc toFandocElemLoc(DocLoc docLoc, Int line)
+  {
+    DocLoc(docLoc.file, docLoc.line + line - 1)
+  }
+
+  ** Fandoc handling for link nodes
+  @NoDoc
+  virtual Void onFandocLink(Link elem, DocLoc loc)
+  {
+    // don't process absolute links
+    orig := elem.uri
+    if (orig.startsWith("http:/") ||
+        orig.startsWith("https:/") ||
+        orig.startsWith("ftp:/")) return
+
+    try
+    {
+      // route to DocEnv.link
+      link := resolveFandocLink(elem, true)
+
+      // get environment URI for the DocLink
+      elem.uri = env.linkUri(link).encode
+      elem.isCode = link.target.isCode
+
+      // extra checking
+      env.linkCheck(link, loc)
+
+      // if link text was original URI, then update with DocLink.dis
+      if (elem.children.first is DocText && elem.children.first.toStr == orig)
+      {
+        elem.removeAll.add(DocText(link.dis))
+      }
+    }
+    catch (Err e)
+    {
+      if (elem.uri.startsWith("examples::"))
+        elem.uri = "https://fantom.org/doc/" + elem.uri.replace("::", "/")
+      else
+        onFandocErr(e, loc)
+    }
+  }
+
+  ** Fandoc handling for inage nodes
+  @NoDoc
+  virtual Void onFandocImage(Image elem, DocLoc loc)
+  {
   }
 
   **
@@ -178,5 +196,12 @@ abstract class DocRenderer
   virtual DocLink? resolveFandocLink(Link elem, Bool checked := true)
   {
     env.link(this.doc, elem.uri, true)
+  }
+
+  ** Handle a fandoc linking error
+  @NoDoc
+  virtual Void onFandocErr(Err e, DocLoc loc)
+  {
+    env.err(e.toStr, loc)
   }
 }
