@@ -16,6 +16,7 @@ import org.eclipse.dltk.ui.preferences.AbstractScriptEditorColoringConfiguration
 import org.eclipse.dltk.ui.preferences.IPreferenceConfigurationBlock;
 import org.eclipse.dltk.ui.preferences.OverlayPreferenceStore;
 import org.eclipse.dltk.ui.preferences.PreferencesMessages;
+import org.eclipse.dltk.ui.text.DLTKColorConstants;
 import org.eclipse.dltk.ui.text.IColorManager;
 import org.eclipse.dltk.ui.text.ScriptSourceViewerConfiguration;
 import org.eclipse.dltk.ui.text.ScriptTextTools;
@@ -113,7 +114,15 @@ public class FanEditorColoringConfigurationBlock extends
 			//WTFs
 			{ PreferencesMessages.DLTKEditorPreferencePage_decorators,
 					FanPreferenceConstants.EDITOR_DECORATOR_COLOR,
-					sCoreCategory }
+					sCoreCategory },
+					
+			// The Missing Colour for Dark Mode! - SlimerDude, July 2021
+			{ "Default",		DLTKColorConstants.DLTK_DEFAULT,	sCoreCategory }
+
+			// these other colours don't seem to be used - SlimerDude, July 2021
+//			{ "x-Operator",		DLTKColorConstants.DLTK_OPERATOR,	sCoreCategory },
+//			{ "x-Argument",		DLTKColorConstants.DLTK_ARGUMENT,	sCoreCategory },
+//			{ "x-Base Class",	DLTKColorConstants.DLTK_BASE_CLASS,	sCoreCategory }
 		};
 	
 	
