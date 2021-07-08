@@ -1,3 +1,4 @@
+
 abstract class IFanNamespace {
 	
 	abstract IFanPod currPod()
@@ -10,28 +11,38 @@ abstract class IFanNamespace {
 		if (name.isEmpty) return null
 		if (name[-1] == '?') name = name[0..-2]
 
+		result := null as IFanType 
+		
 		// special handling for Lists and Maps
-		IFanType? result := trySpecial(name)
-		if (result != null) return result
-		
-		index := name.index("::")
-		Str? pod := null
-		if (index != null) {
-			pod  = name[0..<index]
-			name = name[index+2..-1]
-		}
+		if (result == null)
+			result = trySpecial(name)
 
-		pods := pod == null ? podNames : [pod]
-		// Try to resolve from all pods
-		result = pods.eachWhile { findPod(it)?.findType(name, false) }		
-		
-		// Try to resolve from usings
+		// look for a qualified name
 		if (result == null) {
-			result = tryResolve(name)
-			if (result != null)
-				return result
+			pod := null as Str
+			idx := name.index("::")
+			if (idx != null) {
+				pod  = name[0..<idx]
+				name = name[idx+2..-1]
+			}
+		
+			if (pod != null)
+				// if a pod is named, don't look anywhere else
+				result = findPod(pod)?.findType(name, false)
 		}
 		
+		// try to resolve from usings
+		if (result == null)
+			result = tryResolve(name)
+
+		// look inside the current pod
+		if (result == null)
+			result = currPod.findType(name, false)
+		
+		// finally, look everywhere else (all other pods) and grab the first matching type
+		if (result == null)
+			podNames.eachWhile { findPod(it)?.findType(name, false) }
+
 		return result
 	} 
 
