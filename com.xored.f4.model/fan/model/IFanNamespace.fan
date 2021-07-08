@@ -13,7 +13,7 @@ abstract class IFanNamespace {
 
 		result := null as IFanType 
 		
-		// special handling for Lists and Maps
+		// special handling for Lists, Maps, and Funcs
 		if (result == null)
 			result = trySpecial(name)
 
@@ -95,8 +95,17 @@ abstract class IFanNamespace {
 			return findType("sys::Map")
 		}
 
-		if (name.startsWith("|"))
-			return findType("sys::Func")
+		if (name.startsWith("|")) {
+			func := findType("sys::Func")
+			idx  := name.index("->")
+			if (idx != null) {
+				retType := findType(name[idx+2..<-1])
+				if (retType != null)
+					// there doesn't seem to be a need to parameterise the arguments too
+					func = func.parameterize(["sys::R":retType])
+			}
+			return func
+		}
 
 		return null
 	}
