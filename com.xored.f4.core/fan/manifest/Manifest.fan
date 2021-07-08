@@ -37,7 +37,7 @@ class Manifest {
 	public static const Str filename := "build.fan"
 
 	** Lines of field initializers
-	Str:Int		lines		{ private set } 
+	Str:Int		lines		{ private set }
 	Str:Obj?	vals		{ private set }
 	Str? 		podName()	{ vals["podName"] }
 	Version		version()	{ vals["version"] ?: Version("1.0") }
@@ -81,6 +81,7 @@ class Manifest {
 		if (expr is CallExpr) { 
 			call	:= expr as CallExpr
 			callee	:= call.callee
+			
 			if (isVersionConstructor(callee)) {
 				// first look for a Str ctor
 				versionStr := (call.args.first as Literal)?.val as Str
@@ -95,11 +96,29 @@ class Manifest {
 				}
 			}
 		}
+
 		return null
 	}
 	
 	private static Bool isVersionConstructor(Expr callee) {
-		(callee as UnresolvedRef)?.text == "Version" || (callee as StaticTargetExpr)?.ctype?.resolvedType?.qname == "sys::Version"
+		
+		// these are for standard syntax: Version("1.2")
+		if ((callee as UnresolvedRef)?.text == "Version")
+			return true
+		if ((callee as StaticTargetExpr)?.ctype?.resolvedType?.qname == "sys::Version")
+			return true
+		
+		// this is for explicit make syntax: Version.make("1.2")
+		if (callee is InvokeExpr) {
+			icallee := ((InvokeExpr) callee).callee
+			
+			if ((icallee as UnresolvedRef)?.text == "Version")
+				return true
+			if ((icallee as StaticTargetExpr)?.ctype?.resolvedType?.qname == "sys::Version")
+				return true
+		}
+		
+		return false
 	}
 	
 	private static Range:Int buildOffsets(Str file) {
