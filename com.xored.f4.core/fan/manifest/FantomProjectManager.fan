@@ -52,30 +52,34 @@ internal class FantomProjectManagerState {
 		// reset containers for all projects that depend on 
 		// closed or opened projects and for all projects with updated content
 
-		projectsToUpdate := [Str:IProject][:] { it.ordered = true }
+		projectsToUpdate  := [Str:IProject][:] { it.ordered = true }
+		projectsToRebuild := [Str:IProject][:] { it.ordered = true }
 		
-		// add updated and opened Fantom projects
+		// update updated and opened Fantom projects
 		change.openedProjects.each {
+			// not sure why we need to check for Fantom projects?
 			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
 		}
 		change.updatedProjects.each {
+			// not sure why we need to check for Fantom projects?
 			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
 		}
 		
 		
-		// add parent projects
+		// update the dependencies of parent projects
 		change.openedProjects.each {
-			parentProjects(it).each {	projectsToUpdate[it.getName] = it }
+			parentProjects(it).each {	projectsToRebuild[it.getName] = it }
 		}
 		change.closedProjects.each {
-			parentProjects(it).each {	projectsToUpdate[it.getName] = it }
+			parentProjects(it).each {	projectsToRebuild[it.getName] = it }
 		}
-
+		
 		
 		// remove all closed projects
 		change.closedProjects.each {
-			projectsToUpdate.remove(it.getName)
-			projects		.remove(it.getName)
+			projectsToUpdate .remove(it.getName)
+			projectsToRebuild.remove(it.getName)
+			projects		 .remove(it.getName)
 		}
 
 		// remove all updated projects to ensure they get re-created
@@ -86,7 +90,7 @@ internal class FantomProjectManagerState {
 		
 		// do the update
 		projectsToUpdate.vals.each {
-			created := updateProject(it)
+			created := createProject(it)
 
 			if (created)
 				// resetting seems quite processor intensive, so only do it if we really need to
@@ -95,6 +99,18 @@ internal class FantomProjectManagerState {
 			if (!created)
 				// reset existing projects so pods get lazily resolved
 				projects[it.getName].reset
+		}
+		
+		projectsToRebuild.vals.each {
+			fp := projects[it.getName]
+
+			// can't think why fp would be null but, you know, belts and braces when in the reactor!
+			if (fp != null) {
+				// reset and re-resolve to remove these annoying errors:
+				//  - Project A is missing required script project: 'Project B'
+				fp.reset
+				fp.resolvedPods
+			}
 		}
 		
 		return null
@@ -120,7 +136,7 @@ internal class FantomProjectManagerState {
 	
 	FantomProject? getOrAdd(Unsafe projectRef) {
 		ip := (IProject) projectRef.val
-		updateProject(ip)
+		createProject(ip)
 		return projects[ip.getName]
 	}
 	
@@ -154,7 +170,7 @@ internal class FantomProjectManagerState {
 	}
 
 	** Returns 'true' if the project was updated
-	private Bool updateProject(IProject ip) {
+	private Bool createProject(IProject ip) {
 		// if the existing project looks okay, let's keep it!
 		fp := projects[ip.getName]
 		if (fp != null)
