@@ -59,7 +59,8 @@ class DotCompletionProvider : CompletionProvider {
 		}
 
 		reportSlots(slots)
-
+		
+		// given reportSlots adds in slots for Obj, I believe we should always have a ctor - SlimerDude July 2021
 		if (isStatic && !slots.any { it.isCtor })
 			reportDefaultCtor
 		

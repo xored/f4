@@ -72,10 +72,13 @@ abstract class CompletionProvider {
 	** Helper method to report bunch of slots
 	** 
 	protected Void reportSlots(IFanSlot[] slots) {
-		slots = slots.findAll { it.name.lower.startsWith(prefix.lower) }
+		prefixLower := prefix.lower
+		
 		slots.each |slot| {
-			if (slot.isField) reportField(slot)
-			else if (slot.isMethod) reportMethod(slot) 
+			if (prefixLower.isEmpty || slot.name.lower.startsWith(prefixLower)) {
+				if (slot.isField ) reportField (slot)
+				if (slot.isMethod) reportMethod(slot)
+			}
 		}
 	}
 
@@ -87,11 +90,10 @@ abstract class CompletionProvider {
 		reporter.report(createProposal(ProposeKind.field, field.name, field.me, reporter.computeCaseRelevance(this.prefix, field.name)))
 	}
 
-	protected Void reportMethod(IFanMethod method, Str? mname := null) {
-		params := method.params
-	 
+	protected Void reportMethod(IFanMethod method, Str? mname := null) {	 
 		if (reporter.ignores(ProposeKind.method)) return
 
+		params := method.params
 		required := params.findIndex { it.hasDefault }
 		if (required == null) { required = params.size }
 
