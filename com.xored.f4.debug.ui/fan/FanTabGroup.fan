@@ -38,8 +38,11 @@ class FanMainConfigTab : MainLaunchConfigurationTab {
 		classText.setLayoutData(GridData(GridData.FILL_HORIZONTAL))
 		classText.addModifyListener(getWidgetListener)
 		
-		searchButton = createPushButton(group, "Browse...", null)
-		searchButton.addSelectionListener(BrowseButtonListener(this))
+		// as the Browse Button doesn't do anything, and I've NO idea how to bring up a filtering Type Dialog
+		// let's just disable it for now...
+		// see https://github.com/xored/f4/issues/22
+//		searchButton = createPushButton(group, "Browse...", null)
+//		searchButton.addSelectionListener(BrowseButtonListener(this))
 	}
 	
 	private Button? searchButton
