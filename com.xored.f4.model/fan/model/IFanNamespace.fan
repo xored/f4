@@ -39,7 +39,12 @@ abstract class IFanNamespace {
 		if (result == null)
 			result = currPod.findType(name, false)
 		
+		// the sys pod is always in scope, so lets explicitly look there next
+		if (result == null)
+			result = findPod("sys")?.findType(name, false)
+		
 		// finally, look everywhere else (all other pods) and grab the first matching type
+		// code won't compile with this type, but returning it does let us play with autocomplete until we add the "using" statement
 		if (result == null)
 			result = podNames.eachWhile { findPod(it)?.findType(name, false) }
 
