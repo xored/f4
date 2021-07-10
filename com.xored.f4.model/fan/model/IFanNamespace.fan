@@ -41,7 +41,7 @@ abstract class IFanNamespace {
 		
 		// finally, look everywhere else (all other pods) and grab the first matching type
 		if (result == null)
-			podNames.eachWhile { findPod(it)?.findType(name, false) }
+			result = podNames.eachWhile { findPod(it)?.findType(name, false) }
 
 		return result
 	} 
