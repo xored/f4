@@ -75,10 +75,6 @@ class CompileFan : IScriptBuilder {
 		return Status(IStatus.OK, pluginId, "OK")
 	}
 	
-	private FantomProject[] projectsFromElements(ISourceModule[] modules) {
-		modules.map { fantomProject(it.getScriptProject) }.unique
-	}
-	
 	private Bool buildPod(FantomProject fp)	{
 		building = true
 		clearMarkers(fp.project)

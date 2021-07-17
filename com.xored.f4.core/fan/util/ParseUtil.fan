@@ -21,8 +21,8 @@ class ParseUtil : TypeUtil
   {
     t != null && t.inheritance.any |Str baseName -> Bool|
     {
-      baseType := ns.findType(baseName)	
-      return baseType.qname == qNameBase || inherits(baseType, qNameBase, ns)
+      baseType := ns.findType(baseName)
+      return baseType?.qname == qNameBase || inherits(baseType, qNameBase, ns)
     }
   }
   

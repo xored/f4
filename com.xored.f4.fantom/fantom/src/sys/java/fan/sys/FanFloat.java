@@ -13,8 +13,8 @@ import fanx.serial.*;
 
 /**
  * FanFloat defines the methods for sys::Float:
- *   sys::Float   =>  double primitive
- *   sys::Float?  =>  java.lang.Double
+ *   sys::Float   =&gt;  double primitive
+ *   sys::Float?  =&gt;  java.lang.Double
  */
 public final class FanFloat
 {
@@ -185,6 +185,13 @@ public final class FanFloat
   {
     if (self >= that) return self;
     return that;
+  }
+
+  public static double clip(double self, double min, double max)
+  {
+    if (self < min) return min;
+    if (self > max) return max;
+    return self;
   }
 
   public static double ceil(double self)

@@ -228,25 +228,27 @@ const mixin IFanType : DltkModelElement
     addSlotsTo(ns,result)
     return result.vals
   }
-  
-  private Void addSlotsTo(IFanNamespace ns, Str:IFanSlot map,Str[] excluded := [,])
-  {
-    excluded.add(qname)
-    //deep search
-    if (!excluded.contains("sys::Obj"))
-      ns.findType("sys::Obj")?.addSlotsTo(ns,map,excluded)
-    inheritance.each |t|
-    {
-      type := ns.findType(t)
-      if(type == null) return
-      if (!excluded.contains(type.qname))
-        type?.addSlotsTo(ns,map,excluded)
-    }
-    slotsMap.each |IFanSlot slot, Str name| { 
-      if( !map.containsKey(name))
-      {
-        map[name] = slot
-      }
-    }
-  }
+
+	
+	private Void addSlotsTo(IFanNamespace ns, Str:IFanSlot map, Str[] excluded := [,]) {
+		excluded.add(qname)
+
+		// add *our* slots first so they don't get overridden by Obj
+		slotsMap.each |IFanSlot slot, Str name| { 
+			if (!map.containsKey(name)) {
+				map[name] = slot
+			}
+		}
+
+		inheritance.each |t| {
+			type := ns.findType(t)
+			if (type == null) return
+			if (!excluded.contains(type.qname))
+				type.addSlotsTo(ns, map, excluded)
+		}
+
+		// always include Obj, think of mixins et al
+		if (!excluded.contains("sys::Obj"))
+			ns.findType("sys::Obj")?.addSlotsTo(ns, map, excluded)
+	}
 }

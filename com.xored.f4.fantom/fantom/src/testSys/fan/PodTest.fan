@@ -127,6 +127,8 @@ class PodTest : Test
     verifyEq(f.name, "test.txt")
     verifyEq(f.size, 19)
     verifyEq(f.readAllStr, "hello world\nline 2")
+    verify(f.isReadable)
+    verifyFalse(f.isWritable)
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,6 +155,64 @@ class PodTest : Test
 
     verifySame(pod.props(`res/podtest.props`, 1ms), pod.props(`res/podtest.props`, 1ms))
     verifySame(pod.props(`not/found`, 1ms), pod.props(`not/found`, 1ms))
+  }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Flatten Depends
+//////////////////////////////////////////////////////////////////////////
+
+  Void testFlattenDepends()
+  {
+    verifyFlattenDepends(
+      ["fluxText"],
+      ["sys", "concurrent", "compiler", "gfx", "fwt", "flux", "syntax", "fluxText"])
+
+    verifyFlattenDepends(
+      ["fluxText", "sys", "fwt"],
+      ["sys", "concurrent", "compiler", "gfx", "fwt", "flux", "syntax", "fluxText"])
+
+    verifyFlattenDepends(
+      ["fluxText", "webmod"],
+      ["sys", "concurrent", "compiler", "gfx", "fwt", "flux", "syntax", "fluxText", "util", "inet", "web", "webmod"])
+  }
+
+  Void verifyFlattenDepends(Str[] names, Str[] expected)
+  {
+    pods := (Pod[])names.map |n->Pod| { Pod.find(n) }
+    pods = Pod.flattenDepends(pods)
+    actual := pods.map |p->Str | { p.name }
+    verifyEq(expected.sort, actual.sort)
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Order By Depends
+//////////////////////////////////////////////////////////////////////////
+
+  Void testOrderByDepends()
+  {
+    verifyOrderByDepends(
+      ["sys"],
+      ["sys"])
+
+    verifyOrderByDepends(
+      ["concurrent", "sys"],
+      ["sys", "concurrent"])
+
+    verifyOrderByDepends(
+      ["web", "inet", "concurrent", "sys"],
+      ["sys", "concurrent", "inet", "web"])
+
+    big := ["sys", "concurrent", "gfx", "fwt", "flux", "syntax", "fluxText"]
+    10.times { verifyOrderByDepends(big.dup.shuffle, big) }
+  }
+
+  Void verifyOrderByDepends(Str[] names, Str[] expected)
+  {
+    pods := (Pod[])names.map |n->Pod| { Pod.find(n) }
+    pods = Pod.orderByDepends(pods)
+    actual := pods.map |p->Str | { p.name }
+    verifyEq(expected, actual)
   }
 
 //////////////////////////////////////////////////////////////////////////

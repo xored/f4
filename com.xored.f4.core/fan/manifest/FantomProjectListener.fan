@@ -38,6 +38,7 @@ internal class DeltaVisitor2 {
 	IProject[] openedProjects	:= IProject[,]
 	IProject[] updatedProjects	:= IProject[,]
 	
+	** Return 'true' to also visit children.
 	Bool visit(IResourceDelta? delta) {
 		resource := delta.getResource
 

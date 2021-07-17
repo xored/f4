@@ -13,8 +13,8 @@ import fanx.serial.*;
 
 /**
  * FanInt defines the methods for sys::Int
- *   sys::Int   =>  long primitive
- *   sys::Int?  =>  java.lang.Long
+ *   sys::Int   =&gt;  long primitive
+ *   sys::Int?  =&gt;  java.lang.Long
  */
 public final class FanInt
 {
@@ -167,6 +167,13 @@ public final class FanInt
   {
     if (self >= that) return self;
     return that;
+  }
+
+  public static long clip(long self, long min, long max)
+  {
+    if (self < min) return min;
+    if (self > max) return max;
+    return self;
   }
 
   public static long pow(long self, long pow)

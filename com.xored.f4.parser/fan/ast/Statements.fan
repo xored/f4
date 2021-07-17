@@ -199,8 +199,9 @@ const class CatchStmt : Stmt
   {
     if (v.enterNode(this))
     {
-      errVar?.accept(v)
       block.accept(v)
+      // make sure to accept the Err var *inside* the catch block, to make it available
+      errVar?.accept(v)
       v.exitNode(this)
     }
   }

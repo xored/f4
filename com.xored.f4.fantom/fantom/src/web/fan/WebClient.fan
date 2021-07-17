@@ -261,6 +261,21 @@ class WebClient
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Authentication
+//////////////////////////////////////////////////////////////////////////
+
+  **
+  ** Authenticate request using HTTP Basic with given username
+  ** and password.
+  **
+  This authBasic(Str username, Str password)
+  {
+    enc := "${username}:${password}".toBuf.toBase64
+    reqHeaders["Authorization"] = "Basic ${enc}"
+    return this
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Get
 //////////////////////////////////////////////////////////////////////////
 
@@ -305,63 +320,85 @@ class WebClient
   }
 
 //////////////////////////////////////////////////////////////////////////
-// Post
+// Post/Patch
 //////////////////////////////////////////////////////////////////////////
 
   **
-  ** Make a post request to the URI with the given form data.
-  ** Set the Content-Type to application/x-www-form-urlencoded.
-  ** Upon completion the response is ready to be read.  This method
-  ** does not support the ["Expect" header]`pod-doc#expectContinue` (it
-  ** posts all form data before reading response).
+  ** Convenience for 'writeForm("POST", form).readRes'
   **
   This postForm(Str:Str form)
   {
+    writeForm("POST", form).readRes
+  }
+
+  **
+  ** Convenience for 'writeStr("POST", content).readRes'
+  **
+  This postStr(Str content)
+  {
+    writeStr("POST", content).readRes
+  }
+
+  **
+  ** Convenience for 'writeFile("POST", file).readRes'
+  **
+  This postFile(File file)
+  {
+    writeFile("POST", file).readRes
+  }
+
+  **
+  ** Make a request with the given HTTP method to the URI with the given form data.
+  ** Set the Content-Type to application/x-www-form-urlencoded.
+  ** This method does not support the ["Expect" header]`pod-doc#expectContinue` (it
+  ** writes all form data before reading response). Should primarily be used for POST
+  ** and PATCH requests.
+  **
+  This writeForm(Str method, Str:Str form)
+  {
     if (reqHeaders["Expect"] != null) throw UnsupportedErr("'Expect' header")
     body := Uri.encodeQuery(form)
-    reqMethod = "POST"
+    reqMethod = method
     reqHeaders["Content-Type"] = "application/x-www-form-urlencoded"
     reqHeaders["Content-Length"] = body.size.toStr // encoded form is ASCII
     writeReq
     reqOut.print(body).close
-    readRes
     return this
   }
 
   **
-  ** Make a post request to the URI using UTF-8 encoding of given
+  ** Make a request with the given HTTP method to the URI using UTF-8 encoding of given
   ** string.  If Content-Type is not already set, then set it
-  ** to "text/plain; charset=utf-8".  Upon completion the response
-  ** is ready to be read.  This method does not support the
-  ** ["Expect" header]`pod-doc#expectContinue` (it posts full string
-  ** before reading response).
+  ** to "text/plain; charset=utf-8".  This method does not support the
+  ** ["Expect" header]`pod-doc#expectContinue` (it writes full string
+  ** before reading response). Should primarily be used for "POST" and "PATCH"
+  ** requests.
   **
-  This postStr(Str content)
+  This writeStr(Str method, Str content)
   {
     if (reqHeaders["Expect"] != null) throw UnsupportedErr("'Expect' header")
     body := Buf().print(content).flip
-    reqMethod = "POST"
+    reqMethod = method
     ct := reqHeaders["Content-Type"]
     if (ct == null)
       reqHeaders["Content-Type"] = "text/plain; charset=utf-8"
     reqHeaders["Content-Length"] = body.size.toStr
     writeReq
     reqOut.writeBuf(body).close
-    readRes
     return this
   }
 
   **
-  ** Post a file to the URI.  If Content-Type header is not already
-  ** set, then it is set from the file extension's MIME type.  Upon
-  ** completion the response is ready to be read.  This method does
+  ** Write a file using the given HTTP method to the URI.  If Content-Type header is not already
+  ** set, then it is set from the file extension's MIME type. This method does
   ** not support the ["Expect" header]`pod-doc#expectContinue` (it
-  ** posts full file before reading response).
+  ** writes full file before reading response). Should primarily be used for "POST" and
+  ** "PATCH" requests.
   **
-  This postFile(File file)
+  This writeFile(Str method, File file)
   {
     if (reqHeaders["Expect"] != null) throw UnsupportedErr("'Expect' header")
-    reqMethod = "POST"
+    reqMethod = method
     ct := reqHeaders["Content-Type"]
     if (ct == null)
       reqHeaders["Content-Type"] = file.mimeType?.toStr ?: "application/octet-stream"
@@ -370,7 +407,6 @@ class WebClient
     writeReq
     file.in.pipe(reqOut, file.size)
     reqOut.close
-    readRes
     return this
   }
 
@@ -443,6 +479,7 @@ class WebClient
     socket.connect(IpAddr(proxy.host), proxy.port ?: 80)
     out := socket.out
     out.print("CONNECT ${reqUri.host}:${reqUri.port ?: 443} HTTP/${reqVersion}").print("\r\n")
+       .print("Host: ${reqUri.host}:${reqUri.port ?: 443}").print("\r\n")
        .print("\r\n")
     out.flush
 
@@ -471,7 +508,7 @@ class WebClient
     try
     {
       // parse status-line
-      res = in.readLine ?: throw IOErr("No response")
+      res = WebUtil.readLine(in)
       if (res.startsWith("HTTP/1.1")) resVersion = ver11
       else if (res.startsWith("HTTP/1.0")) resVersion = ver10
       else throw Err("Not HTTP")

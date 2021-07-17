@@ -372,17 +372,17 @@ class ListTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
-// AddIfNotNull
+// AddNotNull
 //////////////////////////////////////////////////////////////////////////
 
-  Void testAddIfNotNull()
+  Void testAddNotNull()
   {
     x := Str[,]
-    verifySame(x.addIfNotNull("a"), x)
+    verifySame(x.addNotNull("a"), x)
     verifyEq(x, ["a"])
-    verifySame(x.addIfNotNull(null), x)
+    verifySame(x.addNotNull(null), x)
     verifyEq(x, ["a"])
-    verifySame(x.addIfNotNull("b"), x)
+    verifySame(x.addNotNull("b"), x)
     verifyEq(x, ["a", "b"])
   }
 
@@ -504,10 +504,10 @@ class ListTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
-// Slicing
+// GetRange
 //////////////////////////////////////////////////////////////////////////
 
-  Void testSlicing()
+  Void testGetRange()
   {
     /* Ruby
     irb(main):001:0> a = [0, 1, 2, 3] => [0, 1, 2, 3]
@@ -537,36 +537,36 @@ class ListTest : Test
 
     list := [0, 1, 2, 3]
 
-    verifyEq(list[0..3],  [0, 1, 2, 3])
-    verifyEq(list[0..2],  [0, 1, 2])
-    verifyEq(list[0..1],  [0, 1])
-    verifyEq(list[0..0],  [0])
-    verifyEq(list[0..<0], Int[,])
-    verifyEq(list[0..<1], [0])
-    verifyEq(list[0..<2], [0, 1])
-    verifyEq(list[0..<3], [0, 1, 2])
-    verifyEq(list[0..<4], [0, 1, 2, 3])
-    verifyEq(list[1..3], [1, 2, 3])
-    verifyEq(list[1..1], [1])
-    verifyEq(list[1..-1], [1, 2, 3])
-    verifyEq(list[1..-2], [1, 2])
-    verifyEq(list[1..-3], [1])
-    verifyEq(list[1..-4], Int[,])
-    verifyEq(list[1..<-1], [1, 2])
-    verifyEq(list[1..<-2], [1])
-    verifyEq(list[1..<-3], Int[,])
-    verifyEq(list[-3..-1], [1, 2, 3])
-    verifyEq(list[-3..-2], [1, 2])
-    verifyEq(list[-3..-3], [1])
-    verifyEq(list[4..-1], Int[,])
+    verifyGetRange(list, 0..3,  [0, 1, 2, 3])
+    verifyGetRange(list, 0..2,  [0, 1, 2])
+    verifyGetRange(list, 0..1,  [0, 1])
+    verifyGetRange(list, 0..0,  [0])
+    verifyGetRange(list, 0..<0, Int[,])
+    verifyGetRange(list, 0..<1, [0])
+    verifyGetRange(list, 0..<2, [0, 1])
+    verifyGetRange(list, 0..<3, [0, 1, 2])
+    verifyGetRange(list, 0..<4, [0, 1, 2, 3])
+    verifyGetRange(list, 1..3, [1, 2, 3])
+    verifyGetRange(list, 1..1, [1])
+    verifyGetRange(list, 1..-1, [1, 2, 3])
+    verifyGetRange(list, 1..-2, [1, 2])
+    verifyGetRange(list, 1..-3, [1])
+    verifyGetRange(list, 1..-4, Int[,])
+    verifyGetRange(list, 1..<-1, [1, 2])
+    verifyGetRange(list, 1..<-2, [1])
+    verifyGetRange(list, 1..<-3, Int[,])
+    verifyGetRange(list, -3..-1, [1, 2, 3])
+    verifyGetRange(list, -3..-2, [1, 2])
+    verifyGetRange(list, -3..-3, [1])
+    verifyGetRange(list, 4..-1, Int[,])
 
     // examples
     ex := [0, 1, 2, 3]
-    verifyEq(ex[0..2], [0, 1, 2])
-    verifyEq(ex[3..3], [3])
-    verifyEq(ex[-2..-1], [2, 3])
-    verifyEq(ex[0..<2], [0, 1])
-    verifyEq(ex[1..-2], [1, 2])
+    verifyGetRange(ex, 0..2, [0, 1, 2])
+    verifyGetRange(ex, 3..3, [3])
+    verifyGetRange(ex, -2..-1, [2, 3])
+    verifyGetRange(ex, 0..<2, [0, 1])
+    verifyGetRange(ex, 1..-2, [1, 2])
 
     // errors
     verifyErr(IndexErr#) { x:=list[0..4] }
@@ -576,6 +576,21 @@ class ListTest : Test
     verifyErr(IndexErr#) { x:=list[-5..-1] }
     verifyErr(IndexErr#) { x:=list[1..4] }
     verifyErr(IndexErr#) { x:=list[1..5] }
+  }
+
+  Void verifyGetRange(Int[] list, Range r, Int[]? expected)
+  {
+    if (expected != null)
+    {
+echo("-- $list [$r] => " + list.getRange(r) + " ?= " + expected)
+      verifyEq(list[r], expected)
+      verifyEq(list.getRange(r), expected)
+    }
+    else
+    {
+      verifyErr(IndexErr#) { x := list[r] }
+      verifyErr(IndexErr#) { x := list.getRange(r) }
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1000,6 +1015,12 @@ class ListTest : Test
     verifyEq([null, "a", 3, "b", null, 5ms].findType(Duration#), [5ms])
     verifyEq(["a", 3, "b", 6sec, 5f].findType(Obj#), ["a", 3, "b", 6sec, 5f])
 
+    // findNonNull
+    verifyEq([1, null, 2].findNotNull, Int[1, 2])
+    verifyEq(Str?[null].findNotNull, Str[,])
+    verifyEq(Str?[null, "x", null, null, "y", null].findNotNull, Str["x", "y"])
+    verifyEq([null, 1, null, "foo"].findNotNull, Obj[1, "foo"])
+
     // exclude
     verifyEq(list.exclude|Int v, Int i->Bool| { return v % 20 == 0 }, [10, 30])
     verifyEq(list.exclude|Int v, Int i->Bool| { return i % 2 == 0 },  [10, 30, 60])
@@ -1041,6 +1062,19 @@ class ListTest : Test
   }
 
 //////////////////////////////////////////////////////////////////////////
+// MapNotNull
+//////////////////////////////////////////////////////////////////////////
+
+  Void testMapNotNull()
+  {
+    list := [3, 4, 5]
+    verifyEq(list.mapNotNull |Int v->Int?| { v.isOdd ? 10+v : null },  Int[13, 15])
+    verifyEq(list.mapNotNull |Int v->Int?| { null },  Int[,])
+    verifyEq(list.mapNotNull |Int v->Str?| { v.toStr },  Str["3", "4", "5"])
+    verifyEq(list.mapNotNull |Int v->Str| { v.toStr },  Str["3", "4", "5"])
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // FlatMap
 //////////////////////////////////////////////////////////////////////////
 
@@ -1052,6 +1086,28 @@ class ListTest : Test
     verifyEq(list.flatMap |v->Str?[]| { [v.toChar, v.toChar.upper] }, Str?["a", "A", "b", "B"])
     verifyEq(list.flatMap |v, i->Int[]| { [v, i] }, ['a', 0, 'b', 1])
   }
+
+//////////////////////////////////////////////////////////////////////////
+// GroupBy
+//////////////////////////////////////////////////////////////////////////
+
+  /* TODO add for 1.0.77
+  Void testGroupBy()
+  {
+    list := ["ape", "bear", "camel", "deer", "eel"]
+
+    verifyEq(list.groupBy { it.size }, Obj:Str[][3:["ape", "eel"], 4:["bear", "deer"], 5:["camel"]])
+    verifyEq(list.groupBy |s| { s.size }, Obj:Str[][3:["ape", "eel"], 4:["bear", "deer"], 5:["camel"]])
+    verifyEq(list.groupBy |s->Int| { s.size }, Int:Str[][3:["ape", "eel"], 4:["bear", "deer"], 5:["camel"]])
+    verifyEq(list.groupBy |Str s, Int i->Str| { i.toStr }, Str:Str[]["0":["ape"], "1":["bear"], "2":["camel"], "3":["deer"], "4":["eel"]])
+
+    map := Int:Str[][:]
+    list.groupByInto(map) { it.size }
+    verifyEq(map, Int:Str[][3:["ape", "eel"], 4:["bear", "deer"], 5:["camel"]])
+    ["fox", "goat"].groupByInto(map) |s| { s.size }
+    verifyEq(map, Int:Str[][3:["ape", "eel", "fox"], 4:["bear", "deer", "goat"], 5:["camel"]])
+  }
+  */
 
 //////////////////////////////////////////////////////////////////////////
 // Any/All

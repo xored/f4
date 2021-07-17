@@ -17,14 +17,14 @@ class Build : BuildPod
   new make()
   {
     podName = "docIntro"
-    summary = "Overview and getting started with Fantom"
+    summary = "Fantom overview and getting started"
     meta    = ["org.name":     "Fantom",
-               "org.uri":      "http://fantom.org/",
+               "org.uri":      "https://fantom.org/",
                "proj.name":    "Fantom Docs",
-               "proj.uri":     "http://fantom.org/",
+               "proj.uri":     "https://fantom.org/",
                "license.name": "Academic Free License 3.0",
-               "vcs.name":     "Mercurial",
-               "vcs.uri":      "https://bitbucket.org/fantom/fan-1.0/"]
+               "vcs.name":     "Git",
+               "vcs.uri":      "https://github.com/fantom-lang/fantom"]
     resDirs = [`doc/`]
   }
 }

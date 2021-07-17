@@ -1048,22 +1048,48 @@ class Parser : AstFactory
     return operand
   }
   
-  Expr shortcut(Int start, Int end, ExprId id, Str methodName, Expr left, Expr? right, TokenVal op)
-  {
-    IFanType? rt := null
-    if (left.resolvedType != null)
-    {
-      method := left.resolvedType.method(methodName, false)
-      if (method == null)
-        err(locOf(op), ProblemKind.parser_methodNotFound, [left.resolvedType.name + "." + methodName])
-      else 
-      { 
-        rt = ns.findType(method.of)
-      }
-    }
-    if (right == null) return UnaryExpr(start, end, left, id, rt)
-    return BinaryExpr(start, end, left, right, id, rt)
-  }
+	Expr shortcut(Int start, Int end, ExprId id, Str methodName, Expr left, Expr? right, TokenVal op) {
+
+		// DateTime.minus(Duration)         = DateTime
+		// DateTime.minusDateTime(DateTime) = Duration
+		// problem is, we have to infer which method to use given the 2nd arg type
+		// it's a bit of a fath, but do-able...
+
+		retType := null as IFanType
+
+		if (left.resolvedType != null) {
+			opType := left.resolvedType
+			method := null as IFanMethod
+
+			if (right?.resolvedType != null && _opMethodPrefixes.contains(methodName)) {
+				// do the dance, looking for the actual method the shortcut corresponds to
+				method = opType.allSlots(ns).find |slot| {
+					if (slot.isMethod) {
+						mslot := (IFanMethod) slot
+						param := (mslot.params.size > 0 ? ns.findType(mslot.params.first.of) : null) as IFanType
+						if (param?.qname == right.resolvedType.qname)
+							return true
+					}
+					return false
+				}
+
+			} else
+				// for normal ops, just use the method direct
+				method = opType.method(methodName, false)
+
+			if (method != null)
+				retType = ns.findType(method.of)
+			else
+				err(locOf(op), ProblemKind.parser_methodNotFound, [left.resolvedType.name + "." + methodName])
+		}
+
+		return right == null
+			? UnaryExpr (start, end, left, id, retType)
+			: BinaryExpr(start, end, left, right, id, retType)
+	}
+
+	** see https://fantom.org/doc/docLang/Methods#operators
+	private static const Str[] _opMethodPrefixes := "plus minus mult div mod".split
 
 //////////////////////////////////////////////////////////////////////////
 // Term Expr

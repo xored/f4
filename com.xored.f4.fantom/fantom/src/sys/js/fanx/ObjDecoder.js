@@ -447,6 +447,10 @@ fanx_ObjDecoder.prototype.readMap = function(mapType, firstKey)
     ? fan.sys.Map.make(fan.sys.Obj.$type, fan.sys.Obj.$type.toNullable())
     : fan.sys.Map.make(mapType);
 
+  // we don't encode whether the original map was ordered or not,
+  // so assume it was to ensure map is still ordered after decode
+  map.ordered$(true);
+
   // finish first pair
   this.consume(fanx_Token.COLON, "Expected ':'");
   map.set(firstKey, this.$readObj(null, null, false));
@@ -545,7 +549,10 @@ fanx_ObjDecoder.prototype.readType = function(lbracket)
   if (this.curt == fanx_Token.COLON)
   {
     this.consume();
-    t = new fan.sys.MapType(t, this.readType());
+    var lbracket2 = this.curt == fanx_Token.LBRACKET;
+    if (lbracket2) this.consume();
+    t = new fan.sys.MapType(t, this.readType(lbracket2));
+    if (lbracket2) this.consume(fanx_Token.RBRACKET, "Expected closeing ']'");
   }
   while (this.curt == fanx_Token.LRBRACKET)
   {
