@@ -10,6 +10,21 @@ Pre-compiled installations of F4 may be downloaded from the [GitHub Releases Tab
 
 
 
+## Dark Mode
+
+The default eclipse colours for Dark Mode are pretty poor, but are easy enough to change.
+
+[![Doom Vibrant Theme](https://user-images.githubusercontent.com/3326741/126035333-7bdb1d3b-fe2d-454a-9dec-28e7615137a3.png)](https://gist.github.com/SlimerDude/82ba1a11ac57740dd8816409219f29e9)
+
+[Doom Vibrant Theme (Dark)](https://gist.github.com/SlimerDude/82ba1a11ac57740dd8816409219f29e9)
+
+
+[![Darkula Theme](https://user-images.githubusercontent.com/3326741/138551475-d15ac0ed-9f39-478b-bddb-21794a62f93e.png)](https://gist.github.com/SlimerDude/b75f87284d879ae1d56023bae57e70bd)
+
+[Darkula Theme (Dark)](https://gist.github.com/SlimerDude/b75f87284d879ae1d56023bae57e70bd)
+
+
+
 ## Contributing / Building F4
 
 Most eclipse plugins are compiled Fantom pods so, interestingly, F4 can only be developed and built with F4!
