@@ -10,6 +10,19 @@ Pre-compiled installations of F4 may be downloaded from the [GitHub Releases Tab
 
 
 
+## Note for MacBooks
+
+F4 is built for the Intel architechure - but [can still be used on Apple Silicon](https://support.apple.com/en-gb/HT211861).
+
+To run on a Mac:
+ - ensure Java 8 is on the path
+ - Extract the [lastest release](https://github.com/xored/f4/releases) using Terminal
+ - `cd` to `<f4-path>/F4.app/Contents/MacOS` and `chmod 555 F4`
+ - Run `./F4` to bring up a securiry warning. Go to "Security & Prefrences" and allow this app to run using Finder
+ - Click on F4 icon located in `<f4-path>/F4.app/`
+
+
+
 ## Dark Mode
 
 The default eclipse colours for Dark Mode are pretty poor, but are easy enough to change.
