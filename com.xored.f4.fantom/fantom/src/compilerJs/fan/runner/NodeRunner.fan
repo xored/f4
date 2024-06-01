@@ -27,10 +27,11 @@ class NodeRunner
       initDirs
       if (hasArg("test")) doTest
       else if (hasArg("run")) doRun
+      else if (isInit) doJsBootStrap
       else throw ArgErr("Invalid options")
 
       // cleanup
-      if (!hasArg("keep")) nodeDir.delete
+      if (!hasArg("keep") && !isInit) nodeDir.delete
     }
     catch (ArgErr e)
     {
@@ -64,11 +65,15 @@ class NodeRunner
     echo("  -keep      Keep intermediate test scripts")
   }
 
+  private Bool isInit() { hasArg("init") }
+
   private Void initDirs()
   {
     this.nodeDir = Env.cur.tempDir + `nodeRunner/`
     if (hasArg("dir"))
       nodeDir = arg("dir").toUri.plusSlash.toFile
+    else if (isInit)
+      nodeDir = Env.cur.homeDir.plus(`lib/js/`)
     nodeDir = nodeDir.normalize
   }
 
@@ -244,6 +249,28 @@ class NodeRunner
   }
 
 //////////////////////////////////////////////////////////////////////////
+// Js
+//////////////////////////////////////////////////////////////////////////
+
+  private Void doJsBootStrap()
+  {
+    this.dependencies = [Pod.find("sys")]
+    writeNodeModules
+    writeTzJs
+
+    f := moduleDir.plus(`fan.js`)
+    f.out.writeChars(
+      """let fan = require('sys.js');
+         require('mime.js');
+         require('units.js');
+         require('tz.js');
+         module.exports = fan;
+         """).flush.close
+
+    echo("JS init written to: ${nodeDir}")
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // Dependency Graphing
 //////////////////////////////////////////////////////////////////////////
 
@@ -296,14 +323,35 @@ class NodeRunner
 // Node
 //////////////////////////////////////////////////////////////////////////
 
+  private File moduleDir() { nodeDir.plus(`node_modules/`) }
+
   ** Copy all pod js files into <nodeDir>/node_modules
-  ** Also copies in mime.js, tz.js, units.js, and indexed-props.js
+  ** Also copies in mime.js, units.js, and indexed-props.js
   private Void writeNodeModules()
   {
-    moduleDir := nodeDir + `node_modules/`
+    // write js from pod dependencies
+    writeDependencies
+
+    // (optional) temp pood
+    if (tempPod != null)
+      (moduleDir + `${tempPod}.js`).out.writeChars(js).flush.close
+
+    writeMimeJs
+    writeUnitsJs
+
+    // indexed-props
+    if (!isInit)
+    {
+      out := (moduleDir + `indexed-props.js`).out
+      JsIndexedProps().write(out, dependencies)
+      out.flush.close
+    }
+  }
+
+  private Void writeDependencies()
+  {
     copyOpts  := ["overwrite": true]
 
-    // pod js files
     dependencies.each |pod|
     {
       script := "${pod.name}.js"
@@ -311,28 +359,28 @@ class NodeRunner
       if (file != null)
         file.copyTo(moduleDir + `$script`, copyOpts)
     }
+  }
 
-    // (optional) temp pood
-    if (tempPod != null)
-      (moduleDir + `${tempPod}.js`).out.writeChars(js).flush.close
-
+  private Void writeMimeJs()
+  {
     // mime.js
     out := (moduleDir + `mime.js`).out
     JsExtToMime().write(out)
     out.flush.close
+  }
 
-    // tz.js
-    (Env.cur.homeDir + `etc/sys/tz.js`).copyTo(moduleDir + `tz.js`, copyOpts)
-
+  private Void writeUnitsJs()
+  {
     // units.js
-    out = (moduleDir + `units.js`).out
+    out := (moduleDir + `units.js`).out
     JsUnitDatabase().write(out)
     out.flush.close
+  }
 
-    // indexed-props
-    out = (moduleDir + `indexed-props.js`).out
-    JsIndexedProps().write(out, dependencies)
-    out.flush.close
+  private Void writeTzJs()
+  {
+    // tz.js
+    TzTool(["-silent", "-gen", "-outDir", moduleDir.toStr]).run
   }
 
   private Str requireStatements()
@@ -344,7 +392,6 @@ class NodeRunner
       {
         buf.add("var fan = require('${pod.name}.js');\n")
         buf.add("require('mime.js');\n")
-        buf.add("require('tz.js');\n")
         buf.add("require('units.js');\n")
         buf.add("require('indexed-props.js');\n")
       }

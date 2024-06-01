@@ -13,24 +13,65 @@
 class CompileJs  : CompilerStep
 {
 
-  new make(Compiler compiler) : super(compiler) {}
+  new make(Compiler compiler) : super(compiler)
+  {
+    this.hasJs = compiler.types.any { it.hasFacet("sys::Js") }
+  }
+
+  ** Is any type annotated with @Js
+  private const Bool hasJs
 
   override Void run()
   {
-    // short circuit if no types define the @Js facet
-    if (!needCompileJs) return
+    log.info("CompileJs")
+    if (needCompileJs)
+    {
+      compile("compilerJs::CompileJsPlugin")
+    }
 
-    // try to resolve plugin type
-    t := Type.find("compilerJs::CompileJsPlugin", false)
+    if (needCompileEs)
+    {
+      if (pod.name != "sys") compile("compilerEs::CompileEsPlugin")
+      genTsDecl
+    }
+  }
+
+  private Void compile(Str qname)
+  {
+    // try to resolve plugin
+    t := Type.find(qname, false)
     if (t == null)
     {
-      log.info("WARN: compilerJs not installed!")
+      log.info("WARN: ${qname} not installed")
       return
     }
 
     // do it!
-    log.info("CompileJs")
     t.make([compiler])->run
+  }
+
+  private Void genTsDecl()
+  {
+    // find the tool to generate d.ts
+    t := Type.find("nodeJs::GenTsDecl", false)
+    if (t == null)
+    {
+      log.info("WARN: GenTsDecl not available")
+      return
+    }
+
+    // run it
+    buf := Buf()
+    t.make([buf.out, pod, compiler.input.forceJs || compiler.isSys])->run
+    if (!buf.isEmpty)
+    {
+      compiler.tsDecl = buf.seek(0).readAllStr
+    }
+  }
+
+  Bool needCompileEs()
+  {
+    needCompileJs || compiler.isSys
   }
 
   Bool needCompileJs()
@@ -41,8 +82,15 @@ class CompileJs  : CompilerStep
     // if any JS directories were specified force JS compilation
     if (compiler.jsFiles != null && !compiler.jsFiles.isEmpty) return true
 
-    // run JS compiler is any type has @Js facet
-    return compiler.types.any { it.hasFacet("sys::Js") }
+    // are we forcing generation of js for all types
+    if (compiler.input.forceJs) return true
+
+    // are there any props files that need to be written to JS?
+    if (compiler.jsPropsFiles != null && !compiler.jsPropsFiles.isEmpty) return true
+
+    // run JS compiler if any type has @Js facet
+    return this.hasJs
   }
 
 }
+

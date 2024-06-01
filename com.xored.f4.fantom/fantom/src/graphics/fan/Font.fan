@@ -140,13 +140,6 @@ const class Font
   ** Style as normal, italic, or oblique
   const FontStyle style := FontStyle.normal
 
-  ** Normalize to the closest font with metrics
-  Font normalize()
-  {
-    if (data != null) return this
-    return FontData.normalize(this)
-  }
-
 //////////////////////////////////////////////////////////////////////////
 // Identity
 //////////////////////////////////////////////////////////////////////////
@@ -208,12 +201,28 @@ const class Font
 // Metrics
 //////////////////////////////////////////////////////////////////////////
 
+  **
+  ** DO NOT USE - this design is deprecated in favor of Graphics.metrics
+  **
+  ** Normalize to the closest font with metrics
+  **
+  @NoDoc Font normalize()
+  {
+    if (data != null) return this
+    return FontData.normalize(this)
+  }
+
+  **
+  ** DO NOT USE - this design is deprecated in favor of Graphics.metrics
+  **
   ** Get font metrics for this font.  If this is not a [normalized]`normalize`
   ** font with built-in metrics, then raise UnsupportedErr.
+  **
+  @NoDoc
   FontMetrics metrics(DeviceContext dc := DeviceContext.cur)
   {
     if (data == null) throw UnsupportedErr("FontMetrics not supported: $this")
-    return FontMetrics(dc, size, data)
+    return FontDataMetrics(dc, size, data)
   }
 
   ** Font metric data from predefined registry
@@ -224,10 +233,40 @@ const class Font
 ** FontMetrics
 **************************************************************************
 
-** FontMetrics represents font size information for a
-** specific `Font` and `DeviceContext`.
+**
+** FontMetrics represents font size information for a `Font` within
+** a specific graphics context.
+**
 @Js
-const class FontMetrics
+abstract const class FontMetrics
+{
+  ** Get height of this font which is the sum of
+  ** ascent, descent, and leading.
+  abstract Float height()
+
+  ** Get ascent of this font which is the distance from
+  ** baseline to top of chars, not including any leading area.
+  abstract Float ascent()
+
+  ** Get descent of this font which is the distance from
+  ** baseline to bottom of chars, not including any leading area.
+  abstract Float descent()
+
+  ** Get leading of this font which is the distance above
+  ** the ascent which may include accents and other marks.
+  abstract Float leading()
+
+  ** Get the width of the string when painted with this font.
+  abstract Float width(Str s)
+}
+
+**************************************************************************
+** FontDataMetrics
+**************************************************************************
+
+** FontDataMetrics implements metrics via internal, predefined FontData
+@Js
+internal const class FontDataMetrics : FontMetrics
 {
   @NoDoc
   new make(DeviceContext dc, Float size, FontData data)
@@ -239,22 +278,22 @@ const class FontMetrics
 
   ** Get height of this font which is the sum of
   ** ascent, descent, and leading.
-  Float height() { (data.height * ratio).round }
+  override Float height() { (data.height * ratio).round }
 
   ** Get ascent of this font which is the distance from
   ** baseline to top of chars, not including any leading area.
-  Float ascent() { (data.ascent * ratio).round }
+  override Float ascent() { (data.ascent * ratio).round }
 
   ** Get descent of this font which is the distance from
   ** baseline to bottom of chars, not including any leading area.
-  Float descent() { (data.descent * ratio).round }
+  override Float descent() { (data.descent * ratio).round }
 
   ** Get leading of this font which is the distance above
   ** the ascent which may include accents and other marks.
-  Float leading() { (data.leading * ratio).round }
+  override Float leading() { (data.leading * ratio).round }
 
   ** Get the width of the string when painted with this font.
-  Float width(Str s)
+  override Float width(Str s)
   {
     d := data
     w := 0

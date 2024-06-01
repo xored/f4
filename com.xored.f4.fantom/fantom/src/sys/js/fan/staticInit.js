@@ -30,7 +30,9 @@ fan.sys.Int.m_minVal = -Math.pow(2, 53)
 fan.sys.Int.m_defVal = 0;
 fan.sys.Int.Chunk  = 4096;
 
+//
 // Float
+//
 fan.sys.Float.m_posInf = fan.sys.Float.make(Number.POSITIVE_INFINITY);
 fan.sys.Float.m_negInf = fan.sys.Float.make(Number.NEGATIVE_INFINITY);
 fan.sys.Float.m_nan    = fan.sys.Float.make(Number.NaN);
@@ -99,7 +101,6 @@ fan.sys.OutStream.m_xmlEscUnicode  = 0x04;
 //
 fan.sys.Uri.parentRange = fan.sys.Range.make(0, -2, false);
 fan.sys.Uri.m_defVal = fan.sys.Uri.fromStr("");
-fan.sys.UriPodBase = "/pod/"; // TODO
 
 //
 // Locale
@@ -138,18 +139,18 @@ fan.sys.Log.m_handlers.push(fan.sys.Func.make(
 //
 // Month
 //
-fan.sys.Month.m_jan = new fan.sys.Month(0,  "jan");
-fan.sys.Month.m_feb = new fan.sys.Month(1,  "feb");
-fan.sys.Month.m_mar = new fan.sys.Month(2,  "mar");
-fan.sys.Month.m_apr = new fan.sys.Month(3,  "apr");
-fan.sys.Month.m_may = new fan.sys.Month(4,  "may");
-fan.sys.Month.m_jun = new fan.sys.Month(5,  "jun");
-fan.sys.Month.m_jul = new fan.sys.Month(6,  "jul");
-fan.sys.Month.m_aug = new fan.sys.Month(7,  "aug");
-fan.sys.Month.m_sep = new fan.sys.Month(8,  "sep");
-fan.sys.Month.m_oct = new fan.sys.Month(9,  "oct");
-fan.sys.Month.m_nov = new fan.sys.Month(10, "nov");
-fan.sys.Month.m_dec = new fan.sys.Month(11, "dec");
+fan.sys.Month.m_jan = new fan.sys.Month(0,  "jan", 1);
+fan.sys.Month.m_feb = new fan.sys.Month(1,  "feb", 1);
+fan.sys.Month.m_mar = new fan.sys.Month(2,  "mar", 1);
+fan.sys.Month.m_apr = new fan.sys.Month(3,  "apr", 2);
+fan.sys.Month.m_may = new fan.sys.Month(4,  "may", 2);
+fan.sys.Month.m_jun = new fan.sys.Month(5,  "jun", 2);
+fan.sys.Month.m_jul = new fan.sys.Month(6,  "jul", 3);
+fan.sys.Month.m_aug = new fan.sys.Month(7,  "aug", 3);
+fan.sys.Month.m_sep = new fan.sys.Month(8,  "sep", 3);
+fan.sys.Month.m_oct = new fan.sys.Month(9,  "oct", 4);
+fan.sys.Month.m_nov = new fan.sys.Month(10, "nov", 4);
+fan.sys.Month.m_dec = new fan.sys.Month(11, "dec", 4);
 
 fan.sys.Month.m_vals = fan.sys.List.make(fan.sys.Month.$type,
 [
@@ -192,39 +193,8 @@ fan.sys.Weekday.m_vals = fan.sys.List.make(fan.sys.Weekday.$type,
 //
 // TimeZone
 //
-// Etc/UTC
-tz = new fan.sys.TimeZone();
-tz.m_name = "UTC";
-tz.m_fullName = "Etc/UTC";
-tz.m_rules = [];
-rule = new fan.sys.TimeZone$Rule();
- rule.startYear = 1995;
- rule.offset = 0;
- rule.stdAbbr = "UTC";
- rule.dstOffset = 0;
- tz.m_rules.push(rule);
-fan.sys.TimeZone.cache["UTC"] = tz;
-fan.sys.TimeZone.cache["Etc/UTC"] = tz;
-fan.sys.TimeZone.names.push("UTC");
-fan.sys.TimeZone.fullNames.push("Etc/UTC");
-fan.sys.TimeZone.m_utc = tz;
-
-// Etc/Rel
-tz = new fan.sys.TimeZone();
-tz.m_name = "Rel";
-tz.m_fullName = "Etc/Rel";
-tz.m_rules = [];
-rule = new fan.sys.TimeZone$Rule();
- rule.startYear = 1995;
- rule.offset = 0;
- rule.stdAbbr = "Rel";
- rule.dstOffset = 0;
- tz.m_rules.push(rule);
-fan.sys.TimeZone.cache["Rel"] = tz;
-fan.sys.TimeZone.cache["Etc/Rel"] = tz;
-fan.sys.TimeZone.names.push("Rel");
-fan.sys.TimeZone.fullNames.push("Etc/Rel");
-fan.sys.TimeZone.m_rel = tz;
+fan.sys.TimeZone.m_utc = fan.sys.TimeZone.fromStr("UTC");
+fan.sys.TimeZone.m_rel = fan.sys.TimeZone.fromStr("Rel");
 
 //
 // DateTime
@@ -233,6 +203,7 @@ fan.sys.Time.m_defVal = new fan.sys.Time(0, 0, 0, 0);
 fan.sys.Date.m_defVal = new fan.sys.Date(2000, 0, 1);
 fan.sys.DateTime.m_defVal = fan.sys.DateTime.make(
   2000, fan.sys.Month.m_jan, 1, 0, 0, 0, 0, fan.sys.TimeZone.utc());
+fan.sys.DateTime.m_boot = fan.sys.DateTime.now();
 
 //
 // Regex

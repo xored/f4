@@ -30,13 +30,40 @@ fan.sys.Env.prototype.$ctor = function()
 
   this.m_vars = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Str.$type)
   this.m_vars.caseInsensitive$(true);
+  if (typeof fan$env !== 'undefined')
+  {
+    // fan$env is used to seed Env.var; it must be defined before sys.js
+    var keys = Object.keys(fan$env);
+    for (var i=0; i<keys.length; i++)
+    {
+      var k = keys[i];
+      var v = fan$env[k]
+      this.m_vars.set(k, v);
+    }
+  }
+
   this.m_vars = this.m_vars.toImmutable();
 
   // pod props map, keyed by pod.name
   this.m_props = fan.sys.Map.make(fan.sys.Str.$type, fan.sys.Map.$type);
 
+  // user
+  this.m_user = "unknown";
+
   // env.out
-  this.m_out = new fan.sys.SysOutStream(new fan.sys.ConsoleOutStream());
+  this.m_out = new fan.sys.ConsoleOutStream();
+}
+
+fan.sys.Env.$invokeMain = function(qname)
+{
+  // resolve qname to method
+  var dot = qname.indexOf('.');
+  if (dot < 0) qname += '.main';
+  var main = fan.sys.Slot.findMethod(qname);
+
+  // invoke main
+  if (main.isStatic()) main.call();
+  else main.callOn(main.parent().make());
 }
 
 fan.sys.Env.prototype.$setIndex = function(index)
@@ -57,8 +84,17 @@ fan.sys.Env.noDef = "_Env_nodef_";
 // used to display locale keys
 fan.sys.Env.localeTestMode = false;
 
-// check if running under NodeJS
+// true running under NodeJS
 fan.sys.Env.$nodejs = this.window !== this;
+
+// throw an unsupported error if not running in Node
+fan.sys.Env.$requirenodejs = function()
+{
+  if (!fan.sys.Env.$nodejs)
+  {
+    throw fan.sys.UnsupportedErr.make("Not supported in this runtime");
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Obj
@@ -76,11 +112,33 @@ fan.sys.Env.prototype.runtime = function() { return "js"; }
 
 fan.sys.Env.prototype.javaVersion = function() { return 0; }
 
-// parent
-// os
-// arch
-// platform
-// idHash
+fan.sys.Env.prototype.os = function()
+{
+  fan.sys.Env.$requirenodejs();
+  return process.platform;
+}
+
+fan.sys.Env.prototype.arch = function()
+{
+  fan.sys.Env.$requirenodejs();
+  return process.arch;
+}
+
+fan.sys.Env.prototype.platform = function()
+{
+  return this.os() + "-" + this.arch();
+}
+
+fan.sys.Env.prototype.parent = function()
+{
+  return null;
+}
+
+fan.sys.Env.prototype.idHash = function(obj)
+{
+  if (!obj) return 0;
+  return fan.sys.ObjUtil.hash(obj);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Virtuals
@@ -96,13 +154,70 @@ fan.sys.Env.prototype.diagnostics = function()
   return map;
 }
 
+fan.sys.Env.prototype.user = function() { return this.m_user; }
+
 fan.sys.Env.prototype.out = function() { return this.m_out; }
+
+fan.sys.Env.prototype.prompt = function(msg)
+{
+  fan.sys.Env.$requirenodejs();
+  if (msg === undefined) msg = "";
+
+  if (process.platform == "win32") {
+    return this.$win32prompt(msg);
+  } else {
+    return this.$unixprompt(msg);
+  }
+}
+
+fan.sys.Env.prototype.$win32prompt = function(msg)
+{
+  // https://github.com/nodejs/node/issues/28243
+  let fs = require('fs');
+  fs.writeSync(1, String(msg));
+  let s = '', buf = Buffer.alloc(1);
+  while(buf[0] != 10 && buf[0] != 13)
+  {
+    s += buf;
+    fs.readSync(0, buf, 0, 1, 0);
+  }
+  if (buf[0] == 13) { fs.readSync(0, buf, 0, 1, 0); }
+  return s.slice(1);
+}
+
+fan.sys.Env.prototype.$unixprompt = function(msg)
+{
+  // https://stackoverflow.com/questions/61394928/get-user-input-through-node-js-console/74250003?noredirect=1#answer-75008198
+  let stdin = fs.openSync("/dev/stdin","rs");
+
+  fs.writeSync(process.stdout.fd, msg);
+  let s = '';
+  let buf = Buffer.alloc(1);
+  fs.readSync(stdin,buf,0,1,null);
+  while((buf[0] != 10) && (buf[0] != 13)) {
+    s += buf;
+    fs.readSync(stdin,buf,0,1,null);
+  }
+  // Not sure if we need this on unix?
+  // if (buf[0] == 13) { fs.readSync(0, buf, 0, 1, 0); }
+  return s;
+}
+
 
 fan.sys.Env.prototype.homeDir = function() { return this.m_homeDir; }
 
 fan.sys.Env.prototype.workDir = function() { return this.m_workDir; }
 
 fan.sys.Env.prototype.tempDir = function() { return this.m_tempDir; }
+
+//////////////////////////////////////////////////////////////////////////
+// Resolution
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.Env.prototype.path = function()
+{
+  return fan.sys.List.make(fan.sys.File.$type, [this.workDir()]);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // State

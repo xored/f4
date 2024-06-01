@@ -356,6 +356,28 @@ public class FanStr
     }
   }
 
+  public static Object eachWhile(String self, Func f)
+  {
+    int len = self.length();
+    if (f.arity() == 1)
+    {
+      for (int i=0; i<len ; ++i)
+      {
+        Object r = f.call(Long.valueOf(self.charAt(i)));
+        if (r != null) return r;
+      }
+    }
+    else
+    {
+      for (int i=0; i<len ; ++i)
+      {
+        Object r = f.call(Long.valueOf(self.charAt(i)), Long.valueOf(i));
+        if (r != null) return r;
+      }
+    }
+    return null;
+  }
+
   public static boolean any(String self, Func f)
   {
     int len = self.length();
@@ -401,7 +423,8 @@ public class FanStr
     // do an array lookup for reasonable length
     // strings since that is the common case
     int count = (int)n;
-    try { return spaces[count]; } catch (ArrayIndexOutOfBoundsException e) {}
+    if (count < spaces.length)
+      return spaces[count];
 
     // otherwise we build a new one
     StringBuilder s = new StringBuilder(spaces[spaces.length-1]);

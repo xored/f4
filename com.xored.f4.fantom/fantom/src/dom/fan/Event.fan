@@ -23,13 +23,6 @@ using graphics
 **   "click"       Fired when a mouse button is pressed and released on a
 **                 single element.
 **
-**   "mousedown"   Fired when a mouse button is pressed on an element.
-**
-**   "mouseup"     Fired when a mouse button is released over an element.
-**
-**   "click"       Fired when a mouse button is pressed and released on a
-**                 single element.
-**
 **   "dblclick"    Fired when a mouse button is clicked twice on a single element.
 **
 **   "mousemove"   Fired when a mouse is moved while over an element.
@@ -149,6 +142,18 @@ class Event
   ** The target to which the event was dispatched.
   native Elem target()
 
+  **
+  ** Optional secondary target depending on event type:
+  **
+  **   event     target                relatedTarget
+  **   --------  --------------------  -----------------------------
+  **   blur      elem losing focus     elem receiving focus (if any)
+  **   focus     elem receiving focus  elem losing focus (if any)
+  **   focusin   elem receiving focus  elem losing focus (if any)
+  **   focusout  elem losing focus     elem receiving focus (if any)
+  **
+  native Elem? relatedTarget()
+
   ** The mouse position of this event relative to page.
   native Point pagePos()
 
@@ -174,6 +179,10 @@ class Event
   ** Key instance for key pressed.
   native Key? key()
 
+  ** Character string for key event that represents text typed.
+  ** For example Shift + Key.b would return "B".
+  native Str? keyChar()
+
   ** Err instance if available for 'window.onerror'.
   native Err? err()
 
@@ -194,6 +203,9 @@ class Event
     set(name, args.first)
     return null
   }
+
+  ** Data message used with `HttpSocket.onReceive`
+  native Obj data()
 
   ** The DataTransfer object for this event.
   native DataTransfer dataTransfer()

@@ -51,9 +51,16 @@ internal const class WispActor : Actor
 
     try
     {
+      // upgrade to TLS
+      if (socket.localPort == service.httpsPort)
+      {
+        socket = socket.upgradeTls
+      }
+
       // allocate request, response
       res = WispRes(service, socket)
       req = WispReq(service, socket, res)
+      res.req = req
 
       // init thread locals
       Actor.locals["web.req"] = req
@@ -87,6 +94,11 @@ internal const class WispActor : Actor
     {
       if (init)
         internalServerErr(req, res, e)
+      else if (e is IOErr && e.msg.contains("javax.net.ssl."))
+      {
+        // only log JAVA SSL exceptions at debug level
+        if (WispService.log.isDebug) WispService.log.debug("TLS Error", e)
+      }
       else
         e.trace
     }
@@ -97,6 +109,8 @@ internal const class WispActor : Actor
       if (close) try { socket.close } catch {}
     }
   }
+
+  private Bool isTls() { service.httpsPort != null }
 
 //////////////////////////////////////////////////////////////////////////
 // Request

@@ -7,6 +7,7 @@
 //
 
 using compilerJs
+using concurrent
 using util
 using web
 using wisp
@@ -19,8 +20,16 @@ class Main : AbstractMain
   @Opt { help = "apply sample css" }
   Bool css := false
 
+  @Opt { help = "javascript mode to use (js, es)" }
+  Str jsMode := "js"
+
   override Int run()
   {
+    log.info("Running with jsMode=${jsMode}")
+
+    // set javascript mode for file packing
+    WebJsMode.setCur(WebJsMode.fromStr(jsMode))
+
     wisp := WispService
     {
       it.httpPort = this.port
@@ -36,9 +45,12 @@ const class DomkitTestMod : WebMod
   {
     f(this)
     pods := [typeof.pod]
-    this.jsPack  = FilePack(FilePack.toAppJsFiles(pods))
+    appJsFiles  := FilePack.toAppJsFiles(pods)
+    this.jsPack  = FilePack(appJsFiles)
     this.cssPack = FilePack(FilePack.toAppCssFiles(pods))
   }
+
+  const Log log := Log.get("filepack")
 
   const Bool useSampleCss := false
 
@@ -51,13 +63,14 @@ const class DomkitTestMod : WebMod
     n := req.modRel.path.first
     switch (n)
     {
-      case null:       onIndex
-      case "test":     onTest
-      case "app.js":   jsPack.onService
-      case "app.css":  cssPack.onService
-      case "pod":      onPod
-      default:         res.sendErr(404)
+      case null:       return onIndex
+      case "test":     return onTest
+      case "app.js":   return jsPack.onService
+      case "app.css":  return cssPack.onService
+      case "pod":      return onPod
+      case "form":     return onForm
     }
+    res.sendErr(404)
   }
 
   Void onIndex()
@@ -88,12 +101,17 @@ const class DomkitTestMod : WebMod
     type := typeof.pod.type(name, false)
     if (type == null || !type.fits(DomkitTest#)) { res.sendErr(404); return }
 
+    env := Str:Str[:]
+    env["main"] = "testDomkit::DomkitTest"
+    env["ui.test.qname"] = type.qname
+
     res.headers["Content-Type"] = "text/html; charset=utf-8"
     out := res.out
     out.docType
     out.html
     out.head
       .title.w("Domkit Test").titleEnd
+      .initJs(env)
       .includeCss(`/app.css`)
       .includeJs(`/app.js`)
       .style.w(
@@ -112,11 +130,6 @@ const class DomkitTestMod : WebMod
 
       if (useSampleCss) out.style.w(sampleCss).styleEnd
 
-      env := Str:Str[:]
-      env["ui.test.qname"] = type.qname
-
-      WebUtil.jsMain(out, "testDomkit::DomkitTest", env)
-
     out.headEnd
 
     out.body.bodyEnd
@@ -129,6 +142,52 @@ const class DomkitTestMod : WebMod
     File file := ("fan://" + req.uri.pathOnly.toStr["/pod/".size..-1]).toUri.get
     if (!file.exists) { res.sendErr(404); return }
     FileWeblet(file).onService
+  }
+
+  Void onForm()
+  {
+    if (req.method != "POST") { res.sendErr(501); return }
+
+    res.statusCode = 200
+    res.headers["Content-Type"] = "text/plain; charset=utf-8"
+    out := res.out
+
+    out.printLine("FormData")
+    out.printLine("========")
+    if (req.form != null)
+    {
+      // urlencoded
+      req.form.each |v,n| { out.printLine("  $n: $v") }
+    }
+    else
+    {
+      // multipart
+      req.parseMultiPartForm |n,in,h|
+      {
+        d := h["Content-Disposition"]
+        r := Regex(Str<|filename="(.*?)"|>)
+        m := r.matcher(d)
+        v := ""
+        if (m.find)
+        {
+          f := m.group(1)
+          s := in.readAllBuf.size.toLocale("B")
+          v = "${f} [$s]"
+        }
+        else
+        {
+          v = in.readAllStr
+        }
+        out.printLine("  $n: $v")
+      }
+    }
+
+    out.printLine("")
+    out.printLine("Headers")
+    out.printLine("=======")
+    req.headers.each |v,n| { out.printLine("  $n: $v") }
+
+    out.flush
   }
 
   const Str sampleCss :=

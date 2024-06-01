@@ -49,15 +49,15 @@ public final class ActorFuture
 // Future
 //////////////////////////////////////////////////////////////////////////
 
-  public final FutureState state()
+  public final FutureStatus status()
   {
     int state = this.state;
     switch(state)
     {
-      case PENDING:     return FutureState.pending;
-      case DONE_OK:     return FutureState.ok;
-      case DONE_ERR:    return FutureState.err;
-      case DONE_CANCEL: return FutureState.cancelled;
+      case PENDING:     return FutureStatus.pending;
+      case DONE_OK:     return FutureStatus.ok;
+      case DONE_ERR:    return FutureStatus.err;
+      case DONE_CANCEL: return FutureStatus.cancelled;
     }
     throw Err.make("Internal error " + state);
   }
@@ -232,7 +232,7 @@ public final class ActorFuture
     // if immediate we are already done so enqueue immediately
     if (immediate)
     {
-      try { a._enqueue(f, false); }
+      try { a._enqueueWhenDone(f); }
       catch (Throwable e) { e.printStackTrace(); }
     }
   }
@@ -243,7 +243,7 @@ public final class ActorFuture
     for (int i=0; i<list.size(); ++i)
     {
       WhenDone wd = (WhenDone)list.get(i);
-      try { wd.actor._enqueue(wd.future, false); }
+      try { wd.actor._enqueueWhenDone(wd.future); }
       catch (Throwable e) { e.printStackTrace(); }
     }
   }
@@ -272,3 +272,4 @@ public final class ActorFuture
   private ArrayList whenDone;  // list of messages to deliver when done
 
 }
+

@@ -82,6 +82,16 @@ fan.dom.WinPeer.prototype.doc = function(self)
   return this.$doc;
 }
 
+fan.dom.WinPeer.prototype.textSel = function(self)
+{
+  if (this.$textSel == null)
+  {
+    this.$textSel = fan.dom.TextSel.make();
+    this.$textSel.peer.sel = this.win.getSelection();
+  }
+  return this.$textSel;
+}
+
 fan.dom.WinPeer.prototype.addStyleRules = function(self, rules)
 {
   var doc = this.win.document;
@@ -184,12 +194,34 @@ fan.dom.WinPeer.prototype.uri = function(self)
 
 fan.dom.WinPeer.prototype.hyperlink = function(self, uri)
 {
-  this.win.location = uri.encode();
+  var href = uri.encode();
+  if (uri.m_scheme == "mailto")
+  {
+    // TODO: mailto links are not decoding + as spaces properly, so
+    // not showing up correctly in email clients when subj/body are
+    // specified; for now just manually convert back
+    href = href.replaceAll("+", " ");
+  }
+  this.win.location = href;
 }
 
 fan.dom.WinPeer.prototype.reload  = function(self, force)
 {
   this.win.location.reload(force);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Clipboard
+//////////////////////////////////////////////////////////////////////////
+
+fan.dom.WinPeer.prototype.clipboardReadText = function(self, func)
+{
+  this.win.navigator.clipboard.readText().then((text) => func.call(text));
+}
+
+fan.dom.WinPeer.prototype.clipboardWriteText = function(self, text)
+{
+  this.win.navigator.clipboard.writeText(text);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -23,6 +23,7 @@ fan.sys.Slot.prototype.$ctor = function()
   this.m_name   = null;
   this.m_flags  = null;
   this.m_facets = null;
+  this.m_doc    = null;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,6 +128,12 @@ fan.sys.Slot.prototype.facet = function(type, checked)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Documentation
+//////////////////////////////////////////////////////////////////////////
+
+fan.sys.Slot.prototype.doc = function() { return this.m_doc; }
+
+//////////////////////////////////////////////////////////////////////////
 // Util
 //////////////////////////////////////////////////////////////////////////
 
@@ -145,6 +152,7 @@ fan.sys.Slot.prototype.$$name = function(n)
     case "in":     return "$in";
     case "int":    return "$int";
     case "name":   return "$name";
+    case "self":   return "$self";
     case "typeof": return "$typeof";
     case "var":    return "$var";
     case "with":   return "$with";

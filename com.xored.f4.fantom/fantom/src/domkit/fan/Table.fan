@@ -88,12 +88,16 @@ using graphics
   ** automatically refreshed.
   Void sort(Int? col, Dir dir := Dir.up)
   {
+    if (!sortEnabled) return
     pivot = null
     view.sort(col, dir)
     model.onSort(col, dir)
     refresh
     cbSort?.call(this)
   }
+
+  ** Flag to enable/disable column header sort
+  @NoDoc Bool sortEnabled := true
 
   ** Scroll to the given row and column in table.  Pass 'null' to
   ** maintain the current scroll position for that axis.
@@ -314,7 +318,6 @@ using graphics
     this.numCols.times |c|
     {
       cw := ucolw[c] ?: view.colWidth(c)
-      if (c == numCols-1 && hasHpbut) cw += hpbutw + 4
       this.colx.add(cx)
       this.colw.add(cw)
       cx += cw

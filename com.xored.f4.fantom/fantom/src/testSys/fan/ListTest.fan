@@ -926,6 +926,25 @@ echo("-- $list [$r] => " + list.getRange(r) + " ?= " + expected)
   }
 
 //////////////////////////////////////////////////////////////////////////
+// EachNotNull
+//////////////////////////////////////////////////////////////////////////
+
+  Void testEachNotNull()
+  {
+    list := Str?[null, "a", null, "b", null, null, "c", null]
+
+    values := Str[,]
+    list.eachNotNull |v| { values.add(v) }
+    verifyEq(values,  ["a", "b", "c"])
+
+    values.clear
+    indices := Int[,]
+    list.eachNotNull |v, i| { values.add(v); indices.add(i) }
+    verifyEq(values,  ["a", "b", "c"])
+    verifyEq(indices, [1, 3, 6])
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // EachRange
 //////////////////////////////////////////////////////////////////////////
 
@@ -1091,7 +1110,6 @@ echo("-- $list [$r] => " + list.getRange(r) + " ?= " + expected)
 // GroupBy
 //////////////////////////////////////////////////////////////////////////
 
-  /* TODO add for 1.0.77
   Void testGroupBy()
   {
     list := ["ape", "bear", "camel", "deer", "eel"]
@@ -1107,7 +1125,6 @@ echo("-- $list [$r] => " + list.getRange(r) + " ?= " + expected)
     ["fox", "goat"].groupByInto(map) |s| { s.size }
     verifyEq(map, Int:Str[][3:["ape", "eel", "fox"], 4:["bear", "deer", "goat"], 5:["camel"]])
   }
-  */
 
 //////////////////////////////////////////////////////////////////////////
 // Any/All

@@ -147,25 +147,18 @@ JLine [#jline]
 **************
 Running command line applications such as [fansh]`Fansh` in the Java VM can
 be unpleasant in Unix and OS X environments because control keys such as the
-arrow keys are not handled.  You can add [JLine2]`https://github.com/jline/jline2`
-to your system classpath to fix this.  The built-in bash scripts will automatically
-put "lib/java/jline.jar" into the classpath.  You can download a pre-built
-"jline.jar" file from `https://repo1.maven.org/maven2/jline/jline/`.  If JLine
-is not installed, then 'java.lang.Console' is used as a fallback.  To integrate
-command line support into your application use `sys::Env.prompt`.
+arrow keys are not handled.  You can add [JLine]`https://github.com/jline/jline3`
+to your system classpath to fix this.  The built-in bash launcher scripts will
+automatically add "lib/java/jline.jar" into the classpath.  Both JLine3 LineReader
+and JLine2 ConsoleReader are supported. If JLine is not found, then 'java.lang.Console'
+is used as a fallback.  To integrate command line support into your application
+use `sys::Env.prompt`.
 
-SWT Support [#swt]
-******************
-The Fantom distribution ships with SWT support for a a couple common
-platforms.  If your platform is not supported, follow these steps
-to get SWT working:
-  1. Verify your platform identifier using "fan -version" (see
-     `sys::Env.platform`)
-  2. Download your platform's "swt.jar" from
-     [eclipse.org]`http://www.eclipse.org/swt/`
-  3. Put "swt.jar" into '{home}/lib/java/ext/{platform}/swt.jar'
+Newer versions of Java do not support adding jars to '{java-home}/lib/ext'.
+Instead if you would like jline to be globally available across all installations
+of Fantom, then set the classpath as environment variable like this:
 
-You can easily test SWT support by attempting to run `Flux`.
+  export CLASSPATH=/work/stuff/jline/jline-3.9.0.jar
 
 Env [#env]
 **********
@@ -173,3 +166,4 @@ The default behavior of Fantom is to manage all its files under the
 installation directory.  But you can boot Fantom using alternative
 environments to customize how your deployment is structured.
 See `docLang::Env` for details.
+

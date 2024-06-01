@@ -46,7 +46,9 @@ class GenerateOutput : CompilerStep
         output.podFile = WritePod(compiler).write
 
       case CompilerOutputMode.js:
-        output.js = compiler.js
+        output.js  = compiler.js
+        output.cjs = compiler.cjs
+        output.esm = compiler.esm
 
       default:
         throw err("Unknown output type: '$output.mode'", null)

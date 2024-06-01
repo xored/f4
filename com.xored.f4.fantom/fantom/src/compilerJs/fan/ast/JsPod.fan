@@ -23,7 +23,6 @@ class JsPod : JsNode
     // build native map
     this.natives = Str:File[:]
     s.compiler.jsFiles?.each |f| { natives[f.name] = f }
-    jsOutput := s.compiler.input.output === CompilerOutputMode.js
 
     defs.each |TypeDef def|
     {
@@ -38,16 +37,15 @@ class JsPod : JsNode
         return
       }
 
-      // check for @js facet or explicit js output
-      if (def.hasFacet("sys::Js") || jsOutput)
-        types.add(JsType(s,def))
+      // check for @js facet
+      if (def.hasFacet("sys::Js") || support.forceJs) types.add(JsType(s,def))
     }
 
     // resource files
     baseDir := s.compiler.input.baseDir
     if (baseDir != null)
     {
-      s.compiler.resFiles.each |file|
+      s.compiler.jsPropsFiles?.each |file|
       {
         if (file.ext != "props") return
         uri := file.uri.relTo(baseDir.uri)
@@ -94,17 +92,43 @@ class JsPod : JsNode
     out.w("}).call(this);").nl
   }
 
-  static Void writeNs(JsWriter out, Str name)
+  Void writeNs(JsWriter out, Str name)
   {
     ns := "(function () {
-           ${requireSys}
+           ${requireModules}
            if (typeof exports !== 'undefined') {
-             fan.$name = exports;
+             //fan.$name = exports;
+             module.exports = fan;
+             fan.$name = {};
            } else {
              fan.$name = root.fan.$name = {};
            }
            "
     ns.splitLines.each { out.w(it).nl }
+  }
+
+  Str requireModules()
+  {
+    sb := StrBuf()
+    sb.add("var root=this;
+            var fan=root.fan;
+            if (!fan && (typeof require !== 'undefined'))
+            {
+            ")
+    support.compiler.pod.depends.each |depend| {
+      if (depend.name == "sys")
+      {
+        sb.add("try { fan = require('fan.js'); }\n")
+        sb.add("catch (err) { fan = require('sys.js'); }\n")
+        // sb.add("fan = require('fan.js');\n")
+      }
+      // else sb.add("require('${depend.name}.js');\n")
+      else
+      {
+        sb.add("try { require('${depend.name}.js'); } catch (e) { /*ignore*/ }\n")
+      }
+    }
+    return sb.add("}\n").toStr
   }
 
   static const Str requireSys :=
@@ -158,12 +182,16 @@ class JsPod : JsNode
       out.w("  fan.${t.pod}.${t.name}.\$type")
       t.fields.each |f|
       {
+        // don't write for FFI
+        if (f.ftype.isForeign) return
+
         facets := f.facets.join(",") |x| { "'$x.type.sig':$x.val.toCode" }
         out.w(".\$af('$f.origName',$f.flags,'$f.ftype.sig',{$facets})")
       }
       t.methods.each |m|
       {
         if (m.isFieldAccessor) return
+        if (m.params.any |p| { p.paramType.isForeign}) return
         params := m.params.join(",") |p| { "new fan.sys.Param('$p.reflectName','$p.paramType.sig',$p.hasDef)" }
         facets := m.facets.join(",") |f| { "'$f.type.sig':$f.val.toCode" }
         out.w(".\$am('$m.origName',$m.flags,'$m.ret.sig',fan.sys.List.make(fan.sys.Param.\$type,[$params]),{$facets})")

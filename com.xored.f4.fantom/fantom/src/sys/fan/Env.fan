@@ -206,6 +206,11 @@ abstract const class Env
 //////////////////////////////////////////////////////////////////////////
 
   **
+  ** Path used by `findFile` if this is a `util::PathEnv`.
+  **
+  virtual File[] path()
+
+  **
   ** Find a file in the environment using a relative path such
   ** as "etc/foo/config.props".  If the URI is not relative then
   ** throw ArgErr.  If the file is not found in the environment
@@ -230,7 +235,7 @@ abstract const class Env
 
   **
   ** Resolve the pod file for the given pod name.  If the
-  ** name cannot be resovled to a pod, return null.  The
+  ** name cannot be resolved to a pod, return null.  The
   ** default implementation routes to `findFile` to look
   ** in "lib/fan" directory.
   **
@@ -268,6 +273,20 @@ abstract const class Env
   virtual Type compileScript(File f, [Str:Obj]? options := null)
 
   **
+  ** Compile a script file into a pod and return the JS source
+  ** code of resulting pod.  If the script contains errors
+  ** then the first CompilerErr found is thrown.  The options
+  ** available:
+  **   - podName: the name of pod created for script
+  **   - logLevel: the default `LogLevel` to use for logging
+  **     the compilation process and errors
+  **   - log: the `compiler::CompilerLog` to use for
+  **     logging the compilation process and errors
+  **   - logOut: an output stream to capture logging
+  **
+  virtual Str compileScriptToJs(File f, [Str:Obj]? options := null)
+
+  **
   ** Lookup all the matching values for a pod indexed key.  If no
   ** matches are found return the empty list.  Indexed props are
   ** declared in your pod's build script, and coalesced into a master
@@ -300,7 +319,7 @@ abstract const class Env
   ** The uri must be relative.  Note that props such as locale files
   ** can be bundled into a pod for deployment and searched by adding
   ** an indexed prop with the key "sys.envProps" and the pod name as
-  ** the value.  This feature is not support "config.props".
+  ** the value.  This feature does not support "config.props".
   **
   ** The files are parsed using `InStream.readProps` and merged according
   ** to their priority order.  If the file is defined as a resource in
@@ -309,7 +328,7 @@ abstract const class Env
   ** overwrites any key-value pairs defined at a lower priority.
   **
   ** The map is cached so that subsequent calls for the same path
-  ** doesn't require accessing the file system again.  The 'maxAge'
+  ** don't require accessing the file system again.  The 'maxAge'
   ** parameter specifies the tolerance accepted before a cache
   ** refresh is performed to check if any of the files have been
   ** modified.
