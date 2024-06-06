@@ -45,7 +45,7 @@ class InternalBuilder : Builder {
 		}
 
 		logger	:= ConsoleLogger(consumer)
-		input	:= CompilerInput.make
+		input	:= CompilerInput()
 		try {
 			logBuf	:= StrBuf().add("\n")
 			meta	:= fp.meta.dup 
@@ -70,7 +70,7 @@ class InternalBuilder : Builder {
 			input.includeDoc		= fp.docApi
 			input.includeSrc		= fp.docSrc
 
-			errs := compile(input)
+			errs := compileFan(input)
             consumer?.call(logBuf.toStr)
 
 			if (errs[0].size > 0)
@@ -84,8 +84,10 @@ class InternalBuilder : Builder {
 			oldPodFile	:= fp.podOutFile
 			newPodFile	:= compileDir + `${fp.podName}.pod` 
 
-			if (!fp.javaDirs.isEmpty)
-				errs.add(compileJava(consumer, compileDir, resolvedPods))
+			if (fp.javaDirs.size > 0) {
+				javaErrs := compileJava(consumer, compileDir, resolvedPods)
+				errs.add(javaErrs)
+			}
 
 			if (newPodFile.exists) {
 				
@@ -134,7 +136,7 @@ class InternalBuilder : Builder {
 		}
 	}
 
-	private CompilerErr[][] compile(CompilerInput input) {
+	private CompilerErr[][] compileFan(CompilerInput input) {
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
@@ -157,6 +159,7 @@ class InternalBuilder : Builder {
 		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
+		jmap.put(fp.podName, podFile)
 		
 		// stub generation often "locks" the pod file so it cannot be updated or deleted
 		// this happens more often when working from flash drives
