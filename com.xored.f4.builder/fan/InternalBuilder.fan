@@ -1,6 +1,7 @@
 using f4core::FantomProject
 using f4core::LogUtil
 using compiler
+using concurrent::Actor
 
 using [java]org.eclipse.debug.core::DebugPlugin
 using [java]org.eclipse.debug.core::ILaunchConfigurationWorkingCopy
@@ -125,7 +126,7 @@ class InternalBuilder : Builder {
 			// so don't! Delete it when we build again - it all seems fine then.
 //			compileDir.delete
 			return errs.flatten
-			
+	
 		} catch (Err err) {
 			logger.err("Could not compile ${fp.podName}", err)
 			LogUtil.logErr(pluginId, "${err.typeof.qname} during build - ${err.msg}", err)
@@ -135,8 +136,29 @@ class InternalBuilder : Builder {
 			(input.ns as F4Namespace)?.close
 		}
 	}
+	
+	private static Pod? findPod(Str podName) {
+		fp := Actor.locals["f4.fp"] as FantomProject
+		if (fp == null) throw Err("Wot no 'f4.fp' project in Actor.locals?")
 
+		podFile := fp.resolvedPods[podName]
+		if (podFile == null)
+			return null
+
+		// believe me -it is IMPOSSIBLE to create an FPod instance in this Fantom class
+		// Soooo many weird F4 compilation errors as soon as I reference the "fanx" java package
+		// much easier to just move everything to a Java class in a different pod
+		// which is why, I suspect, that JStubGenerator is NOT part of f4builder
+		// SlimerDude, June 2024
+		fpod := JStubGenerator.makePod(podName, podFile)
+
+		return fpod
+	}
+	
 	private CompilerErr[][] compileFan(CompilerInput input) {
+		Actor.locals["f4.fp"] = this.fp
+		Actor.locals["f4.compilerEs.podFn"] = #findPod.func
+
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
@@ -146,6 +168,10 @@ class InternalBuilder : Builder {
 		catch (Err e) {
 			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
 			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
+		}
+		finally {
+			Actor.locals.remove("f4.fp")
+			Actor.locals.remove("f4.compilerEs.podFn")
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}

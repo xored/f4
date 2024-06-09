@@ -12,17 +12,35 @@ import org.fantom.internal.sys.EquinoxEnv;
 
 import fan.sys.ClassType;
 import fan.sys.Env;
+import fan.sys.Err;
 import fan.sys.List;
 import fan.sys.LocalFile;
 import fan.sys.Pod;
-import fanx.emit.FPodEmit;
 import fanx.fcode.FStore;
-import fanx.emit.FTypeEmit;
 import fanx.fcode.FPod;
+import fanx.emit.FPodEmit;
+import fanx.emit.FTypeEmit;
 import fanx.util.Box;
 
 // Note this only seems to be used by com.xored.f4.builder::InternalBuilder
+// This class exists here so it has access to EquinoxEnv 
 public class JStubGenerator {
+	
+	// Creates a pod file without *loading* it into the current Env
+	public static Pod makePod(String podName, fan.sys.File file) {
+		// largely copied from fan.sys.Pod.load()
+		try {
+			FStore fstore = FStore.makeZip(new File(file.osPath()));
+			FPod   fpod   = new FPod(podName, fstore);
+			fpod.read(); 	// compilerEs only cares for pod.meta and any depends for writing "require" statements
+			Pod    pod    = new Pod(fpod, new Pod[]{});
+			return pod;
+		}
+		catch (Exception e) {
+			throw Err.make(e);
+		}
+	}
+	
 	public static void generateStubs(String podFileName, String outDir, Map allPods) throws Exception {
 		File podFile = new File(podFileName);
 		if (!podFile.exists())
