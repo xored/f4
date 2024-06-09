@@ -1780,25 +1780,22 @@ class Parser : AstFactory
     else throw err(curLoc, ProblemKind.parser_expectedId)
     return expr
   }
-  IFanType? resolveTypeByName(Str typeName)
-  {
-    // check usings for type name
-    resolvedType := usings.eachWhile |UsingDef udef->IFanType?|
-    {
-      if (udef.typeName == null)
-        return udef.podName.modelPod?.findType(typeName,false)
-      else if (typeName == udef.typeName.text)
-        return udef.typeName.resolvedType
-      else if( typeName == udef.asTypeName?.text)
-        return udef.typeName.resolvedType
-      return null;
-    }
-    if (resolvedType == null)
-      resolvedType = currPod.findType(typeName,false)
-    if (resolvedType == null)
-      resolvedType = ns.findPod("sys")?.findType(typeName,false)
-    return resolvedType
-  }
+
+	IFanType? resolveTypeByName(Str typeName) {
+		// check usings for type name
+		return usings.eachWhile |UsingDef udef->IFanType?| {
+			if (udef.typeName == null)
+				return udef.podName.modelPod?.findType(typeName, false)
+			
+			if (typeName == udef.typeName.text)
+				return udef.typeName.resolvedType
+			
+			if( typeName == udef.asTypeName?.text)
+				return udef.typeName.resolvedType
+
+			return null
+		}
+	}
   
   Bool isComplexLit()
   {
