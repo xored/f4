@@ -107,7 +107,9 @@ class FcodeEditor : EditorPart, FcodeVisitor, IScriptEditor, ISelectionChangedLi
 
     // visit types
     text = StyledStr()
-    FcodeReader(File(Uri.decode(pod.getParent.getPath.toStr.split(':').last))).accept(this)
+	
+    // fromStr() 'cos the path may contain spaces and is prob NOT URI encoded!
+    FcodeReader(File(Uri.fromStr(pod.getParent.getPath.toStr.split(':').last))).accept(this)
 
     // update control
     control.setText(text.toStr)
