@@ -53,32 +53,32 @@ internal class FantomProjectManagerState {
 		// closed or opened projects and for all projects with updated content
 
 		projectsToUpdate  := [Str:IProject][:] { it.ordered = true }
-		projectsToRebuild := [Str:IProject][:] { it.ordered = true }
-		
+	
 		// update updated and opened Fantom projects
 		change.openedProjects.each {
-			// not sure why we need to check for Fantom projects?
-			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
+			projectsToUpdate[it.getName] = it 
 		}
 		change.updatedProjects.each {
-			// not sure why we need to check for Fantom projects?
-			if (isFantomProject(it))	projectsToUpdate[it.getName] = it 
+			projectsToUpdate[it.getName] = it 
 		}
 		
 		
 		// update the dependencies of parent projects
 		change.openedProjects.each {
-			parentProjects(it).each {	projectsToRebuild[it.getName] = it }
+			parentProjects(it).each {
+				projectsToUpdate[it.getName] = it
+			}
 		}
 		change.closedProjects.each {
-			parentProjects(it).each {	projectsToRebuild[it.getName] = it }
-		}
-		
-		
-		// remove all closed projects
-		change.closedProjects.each {
+			parentProjects(it).each {
+				// reset and re-resolve to remove these annoying errors:
+				//  - Project A is missing required script project: 'Project B'
+				resetter.reset(it)
+				projectsToUpdate[it.getName] = it
+			}
+
+			// remove all closed projects
 			projectsToUpdate .remove(it.getName)
-			projectsToRebuild.remove(it.getName)
 			projects		 .remove(it.getName)
 		}
 
@@ -100,19 +100,7 @@ internal class FantomProjectManagerState {
 				// reset existing projects so pods get lazily resolved
 				projects[it.getName].reset
 		}
-		
-		projectsToRebuild.vals.each {
-			fp := projects[it.getName]
-
-			// can't think why fp would be null but, you know, belts and braces when in the reactor!
-			if (fp != null) {
-				// reset and re-resolve to remove these annoying errors:
-				//  - Project A is missing required script project: 'Project B'
-				fp.reset
-				fp.resolvedPods
-			}
-		}
-		
+	
 		return null
 	}
 	
@@ -181,9 +169,5 @@ internal class FantomProjectManagerState {
 		fp = FantomProject.makeFromProject(ip)
 		projects[ip.getName] = fp
 		return true
-	}
-	
-	private Bool isFantomProject(IProject ip) {
-		ip.exists && ip.getNature(F4Nature.id) != null
 	}
 }
