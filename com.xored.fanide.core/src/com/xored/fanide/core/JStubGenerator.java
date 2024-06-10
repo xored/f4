@@ -32,8 +32,15 @@ public class JStubGenerator {
 		try {
 			FStore fstore = FStore.makeZip(new File(file.osPath()));
 			FPod   fpod   = new FPod(podName, fstore);
-			fpod.read(); 	// compilerEs only cares for pod.meta and any depends for writing "require" statements
-			Pod    pod    = new Pod(fpod, new Pod[]{});
+
+			// compilerEs only cares for pod.meta and any depends for writing "require" statements
+			fpod.read(); 
+			
+			// delete the pod's 'types' to prevent Pod.load() from loading yet moar pods! [called from Pod.ctor] 
+			fpod.types	= null;
+			
+			// now construct a basic Pod obj - all we care for is the meta depends list!!! 
+			Pod    pod	= new Pod(fpod, new Pod[]{});
 			return pod;
 		}
 		catch (Exception e) {
