@@ -64,6 +64,7 @@ class InternalBuilder : Builder {
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
 			input.jsFiles			= fp.jsDirs
+			input.jsPropsFiles		= fp.jsProps
 			input.outDir			= compileDir
 			input.output			= CompilerOutputMode.podFile
 			input.meta				= meta
@@ -71,6 +72,12 @@ class InternalBuilder : Builder {
 			input.includeDoc		= fp.docApi
 			input.includeSrc		= fp.docSrc
 
+			// add some backdoors for F4 JS compilation
+			if (meta["f4.forceJs"] == "true")
+				input.forceJs		= true
+			if (meta["f4.jsReflectClosures"] == "true")
+				input.jsReflectClosures	= true
+			
 			errs := compileFan(input)
             consumer?.call(logBuf.toStr)
 
