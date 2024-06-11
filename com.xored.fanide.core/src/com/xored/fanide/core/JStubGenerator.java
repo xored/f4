@@ -14,6 +14,7 @@ import fan.sys.ClassType;
 import fan.sys.Env;
 import fan.sys.Err;
 import fan.sys.List;
+import fan.sys.FanObj;
 import fan.sys.LocalFile;
 import fan.sys.Pod;
 import fanx.fcode.FStore;
@@ -29,8 +30,9 @@ public class JStubGenerator {
 	// Creates a pod file without *loading* it into the current Env
 	public static Pod makePod(String podName, fan.sys.File file) {
 		// largely copied from fan.sys.Pod.load()
+		FStore fstore = null;
 		try {
-			FStore fstore = FStore.makeZip(new File(file.osPath()));
+				   fstore = FStore.makeZip(new File(file.osPath()));
 			FPod   fpod   = new FPod(podName, fstore);
 
 			// compilerEs only cares for pod.meta and any depends for writing "require" statements
@@ -45,41 +47,46 @@ public class JStubGenerator {
 		}
 		catch (Exception e) {
 			throw Err.make(e);
+		} finally {
+			if (fstore != null) try { fstore.close(); } catch (IOException e) { /* meh */ }
 		}
 	}
-	
-	public static void generateStubs(String podFileName, String outDir, Map allPods) throws Exception {
-		File podFile = new File(podFileName);
-		if (!podFile.exists())
+
+	public static void generateStubs(String podName, String podPath, String outDirPath, Map resolvedPodFiles) throws Exception {
+		File podFile = new File(podPath);
+		if (podFile.exists() == false)
 			return;
-
-		File outDirFile = new File(outDir);
-		FStore store = null;
-		String podName = podFile.getName();
-		if (podName.endsWith(".pod")) {
-			podName = podName.substring(0, podName.length() - 4);
-		}
-
-		// Hack fantom to do our stub generation job
-		HashMap map = Pod.storePodsCache();
-		EquinoxEnv env = (EquinoxEnv) Env.cur();
+		
+		File		outDirFile	= new File(outDirPath);
+		FStore		store		= null;
+		HashMap		podsByName	= Pod.getCopyOfPodsByName();
+		EquinoxEnv	env			= (EquinoxEnv) Env.cur();
 		try {
-			for (Object key : allPods.keySet()) {
-				Object value = allPods.get(key);
-				if (key instanceof String && value instanceof LocalFile) {
+			for (Object key : resolvedPodFiles.keySet()) {
+				Object value = resolvedPodFiles.get(key);
+				if (key instanceof String && value instanceof LocalFile)
 					env.addJStubPod((String) key, (LocalFile) value);
-				}
+				else
+					FanObj.echo(key.toString() + " not a LocalFile but is " + value.getClass().toString());
 			}
+			// do last to overwrite existing val
 			env.addJStubPod(podName, new BundleFile(podFile));
 
+			// create a new in-memory pod to read from
 			store = FStore.makeZip(podFile);
 			FPod fpod = new FPod(podName, store);
 			fpod.read();
 
-			Pod pod = new Pod(fpod, new Pod[] {});
-			List types = pod.types();
+			// this ctor will indirectly try to load other referenced pods from Env.cur()
+			// which is why we stub them about above
+			Pod	 pod  = new Pod(fpod, new Pod[] {});
+
+			// this code is now as per the original Jstub.java
+			FPodEmit podEmit = FPodEmit.emit(fpod);
+			add(podEmit.className, podEmit.classFile, outDirFile);
 
 			// write out each type to one or more .class files
+			List types = pod.types();
 			for (int i = 0; i < types.size(); ++i) {
 				ClassType type = (ClassType) types.get(i);
 				if (type.isNative())
@@ -94,14 +101,13 @@ public class JStubGenerator {
 				}
 			}
 
-			FPodEmit podEmit = FPodEmit.emit(fpod);
-			add(podEmit.className, podEmit.classFile, outDirFile);
-
 		} finally {
 			if (store != null) try { store.close(); } catch (IOException e) { /* meh */ }
-			env.removeJStubPod();
+
 			// Remove all loaded pods from cache
-			Pod.restorePodsCache(map);
+			// alleviate future "File locked" exceptions by closing ALL new pod files
+			Pod.setPodsByName(podsByName);
+			env.removeJStubPod();
 		}
 	}
 

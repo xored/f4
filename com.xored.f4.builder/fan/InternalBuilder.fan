@@ -100,8 +100,8 @@ class InternalBuilder : Builder {
 			if (newPodFile.exists) {
 				
 				// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
-				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, it may
-				// due to Builder (superclass) doing a zero depth refresh
+				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, 
+				// it may be due to Builder (superclass) doing a zero depth refresh
 				if (isPodChanged(newPodFile, oldPodFile)) {
 					
 					// the old behaviour was thus (see below),
@@ -177,8 +177,8 @@ class InternalBuilder : Builder {
 			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
 		}
 		finally {
-			Actor.locals.remove("f4.fp")
 			Actor.locals.remove("f4.compilerEs.podFn")
+			Actor.locals.remove("f4.fp")
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
@@ -192,14 +192,13 @@ class InternalBuilder : Builder {
 		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
-		jmap.put(fp.podName, podFile)
-		
+	
 		// stub generation often "locks" the pod file so it cannot be updated or deleted
 		// this happens more often when working from flash drives
 		// reading from a different .pod file at least lets us update the original (with the jstubs)
 		newPodFile	:= compileDir + `jstub/${fp.podName}.pod`
 		podFile.copyTo(newPodFile, ["overwrite":true])
-		JStubGenerator.generateStubs(newPodFile.osPath, jtemp.osPath, jmap)
+		JStubGenerator.generateStubs(fp.podName, newPodFile.osPath, jtemp.osPath, jmap)
 
 		classpath := fp.classpath.join(File.pathSep) { it.osPath }
 		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }
