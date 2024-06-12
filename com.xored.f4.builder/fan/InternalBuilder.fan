@@ -103,7 +103,7 @@ class InternalBuilder : Builder {
 				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, 
 				// it may be due to Builder (superclass) doing a zero depth refresh
 				if (isPodChanged(newPodFile, oldPodFile)) {
-					
+	
 					// the old behaviour was thus (see below),
 					// but re-freshing (esp after we'd copied over new pod files)
 					// caused the entire project to re-build, and it would keep on 
@@ -117,9 +117,14 @@ class InternalBuilder : Builder {
 //					// refresh Fantom stuff
 //					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
 
-					// copy pod to outDir
-					consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
-					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+					try {
+						// copy pod to outDir
+						// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
+						consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+					} catch (Err err) 
+						// let's not cause a modal pop-up - but fail quietly in the background with a reported err
+						errs.add([toCompilerErr(err, oldPodFile)])
 				}
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
