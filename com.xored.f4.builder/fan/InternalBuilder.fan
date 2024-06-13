@@ -122,9 +122,19 @@ class InternalBuilder : Builder {
 						// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
 						consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
 						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
-					} catch (Err err) 
+
+					} catch (Err err) {
 						// let's not cause a modal pop-up - but fail quietly in the background with a reported err
-						errs.add([toCompilerErr(err, oldPodFile)])
+						msg := "${oldPodFile.name} is locked by another process."
+						msg += "\nPlease end all programs using the .pod file and re-build the project."
+						msg += "\n${oldPodFile.osPath}"
+						msg += "\n"
+						msg += "\n" + err.msg
+							.replace("java.nio.file.FileSystemException: ", "java.nio.file.FileSystemException:\n  ")
+							.replace(".pod: The process", ".pod\n  The process")
+						com := CompilerErr.make(msg, Loc.makeFile(fp.buildFile), err, LogLevel.err)
+						errs.add([com])
+					}
 				}
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
