@@ -73,12 +73,16 @@ internal class DeltaVisitor2 {
 	
 	WorkspaceChange workspaceChanges() {
 		WorkspaceChange {
-			it.closedProjects	= this.closedProjects
-			it.openedProjects	= this.openedProjects
-			it.updatedProjects	= this.updatedProjects
+			it.closedProjects	= this.closedProjects	// we can't check the nature of closed projects --> java.lang.Exception: Project is not open.
+			it.openedProjects	= this.openedProjects	.findAll { isFantomProject(it) }
+			it.updatedProjects	= this.updatedProjects	.findAll { isFantomProject(it) }
 		}
 	}
 	
+	private static Bool isFantomProject(IProject ip) {
+		ip.exists && ip.getNature(F4Nature.id) != null
+	}
+
 	private static Bool contentChanged(IResourceDelta delta) {
 		switch (delta.getKind) {
 			case IResourceDelta.CHANGED:

@@ -34,6 +34,7 @@ const class FantomProject {
 	const Depend[]	rawDepends	:= Depend#.emptyList
 	const Uri[]		resDirs		:= Uri#.emptyList
 	const Uri[]		jsDirs		:= Uri#.emptyList
+	const Uri[]		jsProps		:= Uri#.emptyList
 	const Uri[]		javaDirs	:= Uri#.emptyList
 	const Str:Obj	index		:= Str:Obj[:]
 	const Str:Str	meta		:= Str:Str[:]
@@ -87,6 +88,7 @@ const class FantomProject {
 		podOutDir	= manifest.outPodDir
 		resDirs		= manifest.resDirs
 		jsDirs		= manifest.jsDirs
+		jsProps		= manifest.jsProps ?: manifest.resDirs	// same logic as BuildPod
 		javaDirs	= manifest.javaDirs
 		meta		= manifest.meta.dup
 		index		= manifest.index.dup

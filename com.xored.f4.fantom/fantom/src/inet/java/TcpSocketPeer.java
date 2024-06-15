@@ -8,10 +8,15 @@
 package fan.inet;
 
 import fan.sys.*;
+import fan.crypto.*;
+import fanx.interop.*;
 import java.io.*;
 import java.net.*;
 import java.security.*;
 import javax.net.ssl.*;
+
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 public class TcpSocketPeer
 {
@@ -25,65 +30,39 @@ public class TcpSocketPeer
     return new TcpSocketPeer(new Socket());
   }
 
-  public static TcpSocket makeRaw(Object raw)
+  public TcpSocket init(TcpSocket fan, SocketConfig config)
   {
-    if (!(raw instanceof Socket)) throw ArgErr.make("not a raw socket");
+    this.config = config;
+
+    // if socket is alredy connected, then it is already configured.
+    if (fan.isConnected()) return fan;
+
+    setInBufferSize(fan, config.inBufferSize);
+    setOutBufferSize(fan, config.outBufferSize);
+    setKeepAlive(fan, config.keepAlive);
+    setReceiveBufferSize(fan, config.receiveBufferSize);
+    setSendBufferSize(fan, config.sendBufferSize);
+    setReuseAddr(fan, config.reuseAddr);
+    setLinger(fan, config.linger);
+    setReceiveTimeout(fan, config.receiveTimeout);
+    setNoDelay(fan, config.noDelay);
+    setTrafficClass(fan, config.trafficClass);
+    return fan;
+  }
+
+  public static TcpSocket makeNative(Object raw, SocketConfig config, boolean isServer)
+  {
     try
     {
       final Socket socket = (Socket)raw;
       final TcpSocket self = new TcpSocket();
       self.peer = new TcpSocketPeer(socket);
+      self.peer.isServer= isServer;
+      self.peer.init(self, config);
       if (socket.isConnected()) self.peer.connected(self);
       return self;
     }
     catch (IOException e)
-    {
-      throw IOErr.make(e);
-    }
-  }
-
-  public static TcpSocket makeTls() { return makeTls(null, null); }
-  public static TcpSocket makeTls(TcpSocket upgrade) { return makeTls(upgrade, null); }
-  public static TcpSocket makeTls(TcpSocket upgrade, Object tlsContext)
-  {
-    try
-    {
-      SSLContext sslContext;
-
-      if (tlsContext != null) sslContext = (SSLContext)tlsContext;
-      else
-      {
-        // get SSL factory because Java loves factories!
-        sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, null, null);
-      }
-
-      final SSLSocketFactory factory = sslContext.getSocketFactory();
-
-      SSLSocket socket;
-      if (upgrade == null)
-      {
-        // create new SSL socket
-        socket = (SSLSocket)factory.createSocket();
-      }
-      else
-      {
-        // upgrade an existing socket
-        socket = (SSLSocket)factory.createSocket(
-                   upgrade.peer.socket,
-                   upgrade.peer.socket.getInetAddress().getHostAddress(),
-                   upgrade.peer.socket.getPort(),
-                   false);
-        socket.setUseClientMode(true);
-        socket.startHandshake();
-      }
-
-      // create the new TcpSocket instance
-      TcpSocket tlsSocket = TcpSocket.makeRaw(socket);
-      tlsSocket.peer.sslContext = sslContext;
-      return tlsSocket;
-    }
-    catch (Exception e)
     {
       throw IOErr.make(e);
     }
@@ -99,8 +78,88 @@ public class TcpSocketPeer
   }
 
 //////////////////////////////////////////////////////////////////////////
+// TLS
+//////////////////////////////////////////////////////////////////////////
+
+  public TcpSocket upgradeTls(TcpSocket self, IpAddr addr, Long port)
+  {
+    return upgradeTls(self, self, addr, port);
+  }
+  public TcpSocket upgradeTls(TcpSocket self, TcpSocket wrap, IpAddr addr, Long port)
+  {
+    try
+    {
+      SSLSocketFactory factory = config.peer.sslContext().getSocketFactory();
+      SSLSocket socket;
+      boolean clientMode = true;
+      if (wrap == null || !wrap.isConnected())
+      {
+        // create a new SSL socket
+        socket = (SSLSocket)factory.createSocket();
+      }
+      else
+      {
+        // upgrade an existing socket
+        String javaAddr;
+        int javaPort;
+
+        if (addr == null)
+        {
+          javaAddr = wrap.peer.socket.getInetAddress().getHostAddress();
+          javaPort = wrap.peer.socket.getPort();
+        }
+        else //TLS handshake through tunnel
+        {
+          javaAddr = addr.hostname();
+          javaPort = port.intValue();
+        }
+
+        socket = (SSLSocket)factory.createSocket(
+                   wrap.peer.socket,
+                   javaAddr,
+                   javaPort,
+                   true);
+        clientMode = !wrap.peer.isServer;
+      }
+      configureSslSocket(socket, clientMode);
+
+      // create the new TcpSocket instance
+      final TcpSocket tlsSocket = TcpSocketPeer.makeNative(socket, config, !clientMode);
+      return tlsSocket;
+    }
+    catch (Exception e) { throw IOErr.make(e); }
+  }
+
+  private void configureSslSocket(SSLSocket socket, final boolean clientMode)
+  {
+    socket.setUseClientMode(clientMode);
+
+    // configure SSL parameters
+    SSLParameters params = socket.getSSLParameters();
+
+    if (!clientMode)
+    {
+      // configure client authentication
+      final String clientAuth = (String)this.config.tlsParams.get("clientAuth", "none");
+      if (clientAuth.equals("need")) params.setNeedClientAuth(true);
+      else if (clientAuth.equals("want")) params.setWantClientAuth(true);
+    }
+
+    // application protocols
+    final List protocols = (List)this.config.tlsParams.get("appProtocols");
+    if (protocols != null) params.setApplicationProtocols((String[])protocols.asArray(String.class));
+
+    socket.setSSLParameters(params);
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // State
 //////////////////////////////////////////////////////////////////////////
+
+  public SocketConfig config(TcpSocket self)
+  {
+    return this.config;
+  }
 
   public boolean isBound(TcpSocket fan)
   {
@@ -275,6 +334,83 @@ public class TcpSocketPeer
   {
     if (in != null) throw Err.make("Must set outBufSize before connection");
     outBufSize = (v == null) ? 0 : v.intValue();
+  }
+
+//////////////////////////////////////////////////////////////////////////
+// Certificates
+//////////////////////////////////////////////////////////////////////////
+
+  public String clientAuth(TcpSocket fan)
+  {
+    if (socket instanceof SSLSocket)
+    {
+      if (((SSLSocket)socket).getNeedClientAuth()) return "need";
+      if (((SSLSocket)socket).getWantClientAuth()) return "want";
+    }
+    return "none";
+  }
+
+  public List localCerts(TcpSocket fan)
+  {
+    SSLSession s = sslSession();
+
+    if (s != null)
+    {
+      Certificate[] certs = s.getLocalCertificates();
+      if (certs != null) return makeCertList(certs);
+    }
+    return List.make(Type.find("crypto::Cert"), 0);
+  }
+
+  public List remoteCerts(TcpSocket fan)
+  {
+    SSLSession s = sslSession();
+    if (s != null)
+    {
+      try
+      {
+        return makeCertList(s.getPeerCertificates());
+      }
+      catch (SSLPeerUnverifiedException ignore)
+      {
+        IOErr.make("Remote certificate not verified", ignore).trace();
+      }
+    }
+    return List.make(Type.find("crypto::Cert"), 0);
+  }
+
+  private SSLSession sslSession()
+  {
+    if (socket instanceof SSLSocket)
+    {
+      SSLSession s = ((SSLSocket)socket).getSession();
+      if (s.getCipherSuite() == "SSL_NULL_WITH_NULL_NULL") return null;
+      return s;
+    }
+    return null;
+  }
+
+  private List makeCertList(Certificate[] certs)
+  {
+    try
+    {
+      Crypto crypto = (Crypto)Type.find("cryptoJava::JCrypto").make();
+
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      for (int i = 0; i < certs.length; i++)
+      {
+        X509Certificate cert = (X509Certificate)certs[i];
+        out.write(cert.getEncoded());
+      }
+      byte[] ders = out.toByteArray();
+      InputStream in = new ByteArrayInputStream(ders);
+      return crypto.loadX509(Interop.toFan(in, ders.length));
+    }
+    catch (Exception ignore)
+    {
+      IOErr.make("Error parsing certificates", ignore).trace();
+    }
+    return List.make(Type.find("crypto::Cert"), 0);
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -491,15 +627,13 @@ public class TcpSocketPeer
 
   public Socket socket() { return this.socket; }
 
-  public SSLContext getSslContext() { return this.sslContext; }
-
-
 //////////////////////////////////////////////////////////////////////////
 // Fields
 //////////////////////////////////////////////////////////////////////////
 
   Socket socket;
-  private SSLContext sslContext;
+  private SocketConfig config;
+  boolean isServer = false;
   private int inBufSize = 4096;
   private int outBufSize = 4096;
   private IpAddr remoteAddr;

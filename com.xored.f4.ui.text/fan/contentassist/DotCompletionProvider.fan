@@ -40,8 +40,8 @@ class DotCompletionProvider : CompletionProvider {
 		
 		IFanType? type := getType(path)
 		if (type == null) {
-			typeof.pod.log.warn("${src[path.last.start..path.last.end]} can't be resolved, prefix - $prefix")
-			return true
+			typeof.pod.log.warn("'${src[path.last.start..path.last.end]}' can't be resolved, prefix - $prefix")
+			return false
 		}
 		
 		if (type.qname == "sys::Void") return true //no slots

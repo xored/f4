@@ -44,9 +44,10 @@ class Manifest {
 	Str 		summary()	{ vals["summary"] ?: "" }
 	Uri?		outPodDir()	{ vals["outPodDir"] != null ? Uri.fromStr(vals["outPodDir"]) : null }
 	Str[]		depends()	{ vals["depends"] ?: Str[,] }
-	Uri[]		resDirs()	{ resolveUris(vals["resDirs"]) }
-	Uri[]		jsDirs()	{ resolveUris(vals["jsDirs"]) }
-	Uri[]		javaDirs()	{ resolveUris(vals["javaDirs"]) }
+	Uri[]		resDirs()	{ resolveUris(vals["resDirs"],  false) }
+	Uri[]		jsDirs()	{ resolveUris(vals["jsDirs"],   false) }
+	Uri[]?		jsProps()	{ resolveUris(vals["jsProps"],  true ) }
+	Uri[]		javaDirs()	{ resolveUris(vals["javaDirs"], false) }
 	Str:Obj		index()		{ vals["index"] ?: [Str:Obj][:] }
 	Str:Str		meta() 		{ vals["meta"]  ?: [Str:Str][:] }
 	Bool		docApi()	{ vals["docApi"] ?: true }
@@ -56,10 +57,10 @@ class Manifest {
 	// Helper methods
 	//////////////////////////////////////////////////////////////////////////
 
-	private static Uri[] resolveUris(Obj? vals) {
+	private static Uri[]? resolveUris(Obj? vals, Bool nullable) {
 		res := Uri[,]
 		(vals as Str[])?.each { res.add(Uri.fromStr(it)) }
-		return res
+		return nullable && res.isEmpty ? null : res
 	}
 	
 	private static Obj? resolveLiteral(Expr expr) {

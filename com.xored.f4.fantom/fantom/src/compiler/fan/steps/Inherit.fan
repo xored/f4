@@ -289,10 +289,15 @@ class Inherit : CompilerStep
       }
 
       // if the definition already has a covariant return type, then
-      // it must be exactly the same type as this new override (we
-      // can't have conflicting covariant overrides
+      // it must be exactly the same type as this new override.  We
+      // can't have conflicting covariant overrides because in JVM we
+      // need everything to compile to the same inherited signature with
+      // same return type so it resolves correctly
       if (def.inheritedRet != null && def.inheritedRet != base.inheritedReturnType)
         throw err("Conflicting covariant returns: '$def.inheritedRet' and '$base.inheritedReturnType'", loc)
+
+      // used from Jan-Apr 2023
+      //      if (def.inheritedRet != null && def.inheritedRet != base.inheritedReturnType && !base.inheritedReturnType.isObj)
     }
 
     // save original return type

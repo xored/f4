@@ -11,7 +11,12 @@
 **
 class TzTool
 {
-  new make() { }
+  new make(Str[] args := Env.cur.args)
+  {
+    this.args = args
+  }
+
+  private const Str[] args
 
   Void run()
   {
@@ -61,36 +66,31 @@ class TzTool
     {
       jsOut.printLine(
         "(function() {
-          ${JsPod.requireSys}
-          var c=fan.sys.TimeZone.cache\$;
-          var a;")
+         var root=this;
+         var fan=root.fan;
+         if (!fan && (typeof require !== 'undefined')) fan = require('sys.js');
+         var c=fan.sys.TimeZone.cache\$;")
 
       // write built-in timezones
       byContinent.each |TimeZone[] timezones, Str continent|
       {
-        jsOut.printLine("a=${continent.toCode};")
         timezones.each |TimeZone tz|
         {
           log.debug("$tz.fullName")
           encoded := encodeTimeZone(tz)
-          jsOut.printLine("c(a,${tz.fullName.toCode},${encoded.toBase64.toCode});")
+          jsOut.printLine("c(${tz.fullName.toCode},${encoded.toBase64.toCode});")
         }
       }
 
       // write aliases
-      jsOut.printLine("c=fan.sys.TimeZone.alias\$;")
+      jsOut.printLine("var a=fan.sys.TimeZone.alias\$;")
       aliases.each |target, alias|
       {
         log.debug("Alias $alias = $target")
-        jsOut.printLine("c(${alias.toCode},${target.toCode});")
+        jsOut.printLine("a(${alias.toCode},${target.toCode});")
       }
 
-      // assign static utc and rel fields
-      jsOut.printLine("fan.sys.TimeZone.m_utc = fan.sys.TimeZone.fromStr('UTC');")
-      jsOut.printLine("fan.sys.TimeZone.m_rel = fan.sys.TimeZone.fromStr('Rel');")
-
-
-      jsOut.printLine("}).call(this);")
+      jsOut.printLine("})();")
     }
     finally jsOut.close
     log.info("Wrote: ${js.osPath ?: js}")
@@ -137,15 +137,21 @@ class TzTool
 
   private Void parseArgs()
   {
-    args := Env.cur.args.dup.reverse
     if (args.isEmpty) usage()
-    while (!args.isEmpty)
+    i :=0
+    while (i < args.size)
     {
-      arg := args.pop
+      arg := args[i++]
       switch (arg)
       {
         case "-gen":
           this.gen = true
+        case "-outDir":
+          outDir := args[i++].toUri.toFile
+          if (!outDir.isDir) throw ArgErr("Not a directory: ${outDir}")
+          this.js = outDir.plus(`tz.js`)
+        case "-silent":
+          this.log.level = LogLevel.silent
         case "-verbose":
         case "-v":
           log.level = LogLevel.debug
@@ -168,7 +174,9 @@ class TzTool
          $main [options]
        Options:
          -gen          Generate tz.js
+         -outDir       (optional) generate tz.js in this directory
          -verbose, -v  Enable verbose logging
+         -silent       Suppress all logging
          -help, -?     Print usage help
        ")
     Env.cur.exit(1)
@@ -194,5 +202,4 @@ class TzTool
   {
     TzTool().run
   }
-
 }

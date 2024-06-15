@@ -115,7 +115,7 @@ class JsType : JsNode
 
   override Str toStr() { sig }
 
-  static Bool checkJsSafety(CType ctype, CompilerSupport cs, Loc? loc)
+  static Bool checkJsSafety(CType ctype, JsCompilerSupport cs, Loc? loc)
   {
     if (ctype is TypeRef)           return checkJsSafety(ctype->t, cs, loc)
     else if (ctype is NullableType) return checkJsSafety(ctype->root, cs, loc)
@@ -132,7 +132,7 @@ class JsType : JsNode
       safe = safe && checkJsSafety(ft.ret, cs, loc)
       return safe
     }
-    else if (!(ctype.pod.name == "sys" || ctype.isSynthetic || ctype.facet("sys::Js") != null))
+    else if (!(ctype.pod.name == "sys" || ctype.isSynthetic || ctype.facet("sys::Js") != null || cs.forceJs))
     {
       cs.warn("Type '$ctype.qname' not available in Js", loc)
       return false
@@ -179,6 +179,9 @@ class JsTypeRef : JsNode
 
   private new makePriv(JsCompilerSupport cs, CType ref, Loc? loc) : super.make(cs)
   {
+    try
+    {
+
     this.qname = qnameToJs(ref)
     this.pod   = ref.pod.name
     this.name  = ref.name
@@ -189,6 +192,7 @@ class JsTypeRef : JsNode
     this.isList = ref.isList
     this.isMap  = ref.isMap
     this.isFunc = ref.isFunc
+    this.isForeign = ref.isForeign
     this.loc = loc
 
     deref := ref.deref
@@ -200,6 +204,12 @@ class JsTypeRef : JsNode
     }
 
     JsType.checkJsSafety(ref, cs, loc)
+    }
+    catch (Err err)
+    {
+      throw Err("JsTypeRef: ${ref} [${loc}]", err)
+    }
+
   }
 
 
@@ -221,6 +231,7 @@ class JsTypeRef : JsNode
   Bool isList        // is type a sys::List
   Bool isMap         // is type a sys::Map
   Bool isFunc        // is type a sys::Func
+  Bool isForeign     // is type foreign
 
   JsTypeRef? k       // only valid for MapType
   JsTypeRef? v       // only valid for ListType, MapType

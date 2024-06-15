@@ -46,8 +46,8 @@ class WebClient
     reqHeaders["Accept-Encoding"] = "gzip"
   }
 
-  ** Custom TLS context for this WebClient instance.
-  @NoDoc Obj? tlsContext := null
+  ** The `inet::SocketConfig` to use for creating sockets
+  SocketConfig socketConfig := SocketConfig.cur
 
 //////////////////////////////////////////////////////////////////////////
 // Request
@@ -204,16 +204,10 @@ class WebClient
 // Networking
 //////////////////////////////////////////////////////////////////////////
 
-  **
-  ** Socket options for the TCP socket used for requests.
-  ** Default is 1min for connectTimeout and receiveTimeout.
-  **
+  @Deprecated { msg = "Use WebClient.socketConfig to configure sockets" }
   once SocketOptions socketOptions()
   {
-    options := TcpSocket().options
-    options.connectTimeout = 1min
-    options.receiveTimeout = 1min
-    return options
+    TcpSocket().options
   }
 
   **
@@ -438,8 +432,8 @@ class WebClient
       else
       {
         // make https or http socket
-        socket = isHttps ? TcpSocket.makeTls(null, tlsContext) : TcpSocket.make
-        socket.options.copyFrom(socketOptions)
+        socket = TcpSocket(socketConfig)
+        if (isHttps) socket = socket.upgradeTls
 
         // connect to proxy or directly to request host
         connUri := usingProxy ? proxy : reqUri
@@ -472,8 +466,7 @@ class WebClient
   ** Open an https tunnel through our proxy server.
   private TcpSocket openHttpsTunnel()
   {
-    socket = TcpSocket.make
-    socket.options.copyFrom(socketOptions)
+    socket = TcpSocket(socketConfig)
 
     // make CONNECT request to proxy server on http port
     socket.connect(IpAddr(proxy.host), proxy.port ?: 80)
@@ -488,7 +481,7 @@ class WebClient
     if (resCode != 200) throw IOErr("Could not open tunnel: bad HTTP response $resCode $resPhrase")
 
     // upgrade to SSL socket now
-    return TcpSocket.makeTls(socket)
+    return socket.upgradeTls(IpAddr(reqUri.host), reqUri.port ?: 443)
   }
 
   **

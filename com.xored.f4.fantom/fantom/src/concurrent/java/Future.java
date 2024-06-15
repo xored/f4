@@ -47,11 +47,11 @@ public abstract class Future
 // Future
 //////////////////////////////////////////////////////////////////////////
 
-  public abstract FutureState state();
+  public abstract FutureStatus status();
 
-  public final boolean isDone() { return state().isComplete(); }
+  public final boolean isDone() { return status().isComplete(); }
 
-  public final boolean isCancelled() { return state().isCancelled(); }
+  public final boolean isCancelled() { return status().isCancelled(); }
 
   public Object get() { return get(null); }
   public Object get(long t, TimeUnit u) { return get(Duration.make(u.toNanos(t))); }
@@ -99,3 +99,4 @@ public abstract class Future
   public Future wraps() { return null; }
 
 }
+

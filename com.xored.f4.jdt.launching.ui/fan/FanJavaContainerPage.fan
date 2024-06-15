@@ -11,9 +11,8 @@ using [java] org.eclipse.jdt.core
 using [java] org.eclipse.jdt.ui.wizards
 using [java] org.eclipse.jface.wizard
 using [java] org.eclipse.swt.widgets::Composite
-using [java] org.fantom.fwt.util::FwtUtil
+//using [java] org.fantom.fwt.util::FwtUtil
 using f4jdtLaunching
-using fwt
 
 class FanJavaContainerPage : WizardPage, IClasspathContainerPage {
 	new make() : super(FanJavaContainer#.name) {}
@@ -28,13 +27,16 @@ class FanJavaContainerPage : WizardPage, IClasspathContainerPage {
 		cpEntry = containerEntry ?: 
 			JavaCore.newContainerEntry(Path(JavaLaunchConsts.fanJavaContainer))
 	}
-	
+
 	override Void createControl(Composite? parent) {
-		control := GridPane {
-			Label { text = "Fantom java container" },
-		}
+		super.setControl(parent)
 		
-		FwtUtil.addToSwt(control, parent)
-		setControl(FwtUtil.widget(control))
+		// Slimer June'24 - where can I find this page in F4? Does it *really* need FWT?
+//		control := GridPane {
+//			Label { text = "Fantom java container" },
+//		}
+//		
+//		FwtUtil.addToSwt(control, parent)
+//		setControl(FwtUtil.widget(control))
 	}
 }

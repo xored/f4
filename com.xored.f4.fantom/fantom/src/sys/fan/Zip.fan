@@ -16,7 +16,7 @@
 **   2. `Zip.read` is used to read a zip file from an input stream.
 **      Each entry is pulled off the stream using `readNext`
 **   3. `Zip.write` is used to write a zip file to an output stream.
-**      Each entry must is written to the stream using `writeNext`
+**      Each entry is written to the stream using `writeNext`
 **
 final class Zip
 {
@@ -94,6 +94,14 @@ final class Zip
   File? readNext()
 
   **
+  ** Call the specified function for every entry in the zip. Use the File's
+  ** input stream to read the file contents.  Some file meta-data such as size
+  ** may not be available. Throw UnsupportedErr if not reading from an input
+  ** stream.
+  **
+  Void readEach(|File| c)
+
+  **
   ** Append a new file to the end of this zip file and return an OutStream
   ** which may be used to write the file contents.  The Uri must not contain
   ** a query or fragment; it may optionally start with a slash.  Closing the
@@ -121,17 +129,17 @@ final class Zip
   **
   ** Finish writing the contents of this zip file, but leave the underlying
   ** OutStream open.  This method is guaranteed to never throw an IOErr.
-  ** Return true if the stream was finished successfully or false if the
-  ** an error occurred.  Throw UnsupportedErr if zip is not not writing to
+  ** Return true if the stream was finished successfully or false if 
+  ** an error occurred.  Throw UnsupportedErr if zip is not writing to
   ** an output stream.
   **
   Bool finish()
 
   **
   ** Close this zip file for reading and writing.  If this zip file is
-  ** reading or writing an stream, then the underlying stream is also
+  ** reading or writing a stream, then the underlying stream is also
   ** closed.  This method is guaranteed to never throw an IOErr.  Return
-  ** true if the close was successful or false if the an error occurred.
+  ** true if the close was successful or false if an error occurred.
   **
   Bool close()
 
@@ -140,6 +148,13 @@ final class Zip
   ** a suitable string representation.
   **
   override Str toStr()
+
+  **
+  ** Static utility to unzip a zip file to the given directory.
+  ** Raise exception if there are any failures.  Return number of
+  ** files unzipped on success.
+  **
+  static Int unzipInto(File zip, File dir)
 
 //////////////////////////////////////////////////////////////////////////
 // GZIP

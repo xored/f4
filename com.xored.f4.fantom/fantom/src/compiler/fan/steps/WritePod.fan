@@ -66,6 +66,23 @@ class WritePod : CompilerStep
         }
       }
 
+      // write javascript cjs
+      if (compiler.cjs != null)
+      {
+        writeStr(zip, `js/${podName}.js`, compiler.cjs)
+        if (compiler.cjsSourceMap != null)
+          writeStr(zip, `js/${podName}.js.map`, compiler.cjsSourceMap)
+      }
+
+      // write javascript esm
+      if (compiler.esm != null)
+      {
+        writeStr(zip, `js/${podName}.mjs`, compiler.esm)
+        // write <pod>.d.ts
+        if (compiler.tsDecl != null)
+          writeStr(zip, `js/${podName}.d.ts`, compiler.tsDecl)
+      }
+
       // if explicit locale props
       if (compiler.localeProps != null)
         writeStr(zip, `locale/en.props`, compiler.localeProps)

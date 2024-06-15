@@ -68,9 +68,25 @@ fan.sys.TimeZone.rel = function()
 
 fan.sys.TimeZone.cur = function()
 {
-  // TODO
   if (fan.sys.TimeZone.m_cur == null)
-    fan.sys.TimeZone.m_cur = fan.sys.TimeZone.fromStr("New_York");
+  {
+    try
+    {
+      // check for explicit tz from Env.vars or fallback to local if avail
+      var tz = fan.sys.Env.cur().m_vars.get("timezone");
+      if (tz == null) tz = Intl.DateTimeFormat().resolvedOptions().timeZone.split("/")[1];
+      if (tz == null) tz = "UTC"
+      fan.sys.TimeZone.m_cur = fan.sys.TimeZone.fromStr(tz);
+    }
+    catch (err)
+    {
+      // fallback to UTC if we get here
+      console.log(fan.sys.Err.make(err).m_msg);
+      fan.sys.TimeZone.m_cur = fan.sys.TimeZone.m_utc;
+      throw fan.sys.Err.make(err);
+    }
+  }
+
   return fan.sys.TimeZone.m_cur;
 }
 
@@ -282,7 +298,7 @@ fan.sys.TimeZone.compareAtTime = function(rule, x, time)
 // Cache
 //////////////////////////////////////////////////////////////////////////
 
-fan.sys.TimeZone.cache$ = function(continent, fullName, encoded)
+fan.sys.TimeZone.cache$ = function(fullName, encoded)
 {
   // this handles cases where full name has multiple slashses
   var city = fullName.split("/").reverse()[0];

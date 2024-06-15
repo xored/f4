@@ -1,6 +1,7 @@
 using f4core::FantomProject
 using f4core::LogUtil
 using compiler
+using concurrent::Actor
 
 using [java]org.eclipse.debug.core::DebugPlugin
 using [java]org.eclipse.debug.core::ILaunchConfigurationWorkingCopy
@@ -45,7 +46,7 @@ class InternalBuilder : Builder {
 		}
 
 		logger	:= ConsoleLogger(consumer)
-		input	:= CompilerInput.make
+		input	:= CompilerInput()
 		try {
 			logBuf	:= StrBuf().add("\n")
 			meta	:= fp.meta.dup 
@@ -63,6 +64,7 @@ class InternalBuilder : Builder {
 			input.srcFiles			= fp.srcDirs
 			input.resFiles			= fp.resDirs
 			input.jsFiles			= fp.jsDirs
+			input.jsPropsFiles		= fp.jsProps
 			input.outDir			= compileDir
 			input.output			= CompilerOutputMode.podFile
 			input.meta				= meta
@@ -70,7 +72,13 @@ class InternalBuilder : Builder {
 			input.includeDoc		= fp.docApi
 			input.includeSrc		= fp.docSrc
 
-			errs := compile(input)
+			// add some backdoors for F4 JS compilation
+			if (meta["f4.forceJs"] == "true")
+				input.forceJs		= true
+			if (meta["f4.jsReflectClosures"] == "true")
+				input.jsReflectClosures	= true
+			
+			errs := compileFan(input)
             consumer?.call(logBuf.toStr)
 
 			if (errs[0].size > 0)
@@ -84,16 +92,18 @@ class InternalBuilder : Builder {
 			oldPodFile	:= fp.podOutFile
 			newPodFile	:= compileDir + `${fp.podName}.pod` 
 
-			if (!fp.javaDirs.isEmpty)
-				errs.add(compileJava(consumer, compileDir, resolvedPods))
+			if (fp.javaDirs.size > 0) {
+				javaErrs := compileJava(consumer, compileDir, resolvedPods)
+				errs.add(javaErrs)
+			}
 
 			if (newPodFile.exists) {
 				
 				// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
-				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, it may
-				// due to Builder (superclass) doing a zero depth refresh
+				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, 
+				// it may be due to Builder (superclass) doing a zero depth refresh
 				if (isPodChanged(newPodFile, oldPodFile)) {
-					
+	
 					// the old behaviour was thus (see below),
 					// but re-freshing (esp after we'd copied over new pod files)
 					// caused the entire project to re-build, and it would keep on 
@@ -107,9 +117,24 @@ class InternalBuilder : Builder {
 //					// refresh Fantom stuff
 //					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
 
-					// copy pod to outDir
-					consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
-					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+					try {
+						// copy pod to outDir
+						// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
+						consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
+						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+
+					} catch (Err err) {
+						// let's not cause a modal pop-up - but fail quietly in the background with a reported err
+						msg := "${oldPodFile.name} is locked by another process."
+						msg += "\nPlease end all programs using the .pod file and re-build the project."
+						msg += "\n${oldPodFile.osPath}"
+						msg += "\n"
+						msg += "\n" + err.msg
+							.replace("java.nio.file.FileSystemException: ", "java.nio.file.FileSystemException:\n  ")
+							.replace(".pod: The process", ".pod\n  The process")
+						com := CompilerErr.make(msg, Loc.makeFile(fp.buildFile), err, LogLevel.err)
+						errs.add([com])
+					}
 				}
 
 				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
@@ -123,7 +148,7 @@ class InternalBuilder : Builder {
 			// so don't! Delete it when we build again - it all seems fine then.
 //			compileDir.delete
 			return errs.flatten
-			
+	
 		} catch (Err err) {
 			logger.err("Could not compile ${fp.podName}", err)
 			LogUtil.logErr(pluginId, "${err.typeof.qname} during build - ${err.msg}", err)
@@ -133,8 +158,29 @@ class InternalBuilder : Builder {
 			(input.ns as F4Namespace)?.close
 		}
 	}
+	
+	private static Pod? findPod(Str podName) {
+		fp := Actor.locals["f4.fp"] as FantomProject
+		if (fp == null) throw Err("Wot no 'f4.fp' project in Actor.locals?")
 
-	private CompilerErr[][] compile(CompilerInput input) {
+		podFile := fp.resolvedPods[podName]
+		if (podFile == null)
+			return null
+
+		// believe me -it is IMPOSSIBLE to create an FPod instance in this Fantom class
+		// Soooo many weird F4 compilation errors as soon as I reference the "fanx" java package
+		// much easier to just move everything to a Java class in a different pod
+		// which is why, I suspect, that JStubGenerator is NOT part of f4builder
+		// SlimerDude, June 2024
+		fpod := JStubGenerator.makePod(podName, podFile)
+
+		return fpod
+	}
+	
+	private CompilerErr[][] compileFan(CompilerInput input) {
+		Actor.locals["f4.fp"] = this.fp
+		Actor.locals["f4.compilerEs.podFn"] = #findPod.func
+
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
@@ -144,6 +190,10 @@ class InternalBuilder : Builder {
 		catch (Err e) {
 			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
 			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
+		}
+		finally {
+			Actor.locals.remove("f4.compilerEs.podFn")
+			Actor.locals.remove("f4.fp")
 		}
 		return [caughtErrs.addAll(compiler.errs), compiler.warns]
 	}
@@ -157,13 +207,13 @@ class InternalBuilder : Builder {
 		resolvedPods.each |File file, Str key| {
 			jmap.put(key, file)
 		}
-		
+	
 		// stub generation often "locks" the pod file so it cannot be updated or deleted
 		// this happens more often when working from flash drives
 		// reading from a different .pod file at least lets us update the original (with the jstubs)
 		newPodFile	:= compileDir + `jstub/${fp.podName}.pod`
 		podFile.copyTo(newPodFile, ["overwrite":true])
-		JStubGenerator.generateStubs(newPodFile.osPath, jtemp.osPath, jmap)
+		JStubGenerator.generateStubs(fp.podName, newPodFile.osPath, jtemp.osPath, jmap)
 
 		classpath := fp.classpath.join(File.pathSep) { it.osPath }
 		javaFiles := listFiles(fp.javaDirs).join(" ") { "\"${it}\"" }

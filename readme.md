@@ -46,7 +46,7 @@ To setup a development environment to build and run F4:
 
  - Install [eclipse v4.9 2018-09](https://www.eclipse.org/downloads/packages/release/2018-09/r) -  choose the RCP package so you have eclipse SDK source
  - Install DLTK 5.10 in eclipse using the [Update Site](http://download.eclipse.org/technology/dltk/updates-dev/5.10/)
- - Install F4 features from the Update Respository - see `f4-1.1.4-repository.zip` in releases
+ - Install F4 features from the Update Respository - see `f4-1.1.8-repository.zip` in releases
  - Clone the [Fantom Runtime](http://github.com/xored/fantom-runtime) repository and import all projects
  - Clone this [F4 IDE](https://github.com/xored/f4) repository and import all projects
 

@@ -52,14 +52,24 @@ internal class WispRes : WebRes
   }
 
   **
+  ** Reason phrase to include in HTTP response line.  If null, then
+  ** a status phrase is used based on the `statusCode`.
+  **
+  override Str? statusPhrase
+  {
+    set
+    {
+      checkUncommitted
+      &statusPhrase = it
+    }
+  }
+
+  **
   ** Map of HTTP response headers.  You must set all headers before
   ** you access out() for the first time, which commits the response.
-  ** Throw an err if response is already committed.
+  ** The headers are readonly once the response is committed.
   **
   override Str:Str headers
-  {
-    get { checkUncommitted; return &headers }
-  }
 
   **
   ** Get the list of cookies to set via a header fields.  Add a
@@ -143,7 +153,7 @@ internal class WispRes : WebRes
 
     // write response
     this.statusCode = statusCode
-    this.errMsg = msg
+    this.statusPhrase = msg
     if (buf != null) this.out.writeBuf(buf.flip)
     else commit(false)
     done
@@ -212,15 +222,14 @@ internal class WispRes : WebRes
     // if we have content then we need to ensure we have our
     // headers and response stream are setup correctly
     sout := socket.out
-    if (content)
-    {
-      cout := WebUtil.makeContentOutStream(&headers, sout)
-      if (cout != null) webOut = WebOutStream(cout)
-    }
+    if (content) webOut = req.mod.makeResOut(sout)
+
+    // lock down the headers
+    headers = headers.ro
 
     // write response line and headers
     sout.print("HTTP/1.1 ").print(statusCode).print(" ").print(toStatusMsg).print("\r\n")
-    WebUtil.writeHeaders(sout, &headers)
+    WebUtil.writeHeaders(sout, headers)
     &cookies.each |Cookie c| { sout.print("Set-Cookie: ").print(c).print("\r\n") }
     sout.print("\r\n").flush
   }
@@ -230,8 +239,8 @@ internal class WispRes : WebRes
     // special temp hook for WebSocket
     if (statusCode == 101 && &headers["Upgrade"] == "WebSocket")
       return "Web Socket Protocol Handshake"
-    else if (errMsg != null)
-      return errMsg
+    else if (statusPhrase != null)
+      return statusPhrase
     else
       return statusMsg[statusCode] ?: statusCode.toStr
   }
@@ -252,10 +261,10 @@ internal class WispRes : WebRes
 //////////////////////////////////////////////////////////////////////////
 
   internal WispService service
+  internal WispReq? req
   internal TcpSocket socket
   internal WebOutStream? webOut
   internal Bool upgraded
-  private Str? errMsg
 
 
 }

@@ -28,6 +28,12 @@ abstract class WebRes
   abstract Int statusCode
 
   **
+  ** Reason phrase to include in HTTP response line.  If null, then
+  ** a status phrase is used based on the `statusCode`.
+  **
+  abstract Str? statusPhrase
+
+  **
   ** Map of HTTP response headers.  You must set all headers before
   ** you access out() for the first time, which commits the response.
   ** Throw an err if response is already committed.
@@ -152,6 +158,7 @@ abstract class WebRes
     415: "Unsupported Media Type",
     416: "Requested Range Not Satisfiable",
     417: "Expectation Failed",
+    429: "Too Many Requests",
     // 500
     500: "Internal Server Error",
     501: "Not Implemented",

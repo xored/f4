@@ -183,28 +183,26 @@ const class TryStmt : Stmt
   }
 }
 
-const class CatchStmt : Stmt
-{
-  const LocalDef? errVar
-  const Stmt block
-  
-  new make(Int start, Int end, LocalDef? errVar, Stmt block) 
-    : super(start, end) 
-  {
-    this.errVar = errVar
-    this.block = block
-  }
-  
-  override Void accept(AstVisitor v)
-  {
-    if (v.enterNode(this))
-    {
-      block.accept(v)
-      // make sure to accept the Err var *inside* the catch block, to make it available
-      errVar?.accept(v)
-      v.exitNode(this)
-    }
-  }
+const class CatchStmt : Stmt {
+	const LocalDef?	errVar	// errVars are optional for Fantom
+	const Stmt		block
+
+	new make(Int start, Int end, LocalDef? errVar, Stmt block) : super(start, end) {
+		this.errVar	= errVar
+		this.block	= block
+	}
+	
+	override Void accept(AstVisitor v) {
+		if (v.enterNode(this)) {
+			
+			block.accept(v)
+				
+			// make sure to accept the Err var *inside* the catch block, to make it available
+			errVar?.accept(v)
+
+			v.exitNode(this)
+		}
+	}
 }
 
 const class SwitchStmt : Stmt

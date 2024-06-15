@@ -64,7 +64,7 @@ final class SocketOptions
   **
   Int? inBufferSize
   {
-    get { return (Int)wrap |->Obj| { return socket->getInBufferSize } }
+    get { return (Int?)wrap |->Obj?| { return socket->getInBufferSize } }
     set { newVal := it; wrap |->| { socket->setInBufferSize(newVal) } }
   }
 
@@ -75,7 +75,7 @@ final class SocketOptions
   **
   Int? outBufferSize
   {
-    get { return (Int)wrap |->Obj| { return socket->getOutBufferSize } }
+    get { return (Int?)wrap |->Obj?| { return socket->getOutBufferSize } }
     set { newVal := it; wrap |->| { socket->setOutBufferSize(newVal) } }
   }
 
@@ -143,6 +143,7 @@ final class SocketOptions
   ** Controls default timeout used by `TcpSocket.connect`.
   ** A null value indicates a system default timeout.
   **
+  @Deprecated { msg = "Use SocketConfig.connectTimeout" }
   Duration? connectTimeout
 
   **

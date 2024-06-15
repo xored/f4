@@ -20,6 +20,8 @@ fan.dom.EventPeer.makeMock = function()
 
 fan.dom.EventPeer.fromNative = function(obj)
 {
+  // short-circut if peer already exists
+  if (obj.peer && obj.peer.event) return obj;
   return fan.dom.EventPeer.make(obj);
 }
 
@@ -40,6 +42,16 @@ fan.dom.EventPeer.prototype.target = function(self)
   return this.$target;
 }
 
+fan.dom.EventPeer.prototype.relatedTarget = function(self)
+{
+  if (this.$relatedTarget === undefined)
+  {
+    var rt = this.event.relatedTarget;
+    this.$relatedTarget = rt == null ? null : fan.dom.ElemPeer.wrap(rt);
+  }
+  return this.$relatedTarget;
+}
+
 fan.dom.EventPeer.prototype.pagePos = function(self)
 {
   if (this.$pagePos == null)
@@ -54,6 +66,7 @@ fan.dom.EventPeer.prototype.meta  = function(self) { return this.event.metaKey; 
 
 fan.dom.EventPeer.prototype.button = function(self) { return this.event.button; }
 fan.dom.EventPeer.prototype.key = function(self) { return this.$key }
+fan.dom.EventPeer.prototype.keyChar = function(self) { return this.$keyChar }
 
 fan.dom.EventPeer.prototype.delta = function(self)
 {
@@ -94,24 +107,27 @@ fan.dom.EventPeer.prototype.set = function(self, name, val)
   this.elem[name] = val;
 }
 
+fan.dom.EventPeer.prototype.data = function(self)
+{
+  if (this.event.data == null) return null;
+  if (this.$data == null)
+  {
+    var data = this.event.data;
+    if (data instanceof ArrayBuffer)
+    {
+      // old design required copying the bytes into normal array
+      var bytes = new Uint8Array(data);
+      var array = Array.from(bytes);
+      data = fan.sys.MemBuf.makeBytes(array);
+    }
+    this.$data = data;
+  }
+  return this.$data;
+}
+
 fan.dom.EventPeer.prototype.dataTransfer = function(self)
 {
-  // Andy Frank 19-Jun-2015: Chrome/WebKit do not allow reading
-  // getData during the dragover event - which makes it impossible
-  // to check drop targets during drag. To workaround for now we
-  // just cache in a static field
-  //
-  // 12-Aug-2019: this logic needed to be tweaked a bit to add
-  // support for dragging files into the browser - the lastDataTx
-  // temp copy should be cleared during EventPeer.make when we
-  // detect either a 'drop' or 'dragend' event
-
-  if (fan.dom.EventPeer.lastDataTx)
-    return fan.dom.EventPeer.lastDataTx;
-
-  if (!this.dataTx)
-    this.dataTx = fan.dom.EventPeer.lastDataTx = fan.dom.DataTransferPeer.make(this.event.dataTransfer);
-
+  if (!this.dataTx) this.dataTx = fan.dom.DataTransferPeer.make(this.event.dataTransfer);
   return this.dataTx;
 }
 
@@ -121,12 +137,6 @@ fan.dom.EventPeer.make = function(event)
   var x = fan.dom.Event.make();
   x.peer.event = event;
   if (event.keyCode) x.peer.$key = fan.dom.Key.fromCode(event.keyCode);
-
-  // we need to flush our working copy when we see a dragend
-  // event; this allows us to request the real drop contents
-  // which are hidden in alot of cases during ondrag
-  if (event.type.charAt(0) == 'd' && (event.type == "drop" || event.type == "dragend"))
-    fan.dom.EventPeer.lastDataTx = null
-
+  if (event.key) x.peer.$keyChar = event.key;
   return x;
 }

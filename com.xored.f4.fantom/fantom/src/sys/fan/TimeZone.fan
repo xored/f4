@@ -15,12 +15,11 @@
 ** not be 100% accurate).
 **
 ** The Fantom time zone database and naming model is based on the
-** [ZoneInfo database]`http://www.twinsun.com/tz/tz-link.htm` used
-** by UNIX and Java (also known as the Olson database).  All time
-** zones have both a simple `name` and a `fullName`.  The 'fullName'
-** is the full identifier used in the zoneinfo database such as
-** "America/New_York".  The simple name is the city name only
-** such as "New_York".
+** [ZoneInfo database]`https://www.iana.org/time-zones` used by UNIX and
+** Java.  All time zones have both a simple `name` and a `fullName`.
+** The 'fullName' is the full identifier used in the zoneinfo database such
+** as "America/New_York".  The simple name is the city name only such
+** as "New_York".
 **
 ** Use `cur` to get current default timezone for VM.
 **
@@ -103,7 +102,7 @@ const class TimeZone
 
   **
   ** Get the full name of this time zone as defined by the zoneinfo
-  ** database.  These names are formatted as "contintent/location"
+  ** database.  These names are formatted as "continent/location"
   ** where location is a major city within the time zone region.
   ** Examples of full names are "America/New_York" and "Europe/London".
   **

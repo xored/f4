@@ -49,7 +49,11 @@ abstract class Builder {
 	}
 
 	private CompilerErr projectErr(ProjectErr e) {
-		CompilerErr.make(e.msg, Loc.makeFile(fp.projectDir , e.line, 0), null, LogLevel.err)
+		CompilerErr.make(e.msg, Loc.makeFile(fp.projectDir, e.line, 0), null, LogLevel.err)
+	}
+	
+	CompilerErr toCompilerErr(Err err, File? file) {
+		CompilerErr.make(err.msg, Loc.makeFile(file ?: fp.buildFile), null, LogLevel.err)
 	}
 	
 	private static Void report(|Str|? consumer, StrBuf out, Str txt) {

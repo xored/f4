@@ -296,7 +296,10 @@ fan.dom.ElemPeer.prototype.scrollSize = function(self)
 
 fan.dom.ElemPeer.prototype.scrollIntoView = function(self, alignToTop)
 {
-  this.elem.scrollIntoView(alignToTop);
+  var opts = alignToTop
+    ? { block:"nearest", inline:"start" }
+    : { block:"nearest", inline:"end" };
+  this.elem.scrollIntoView(opts);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -381,6 +384,13 @@ fan.dom.ElemPeer.prototype.querySelectorAll = function(self, selectors)
   for (var i=0; i<elems.length; i++)
     list.add(fan.dom.ElemPeer.wrap(elems[i]));
   return list;
+}
+
+fan.dom.ElemPeer.prototype.closest = function(self, selectors)
+{
+  var elem = this.elem.closest(selectors);
+  if (elem == null) return null;
+  return fan.dom.ElemPeer.wrap(elem);
 }
 
 fan.dom.ElemPeer.prototype.clone = function(self, deep)

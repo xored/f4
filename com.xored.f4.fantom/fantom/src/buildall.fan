@@ -126,6 +126,9 @@ class Build : BuildGroup
     // doc nuke it all
     Delete.make(this, devHomeDir + `doc/`).run
 
+    // etc test files
+    Delete.make(this, devHomeDir + `etc/yaml/`).run
+
     // nuke flux session data
     Delete.make(this, devHomeDir + `etc/flux/session/`).run
 
@@ -158,6 +161,8 @@ class Build : BuildGroup
         if (n.startsWith(".")) return false
         if (n == "tmp") return false
         if (n == "temp") return false
+        if (n.startsWith("test") && f.ext == "pod") return false
+        if (f.ext == "jar" && f.path[-2] == "ext") return false
         if (f.isDir) log.info("  $path")
         return true
       }
@@ -187,6 +192,7 @@ class Build : BuildGroup
   @Target { help = "Build fantom-1.0.xx.zip distribution" }
   Void dist()
   {
+    spawnOnChildrenVars["FAN_BUILD_STRIPTEST"] = "true"
     superclean
     compile
     examples
@@ -229,6 +235,8 @@ class Build : BuildGroup
 // Utils
 //////////////////////////////////////////////////////////////////////////
 
+  Str:Str spawnOnChildrenVars := [:]
+
   override Void spawnOnChildren(Str target)
   {
     // make exec task to spawn buildboot and buildpods
@@ -239,6 +247,10 @@ class Build : BuildGroup
     // because on UNIX this script's FAN_SUBSTITUTE will export the
     // wrong FAN_HOME to buildpods.fan
     pods.process.env["FAN_HOME"] = devHomeDir.osPath
+
+    // set extra environment variables
+    boot.process.env.setAll(spawnOnChildrenVars)
+    pods.process.env.setAll(spawnOnChildrenVars)
 
     // spawn
     boot.run

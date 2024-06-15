@@ -432,6 +432,7 @@ class WebUtil
   ** If 'env' is specified, then vars will be added to and available
   ** from `sys::Env.vars` on client-side.
   **
+  @Deprecated { msg="use WebOutStream.initJs" }
   static Void jsMain(OutStream out, Str main, [Str:Str]? env := null)
   {
     envStr := StrBuf()
@@ -443,8 +444,10 @@ class WebUtil
       {
         envStr.add("  ")
         v = v.toCode('\'')
+        // NOTE: uriPodBase is only used for FWT; and this now gets
+        // configured via normal Env.var moving forward in initJs
         if (k == "sys.uriPodBase")
-          envStr.add("fan.sys.UriPodBase = $v;\n")
+          envStr.add("fan.fwt.WidgetPeer.\$uriPodBase = $v;\n")
         else
           envStr.add("env.set('$k', $v);\n")
       }
