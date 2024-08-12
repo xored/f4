@@ -33,6 +33,7 @@ class InternalBuilder : Builder {
 		pluginState	:= FanCore.getDefault.getStateLocation
 		pluginDir	:= File.os(pluginState.toOSString).normalize
 		compileDir	:= pluginDir + `compiler/${fp.podName}/`
+		compileErrs	:= CompilerErr[,] 
 
 		// make sure it's empty first
 		compileDir.create
@@ -78,77 +79,22 @@ class InternalBuilder : Builder {
 			if (meta["f4.jsReflectClosures"] == "true")
 				input.jsReflectClosures	= true
 			
-			errs := compileFan(input)
+			moarErrs := compileFan(input)
+			compileErrs.addAll(moarErrs)
             consumer?.call(logBuf.toStr)
 
-			if (errs[0].size > 0)
+			if (compileErrs.size > 0)
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
-				return errs.flatten.map |CompilerErr err -> CompilerErr| {
+				return compileErrs.map |CompilerErr err -> CompilerErr| {
 					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
-			// Compare pod file in output directory to podFile in project and overwrite it if they are different
-			oldPodFile	:= fp.podOutFile
-			newPodFile	:= compileDir + `${fp.podName}.pod` 
-
 			if (fp.javaDirs.size > 0) {
 				javaErrs := compileJava(consumer, compileDir, resolvedPods)
-				errs.add(javaErrs)
+				compileErrs.addAll(javaErrs)
 			}
 
-			if (newPodFile.exists) {
-				
-				// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
-				// especially when building F4 itself. Given F4 needs it's pods in the project root dir, 
-				// it may be due to Builder (superclass) doing a zero depth refresh
-				if (isPodChanged(newPodFile, oldPodFile)) {
-	
-					// the old behaviour was thus (see below),
-					// but re-freshing (esp after we'd copied over new pod files)
-					// caused the entire project to re-build, and it would keep on 
-					// rebuilding itself continuously and endlessly. Not ideal!
-					// The Builder (superclass) does a zero depth refresh anyway.
-
-//					// refresh Java stuff
-//					jp := JavaCore.create(fp.project)
-//					jp.getJavaModel.refreshExternalArchives([jp], null)
-//
-//					// refresh Fantom stuff
-//					fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
-
-					try {
-						// copy pod to outDir
-						// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
-						consumer?.call("[DEBUG] Copying pod to ${oldPodFile.osPath}")
-						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
-
-					} catch (Err err) {
-						// let's not cause a modal pop-up - but fail quietly in the background with a reported err
-						msg := "${oldPodFile.name} is locked by another process."
-						msg += "\nPlease end all programs using the .pod file and re-build the project."
-						msg += "\n${oldPodFile.osPath}"
-						msg += "\n"
-						msg += "\n" + err.msg
-							.replace("java.nio.file.FileSystemException: ", "java.nio.file.FileSystemException:\n  ")
-							.replace(".pod: The process", ".pod\n  The process")
-						com := CompilerErr.make(msg, Loc.makeFile(fp.buildFile), err, LogLevel.err)
-						errs.add([com])
-					}
-				}
-
-				// sometimes we re-build just to re-publish, so don't bother checking for pod changes
-				if (fp.prefs.publishPod) {
-					consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
-					fp.compileEnv.publishPod(newPodFile)
-				}
-			}
-			
-			// we often cannot delete the .pod file if we've been generating Java stubs (get an IOErr)
-			// so don't! Delete it when we build again - it all seems fine then.
-//			compileDir.delete
-			return errs.flatten
-	
 		} catch (Err err) {
 			logger.err("Could not compile ${fp.podName}", err)
 			LogUtil.logErr(pluginId, "${err.typeof.qname} during build - ${err.msg}", err)
@@ -157,30 +103,68 @@ class InternalBuilder : Builder {
 		} finally {
 			(input.ns as F4Namespace)?.close
 		}
+
+
+		// Compare pod file in output directory to podFile in project and overwrite it if they are different
+		oldPodFile	:= fp.podOutFile
+		newPodFile	:= compileDir + `${fp.podName}.pod` 
+
+		if (newPodFile.exists) {
+			
+			// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
+			// especially when building F4 itself. Given F4 needs its pods in the project root dir, 
+			// it may be due to Builder (superclass) doing a zero depth refresh
+			if (isPodChanged(newPodFile, oldPodFile)) {
+
+				// the old behaviour was thus (see below),
+				// but re-freshing (esp after we'd copied over new pod files)
+				// caused the entire project to re-build, and it would keep on 
+				// rebuilding itself continuously and endlessly. Not ideal!
+				// The Builder (superclass) does a zero depth refresh anyway.
+
+//				// refresh Java stuff
+//				jp := JavaCore.create(fp.project)
+//				jp.getJavaModel.refreshExternalArchives([jp], null)
+//
+//				// refresh Fantom stuff
+//				fp.project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+
+				try {
+					// copy pod to outDir
+					// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
+					consumer?.call("[DEBUG] Copying pod to: ${oldPodFile.osPath}")
+						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+
+				} catch (Err err) {
+					consumer?.call("[ERR] ${oldPodFile.name} is locked by another process")
+
+					// let's not cause a modal pop-up - but fail quietly in the background with a reported err
+					msg := "${oldPodFile.name} is locked by another process."
+					msg += "\nPlease end all programs using the .pod file and re-build the project."
+					msg += "\n${oldPodFile.osPath}"
+					msg += "\n"
+					msg += "\n" + err.msg
+						.replace("java.nio.file.FileSystemException: ", "java.nio.file.FileSystemException:\n  ")
+						.replace(".pod: The process", ".pod\n  The process")
+					com := CompilerErr.make(msg, Loc.makeFile(fp.buildFile), err, LogLevel.err)
+					compileErrs.add(com)
+				}
+			}
+
+			// sometimes we re-build just to re-publish, so don't bother checking for pod changes
+			if (fp.prefs.publishPod) {
+				consumer?.call("[DEBUG] Publishing ${newPodFile.name}...")
+				fp.compileEnv.publishPod(newPodFile)
+			}
+		}
+		
+		// we often cannot delete the .pod file if we've been generating Java stubs (get an IOErr)
+		// so don't! Delete it when we build again - it all seems fine then.
+//		compileDir.delete
+		return compileErrs
 	}
 	
-	private static Pod? findPod(Str podName) {
-		fp := Actor.locals["f4.fp"] as FantomProject
-		if (fp == null) throw Err("Wot no 'f4.fp' project in Actor.locals?")
-
-		podFile := fp.resolvedPods[podName]
-		if (podFile == null)
-			return null
-
-		// believe me -it is IMPOSSIBLE to create an FPod instance in this Fantom class
-		// Soooo many weird F4 compilation errors as soon as I reference the "fanx" java package
-		// much easier to just move everything to a Java class in a different pod
-		// which is why, I suspect, that JStubGenerator is NOT part of f4builder
-		// SlimerDude, June 2024
-		fpod := JStubGenerator.makePod(podName, podFile)
-
-		return fpod
-	}
-	
-	private CompilerErr[][] compileFan(CompilerInput input) {
-		Actor.locals["f4.fp"] = this.fp
-		Actor.locals["f4.compilerEs.podFn"] = #findPod.func
-
+	private CompilerErr[] compileFan(CompilerInput input) {
 		caughtErrs	:= CompilerErr[,]
 		compiler	:= Compiler(input)
 		
@@ -191,11 +175,7 @@ class InternalBuilder : Builder {
 			LogUtil.logErr(pluginId, "${e.typeof.qname} during build - ${e.msg}", e)
 			caughtErrs.add(CompilerErr("${e.typeof.qname} ${e.msg} - see Error Log View for details", Loc("CompilerInput")))
 		}
-		finally {
-			Actor.locals.remove("f4.compilerEs.podFn")
-			Actor.locals.remove("f4.fp")
-		}
-		return [caughtErrs.addAll(compiler.errs), compiler.warns]
+		return caughtErrs.addAll(compiler.errs).addAll(compiler.warns)
 	}
 
 	private CompilerErr[] compileJava(|Str|? consumer, File compileDir, Str:File resolvedPods) {

@@ -44,6 +44,7 @@ class F4Namespace : CNamespace {
 	
 	public Void close() {
 		zips.each { it.close }
+		zips.clear
 	}
 }
 
