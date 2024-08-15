@@ -114,7 +114,11 @@ class InternalBuilder : Builder {
 			// while isPodChanged() is not absolutely needed, I do see more build thrashing without it,
 			// especially when building F4 itself. Given F4 needs its pods in the project root dir, 
 			// it may be due to Builder (superclass) doing a zero depth refresh
-			if (isPodChanged(newPodFile, oldPodFile)) {
+			if (isPodChanged(newPodFile, oldPodFile) == false)
+				consumer?.call("[DEBUG] Contents of pod have NOT changed")
+
+			else {
+				consumer?.call("[DEBUG] Contents of pod have changed")
 
 				// the old behaviour was thus (see below),
 				// but re-freshing (esp after we'd copied over new pod files)
@@ -133,7 +137,17 @@ class InternalBuilder : Builder {
 					// copy pod to outDir
 					// but often (I'm looking at YOU - SkySpark!) the pod is locked and this throws an IoErr
 					consumer?.call("[DEBUG] Copying pod to: ${oldPodFile.osPath}")
-						newPodFile.copyTo(oldPodFile, ["overwrite" : true])
+
+					// turns out that file locking is a REAL problem on Windows and happens ALL the time
+					// a comment in this stackoverflow post suggests avoiding Java NIO - which Fantom.copyTo() now uses
+					// https://stackoverflow.com/questions/4179145/release-java-file-lock-in-windows
+					// https://github.com/fantom-lang/fantom/commit/5ad35635544534e697ae5329cda76bcb85272633
+					out :=  oldPodFile.out
+					try		newPodFile.in.pipe(out)
+					finally	out.close
+
+					// or... herein enter file locking problems on Windows!
+//					newPodFile.copyTo(oldPodFile, ["overwrite" : true])
 
 				} catch (Err err) {
 					consumer?.call("[ERR] ${oldPodFile.name} is locked by another process")
