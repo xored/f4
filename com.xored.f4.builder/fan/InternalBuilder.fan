@@ -83,10 +83,14 @@ class InternalBuilder : Builder {
 			compileErrs.addAll(moarErrs)
             consumer?.call(logBuf.toStr)
 
-			if (compileErrs.size > 0)
+			// return early should any errors (NOT @Deprecated warnings) be reported
+			if (compileErrs.any { it.isErr } )
 				// ensure dumb compiler errs like 'Cannot resolve depend: pod 'afBedSheet' not found' are mapped to build.fan
 				return compileErrs.map |CompilerErr err -> CompilerErr| {
-					consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
+					if (err.isWarn)
+						consumer?.call("[WARN] ${fp.podName} - ${err.msg}")
+					else
+						consumer?.call("[ERR] ${fp.podName} - ${err.msg}")
 					return err.file == "CompilerInput" ? CompilerErr(err.msg, bldLoc) : err
 				}
 
