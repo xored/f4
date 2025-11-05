@@ -6,7 +6,7 @@ F4 is Eclipse-based IDE for the [Fantom programming language](http://fantom-lang
 
 F4 is based on [Eclipse v4.9 2018-09](https://www.eclipse.org/downloads/packages/release/2018-09/r) with [Dynamic Languages Toolkit (DLTK) v5.10](https://eclipse.org/dltk/).
 
-Pre-compiled installations of F4 may be downloaded from the [GitHub Releases Tab](https://github.com/xored/f4/releases) or (older versions) from the [Xored website](http://www.xored.com/products/f4/).
+Pre-compiled installations of F4 may be downloaded from the [GitHub Releases Tab](https://github.com/xored/f4/releases).
 
 
 
